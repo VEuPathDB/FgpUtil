@@ -25,7 +25,8 @@
 
   <target name="FgpUtil-Installation" depends="FgpUtil/Xml-Installation,
                                             FgpUtil/Prop-Installation,
-                                            FgpUtil/Log-Installation" >
+                                            FgpUtil/Log-Installation,
+                                            FgpUtil/Runtime-Installation" >
 
     <ant target="defaultProjectInstall"/>
 
@@ -67,8 +68,14 @@
       <property name="project" value="FgpUtil"/>
       <property name="component" value="Log"/>
     </ant>
-  </target>  
-
+  </target>
+  
+  <target name="FgpUtil/Runtime-Installation">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="FgpUtil"/>
+      <property name="component" value="Runtime"/>
+    </ant>
+  </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooo  Release  ooooooooooooooooooooooooooooo -->
