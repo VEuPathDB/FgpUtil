@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.digester.Digester;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -31,7 +32,7 @@ import com.thaiopensource.xml.sax.ErrorHandlerImpl;
  */
 public abstract class XmlParser {
 
-    protected static final String GUS_HOME = System.getenv("GUS_HOME");
+    protected static final String GUS_HOME = GusHome.getGusHome();
     
     protected String schemaPath;
     protected ValidationDriver validator;
