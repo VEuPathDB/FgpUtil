@@ -24,7 +24,7 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="FgpUtil-Installation" depends="FgpUtil/Util-Installation,
-                                            FgpUtil/Runtime-Installation
+                                            FgpUtil/Runtime-Installation,
                                             FgpUtil/Xml-Installation,
                                             FgpUtil/Prop-Installation,
                                             FgpUtil/Log-Installation" >
