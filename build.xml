@@ -24,10 +24,10 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="FgpUtil-Installation" depends="FgpUtil/Util-Installation,
+                                            FgpUtil/Runtime-Installation
                                             FgpUtil/Xml-Installation,
                                             FgpUtil/Prop-Installation,
-                                            FgpUtil/Log-Installation,
-                                            FgpUtil/Runtime-Installation" >
+                                            FgpUtil/Log-Installation" >
 
     <ant target="defaultProjectInstall"/>
 
