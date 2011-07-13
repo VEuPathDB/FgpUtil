@@ -6,16 +6,9 @@ my ($time_min, $time_max);
 
 sub makeReport {
 
-  my ($serverList, $logfileRegex, $parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug) = @_;
+  my ($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug) = @_;
 
-  if ($debug) {
-    foreach my $svr (@$serverList) { 
-      print "server: $svr\n";
-    }
-    print "logfileRegex = \"$logfileRegex\"\n";
-  }
-
-  my (%earliest, %latest, %count);
+  my (%pageViews, %earliest, %latest, %count);
 
   if ($time_filter) {
     ($time_min, $time_max) = split(/,\s*/, $time_filter);
@@ -33,11 +26,15 @@ sub makeReport {
   my $min_absolute_time = 1000000000000000;
   my $max_absolute_time = 0;
 
-  foreach my $server (@$serverList) {
-    print "files from server $server\n" if $debug;
-    open REMOTE_LS, "ssh $server ls $logfileRegex |"
-      or die "couldn't open ssh command to list files";
-    while (my $logFileName = <REMOTE_LS> ) {
+  my @logDescriptions = <STDIN>;
+
+  foreach my $logDescription (@logDescriptions) {
+    chomp($logDescription);
+    my ($server, $logfileGlob, $accessLog) = split /\t/, $logDescription;
+    print "server \"$server\", logfileGlob \"$logfileGlob\", acessLog \"$accessLog\"\n" if $debug;
+    my @logfileList = `ssh $server ls $logfileGlob`;
+
+    foreach my $logFileName (@logfileList) {
       chomp($logFileName);
       print "    $logFileName\n" if $debug;
       open LOGFILE, "ssh $server cat $logFileName |"
@@ -80,6 +77,8 @@ sub makeReport {
 	  print P "$timestamp\t$seconds\t$name\n";
 	}
       }
+
+      $pageViews{$logFileName} = getPageViews($server, $accessLog, $earliest{$logFileName}, $latest{$logFileName}, $logTailSize, $logDeathImmunity);
     }
   }
 
@@ -103,27 +102,20 @@ sub makeReport {
   print "statistics by log file:\n";
   print sprintf("%7s %24s %24s %13s %60s\n", "queries", "--------earliest----", "---------latest-----", "page-requests", "-------------------------------file------------");
 
-  my $pageRequestCount;
   foreach my $f (sort(keys %count)) {
-    $pageRequestCount = "(unknown)";
-    if ($f =~ /(\w\w.\w*.org)/) {
-      my $server = $1;
-      print "found server \"$server\" in file \"$f\"\n" if $debug;
-      $pageRequestCount = sprintf("%13d", getPageViews($server, $earliest{$f}, $latest{$f}, $logTailSize, $logDeathImmunity));
-    }
-    print sprintf("%7d %24s %24s %13s %60s\n", $count{$f}, scalar(localtime($earliest{$f})), scalar(localtime($latest{$f})), $pageRequestCount, $f);
+    print sprintf("%7d %24s %24s %13d %60s\n", $count{$f}, scalar(localtime($earliest{$f})), scalar(localtime($latest{$f})), $pageViews{$f}, $f);
   }
 
 }
 
 sub getPageViews {
-  my ($server, $startTime, $endTime, $logTailSize, $logDeathImmunity) = @_;
+  my ($server, $accessLog, $startTime, $endTime, $logTailSize, $logDeathImmunity) = @_;
 
   die "endTime $endTime is less than startTime $startTime"
     if $endTime < $startTime;
 
   my $logTailSize = 200000 if !$logTailSize;
-  open LOGFILE, "ssh $server tail -$logTailSize /var/log/httpd/$server/access_log |"
+  open LOGFILE, "ssh $server tail -$logTailSize $accessLog |"
     or die "couldn't open ssh command to cat logfile";
 
   my $minTimestamp = 1000000000000000;
