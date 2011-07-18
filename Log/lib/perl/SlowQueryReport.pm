@@ -31,7 +31,7 @@ sub makeReport {
   foreach my $logDescription (@logDescriptions) {
     chomp($logDescription);
     my ($server, $logfileGlob, $accessLog) = split /\t/, $logDescription;
-    print "server \"$server\", logfileGlob \"$logfileGlob\", acessLog \"$accessLog\"\n" if $debug;
+    print "server \"$server\", logfileGlob \"$logfileGlob\", accessLog \"$accessLog\"\n" if $debug;
     my @logfileList = `ssh $server ls $logfileGlob`;
 
     foreach my $logFileName (@logfileList) {
