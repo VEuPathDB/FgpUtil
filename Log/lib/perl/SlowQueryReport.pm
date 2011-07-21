@@ -8,7 +8,7 @@ sub makeReport {
 
   my ($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug) = @_;
 
-  my (%pageViews, %earliest, %latest, %count);
+  my (%pageViews, %earliest, %latest, %count, $serverAndFilename);
 
   if ($time_filter) {
     ($time_min, $time_max) = split(/,\s*/, $time_filter);
@@ -37,6 +37,7 @@ sub makeReport {
     foreach my $logFileName (@logfileList) {
       chomp($logFileName);
       print "    $logFileName\n" if $debug;
+      my $serverAndFilename = $server . ":" . $logFileName;
       open LOGFILE, "ssh $server cat $logFileName |"
 	  or die "couldn't open ssh command to cat logfile";
 
@@ -51,9 +52,9 @@ sub makeReport {
 	$max_absolute_time = $timestamp if $timestamp > $max_absolute_time;  # the latest time we have included
 
 	# update per-file statistics
-	$earliest{$logFileName} = $timestamp if (!$earliest{$logFileName} || $timestamp < $earliest{$logFileName});
-	$latest{$logFileName} = $timestamp if (!$latest{$logFileName} || $timestamp > $latest{$logFileName});
-	$count{$logFileName}++;
+	$earliest{$serverAndFilename} = $timestamp if (!$earliest{$serverAndFilename} || $timestamp < $earliest{$serverAndFilename});
+	$latest{$serverAndFilename} = $timestamp if (!$latest{$serverAndFilename} || $timestamp > $latest{$serverAndFilename});
+	$count{$serverAndFilename}++;
 
         # update per-query statistics
 	if (!$h->{$name}) {
@@ -78,7 +79,7 @@ sub makeReport {
 	}
       }
 
-      $pageViews{$logFileName} = getPageViews($server, $accessLog, $earliest{$logFileName}, $latest{$logFileName}, $logTailSize, $logDeathImmunity);
+      $pageViews{$serverAndFilename} = getPageViews($server, $accessLog, $earliest{$serverAndFilename}, $latest{$serverAndFilename}, $logTailSize, $logDeathImmunity);
     }
   }
 
