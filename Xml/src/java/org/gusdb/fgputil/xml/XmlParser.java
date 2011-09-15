@@ -35,16 +35,24 @@ public abstract class XmlParser {
     protected static final String GUS_HOME = GusHome.getGusHome();
     
     protected String schemaPath;
+    protected boolean useGusHome;
     protected ValidationDriver validator;
     protected Digester digester;
     
     public XmlParser(String schemaPath) {
+	this(schemaPath, true);
+    }
+
+    public XmlParser(String schemaPath, boolean useGusHome) {
         this.schemaPath = schemaPath;
+	this.useGusHome = useGusHome;
     }
     
     protected void configure() throws SAXException, IOException {
         // get model schema file and xml schema file
-        URL schemaURL = makeURL(GUS_HOME + "/" + schemaPath );
+        URL schemaURL = (useGusHome ?
+			 makeURL(GUS_HOME + "/" + schemaPath) :
+			 makeURL(schemaPath) );
         
        // config validator and digester
         validator = configureValidator( schemaURL );
@@ -148,4 +156,5 @@ public abstract class XmlParser {
     }
     
     protected abstract Digester configureDigester();
+
 }
