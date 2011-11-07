@@ -24,8 +24,8 @@ sub main { # takes two+ args: RNG file and any number of XML files
 	$argString .= absolutePath($args[$i])." ";
     }
     $cmd = "java $sysProps -classpath $CLASSPATH org.gusdb.fgputil.xml.XmlValidator $xmlFile $argString";
-    system($cmd);
-    return 0;
+    my $err = system($cmd);
+    return $err >> 8;
 }
 
 sub absolutePath {

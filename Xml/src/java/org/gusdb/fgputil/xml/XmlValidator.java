@@ -24,7 +24,7 @@ public class XmlValidator extends XmlParser {
 		try {
 			String rngFile = args[0];
 			System.out.println();
-			System.out.println("Using RNG file with absolute path: " + rngFile);
+			System.out.println("Using RNG file: " + rngFile);
 			XmlValidator parser = new XmlValidator(rngFile);
 			boolean first = true;
 			for (String xmlFile : args) {
@@ -33,14 +33,15 @@ public class XmlValidator extends XmlParser {
 					continue;
 				}
 				System.out.println();
-				System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+				System.out.println("================================================");
 				System.out.println("Validating File: " + xmlFile);
-				System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+				System.out.println("================================================");
 				System.out.println();
 				try {
-					boolean validXml = parser.validate(parser.makeURL(xmlFile));
-					System.out.println(validXml ? "Validation successful.  No errors." :
-						"Validator found errors during parsing.  File is not valid per the RNG.");
+				    boolean validXml = parser.validate(parser.makeURL(xmlFile));
+					
+				    if (validXml) System.out.println("Validation successful.  No errors.");
+				    else System.exit(1);
 				}
 				catch (IOException ioe) {
 					System.err.println("Error: " + ioe);
