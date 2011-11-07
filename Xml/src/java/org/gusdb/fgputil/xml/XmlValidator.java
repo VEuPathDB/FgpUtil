@@ -23,8 +23,6 @@ public class XmlValidator extends XmlParser {
 		}
 		try {
 			String rngFile = args[0];
-			System.out.println();
-			System.out.println("Using RNG file: " + rngFile);
 			XmlValidator parser = new XmlValidator(rngFile);
 			boolean first = true;
 			for (String xmlFile : args) {
@@ -32,15 +30,12 @@ public class XmlValidator extends XmlParser {
 					first = false;
 					continue;
 				}
-				System.out.println();
-				System.out.println("================================================");
-				System.out.println("Validating File: " + xmlFile);
-				System.out.println("================================================");
-				System.out.println();
+				System.err.println();
+				System.err.println("Validating: " + xmlFile);
 				try {
 				    boolean validXml = parser.validate(parser.makeURL(xmlFile));
 					
-				    if (validXml) System.out.println("Validation successful.  No errors.");
+				    if (validXml) System.err.println("Validation passed.");
 				    else System.exit(1);
 				}
 				catch (IOException ioe) {
