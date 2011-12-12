@@ -1,0 +1,7 @@
+and then some
+
+double double
+float float
+boolean boolean
+int int
+string string
