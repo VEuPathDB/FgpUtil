@@ -16,7 +16,8 @@ public class FormatUtil {
     String newS = "";
     int lineTotal = 0;
     for (int curTok = 0; curTok < tokens.length; curTok++) {
-      if (lineTotal + 1 + tokens[curTok].length() <= maxCharsPerLine ||
+      if (newS.equals("") || // never add newline before first token
+          lineTotal + 1 + tokens[curTok].length() <= maxCharsPerLine ||
           lineTotal == 0 && tokens[curTok].length() > maxCharsPerLine) {
         // add this token to the current line
       }
