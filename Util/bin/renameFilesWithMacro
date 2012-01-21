@@ -7,11 +7,10 @@ my ($macro, $value, $rootDir) = @ARGV;
 
 usage() unless ($macro && $value && $rootDir);
 
+die "rootDir must be a full path" unless $rootDir =~ /^\//;
 
-my $pwd = cwd();
-
-correctDir($pwd, $rootDir);
-correctFile($pwd, $rootDir);
+correctDir($rootDir, '');
+correctFile($rootDir, '');
 
 sub correctDir {
   my ($pwd, $dir) = @_;
@@ -39,11 +38,11 @@ sub correctDir {
 
 sub correctFile {
   my ($pwd, $file) = @_;
-    print STDERR "correctFile $file\n";
 
   if ($file =~ /$macro/) {
     my $newFile = $file;
     $newFile =~ s/$macro/$value/;
+    print STDERR "renaming $file to $newFile\n";
     rename("$pwd/$file", "$pwd/$newFile") || die "Could not rename $file to $newFile\n";
   }
 }
