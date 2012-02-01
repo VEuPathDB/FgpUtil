@@ -31,4 +31,15 @@ public class FormatUtil {
     }
     return newS;
   }
+
+	public static String arrayToString(Object[] array) {
+		StringBuilder sb = new StringBuilder("[ ");
+		if (array.length > 0) {
+			sb.append(array[0].toString());
+		}
+		for (int i = 1; i < array.length; i++) {
+			sb.append(", ").append(array[i].toString());
+		}
+		return sb.append(" ]").toString();
+	}
 }
