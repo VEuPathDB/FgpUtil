@@ -21,6 +21,10 @@ foreach my $project (@projects) {
 
 sub usage {
   die "
+
+Check out a specified branch into the current dir.  (So cd to target $PROJECT_HOME first)
+
 usage: fgpBackendCheckout branch_number
+
 ";
 }
