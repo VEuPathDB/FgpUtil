@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+
+use strict;
+
+my $old = shift(@ARGV);
+my $new = shift(@ARGV);
+my @files = @ARGV;
+
+usage() unless $old && $new && scalar(@files);
+
+my $escapedSlash = '\\/';
+
+$old =~ s|/|$escapedSlash|g;
+$new =~ s|/|$escapedSlash|g;
+
+foreach my $file (@files) {
+  -f $file || die "Error: '$file' is not a regular file\n";
+
+  my $matchCount = `grep -c $old $file`;
+  chomp $matchCount;
+  if ($matchCount) {
+    my $cmd = "sed -i 's/$old/$new/g' $file";
+    system($cmd);
+    print STDERR "Converted $file\n";
+  }
+}
+
+sub usage {
+  die "
+Perform a string replacement on a set of files (overwrites the original files).
+
+Usage:  replace old_string new_string files
+
+";
+}
