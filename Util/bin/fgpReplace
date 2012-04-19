@@ -29,7 +29,7 @@ sub usage {
   die "
 Perform a string replacement on a set of files (overwrites the original files).
 
-Usage:  replace old_string new_string files
+Usage:  fgpReplace old_string new_string files
 
 ";
 }
