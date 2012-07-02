@@ -41,7 +41,8 @@ public class UnitTest {
 				String line1 = br1.readLine();
 				String line2 = br2.readLine();
 				//System.out.println("Comparing <" + line1 + "> with <" + line2 + ">.");
-				if (!line1.equals(line2)) {
+				if ((line1 == null && line2 != null) ||
+				    (line1 != null && !line1.equals(line2))) {
 					logFail("Files differ.");
 					return;
 				}
