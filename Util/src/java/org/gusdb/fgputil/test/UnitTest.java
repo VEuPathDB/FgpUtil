@@ -93,6 +93,8 @@ public class UnitTest {
 	}
 	
 	public static void closeQuietly(Closeable closeable) {
-		try { if (closeable != null) closeable.close(); } catch (Exception e) { /* do nothing */ }
+		try { if (closeable != null) closeable.close(); } catch (Exception ex) { /* do nothing */
+		  ex.printStackTrace();
+		}
 	}
 }
