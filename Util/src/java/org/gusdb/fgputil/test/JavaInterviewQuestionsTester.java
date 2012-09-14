@@ -9,7 +9,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-public class JavaInterviewQuestionsTester extends UnitTest {
+public class JavaInterviewQuestionsTester extends UnitTestBase {
 	
 	private static final String REVERSABLE_FILE_NAME = "org/gusdb/fgputil/test/reversableTextFile.txt";
 	private static final String REVERSED_FILE_NAME_CORRECT = "org/gusdb/fgputil/test/reversedTextFile.txt";

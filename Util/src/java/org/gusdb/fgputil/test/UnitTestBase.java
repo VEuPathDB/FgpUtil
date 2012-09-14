@@ -12,7 +12,7 @@ import java.net.URL;
  * 
  * @author rdoherty
  */
-public class UnitTest {
+public class UnitTestBase {
 
 	protected static void assertFilesEqual(String filePath1, String filePath2) throws IOException {
 		BufferedReader br1 = null, br2 = null;
@@ -47,7 +47,7 @@ public class UnitTest {
 	 * @throws FileNotFoundException 
 	 */
 	public static String getResourceFilePath(String resourcePath) throws FileNotFoundException {
-		URL url = UnitTest.class.getClassLoader().getResource(resourcePath);
+		URL url = UnitTestBase.class.getClassLoader().getResource(resourcePath);
 		if (url == null) {
 			throw new FileNotFoundException("Resource cannot be found on the classpath: " + resourcePath);
 		}

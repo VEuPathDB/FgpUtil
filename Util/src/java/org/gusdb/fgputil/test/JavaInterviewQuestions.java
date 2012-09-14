@@ -52,8 +52,8 @@ public class JavaInterviewQuestions {
 			throw new RuntimeException("I/O Error reading and/or writing files", ioe);
 		}
 		finally {
-			UnitTest.closeQuietly(writer);
-			UnitTest.closeQuietly(reader);
+			UnitTestBase.closeQuietly(writer);
+			UnitTestBase.closeQuietly(reader);
 		}
 	}
 
@@ -102,8 +102,8 @@ public class JavaInterviewQuestions {
 			throw new RuntimeException("I/O Error reading and/or writing files", ioe);
 		}
 		finally {
-			UnitTest.closeQuietly(writer);
-			UnitTest.closeQuietly(inFile);
+			UnitTestBase.closeQuietly(writer);
+			UnitTestBase.closeQuietly(inFile);
 		}
 	}
 	
