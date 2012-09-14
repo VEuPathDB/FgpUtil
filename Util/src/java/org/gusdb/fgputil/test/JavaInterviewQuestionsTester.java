@@ -1,7 +1,13 @@
 package org.gusdb.fgputil.test;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
+
+import org.junit.Test;
 
 public class JavaInterviewQuestionsTester extends UnitTest {
 	
@@ -9,16 +15,8 @@ public class JavaInterviewQuestionsTester extends UnitTest {
 	private static final String REVERSED_FILE_NAME_CORRECT = "org/gusdb/fgputil/test/reversedTextFile.txt";
 	private static final String REVERSED_FILE_PATH = "/tmp/reversedTextFile.txt";
 	
-	public static void main(String[] args) {
-		JavaInterviewQuestionsTester test = new JavaInterviewQuestionsTester();
-		test.testPalindrome();
-		test.testNearPalindrome();
-		test.testReverseFile();
-		test.testUniqueChars();
-		test.printResults();
-	}
-	
-	private void testPalindrome() {
+	@Test
+	public void testPalindrome() {
 		JavaInterviewQuestions q = new JavaInterviewQuestions();
 		assertFalse(q.isPalindrome(null));
 		assertTrue(q.isPalindrome(""));
@@ -30,7 +28,8 @@ public class JavaInterviewQuestionsTester extends UnitTest {
 		assertFalse(q.isPalindrome("yuijuhiuy"));
 	}
 
-	private void testNearPalindrome() {
+	@Test
+	public void testNearPalindrome() {
 		JavaInterviewQuestions q = new JavaInterviewQuestions();
 		assertFalse(q.isNearPalindrome(null, 500));
 		assertTrue(q.isNearPalindrome("", 0));
@@ -51,7 +50,8 @@ public class JavaInterviewQuestionsTester extends UnitTest {
 		assertTrue(q.isNearPalindrome("abracadabra",20));
 	}
 	
-	private void testReverseFile() {
+	@Test
+	public void testReverseFile() {
 		JavaInterviewQuestions q = new JavaInterviewQuestions();
 		try {
 			String inputFilePath = getResourceFilePath(REVERSABLE_FILE_NAME);
@@ -72,7 +72,8 @@ public class JavaInterviewQuestionsTester extends UnitTest {
 		}
 	}
 	
-	private void testUniqueChars() {
+	@Test
+	public void testUniqueChars() {
 		JavaInterviewQuestions q = new JavaInterviewQuestions();
 		String[][] testSet = {
 				{ "tttttthhhhthhhthhth", "ht" },
@@ -81,8 +82,8 @@ public class JavaInterviewQuestionsTester extends UnitTest {
 				{ "fasd", "adfs" }
 		};
 		for (String[] testPair : testSet) {
-			assertEqual(q.getUniqueChars(testPair[0]), testPair[1]);
-			assertEqual(q.getUniqueCharsBetter(testPair[0]), testPair[1]);
+			assertEquals(q.getUniqueChars(testPair[0]), testPair[1]);
+			assertEquals(q.getUniqueCharsBetter(testPair[0]), testPair[1]);
 		}
 	}
 }
