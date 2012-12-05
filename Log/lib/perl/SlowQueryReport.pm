@@ -106,7 +106,7 @@ sub makeReport {
     print TABFILE join("\t", @row) . "\n" if $tabfile;
   }
 
-  close TABFILE if $tabfile
+  close TABFILE if $tabfile;
   print "\nActual time start: " . localtime($min_absolute_time) . " ($min_absolute_time)\n";
   print   "Actual time end:   " . localtime($max_absolute_time) . " ($max_absolute_time)\n\n";
 
