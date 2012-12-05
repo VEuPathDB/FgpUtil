@@ -6,7 +6,7 @@ my ($time_min, $time_max);
 
 sub makeReport {
 
-  my ($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug) = @_;
+  my ($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug, $tabfile) = @_;
 
   my (%pageViews, %earliest, %latest, %count, $serverAndFilename);
 
@@ -85,18 +85,28 @@ sub makeReport {
 
   close(P) if ($plotOutputFile);
 
+  if ($tabfile) {
+      open(TABFILE, ">$tabfile") || die "Can't open tab file '$tabfile' for writing";
+  }
+
   my @sorted = sort {$b->[$sort_column-1] <=> $a->[$sort_column-1]} values(%$h);
 
+  my @header = ('  #', 'Name','TotSecs','Count','AvgSecs','SlowSecs','Slow_#','Worst', 'Server', 'Log File');
 
   # name total_secs count avg_secs total_secs_over count_over  worst_secs
-  print sprintf("%3s %47s%12s%8s%10s%12s%8s%7s%25s%80s\n",('  #', 'Name','TotSecs','Count','AvgSecs','SlowSecs','Slow_#','Worst', 'Server', 'Log File'));
+  print sprintf("%3s %47s%12s%8s%10s%12s%8s%7s%25s%80s\n", @header);
+
+  print TABFILE join("\t", @header) . "\n" if $tabfile;
 
   my $rownum;
   foreach my $a (@sorted) {
     my $avg = $a->[1] / $a->[2];
-    print sprintf("%3d %47s%12.2f%8d%10.2f%12.2f%8d%7.2f%25s%80s\n",++$rownum,($a->[0],$a->[1],$a->[2],$avg,$a->[3],$a->[4],$a->[5],$a->[6],$a->[7]));
+    my @row = (++$rownum,$a->[0],$a->[1],$a->[2],$avg,$a->[3],$a->[4],$a->[5],$a->[6],$a->[7]);
+    print sprintf("%3d %47s%12.2f%8d%10.2f%12.2f%8d%7.2f%25s%80s\n", @row);
+    print TABFILE join("\t", @row) . "\n" if $tabfile;
   }
 
+  close TABFILE if $tabfile
   print "\nActual time start: " . localtime($min_absolute_time) . " ($min_absolute_time)\n";
   print   "Actual time end:   " . localtime($max_absolute_time) . " ($max_absolute_time)\n\n";
 
