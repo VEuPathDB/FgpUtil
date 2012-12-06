@@ -103,8 +103,7 @@ sub makeReport {
     my $avg = $a->[1] / $a->[2];
     my @row = (++$rownum,$a->[0],$a->[1],$a->[2],$avg,$a->[3],$a->[4],$a->[5],$a->[6],$a->[7]);
     print sprintf("%3d %47s%12.2f%8d%10.2f%12.2f%8d%7.2f%25s%80s\n", @row);
-    print TABFILE sprintf('%d\t%s\t%.2f\t%d\t%.2f\t%.2f\t%d\t%.2f\t%s\t%s' . "\n", @row);
-#    print TABFILE join("\t", @row) . "\n" if $tabfile;
+    print TABFILE sprintf("\%d\t\%s\t\%.2f\t\%d\t\%.2f\t\%.2f\t\%d\t\%.2f\t\%s\t\%s\n", @row);
   }
 
   close TABFILE if $tabfile;
