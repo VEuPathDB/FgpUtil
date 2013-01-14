@@ -1,5 +1,6 @@
 package org.gusdb.fgputil;
 
+import java.io.Closeable;
 import java.io.File;
 
 public class IoUtil {
@@ -36,4 +37,10 @@ public class IoUtil {
 		}
 		return f;
 	}
+  
+  public static void closeQuietly(Closeable closeable) {
+    try { if (closeable != null) closeable.close(); } catch (Exception ex) { /* do nothing */
+      ex.printStackTrace();
+    }
+  }
 }

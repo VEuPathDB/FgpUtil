@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 
+import org.gusdb.fgputil.IoUtil;
+
 public class JavaInterviewQuestions {
 
 	public boolean isPalindrome(String str) {
@@ -52,8 +54,8 @@ public class JavaInterviewQuestions {
 			throw new RuntimeException("I/O Error reading and/or writing files", ioe);
 		}
 		finally {
-			UnitTestBase.closeQuietly(writer);
-			UnitTestBase.closeQuietly(reader);
+			IoUtil.closeQuietly(writer);
+			IoUtil.closeQuietly(reader);
 		}
 	}
 
@@ -102,8 +104,8 @@ public class JavaInterviewQuestions {
 			throw new RuntimeException("I/O Error reading and/or writing files", ioe);
 		}
 		finally {
-			UnitTestBase.closeQuietly(writer);
-			UnitTestBase.closeQuietly(inFile);
+			IoUtil.closeQuietly(writer);
+			IoUtil.closeQuietly(inFile);
 		}
 	}
 	

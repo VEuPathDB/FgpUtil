@@ -1,11 +1,12 @@
 package org.gusdb.fgputil.test;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
+
+import org.gusdb.fgputil.IoUtil;
 
 /**
  * Simple unit test framework (replace with JUnit as soon as is convenient)
@@ -36,8 +37,8 @@ public class UnitTestBase {
 			}
 		}
 		finally {
-			closeQuietly(br2);
-			closeQuietly(br1);
+			IoUtil.closeQuietly(br2);
+			IoUtil.closeQuietly(br1);
 		}
 	}
 
@@ -52,11 +53,5 @@ public class UnitTestBase {
 			throw new FileNotFoundException("Resource cannot be found on the classpath: " + resourcePath);
 		}
 		return url.getFile();
-	}
-	
-	public static void closeQuietly(Closeable closeable) {
-		try { if (closeable != null) closeable.close(); } catch (Exception ex) { /* do nothing */
-		  ex.printStackTrace();
-		}
 	}
 }
