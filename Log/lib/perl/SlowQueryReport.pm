@@ -119,6 +119,9 @@ sub makeReport {
 
 }
 
+# look in access log to get a ocunt of "pages".  this is useful if we know that certain queries only happen on that page.
+# right now this is hard coded to look for EuPathDB gene pages.  It is useful for the gbrowseSlowQueryReport which tags
+# queries as belonging to the gene page.  
 sub getPageViews {
   my ($server, $accessLog, $startTime, $endTime, $logTailSize, $logDeathImmunity) = @_;
 
