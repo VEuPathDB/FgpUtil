@@ -2,15 +2,6 @@ package FgpUtil::Util::ProjectBrancher;
 
 use strict;
 
-my $branch = $ARGV[0];
-my $comment = $ARGV[1];
-my $delete = $ARGV[2];
-
-usage() unless ($branch && $comment);
-usage() if ($delete && $delete ne '-delete');
-
-my @projects = ('EuPathSiteCommon:apidb', 'ApiCommonData:apidb', 'ApiCommonShared:apidb', 'ApiCommonWebService:apidb', 'ApiCommonWebsite:apidb', 'ApiCommonWorkflow:apidb', 'CBIL:gus', 'DJob:gus', 'DoTS:apidb', 'EuPathDatasets:apidb', 'FgpUtil:gus', 'GGTools:apidb', 'GusAppFramework:gus', 'GusSchema:gus', 'install:gus', 'OrthoMCLData:apidb', 'OrthoMCLEngine:apidb', 'OrthoMCLShared:apidb', 'OrthoMCLWebsite:apidb', 'ReFlow:gus', 'WDK:gus', 'WSF:gus', 'WDKTemplateSite:gus', 'WSFToy:gus');
-
 sub branch {
     my ($branch, $comment, $delete, $projects) = @_; 
 
