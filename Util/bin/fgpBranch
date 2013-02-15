@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 
-use strict;
+use lib "$ENV{GUS_HOME}/lib/perl";
+
 use FgpUtil::Util::ProjectBrancher;
+use strict;
 
 my $branch = $ARGV[0];
 my $comment = $ARGV[1];
