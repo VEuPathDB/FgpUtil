@@ -30,9 +30,13 @@ sub makeReport {
 
   foreach my $logDescription (@logDescriptions) {
     chomp($logDescription);
-    my ($server, $logfileGlob, $accessLog) = split /\t/, $logDescription;
+    my ($server, $logfileGlob, $accessLog) = split /\s+/, $logDescription;
     print "server \"$server\", logfileGlob \"$logfileGlob\", accessLog \"$accessLog\"\n" if $debug;
-    my @logfileList = `ssh $server ls $logfileGlob`;
+    my $cmd = "ssh $server ls $logfileGlob";
+    my @logfileList = `$cmd`;
+    if ($?) {
+      die "Error running [$cmd]\n";
+    }
 
     foreach my $logFileName (@logfileList) {
       chomp($logFileName);
@@ -155,7 +159,7 @@ sub getPageViews {
   # if this dies, consider setting a larger $logTailSize, or overriding with $logDeathImmunity
   die "access log (" . localtime($minTimestamp) . " to "
     . localtime($maxTimestamp) .  ") doesn't cover entire period of interest ("
-      . localtime($startTime) . " to " . localtime($endTime) .  ")"
+      . localtime($startTime) . " to " . localtime($endTime) .  ")\n"
 	if ($minTimestamp > $startTime || $maxTimestamp < $endTime)
            && !$logDeathImmunity;
 
