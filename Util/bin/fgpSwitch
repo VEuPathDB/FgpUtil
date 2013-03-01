@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+use strict;
+my ($branch) = @ARGV;
+
+usage() $branch;
+
+my @dirs = map {chomp; $_} `ls`;
+
+foreach my $dir (@dirs) {
+  print STDERR ".";
+  my $svnName = $dir;
+  $svnName = "GusAppFramework" if $dir eq "GUS";
+
+  chdir("$projectHomeDir/$dir") || die "Error: Can't chdir into '$projectHomeDir/$dir'\n";
+  print STDERR "cd $dir\n";
+  my $target = $branch eq 'trunk'? "trunk" : "branch/$branch";
+  my $cmd = "svn switch ^/$svnName/$target";
+  print STDERR "$cmd\n";
+}
+
+
+sub usage {
+  print STDERR "
+Perform svn switch on the directories in a \$PROJECT_HOME.
+
+Usage: fgpSwitch trunk|my_branch_name
+
+Where:
+  trunk|my_branch_name:  where you will switch to
+
+Note:  before you do this operation be sure your working directory is updated from the repository.
+
+";
+exit(1);
+}
