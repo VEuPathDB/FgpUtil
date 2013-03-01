@@ -26,7 +26,7 @@ foreach my $dir (@dirs) {
 print STDERR "\n";
 print STDERR "No projects need to be merged\n" unless scalar(@needIt);
 
-print join("\n", @needIt);
+print join("\n", @needIt) . "\n";
 
 sub usage {
   print STDERR "
