@@ -19,7 +19,7 @@ foreach my $dir (@dirs) {
   $svnName = "GusAppFramework" if $dir eq "GUS";
 
   chdir("$projectHomeDir/$dir") || die "Error: Can't chdir into '$projectHomeDir/$dir'\n";
-  my $target = $branch eq 'trunk'? "trunk" : "branch/$branch";
+  my $target = $branch eq 'trunk'? "trunk" : "branches/$branch";
   my $cmd = "svn mergeinfo ^/$svnName/$target --show-revs eligible";
   push(@needIt, $dir) if `$cmd` ne "";
 }
