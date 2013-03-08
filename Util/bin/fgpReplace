@@ -16,7 +16,7 @@ $new =~ s|/|$escapedSlash|g;
 foreach my $file (@files) {
   -f $file || die "Error: '$file' is not a regular file\n";
 
-  my $matchCount = `grep -c $old $file`;
+  my $matchCount = `grep -c '$old' $file`;
   chomp $matchCount;
   if ($matchCount) {
     my $cmd = "sed -i 's/$old/$new/g' $file";

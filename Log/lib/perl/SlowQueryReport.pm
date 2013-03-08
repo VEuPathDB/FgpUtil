@@ -30,9 +30,13 @@ sub makeReport {
 
   foreach my $logDescription (@logDescriptions) {
     chomp($logDescription);
-    my ($server, $logfileGlob, $accessLog) = split /\t/, $logDescription;
+    my ($server, $logfileGlob, $accessLog) = split /\s+/, $logDescription;
     print "server \"$server\", logfileGlob \"$logfileGlob\", accessLog \"$accessLog\"\n" if $debug;
-    my @logfileList = `ssh $server ls $logfileGlob`;
+    my $cmd = "ssh $server ls $logfileGlob";
+    my @logfileList = `$cmd`;
+    if ($?) {
+      die "Error running [$cmd]\n";
+    }
 
     foreach my $logFileName (@logfileList) {
       chomp($logFileName);
@@ -153,9 +157,9 @@ sub getPageViews {
 
   # check that log file covers entire period of interest
   # if this dies, consider setting a larger $logTailSize, or overriding with $logDeathImmunity
-  die "access log (" . localtime($minTimestamp) . " to "
-    . localtime($maxTimestamp) .  ") doesn't cover entire period of interest ("
-      . localtime($startTime) . " to " . localtime($endTime) .  ")"
+  die "\nThe access log covers [" . localtime($minTimestamp) . " to "
+    . localtime($maxTimestamp) .  "]\nThe period requested for the report (defaults is period in the slow query log) is ["
+      . localtime($startTime) . " to " . localtime($endTime) .  "].\nThe access log does not cover that whole period which means the stats section at the bottom of the report might be inaccurate.\nUse the -i option to ignore this error.\n"
 	if ($minTimestamp > $startTime || $maxTimestamp < $endTime)
            && !$logDeathImmunity;
 
