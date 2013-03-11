@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.test;
+package org.gusdb.fgputil;
 
 import static org.junit.Assert.assertEquals;
 

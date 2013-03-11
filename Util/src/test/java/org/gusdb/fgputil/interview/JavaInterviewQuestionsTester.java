@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.test;
+package org.gusdb.fgputil.interview;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 
+import org.gusdb.fgputil.UnitTestBase;
 import org.junit.Test;
 
 public class JavaInterviewQuestionsTester extends UnitTestBase {

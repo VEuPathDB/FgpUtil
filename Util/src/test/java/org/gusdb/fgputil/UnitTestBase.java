@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.test;
+package org.gusdb.fgputil;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

@@ -23,7 +23,7 @@
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="FgpUtil-Installation" depends="FgpUtil/Util-Installation">
+  <target name="FgpUtil-Installation" depends="FgpUtil/Util-Installation, FgpUtil-MavenInstallation">
     <ant target="defaultProjectInstall"/>
   </target>  
    
@@ -51,6 +51,12 @@
     </ant>
   </target>
 
+  <target name="FgpUtil-MavenInstallation">
+    <ant target="mavenCleanInstall"/>
+    <ant target="deployMavenArtifacts">
+      <property name="module" value="Util"/>
+    </ant>
+  </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooo  Release  ooooooooooooooooooooooooooooo -->
