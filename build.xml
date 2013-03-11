@@ -23,14 +23,8 @@
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="FgpUtil-Installation" depends="FgpUtil/Util-Installation,
-                                            FgpUtil/Runtime-Installation,
-                                            FgpUtil/Xml-Installation,
-                                            FgpUtil/Prop-Installation,
-                                            FgpUtil/Log-Installation" >
-
+  <target name="FgpUtil-Installation" depends="FgpUtil/Util-Installation">
     <ant target="defaultProjectInstall"/>
-
   </target>  
    
 
@@ -57,33 +51,6 @@
     </ant>
   </target>
 
-  <target name="FgpUtil/Xml-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="FgpUtil"/>
-      <property name="component" value="Xml"/>
-    </ant>
-  </target>  
-
-  <target name="FgpUtil/Prop-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="FgpUtil"/>
-      <property name="component" value="Prop"/>
-    </ant>
-  </target>  
-
-  <target name="FgpUtil/Log-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="FgpUtil"/>
-      <property name="component" value="Log"/>
-    </ant>
-  </target>
-  
-  <target name="FgpUtil/Runtime-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="FgpUtil"/>
-      <property name="component" value="Runtime"/>
-    </ant>
-  </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooo  Release  ooooooooooooooooooooooooooooo -->
