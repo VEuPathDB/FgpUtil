@@ -1,4 +1,4 @@
-package org.gusdb.fgputil;
+package org.gusdb.fgputil.testutil;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -6,16 +6,21 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.sql.DataSource;
+
 import org.gusdb.fgputil.IoUtil;
+import org.hsqldb.jdbc.JDBCDataSource;
 
 /**
- * Simple unit test framework (replace with JUnit as soon as is convenient)
+ * Unit test utilities
  * 
  * @author rdoherty
  */
-public class UnitTestBase {
+public final class TestUtil {
 
-	protected static void assertFilesEqual(String filePath1, String filePath2) throws IOException {
+  private TestUtil() { }
+  
+	public static void assertFilesEqual(String filePath1, String filePath2) throws IOException {
 		BufferedReader br1 = null, br2 = null;
 		try {
 			br1 = new BufferedReader(new FileReader(filePath1));
@@ -48,10 +53,24 @@ public class UnitTestBase {
 	 * @throws FileNotFoundException 
 	 */
 	public static String getResourceFilePath(String resourcePath) throws FileNotFoundException {
-		URL url = UnitTestBase.class.getClassLoader().getResource(resourcePath);
+		URL url = TestUtil.class.getClassLoader().getResource(resourcePath);
 		if (url == null) {
 			throw new FileNotFoundException("Resource cannot be found on the classpath: " + resourcePath);
 		}
 		return url.getFile();
 	}
+	
+	/**
+	 * Establishes an in-memory database (currently HSQL) and returns a Java
+	 * DataSource object representing it.
+	 * 
+	 * @return
+	 */
+  public static DataSource getTestDataSource(String name) {
+    JDBCDataSource ds = new JDBCDataSource();
+    ds.setDatabase("jdbc:hsqldb:mem:"+name);
+    ds.setUser("SA");
+    ds.setPassword("");
+    return ds;
+  }
 }

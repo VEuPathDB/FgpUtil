@@ -1,16 +1,17 @@
 package org.gusdb.fgputil.interview;
 
+import static org.gusdb.fgputil.testutil.TestUtil.assertFilesEqual;
+import static org.gusdb.fgputil.testutil.TestUtil.getResourceFilePath;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.gusdb.fgputil.UnitTestBase;
 import org.junit.Test;
 
-public class JavaInterviewQuestionsTester extends UnitTestBase {
+public class JavaInterviewQuestionsTester {
 	
 	private static final String REVERSABLE_FILE_NAME = "org/gusdb/fgputil/test/reversableTextFile.txt";
 	private static final String REVERSED_FILE_NAME_CORRECT = "org/gusdb/fgputil/test/reversedTextFile.txt";
