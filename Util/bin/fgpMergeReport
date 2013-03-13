@@ -21,7 +21,12 @@ foreach my $dir (@dirs) {
   chdir("$projectHomeDir/$dir") || die "Error: Can't chdir into '$projectHomeDir/$dir'\n";
   my $target = $branch eq 'trunk'? "trunk" : "branches/$branch";
   my $cmd = "svn mergeinfo ^/$svnName/$target --show-revs eligible";
-  push(@needIt, $dir) if `$cmd` ne "";
+  my @revisions = `$cmd 2> /dev/null`;
+  if ($?) {
+    warn "\nError running [$cmd]\n";
+  }
+  # when reintegrating, the branch will have always have a "branch" revision, so ignore that one
+  push(@needIt, $dir) if ($target ne 'trunk' && scalar(@revisions) > 1) || ($target eq 'trunk' && scalar(@revisions) > 0)
 }
 print STDERR "\n";
 print STDERR "No projects need to be merged\n" unless scalar(@needIt);
