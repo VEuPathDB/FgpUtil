@@ -21,7 +21,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SQLRunnerQueryTester {
+public class SQLRunnerQueryTest {
 
   private static final String DB_SETUP_SCRIPT = "org/gusdb/fgputil/db/runner/testDbSetup.sql";
 
@@ -59,11 +59,13 @@ public class SQLRunnerQueryTester {
     assertEquals(_handler.getNumCols(), 3);
     assertEquals(((Integer)_handler.getColumnTypes().get(2)).intValue(), Types.VARCHAR);
     
+    /* Debug printouts
     printRow(_handler.getColumnNames());
     printRow(_handler.getColumnTypes());
     for (Map<String,Object> row : _handler.getResults()) {
       printRow(row.values());
     }
+    */
   }
   
   @Test
@@ -103,6 +105,7 @@ public class SQLRunnerQueryTester {
       if (in == null) throw new IOException("Cannot find resource: " + DB_SETUP_SCRIPT);
       br = new BufferedReader(new InputStreamReader(in));
       ScriptRunner sr = new ScriptRunner(conn, true, true);
+      sr.setLogWriter(null);
       sr.runScript(br);
     }
     finally {
