@@ -80,7 +80,7 @@ public final class TestUtil {
   }
   
   
-  public static void loadDb(DataSource ds, String resourcePath) throws SQLException, IOException {
+  public static void runSqlScript(DataSource ds, String resourcePath) throws SQLException, IOException {
     Connection conn = null;
     BufferedReader br = null;
     try {
