@@ -1,7 +1,7 @@
 package org.gusdb.fgputil.interview;
 
-import static org.gusdb.fgputil.testutil.TestUtil.assertFilesEqual;
-import static org.gusdb.fgputil.testutil.TestUtil.getResourceFilePath;
+import static org.gusdb.fgputil.TestUtil.assertFilesEqual;
+import static org.gusdb.fgputil.TestUtil.getResourceFilePath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

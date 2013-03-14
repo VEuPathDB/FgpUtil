@@ -1,14 +1,19 @@
-package org.gusdb.fgputil.testutil;
+package org.gusdb.fgputil;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.db.SqlScriptRunner;
+import org.gusdb.fgputil.db.SqlUtil;
 import org.hsqldb.jdbc.JDBCDataSource;
 
 /**
@@ -72,5 +77,23 @@ public final class TestUtil {
     ds.setUser("SA");
     ds.setPassword("");
     return ds;
+  }
+  
+  
+  public static void loadDb(DataSource ds, String resourcePath) throws SQLException, IOException {
+    Connection conn = null;
+    BufferedReader br = null;
+    try {
+      conn = ds.getConnection();
+      InputStream in = ClassLoader.getSystemResourceAsStream(resourcePath);
+      if (in == null) throw new IOException("Cannot find resource: " + resourcePath);
+      br = new BufferedReader(new InputStreamReader(in));
+      SqlScriptRunner sr = new SqlScriptRunner(conn, true, true);
+      sr.setLogWriter(null);
+      sr.runScript(br);
+    }
+    finally {
+      SqlUtil.closeQuietly(conn);
+    }
   }
 }

@@ -2,21 +2,12 @@ package org.gusdb.fgputil.db.runner;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.gusdb.fgputil.db.SqlUtil;
-import org.gusdb.fgputil.testutil.ScriptRunner;
-import org.gusdb.fgputil.testutil.TestUtil;
+import org.gusdb.fgputil.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +27,7 @@ public class SQLRunnerQueryTest {
   @Before
   public void setUpTests() throws Exception {
     _ds = TestUtil.getTestDataSource("mymemdb");
-    loadDb(_ds);
+    TestUtil.loadDb(_ds, DB_SETUP_SCRIPT);
     _handler = new BasicResultSetHandler();
   }
   
@@ -95,24 +86,8 @@ public class SQLRunnerQueryTest {
     SQLRunner db = new SQLRunner(_ds, DROP_USER_TABLE);
     db.executeStatement();
   }
-  
-  private static void loadDb(DataSource ds) throws SQLException, IOException {
-    Connection conn = null;
-    BufferedReader br = null;
-    try {
-      conn = ds.getConnection();
-      InputStream in = ClassLoader.getSystemResourceAsStream(DB_SETUP_SCRIPT);
-      if (in == null) throw new IOException("Cannot find resource: " + DB_SETUP_SCRIPT);
-      br = new BufferedReader(new InputStreamReader(in));
-      ScriptRunner sr = new ScriptRunner(conn, true, true);
-      sr.setLogWriter(null);
-      sr.runScript(br);
-    }
-    finally {
-      SqlUtil.closeQuietly(conn);
-    }
-  }
 
+  @SuppressWarnings("unused")
   private static void printRow(Collection<? extends Object> values) {
     // TODO: make this prettier...
     for (Object o : values) {

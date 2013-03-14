@@ -1,9 +1,13 @@
-package org.gusdb.fgputil.testutil;
+package org.gusdb.fgputil.db;
 
 /*
  * Slightly modified version of the com.ibatis.common.jdbc.ScriptRunner class
  * from the iBATIS Apache project. Only removed dependency on Resource class
  * and a constructor 
+ */
+/*
+ * Further modified by Ryan Doherty.  Renamed to SqlScriptRunner for clarity,
+ * and packaged into FgpUtil project.
  */
 /*
  *  Copyright 2004 Clinton Begin
@@ -30,7 +34,7 @@ import java.sql.*;
 /**
  * Tool to run database scripts
  */
-public class ScriptRunner {
+public class SqlScriptRunner {
 
   private static final String DEFAULT_DELIMITER = ";";
 
@@ -48,7 +52,7 @@ public class ScriptRunner {
   /**
    * Default constructor
    */
-  public ScriptRunner(Connection connection, boolean autoCommit,
+  public SqlScriptRunner(Connection connection, boolean autoCommit,
       boolean stopOnError) {
     this.connection = connection;
     this.autoCommit = autoCommit;
