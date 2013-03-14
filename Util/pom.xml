@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.gusdb</groupId>
     <artifactId>fgputil</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
   </parent>
   
   <name>Functional Genomics Platform Utilities</name>
