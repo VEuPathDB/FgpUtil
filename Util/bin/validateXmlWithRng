@@ -18,7 +18,7 @@ my $sysProps = &FgpUtil::Util::CommandHelper::getSystemProps($GUS_HOME, 'validat
 sub main { # takes two+ args: RNG file and any number of XML files
     @args = @_;
     $xmlFile = absolutePath($args[0]);
-    shift(args);
+    shift(@args);
     $argString = "";
     for ($i = 0; $i <= $#args; $i++) {
 	$argString .= absolutePath($args[$i])." ";
