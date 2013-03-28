@@ -1,4 +1,4 @@
-package FgpUtil::Log::SlowQueryReport;
+package FgpUtil::Util::SlowQueryReport;
 
 use strict;
 use Time::Local;
@@ -6,7 +6,7 @@ my ($time_min, $time_max);
 
 sub makeReport {
 
-  my ($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug, $tabfile) = @_;
+  my ($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug, $tabfile, $brief) = @_;
 
   my (%pageViews, %earliest, %latest, %count, $serverAndFilename);
 
@@ -95,19 +95,27 @@ sub makeReport {
 
   my @sorted = sort {$b->[$sort_column-1] <=> $a->[$sort_column-1]} values(%$h);
 
-  my @header = ('  #', 'Name','TotSecs','Count','AvgSecs','SlowSecs','Slow_#','Worst', 'Server', 'Log File');
+  my @header = ('  #', 'Name','Count','TotSecs','AvgSecs','Worst','Slow','SlowSecs', 'Server', 'Log File');
 
   # name total_secs count avg_secs total_secs_over count_over  worst_secs
-  print sprintf("%3s %47s%12s%8s%10s%12s%8s%7s%25s%80s\n", @header);
+  if ($brief) {
+    print sprintf("%3s %47s%8s%12s%10s%7s%8s%12s\n", @header);
+  } else {
+    print sprintf("%3s %47s%8s%12s%10s%7s%8s%12s%25s%80s\n", @header);
+  }
 
   print TABFILE join("\t", @header) . "\n" if $tabfile;
 
   my $rownum;
   foreach my $a (@sorted) {
     my $avg = $a->[1] / $a->[2];
-    my @row = (++$rownum,$a->[0],$a->[1],$a->[2],$avg,$a->[3],$a->[4],$a->[5],$a->[6],$a->[7]);
-    print sprintf("%3d %47s%12.2f%8d%10.2f%12.2f%8d%7.2f%25s%80s\n", @row);
-    print TABFILE sprintf("\%d\t\%s\t\%.2f\t\%d\t\%.2f\t\%.2f\t\%d\t\%.2f\t\%s\t\%s\n", @row);
+    my @row = (++$rownum,$a->[0],$a->[2],$a->[1],$avg,$a->[5],$a->[4],$a->[3],$a->[6],$a->[7]);
+    if ($brief) {
+      print sprintf("%3d %47s%8d%12.2f%10.2f%7.2f%8d%12.2f\n", @row);
+    } else {
+      print sprintf("%3d %47s%8d%12.2f%10.2f%7.2f%8d%12.2f%25s%80s\n", @row);
+    }
+    print TABFILE sprintf("\%d\t\%s\t\%d\t\%.2f\t\%.2f\t\%.2f\t\%d\t\%.2f\t\%s\t\%s\n", @row);
   }
 
   close TABFILE if $tabfile;

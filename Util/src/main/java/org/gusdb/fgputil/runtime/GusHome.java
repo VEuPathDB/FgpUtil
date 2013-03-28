@@ -8,11 +8,11 @@ import javax.servlet.ServletContext;
  * 
  *   1. Via Java system property (set by passing the -DGUS_HOME=your_path option to the JVM)
  *   2. If the system property is not set, the GUS_HOME environment variable will be used
- * 
- * If neither the system property nor the environment variable is set, GUS_HOME will be null, unless:
- * 
- *   3. The webInit() method is called with a ServletContext containing a GUS_HOME
+ *   3. The {@link #webInit(ServletContext)} method is called with a ServletContext containing a GUS_HOME
  *      initialization parameter.  This call will override either of the two values above.
+ * 
+ * If neither the system property nor the environment variable is set, and webInit() is
+ * not called, GUS_HOME will be null.
  * 
  * @author rdoherty
  */

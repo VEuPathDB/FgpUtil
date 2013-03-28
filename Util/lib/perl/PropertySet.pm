@@ -1,4 +1,4 @@
-package FgpUtil::Prop::PropertySet;
+package FgpUtil::Util::PropertySet;
 
 use strict;
 use Carp;
