@@ -8,7 +8,7 @@
 # $Revision: $ $Date: $ $Author: $
 #------------------------------------------------------------------------
 
-package FgpUtil::Runtime::CommandHelper;
+package FgpUtil::Util::CommandHelper;
 
 use strict;
 use Carp;

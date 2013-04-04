@@ -27,7 +27,7 @@ public class SQLRunnerQueryTest {
   @Before
   public void setUpTests() throws Exception {
     _ds = TestUtil.getTestDataSource("mymemdb");
-    TestUtil.loadDb(_ds, DB_SETUP_SCRIPT);
+    TestUtil.runSqlScript(_ds, DB_SETUP_SCRIPT);
     _handler = new BasicResultSetHandler();
   }
   
