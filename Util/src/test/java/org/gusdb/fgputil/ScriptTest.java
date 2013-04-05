@@ -82,21 +82,21 @@ public class ScriptTest {
   @Test(expected = ScriptException.class) 
   public void failedParamScriptParseTest() throws Exception {
     JavaScript evaluator = new JavaScript();
-    evaluator.validateBooleanExpression(BAD_PARAM_EXPR);
+    evaluator.isValidBooleanExpression(BAD_PARAM_EXPR);
   }
   
   @Test
   public void multipleBooleanRegistrationTest() throws Exception {
     JavaScript evaluator = new JavaScript();
-    evaluator.validateBooleanExpression(GOOD_PARAM_EXPR);
-    evaluator.validateBooleanExpression(GOOD_PARAM_EXPR);
+    evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR);
+    evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR);
     evaluator.evaluateBooleanExpression("true != false");
   }
   
   @Test
   public void paramScriptTest() throws Exception {
     JavaScript evaluator = new JavaScript();
-    evaluator.validateBooleanExpression(GOOD_PARAM_EXPR);
+    evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR);
     for (Case testCase : PARAM_CASES) {
       boolean result = evaluator.evaluateBooleanExpression(GOOD_PARAM_EXPR, testCase.expression);
       System.out.println(testCase.result);
