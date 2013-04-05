@@ -26,6 +26,7 @@ public class JavaScript {
    */
   private void registerFunctions() throws ScriptException {
     _engine.eval("function evalBool(expr) { return eval(expr); }");
+    _engine.eval("function isValidJson(expr) { try { JSON.parse(expr); return true; } catch(err) { return false; } }");
   }
 
   /**
@@ -37,6 +38,10 @@ public class JavaScript {
    */
   public boolean evaluateBooleanExpression(String expression) throws ScriptException {
     return callFunction("evalBool", Boolean.class, expression);
+  }
+  
+  public boolean isValidJson(String expression) throws ScriptException {
+    return callFunction("isValidJson", Boolean.class, expression);
   }
   
   /**
@@ -72,6 +77,23 @@ public class JavaScript {
       // this should never happen since function is defined above
       throw new RuntimeException("Function called that was not defined in script engine.", e);
     }
+  }
+
+  public void validateBooleanExpression(String booleanExpr) throws ScriptException {
+    _engine.eval(getParameterizedBoolExprFunc(booleanExpr));
+  }
+  
+  public boolean evaluateBooleanExpression(String booleanExpr, String paramsJson) throws ScriptException {
+    _engine.eval(getParameterizedBoolExprFunc(booleanExpr));
+    return callFunction("evalBoolParams", Boolean.class, paramsJson);
+  }
+  
+  private String getParameterizedBoolExprFunc(String booleanExpr) {
+    return new StringBuilder()
+      .append("function evalBoolParams(jsonObj) {")
+      .append("  var params = JSON.parse(jsonObj);")
+      .append("  return (").append(booleanExpr).append(");")
+      .append("}").toString();
   }
   
 }
