@@ -57,8 +57,9 @@ public class ScriptTest {
   }
   
   private Case[] JSON_CASES = {
-      new Case("{ p1: 3, p2: 2 }", false),
-      new Case("{ \"p1\": 3, \"p2\": 4 }", true)
+      new Case("{ \"p1\": 3, \"p2\": 4 }", true),   // properly escaped quotes
+      new Case("{ 'p1': 3, 'p2': 'blah' }", false), // single quote strings disallowed
+      new Case("{ p1: 3, p2: 2 }", false)           // 'naked' field names disallowed 
   };
   
   @Test
@@ -99,7 +100,6 @@ public class ScriptTest {
     evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR);
     for (Case testCase : PARAM_CASES) {
       boolean result = evaluator.evaluateBooleanExpression(GOOD_PARAM_EXPR, testCase.expression);
-      System.out.println(testCase.result);
       assertEquals(testCase.result, result);
     }
   }
