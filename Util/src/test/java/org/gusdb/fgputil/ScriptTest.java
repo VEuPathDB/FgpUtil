@@ -57,8 +57,9 @@ public class ScriptTest {
   }
   
   private Case[] JSON_CASES = {
-      new Case("{ p1: 3, p2: 2 }", false),
-      new Case("{ \"p1\": 3, \"p2\": 4 }", true)
+      new Case("{ \"p1\": 3, \"p2\": 4 }", true),   // properly escaped quotes
+      new Case("{ 'p1': 3, 'p2': 'blah' }", false), // single quote strings disallowed
+      new Case("{ p1: 3, p2: 2 }", false)           // 'naked' field names disallowed 
   };
   
   @Test
@@ -78,28 +79,33 @@ public class ScriptTest {
       new Case("{ \"p1\": 4, \"p2\": 3 }", false),
       new Case("{ \"p1\": 6, \"p2\": 3 }", true)
   };
+
+  @Test
+  public void booleanExprParseTest() throws Exception {
+    JavaScript evaluator = new JavaScript();
+    assertEquals(true, evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR));
+    
+  }
   
   @Test(expected = ScriptException.class) 
   public void failedParamScriptParseTest() throws Exception {
     JavaScript evaluator = new JavaScript();
-    evaluator.isValidBooleanExpression(BAD_PARAM_EXPR);
+    evaluator.assertValidBooleanExpression(BAD_PARAM_EXPR);
   }
   
   @Test
   public void multipleBooleanRegistrationTest() throws Exception {
     JavaScript evaluator = new JavaScript();
-    evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR);
-    evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR);
+    assertEquals(true, evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR));
+    assertEquals(true, evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR));
     evaluator.evaluateBooleanExpression("true != false");
   }
   
   @Test
   public void paramScriptTest() throws Exception {
     JavaScript evaluator = new JavaScript();
-    evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR);
     for (Case testCase : PARAM_CASES) {
       boolean result = evaluator.evaluateBooleanExpression(GOOD_PARAM_EXPR, testCase.expression);
-      System.out.println(testCase.result);
       assertEquals(testCase.result, result);
     }
   }
