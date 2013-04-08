@@ -2,6 +2,8 @@ package org.gusdb.fgputil;
 
 import static org.junit.Assert.assertEquals;
 
+import javax.script.ScriptException;
+
 import org.gusdb.fgputil.JavaScript;
 import org.gusdb.fgputil.Scripting;
 import org.gusdb.fgputil.Scripting.Evaluator;
@@ -41,7 +43,7 @@ public class ScriptTest {
     JavaScript script = new JavaScript();
     for (Case testCase : TEST_CASES) {
       boolean result = script.evaluateBooleanExpression(testCase.expression);
-      assertEquals(result, testCase.result);
+      assertEquals(testCase.result, result);
     }
   }
   
@@ -50,8 +52,61 @@ public class ScriptTest {
     Evaluator evaluator = Scripting.getScriptEvaluator(Language.JAVASCRIPT);
     for (Case testCase : TEST_CASES) {
       boolean result = (Boolean)evaluator.eval(testCase.expression);
-      assertEquals(result, testCase.result);
+      assertEquals(testCase.result, result);
     }
   }
   
+  private Case[] JSON_CASES = {
+      new Case("{ \"p1\": 3, \"p2\": 4 }", true),   // properly escaped quotes
+      new Case("{ 'p1': 3, 'p2': 'blah' }", false), // single quote strings disallowed
+      new Case("{ p1: 3, p2: 2 }", false)           // 'naked' field names disallowed 
+  };
+  
+  @Test
+  public void jsonVerifierTest() throws Exception {
+    JavaScript evaluator = new JavaScript();
+    for (Case testCase : JSON_CASES) {
+      assertEquals(testCase.result, evaluator.isValidJson(testCase.expression));
+    }
+  }
+  
+  private String BAD_PARAM_EXPR = "(params.p1 < 4";
+  private String GOOD_PARAM_EXPR = "(params.p1 == 3 && params.p2 < 4) || params.p1 > 5";
+  
+  private Case[] PARAM_CASES = {
+      new Case("{ \"p1\": 3, \"p2\": 2 }", true),
+      new Case("{ \"p1\": 3, \"p2\": 4 }", false),
+      new Case("{ \"p1\": 4, \"p2\": 3 }", false),
+      new Case("{ \"p1\": 6, \"p2\": 3 }", true)
+  };
+
+  @Test
+  public void booleanExprParseTest() throws Exception {
+    JavaScript evaluator = new JavaScript();
+    assertEquals(true, evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR));
+    
+  }
+  
+  @Test(expected = ScriptException.class) 
+  public void failedParamScriptParseTest() throws Exception {
+    JavaScript evaluator = new JavaScript();
+    evaluator.assertValidBooleanExpression(BAD_PARAM_EXPR);
+  }
+  
+  @Test
+  public void multipleBooleanRegistrationTest() throws Exception {
+    JavaScript evaluator = new JavaScript();
+    assertEquals(true, evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR));
+    assertEquals(true, evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR));
+    evaluator.evaluateBooleanExpression("true != false");
+  }
+  
+  @Test
+  public void paramScriptTest() throws Exception {
+    JavaScript evaluator = new JavaScript();
+    for (Case testCase : PARAM_CASES) {
+      boolean result = evaluator.evaluateBooleanExpression(GOOD_PARAM_EXPR, testCase.expression);
+      assertEquals(testCase.result, result);
+    }
+  }
 }
