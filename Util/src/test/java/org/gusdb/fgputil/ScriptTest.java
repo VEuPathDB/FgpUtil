@@ -87,7 +87,7 @@ public class ScriptTest {
     
   }
   
-  @Test(expected = ScriptException.class) 
+  @Test(expected = ScriptException.class)
   public void failedParamScriptParseTest() throws Exception {
     JavaScript evaluator = new JavaScript();
     evaluator.assertValidBooleanExpression(BAD_PARAM_EXPR);
@@ -109,4 +109,37 @@ public class ScriptTest {
       assertEquals(testCase.result, result);
     }
   }
+  
+  @Test
+  public void checkArrayTest() throws Exception {
+    JavaScript evaluator = new JavaScript();
+    String containsCondition = "contains(params.counts, 3)";
+    assertEquals(true, evaluator.evaluateBooleanExpression(containsCondition,
+        "{ \"counts\": [ 4, 8, 3, 10 ] }"));
+    assertEquals(false, evaluator.evaluateBooleanExpression(containsCondition,
+        "{ \"counts\": [ 4, 8, 10 ] }"));
+    assertEquals(false, evaluator.evaluateBooleanExpression(containsCondition,
+        "{ \"counts\": [ ] }"));
+  }
+  
+  @Test
+  public void checkArrayAnyTest() throws Exception {
+    JavaScript evaluator = new JavaScript();
+    String containsCondition = "containsAny(params.counts, [ 4, 5 ])";
+    assertEquals(true, evaluator.evaluateBooleanExpression(containsCondition,
+        "{ \"counts\": [ 4, 8, 3, 10 ] }"));
+    assertEquals(false, evaluator.evaluateBooleanExpression(containsCondition,
+        "{ \"counts\": [ 2, 8, 3, 10 ] }"));
+    assertEquals(false, evaluator.evaluateBooleanExpression(containsCondition,
+        "{ \"counts\": [ ] }"));
+  }
+  
+  @Test(expected = ScriptException.class)
+  public void checkBadArrayTest() throws Exception {
+    JavaScript evaluator = new JavaScript();
+    evaluator.evaluateBooleanExpression(
+        "containsAny(params.counts, 5)",
+        "{ \"counts\": [ 4, 8, 3, 10 ] }");
+  }
+  
 }
