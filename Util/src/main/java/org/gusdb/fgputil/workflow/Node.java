@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class Node implements Runnable {
 
-  public static final Logger LOG = Logger.getLogger(Node.class);
+  private static final Logger LOG = Logger.getLogger(Node.class);
   
   /** Enumeration of the possible states of this node */
   public enum RunStatus {
@@ -62,7 +62,7 @@ public abstract class Node implements Runnable {
     _parents.add(node);
   }
 
-  private void checkForCircularDependencies() throws WorkflowException {
+  private void checkForCircularDependencies() throws IllegalArgumentException {
     // TODO Auto-generated method stub
   }
 
@@ -76,12 +76,16 @@ public abstract class Node implements Runnable {
   }
 
   /**
-   * Override of run() for this class; should not be called directly.  To run
-   * this node, call {@link #runWithDependencies()}.
+   * Kicks off the dependencies of this node, waits for them to complete, then
+   * runs this node and notifies its parent(s).
    */
   @Override
   public void run() {
-    runWithDependencies();
+    runDependencies();
+    runSelf();
+    for (Node parent : _parents) {
+      parent.notifyComplete(this);
+    }
   }
   
   /**
@@ -94,18 +98,6 @@ public abstract class Node implements Runnable {
   private void setStatus(RunStatus status) {
     LOG.info("Status change: " + this + ": From " + _status + " to " + status);
     _status = status;
-  }
-  
-  /**
-   * Kicks off the dependencies of this node, waits for them to complete, then
-   * runs this node and notifies its parent(s).
-   */
-  public void runWithDependencies() {
-    runDependencies();
-    runSelf();
-    for (Node parent : _parents) {
-      parent.notifyComplete(this);
-    }
   }
   
   /**

@@ -8,7 +8,7 @@ public class ParellelStrategyTest {
   @Test
   public void testParelleStrategyRetrieval() throws Exception {
     Node root = getNodeTree();
-    root.runWithDependencies();
+    root.run();
   }
 
   private Node getNodeTree() {
@@ -22,7 +22,7 @@ public class ParellelStrategyTest {
       .addDependency(new TestNode("1c", 2));
   }
   
-  //@Test(expected = WorkflowException.class)
+  //@Test(expected = IllegalArgumentException.class)
   public void testCircularDependencyCheck() throws Exception {
     
   }
