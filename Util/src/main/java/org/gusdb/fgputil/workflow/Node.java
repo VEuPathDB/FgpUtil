@@ -20,7 +20,19 @@ public abstract class Node implements Runnable {
   
   /** Enumeration of the possible states of this node */
   public enum RunStatus {
-    STANDBY, WAITING, RUNNING, ERROR, UNRUN, COMPLETE;
+    /** Node had been created but not yet run */
+    STANDBY,
+    /** Node is kicking off dependencies or is waiting for them to complete */
+    WAITING,
+    /** Node's dependencies have completed and it is now running */
+    RUNNING,
+    /** Error has occurred while node was running */
+    ERROR,
+    /** One of the node's dependencies has erred so this node will not be run */
+    UNRUN,
+    /** Node and all its dependencies have completed successfully */
+    COMPLETE;
+
   }
   
   private volatile RunStatus _status = RunStatus.STANDBY;
@@ -66,11 +78,18 @@ public abstract class Node implements Runnable {
     // TODO Auto-generated method stub
   }
 
+  /**
+   * This method is called on a dependent node by a depended node when the
+   * depended node is complete or erred.
+   * 
+   * @param node depended node that is notifying this node of its completion
+   */
   private void notifyComplete(Node node) {
     synchronized(this) {
       _numCompleteDeps++;
-      if (node.getStatus().equals(RunStatus.ERROR)) {
-        _status = RunStatus.ERROR;
+      if (node.getStatus().equals(RunStatus.ERROR) ||
+          node.getStatus().equals(RunStatus.UNRUN)) {
+        _status = RunStatus.UNRUN;
       }
     }
   }
@@ -89,27 +108,12 @@ public abstract class Node implements Runnable {
   }
   
   /**
-   * @return the current status of this node
-   */
-  public RunStatus getStatus() {
-    return _status;
-  }
-  
-  private void setStatus(RunStatus status) {
-    LOG.info("Status change: " + this + ": From " + _status + " to " + status);
-    _status = status;
-  }
-  
-  /**
    * Runs this node, handles errors thrown by implementations, assigns status
    * at each step.
    */
   private void runSelf() {
     try {
-      if (_status.equals(RunStatus.ERROR)) {
-        setStatus(RunStatus.UNRUN);
-      }
-      else {
+      if (!_status.equals(RunStatus.UNRUN)) {
         setStatus(RunStatus.RUNNING);
         doWork();
         setStatus(RunStatus.COMPLETE);
@@ -137,5 +141,17 @@ public abstract class Node implements Runnable {
         break;
       }
     }
+  }
+  
+  /**
+   * @return the current status of this node
+   */
+  public RunStatus getStatus() {
+    return _status;
+  }
+  
+  private void setStatus(RunStatus status) {
+    LOG.info("Status change: " + this + ": From " + _status + " to " + status);
+    _status = status;
   }
 }
