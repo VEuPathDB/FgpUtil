@@ -66,7 +66,7 @@ public abstract class Node implements Runnable {
   public Node addDependency(Node node) {
     _dependencies.add(node);
     node.addParent(this);
-    checkForCircularDependencies();
+    checkForCircularDependencies(node);
     return this;
   }
 
@@ -74,10 +74,41 @@ public abstract class Node implements Runnable {
     _parents.add(node);
   }
 
-  private void checkForCircularDependencies() throws IllegalArgumentException {
-    // TODO Auto-generated method stub
+  private Set<Node> getDependencies() {
+    return _dependencies;
   }
-
+  
+  /**
+   * Search logic:
+   *   1. Assume at time newDependency is added we have no circular dependencies
+   *   2. We are saying that we depend on this new node now
+   *   3. Make sure new node doesn't depend on us (or transitively depend on us)
+   * 
+   * @param newDependency the new dependency
+   * @throws IllegalArgumentException if new dependency introduces a circular dependency
+   */
+  private void checkForCircularDependencies(Node newDependency) throws IllegalArgumentException {
+    if (newDependency.findDependency(this)) {
+      throw new IllegalArgumentException("Cannot add dependency (" + newDependency +
+          ") because it is already dependent on this node (" + this + ")");
+    }
+  }
+  
+  /**
+   * Recursive function returns true if candidate is a dependency of this node, else false
+   * 
+   * @param candidate possible dependency
+   * @return true if candidate is a dependency, else false
+   */
+  private boolean findDependency(Node candidate) {
+    for (Node dep: getDependencies()) {
+      if (dep == candidate || dep.findDependency(candidate)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   /**
    * This method is called on a dependent node by a depended node when the
    * depended node is complete or erred.
@@ -144,6 +175,8 @@ public abstract class Node implements Runnable {
   }
   
   /**
+   * Returns the current state of this node
+   * 
    * @return the current status of this node
    */
   public RunStatus getStatus() {
