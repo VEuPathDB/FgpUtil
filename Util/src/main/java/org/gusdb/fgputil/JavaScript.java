@@ -1,5 +1,7 @@
 package org.gusdb.fgputil;
 
+import java.util.List;
+
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -14,6 +16,23 @@ import org.gusdb.fgputil.Scripting.Language;
  */
 public class JavaScript {
 
+  /**
+   * Pre-fab functions callable on this script engine
+   */
+  private static List<String> PREFAB_FUNCTIONS = new ListBuilder<String>()
+    .add("function evalBool(expr) { return eval(expr); }")
+    .add("function isValidJson(expr) { try { JSON.parse(expr); return true; } catch(err) { return false; } }")
+    .add("function checkArray(arr) { if (Object.prototype.toString.call( arr ) !== '[object Array]') " +
+    		"throw 'Variable ' + arr + ' is not an array.'; }")
+    
+    // The following functions are meant to be called within boolean expressions
+    .add("function contains(arr, item) { checkArray(arr); return (arr.indexOf(item) != -1); }")
+    .add("function containsAny(arr, items) { checkArray(arr); checkArray(items); " +
+    		"for (var i=0; i<arr.length; i++) { if (arr.indexOf(items[i]) != -1) return true; } return false; }")
+    .add("function containsAll(arr, items) { checkArray(arr); checkArray(items); " +
+    		"for (var i=0; i<arr.length; i++) { if (arr.indexOf(items[i]) == -1) return false; } return true; }")
+    .toList();
+  
   /**
    * JavaScript engine that will execute our code
    */
@@ -39,8 +58,9 @@ public class JavaScript {
    * @throws ScriptException if code is unable to be evaluated
    */
   private void registerFunctions() throws ScriptException {
-    _engine.eval("function evalBool(expr) { return eval(expr); }");
-    _engine.eval("function isValidJson(expr) { try { JSON.parse(expr); return true; } catch(err) { return false; } }");
+    for (String func : PREFAB_FUNCTIONS) {
+      _engine.eval(func);
+    }
   }
   
   /**
