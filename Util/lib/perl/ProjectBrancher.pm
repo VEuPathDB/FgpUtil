@@ -1,9 +1,18 @@
 package FgpUtil::Util::ProjectBrancher;
 
 use strict;
+use ApiCommonWorkflow::Main::GetProjects;
 
 sub branch {
-    my ($branch, $comment, $delete, $projects) = @_; 
+    my ($projects, $name) = @_;
+
+    my $branch = $ARGV[0];
+    my $comment = $ARGV[1];
+    my $delete = $ARGV[2];
+
+    usage($name, $projects) unless ($branch && $comment);
+    usage($name, $projects) if ($delete && $delete ne '-delete');
+
 
     if ($delete) {
 	print "\nYou are about to DELETE the $branch branch\nType the name of the branch to confirm: ";
@@ -24,8 +33,7 @@ sub branch {
 		next;
 	    }
 	    my $cmd = "svn delete -m \"deleting branch $name: $comment\" $target";
-	    print STDERR "$name\n";
-	    print STDERR "$cmd\n";
+	    print STDERR "deleting $name\n";
 	    system($cmd) == 0 || die "Failed deleting '$name'\n";
 	} else {
 	    if ($err == 0) {
@@ -33,10 +41,34 @@ sub branch {
 		next;
 	    }
 	    my $cmd = "svn cp -m \"creating branch $name: $comment\" $url/$repository/$name/trunk $target";
-	    print STDERR "$name\n";
+	    print STDERR "branching $name\n";
 	    system($cmd) == 0 || die "Failed branching '$name'\n";
 	}
     }
+}
+
+sub usage {
+  my ($name, $projects) = @_;
+
+  $0 =~ /(\w+)$/;   # name of command that was run
+
+  my $prog = $1;
+
+  print STDERR "
+Branch all of the $name software using a single branch name. Operates directly in svn, not your local dirs.
+
+usage: $prog branch_name comment [-delete]
+
+-delete deletes the branch from all projects.
+
+";
+
+ foreach my $project (@$projects) {
+    my ($name, $repository) = split(/:/, $project);
+    print STDERR "  $name\n";
+  }
+
+exit(1);
 }
 
 1;
