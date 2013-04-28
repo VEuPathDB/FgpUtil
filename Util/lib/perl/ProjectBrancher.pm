@@ -1,7 +1,6 @@
 package FgpUtil::Util::ProjectBrancher;
 
 use strict;
-use ApiCommonWorkflow::Main::GetProjects;
 
 sub branch {
     my ($projects, $name) = @_;
@@ -61,6 +60,7 @@ usage: $prog branch_name comment [-delete]
 
 -delete deletes the branch from all projects.
 
+Branches these projects:
 ";
 
  foreach my $project (@$projects) {
