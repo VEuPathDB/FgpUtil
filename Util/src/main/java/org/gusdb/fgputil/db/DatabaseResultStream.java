@@ -57,7 +57,7 @@ public class DatabaseResultStream extends InputStream implements Wrapper {
     try {
       Statement stmt = _resultSet.getStatement();
       Connection conn = stmt.getConnection();
-      SqlUtil.closeQuietly(_resultSet, stmt, conn);
+      SqlUtils.closeQuietly(_resultSet, stmt, conn);
     }
     catch (SQLException e) {
       throw new IOException("Unable to retrieve statement or connection for closing.", e);
