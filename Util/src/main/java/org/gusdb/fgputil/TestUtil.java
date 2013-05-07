@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.db.SqlScriptRunner;
-import org.gusdb.fgputil.db.SqlUtil;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.hsqldb.jdbc.JDBCDataSource;
 
 /**
@@ -93,7 +93,7 @@ public final class TestUtil {
       sr.runScript(br);
     }
     finally {
-      SqlUtil.closeQuietly(conn);
+      SqlUtils.closeQuietly(conn);
     }
   }
 }

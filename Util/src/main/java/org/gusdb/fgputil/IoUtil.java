@@ -1,10 +1,38 @@
 package org.gusdb.fgputil;
 
+import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 
 public class IoUtil {
 	
+  /**
+   * Converts binary data into an input stream.  This can be used if the result
+   * type is a stream, and the content to be returned already exists in memory
+   * as a string.  This is simply a wrapper around the ByteArrayInputStream
+   * constructor.
+   * 
+   * @param data data to be converted
+   * @return stream representing the data
+   */
+  public static InputStream getStreamFromBytes(byte[] data) {
+    return new ByteArrayInputStream(data);
+  }
+  
+  /**
+   * Converts a string into an open input stream.  This can be used if the
+   * result type is a stream, and the content to be returned already exists in
+   * memory as a string.
+   * 
+   * @param str string to be converted
+   * @return input stream representing the string
+   */
+  public static InputStream getStreamFromString(String str) {
+    return getStreamFromBytes(str.getBytes(Charset.defaultCharset()));
+  }
+  
 	public static void deleteDir(File dir) {
 		if (dir.exists()) {
 			for (File f : dir.listFiles()) {
