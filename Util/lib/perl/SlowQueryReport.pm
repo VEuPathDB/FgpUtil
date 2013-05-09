@@ -8,6 +8,8 @@ sub makeReport {
 
   my ($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug, $tabfile, $brief) = @_;
 
+  die "Invalid -f file value '$tabfile'\n" if $tabfile =~ /^\-/;
+
   my (%pageViews, %earliest, %latest, %count, $serverAndFilename);
 
   if ($time_filter) {
