@@ -43,8 +43,7 @@ public class DatabaseInstance {
       else {
         _connectionPool = new GenericObjectPool(null);
         ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
-                _dbConfig.getConnectionUrl(), _dbConfig.getLogin(),
-                _dbConfig.getPassword());
+            _dbConfig.getConnectionUrl(), _dbConfig.getLogin(), _dbConfig.getPassword());
   
         // create abandoned configuration
         boolean defaultReadOnly = false;
@@ -85,9 +84,23 @@ public class DatabaseInstance {
     }
   }
   
+  /**
+   * If this DB is initialized, shuts down the connection pool, and (if
+   * configured) the connection pool logger thread.  Resets initialized flag,
+   * so this DB can be reinitialized if desired.
+   * 
+   * @throws Exception
+   */
   public void close() throws Exception {
-    _logger.shutDown();
-    _connectionPool.close();
+    synchronized(this) {
+      if (_initialized) {
+        if (_dbConfig.isShowConnections()) {
+          _logger.shutDown();
+        }
+        _connectionPool.close();
+      }
+      _initialized = false;
+    }
   }
 
   public ConnectionPoolConfig getConfig() {
