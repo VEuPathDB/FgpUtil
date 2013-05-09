@@ -35,7 +35,8 @@ sub makeReport {
     my $cmd = "ssh $server ls $logfileGlob";
     my @logfileList = `$cmd`;
     if ($?) {
-      die "Error running [$cmd]\n";
+      print STDERR "Cannot find slow query log for $server. Skipping.\n";
+      next;
     }
 
     foreach my $logFileName (@logfileList) {
