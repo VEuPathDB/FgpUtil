@@ -8,6 +8,8 @@ sub makeReport {
 
   my ($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug, $tabfile, $brief) = @_;
 
+  die "Invalid -f file value '$tabfile'\n" if $tabfile =~ /^\-/;
+
   my (%pageViews, %earliest, %latest, %count, $serverAndFilename);
 
   if ($time_filter) {
@@ -35,7 +37,8 @@ sub makeReport {
     my $cmd = "ssh $server ls $logfileGlob";
     my @logfileList = `$cmd`;
     if ($?) {
-      die "Error running [$cmd]\n";
+      print STDERR "Cannot find slow query log for $server. Skipping.\n";
+      next;
     }
 
     foreach my $logFileName (@logfileList) {
@@ -61,20 +64,21 @@ sub makeReport {
 	$count{$serverAndFilename}++;
 
         # update per-query statistics
-	if (!$h->{$name}) {
-	  $h->{$name} = [$name, 0, 0, 0, 0, 0, $server, $logFileName];
+	my $hashKey = "$name$server";
+	if (!$h->{$hashKey}) {
+	  $h->{$hashKey} = [$name, 0, 0, 0, 0, 0, $server, $logFileName];
 	}
-	$h->{$name}->[1] += $seconds;      # total secs
-	$h->{$name}->[2] += 1;             # count
+	$h->{$hashKey}->[1] += $seconds;      # total secs
+	$h->{$hashKey}->[2] += 1;             # count
 	if ($seconds > $threshold) {
-	  $h->{$name}->[3] += $seconds;    # total secs over threshold
-	  $h->{$name}->[4] += 1;           # count over threshold
+	  $h->{$hashKey}->[3] += $seconds;    # total secs over threshold
+	  $h->{$hashKey}->[4] += 1;           # count over threshold
 	}
 
-	if ($seconds > $h->{$name}->[5]) { # slowest instance yet of this query name
-	  $h->{$name}->[5] = $seconds; # max run-time
-	  $h->{$name}->[6] = $server;  # server with max run-time
-	  $h->{$name}->[7] = $logFileName; # logfile containing max run-time
+	if ($seconds > $h->{$hashKey}->[5]) { # slowest instance yet of this query name
+	  $h->{$hashKey}->[5] = $seconds; # max run-time
+	  $h->{$hashKey}->[6] = $server;  # server with max run-time
+	  $h->{$hashKey}->[7] = $logFileName; # logfile containing max run-time
 	}
 
 	# if we are generating a plot data file, spit out this data point
@@ -99,7 +103,7 @@ sub makeReport {
 
   # name total_secs count avg_secs total_secs_over count_over  worst_secs
   if ($brief) {
-    print sprintf("%3s %47s%8s%12s%10s%7s%8s%12s\n", @header);
+    print sprintf("%3s %47s%8s%12s%10s%7s%8s%12s%25s\n", @header);
   } else {
     print sprintf("%3s %47s%8s%12s%10s%7s%8s%12s%25s%80s\n", @header);
   }
@@ -111,7 +115,7 @@ sub makeReport {
     my $avg = $a->[1] / $a->[2];
     my @row = (++$rownum,$a->[0],$a->[2],$a->[1],$avg,$a->[5],$a->[4],$a->[3],$a->[6],$a->[7]);
     if ($brief) {
-      print sprintf("%3d %47s%8d%12.2f%10.2f%7.2f%8d%12.2f\n", @row);
+      print sprintf("%3d %47s%8d%12.2f%10.2f%7.2f%8d%12.2f%25s\n", @row);
     } else {
       print sprintf("%3d %47s%8d%12.2f%10.2f%7.2f%8d%12.2f%25s%80s\n", @row);
     }

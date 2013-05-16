@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.db.SqlUtil;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.BatchUpdateExecutor;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.PreparedStatementExecutor;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.QueryExecutor;
@@ -190,7 +190,7 @@ public class SQLRunner {
     }
     finally {
       exec.closeQuietly();
-      SqlUtil.closeQuietly(stmt);
+      SqlUtils.closeQuietly(stmt);
       closeConnection();
     }
   }
@@ -204,7 +204,7 @@ public class SQLRunner {
   
   private void closeConnection() {
     if (_responsibleForConnection) {
-      SqlUtil.closeQuietly(_conn);
+      SqlUtils.closeQuietly(_conn);
     }
   }
 }

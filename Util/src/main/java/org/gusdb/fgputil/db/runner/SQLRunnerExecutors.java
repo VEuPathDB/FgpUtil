@@ -4,7 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.gusdb.fgputil.db.SqlUtil;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 
@@ -213,7 +213,7 @@ class SQLRunnerExecutors {
     
     @Override
     public void closeQuietly() {
-      SqlUtil.closeQuietly(_results);
+      SqlUtils.closeQuietly(_results);
     }
   }
 }
