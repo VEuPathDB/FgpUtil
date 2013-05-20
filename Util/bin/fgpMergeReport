@@ -1,16 +1,16 @@
 #!/usr/bin/perl
 use strict;
-my ($projectHomeDir, $branch) = @ARGV;
 
-usage() unless $projectHomeDir && $branch;
+my ($operation, $projectHomeDir, $branch) = @ARGV;
+
+usage() unless $operation && $projectHomeDir && $branch;
+usage() unless $operation =~ /^(-list|-test|-merge)$/;
 
 die "Error: $projectHomeDir must be a full path\n" unless $projectHomeDir =~ /^\//;
 
 chdir($projectHomeDir) || die "Can't chdir to '$projectHomeDir'\n";
 
 my @dirs = map {chomp; $_} `ls`;
-
-my $url = 'https://www.cbil.upenn.edu/svn';
 
 my @needIt;
 foreach my $dir (@dirs) {
@@ -31,17 +31,31 @@ foreach my $dir (@dirs) {
 print STDERR "\n";
 print STDERR "No projects need to be merged\n" unless scalar(@needIt);
 
-print join("\n", @needIt) . "\n";
+foreach my $dir (@needIt) {
+  print $dir."\n";
+  if ($operation ne "-list") {
+    my $svnName = $dir eq "GUS" ? "GusAppFramework" : $dir;
+    my $target = $branch eq 'trunk'? "trunk" : "branches/$branch";    
+    my $dryrun = $operation eq "-test" ? "--dry-run" : "";
+    chdir("$projectHomeDir/$dir") || die "Error: Can't chdir into '$projectHomeDir/$dir'\n";
+    system("svn merge $dryrun ^/$svnName/$target");
+  }
+}
 
 sub usage {
   print STDERR "
-Get a report on which projects in a \$PROJECT_HOME need to be merged into SVN.
+Get a report on which projects in a \$PROJECT_HOME need to be merged into SVN, do an
+  actual merge, or do a merge dry run.
 
-Usage: fgpMergeReport project_home_dir trunk|my_branch_name
+Usage: fgpMergeReport (-list|-test|-merge) <project_home_dir> (trunk|<my_branch_name>)
 
 Where:
-  project_home_dir:      full path of the \$PROJECT_HOME you will merge into
-  trunk|my_branch_name:  where you will merge from
+  (-list|-test|-merge)     : operation to be performed, where
+                               -list  => list projects that have changes to be merged
+                               -test  => do a dry-run merge on said projects
+                               -merge => do a merge on said projects 
+  <project_home_dir>       : full path of the \$PROJECT_HOME you will merge into
+  (trunk|<my_branch_name>) : where you will merge from
 
 For a sync merge:
   \% fgpMergeReport branch_project_home trunk
@@ -49,7 +63,6 @@ For a sync merge:
 For a reintegration merge:
   \% fgpMergeReport trunk_project_home my_branch_name
 
-
 ";
-exit(1);
+  exit(1);
 }
