@@ -14,6 +14,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 
@@ -22,6 +23,8 @@ import org.gusdb.fgputil.db.SqlUtils;
  */
 public class Oracle extends DBPlatform {
 
+    private static final Logger LOG = Logger.getLogger(Oracle.class);
+  
     private static final String DRIVER_NAME = "oracle.jdbc.OracleDriver";
     
     public Oracle() throws SQLException {
@@ -246,30 +249,45 @@ public class Oracle extends DBPlatform {
      * java.lang.String)
      */
     @Override
-    public void disableStatistics(Connection connection, String schema,
+    public void disableStatistics(DataSource dataSource, String schema,
             String tableName) throws SQLException {
-        schema = schema.toUpperCase();
-        tableName = tableName.toUpperCase();
-        CallableStatement stUnlock = null, stDelete = null, stLock = null;
+      schema = schema.toUpperCase();
+      tableName = tableName.toUpperCase();
+      Connection connection = null;
+      CallableStatement stUnlock = null, stDelete = null, stLock = null;
+      try {
+        connection = dataSource.getConnection();
+        connection.setAutoCommit(false);
+
+        stUnlock = connection.prepareCall(tableName);
+        stUnlock.executeUpdate("{call DBMS_STATS.unlock_table_stats('" + schema
+            + "', '" + tableName + "') }");
+        stUnlock.executeUpdate();
+
+        stDelete = connection.prepareCall(tableName);
+        stDelete.executeUpdate("{call DBMS_STATS.DELETE_TABLE_STATS('" + schema
+            + "', '" + tableName + "') }");
+        stDelete.executeUpdate();
+
+        stLock = connection.prepareCall(tableName);
+        stLock.executeUpdate("{call DBMS_STATS.LOCK_TABLE_STATS('" + schema
+            + "', '" + tableName + "') }");
+        stLock.executeUpdate();
+
+        connection.commit();
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      } finally {
+        SqlUtils.closeQuietly(stUnlock, stDelete, stLock);
         try {
-            stUnlock = connection.prepareCall(tableName);
-            stUnlock.executeUpdate("{call DBMS_STATS.unlock_table_stats('"
-                    + schema + "', '" + tableName + "') }");
-            stUnlock.executeUpdate();
-
-            stDelete = connection.prepareCall(tableName);
-            stDelete.executeUpdate("{call DBMS_STATS.DELETE_TABLE_STATS('"
-                    + schema + "', '" + tableName + "') }");
-            stDelete.executeUpdate();
-
-            stLock = connection.prepareCall(tableName);
-            stLock.executeUpdate("{call DBMS_STATS.LOCK_TABLE_STATS('" + schema
-                    + "', '" + tableName + "') }");
-            stLock.executeUpdate();
+          connection.setAutoCommit(true);
         }
-        finally {
-        	org.gusdb.fgputil.db.SqlUtils.closeQuietly(stUnlock, stDelete, stLock);
+        catch (SQLException e) {
+          LOG.error("Unable to set connection's auto-commit back to true.", e);
         }
+        SqlUtils.closeQuietly(connection);
+      }
     }
 
     /*
