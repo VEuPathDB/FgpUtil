@@ -3,7 +3,6 @@
  */
 package org.gusdb.fgputil.db.platform;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -234,7 +233,7 @@ public class PostgreSQL extends DBPlatform {
      * java.lang.String)
      */
     @Override
-    public void disableStatistics(Connection connection, String schema,
+    public void disableStatistics(DataSource dataSource, String schema,
             String tableName) {
     // do nothing in PSQL.
     }
