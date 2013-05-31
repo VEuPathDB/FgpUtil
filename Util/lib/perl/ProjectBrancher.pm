@@ -2,8 +2,6 @@ package FgpUtil::Util::ProjectBrancher;
 
 use strict;
 
-$branch, $comment, $delete, \@projects
-
 sub branch {
     my ($branch, $comment, $delete, $projects) = @_;
 
