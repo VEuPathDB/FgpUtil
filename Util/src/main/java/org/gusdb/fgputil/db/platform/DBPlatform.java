@@ -1,7 +1,6 @@
 package org.gusdb.fgputil.db.platform;
 
 import java.io.StringReader;
-import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -106,8 +105,7 @@ public abstract class DBPlatform {
     public abstract void dropTable(DataSource dataSource, String schema, String table, boolean purge)
             throws SQLException;
 
-    public abstract void disableStatistics(Connection connection,
-            String schema, String tableName) throws SQLException;
+    public abstract void disableStatistics(DataSource dataSource, String schema, String tableName) throws SQLException;
 
     public abstract String getValidationQuery();
     
