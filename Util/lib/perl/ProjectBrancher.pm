@@ -3,15 +3,7 @@ package FgpUtil::Util::ProjectBrancher;
 use strict;
 
 sub branch {
-    my ($projects, $name) = @_;
-
-    my $branch = $ARGV[0];
-    my $comment = $ARGV[1];
-    my $delete = $ARGV[2];
-
-    usage($name, $projects) unless ($branch && $comment);
-    usage($name, $projects) if ($delete && $delete ne '-delete');
-
+    my ($branch, $comment, $delete, $projects) = @_;
 
     if ($delete) {
 	print "\nYou are about to DELETE the $branch branch\nType the name of the branch to confirm: ";
