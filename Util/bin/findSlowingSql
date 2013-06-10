@@ -1,0 +1,43 @@
+#!/usr/bin/perl
+
+# read bin files
+
+# first pass, for each query get:
+#  - number of bins it is in
+#  - count of binmates
+
+my $totalBins;
+my $totalQueries;
+my $queryInfos;  # hash  queryname -> queryinfo
+while(<>) {
+  my @queriesInBin = split();
+  $totalBins++;
+  $totalQueries += scalar(@queriesInBin);
+  my $seenInThisBin;
+  foreach my $query (@queriesInBin) {
+    $queryInfos->{$query} = {} unless $queries->{$query};
+    if (!$seenInThisBin->{$query}) {
+      my $queryInfo = $queryInfos->{$query};
+      $queryInfo->{name} = $query;
+      $queryInfo->{bins}++;
+      $queryInfo->{binmates} += scalar(@queriesInBin) - 1;
+      $seenInThisBin->{$query} = 1;
+    }
+  }
+}
+
+foreach my $queryName (keys(%$queryInfos)) {
+  $queryInfos->{$queryName}->{rate} =
+    $queryInfos->{$queryName}->{binmates} /  $queryInfos->{$queryName}->{bins};
+}
+my $baseline = $totalQueries / $totalBins;
+
+my @sortedQueryInfos = map { $queryInfos->{$a}->{rate} <=> $queryInfos->{$b}->{rate}} (keys(%$queryInfos);
+
+print "total\t$totalBins\t$totalQueries\t$baseline";
+
+foreach my $info (@sorteQueryInfos) {
+  print "$info->{name}\t$info->{bins}\t$info->{binmates}\t$info->{rate}\n";
+}
+
+
