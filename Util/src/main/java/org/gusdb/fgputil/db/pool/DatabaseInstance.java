@@ -41,6 +41,7 @@ public class DatabaseInstance {
         return;
       }
       else {
+        LOG.info("DB Connection [" + _name + "]: " + _dbConfig.getConnectionUrl());
         _connectionPool = new GenericObjectPool(null);
         ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
             _dbConfig.getConnectionUrl(), _dbConfig.getLogin(), _dbConfig.getPassword());
