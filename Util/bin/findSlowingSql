@@ -6,16 +6,20 @@
 #  - number of bins it is in
 #  - count of binmates
 
+use strict;
+use Data::Dumper;
+
 my $totalBins;
 my $totalQueries;
 my $queryInfos;  # hash  queryname -> queryinfo
 while(<>) {
-  my @queriesInBin = split();
+  chomp;
+  my ($bin, @queriesInBin) = split(/ /);
   $totalBins++;
   $totalQueries += scalar(@queriesInBin);
   my $seenInThisBin;
   foreach my $query (@queriesInBin) {
-    $queryInfos->{$query} = {} unless $queries->{$query};
+    $queryInfos->{$query} = {} unless $queryInfos->{$query};
     if (!$seenInThisBin->{$query}) {
       my $queryInfo = $queryInfos->{$query};
       $queryInfo->{name} = $query;
@@ -32,12 +36,12 @@ foreach my $queryName (keys(%$queryInfos)) {
 }
 my $baseline = $totalQueries / $totalBins;
 
-my @sortedQueryInfos = map { $queryInfos->{$a}->{rate} <=> $queryInfos->{$b}->{rate}} (keys(%$queryInfos);
+my @sortedQueryNames = sort { $queryInfos->{$b}->{rate} <=> $queryInfos->{$a}->{rate}} keys(%$queryInfos);
 
-print "total\t$totalBins\t$totalQueries\t$baseline";
+ printf("%s\t%s\t%s\t%.2f\n", "total", $totalBins, $totalQueries, $baseline);
 
-foreach my $info (@sorteQueryInfos) {
-  print "$info->{name}\t$info->{bins}\t$info->{binmates}\t$info->{rate}\n";
+foreach my $name (@sortedQueryNames) {
+  printf("%s\t%s\t%s\t%.2f\n", $name, $queryInfos->{$name}->{bins}, $queryInfos->{$name}->{binmates}, $queryInfos->{$name}->{rate});
 }
 
 
