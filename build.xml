@@ -49,6 +49,12 @@
       <property name="project" value="FgpUtil"/>
       <property name="component" value="Util"/>
     </ant>
+
+    <!-- post installation process -->
+    <!-- use default log4j.properties, if it does not exist -->
+    <available file="${targetDir}/config/log4j.properties" property="log4j.config.exist" />
+    <available file="${targetDir}/config/log4j.xml" property="log4j.config.exist" />
+    <antcall target="copyLog4jConfig" />
   </target>
 
   <target name="FgpUtil-MavenInstallation">
@@ -56,6 +62,10 @@
     <ant target="deployMavenArtifacts">
       <property name="module" value="Util"/>
     </ant>
+  </target>
+
+  <target name="copyLog4jConfig" unless="log4j.config.exist">
+    <copy file="${targetDir}/config/log4j.properties.sample" toFile="${targetDir}/config/log4j.properties"/>
   </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
