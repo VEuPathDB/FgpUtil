@@ -87,7 +87,7 @@ class SQLRunnerExecutors {
      * 
      * @throws SQLException if error occurs while handling result
      */
-    public void handleResult() throws SQLException { };
+    public void handleResult() throws SQLException { }
 
     /**
      * Closes any resources this executor opened
@@ -180,7 +180,8 @@ class SQLRunnerExecutors {
       return _numUpdates;
     }
 
-    public String getParamsToString() {
+    @Override
+	public String getParamsToString() {
       return "Batch of arguments.";
     }
   }

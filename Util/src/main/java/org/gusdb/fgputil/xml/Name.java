@@ -6,9 +6,11 @@ public class Name implements Comparable<Name> {
     String name;
     public void setName(String n) { name = n; }
     public String getName() { return name; }
-    public int compareTo(Name arg0) {
+    @Override
+	public int compareTo(Name arg0) {
         return name.compareTo(arg0.name);
     }
-    public String toString() { return name;}
+    @Override
+	public String toString() { return name;}
 }
 

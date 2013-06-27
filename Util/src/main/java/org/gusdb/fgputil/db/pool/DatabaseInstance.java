@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.db.pool;
 
+import java.util.Properties;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.ConnectionFactory;
@@ -42,15 +44,8 @@ public class DatabaseInstance {
       }
       else {
         LOG.info("DB Connection [" + _name + "]: " + _dbConfig.getConnectionUrl());
-        _connectionPool = new GenericObjectPool(null);
-        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
-            _dbConfig.getConnectionUrl(), _dbConfig.getLogin(), _dbConfig.getPassword());
-  
-        // create abandoned configuration
-        boolean defaultReadOnly = false;
-        boolean defaultAutoCommit = true;
-        new PoolableConnectionFactory(connectionFactory, _connectionPool, null,
-                _platform.getValidationQuery(), defaultReadOnly, defaultAutoCommit);
+        
+        _connectionPool = createConnectionPool(_dbConfig, _platform);
   
         // configure the connection pool
         _connectionPool.setMaxWait(_dbConfig.getMaxWait());
@@ -78,10 +73,66 @@ public class DatabaseInstance {
     }
   }
   
+  private static GenericObjectPool createConnectionPool(ConnectionPoolConfig dbConfig, DBPlatform platform) {
+    
+    GenericObjectPool connectionPool = new GenericObjectPool(null);
+
+    Properties props = new Properties();
+    props.put("user", dbConfig.getLogin());
+    props.put("password", dbConfig.getPassword());
+
+    // initialize DB driver; (possibly modified) url will be returned, connection properties may also be modified
+    String connectionUrl = initializeDbDriver(platform.getDriverClassName(), dbConfig.getDriverInitClass(), props, dbConfig.getConnectionUrl());
+
+    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectionUrl, props);
+
+    // link connection factory to connection pool with assigned settings
+    boolean defaultReadOnly = false;
+    boolean defaultAutoCommit = true;
+      
+    @SuppressWarnings("unused")  // object is created only to link factory and pool
+    PoolableConnectionFactory poolableConnectionFactory =
+        new PoolableConnectionFactory(connectionFactory, connectionPool, null,
+            platform.getValidationQuery(), defaultReadOnly, defaultAutoCommit);
+    
+    return connectionPool;
+  }
+
+  private static String initializeDbDriver(String driverClassName, String driverInitClassName,
+      Properties props, String connectionUrl) {
+    try {
+      // check to see if user provided custom driver initializer
+      if (driverInitClassName == null || driverInitClassName.isEmpty() ||
+          driverInitClassName.equals(DefaultDbDriverInitializer.class.getName())) {
+        // if none provided (or default), use the default driver initializer
+        DbDriverInitializer initClassInstance = new DefaultDbDriverInitializer();
+        LOG.debug("Initializing driver " + driverClassName + " using default initializer.");
+        return initClassInstance.initializeDriver(driverClassName, connectionUrl, props);
+      }
+      else {
+        // otherwise, try to instantiate user-provided implementation and call
+        Class<?> initClass = Class.forName(driverInitClassName);
+        if (!DbDriverInitializer.class.isAssignableFrom(initClass)) {
+          throw new DbDriverInitException("Submitted DB Driver Initializer ( " + driverInitClassName + ") " +
+              "is not an implementation of " + DbDriverInitializer.class.getName());
+        }
+        // provided class is the correct type; instantiate and call initialize method
+        @SuppressWarnings("unchecked") // checked above
+        DbDriverInitializer initClassInstance = ((Class<? extends DbDriverInitializer>)initClass).newInstance();
+        LOG.debug("Initializing driver " + driverClassName + " using custom initializer: " + driverInitClassName);
+        return initClassInstance.initializeDriver(driverClassName, connectionUrl, props);
+      }
+    }
+    catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+      throw new DbDriverInitException("Unable to instantiate custom DB Driver Initializer " +
+          "class with name " + driverInitClassName, e);
+    }
+  }
+
   private void checkInit() {
     if (!_initialized) {
       throw new IllegalStateException("Instance must be initialized with " +
-      		"initialize() before this method is called.");
+          "initialize() before this method is called.");
     }
   }
   

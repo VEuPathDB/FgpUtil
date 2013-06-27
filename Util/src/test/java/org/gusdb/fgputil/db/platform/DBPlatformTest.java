@@ -13,6 +13,7 @@ public class DBPlatformTest {
     @Override public String getPassword() { return "mypw"; }
     @Override public String getConnectionUrl() { return "url://mydb"; }
     @Override public SupportedPlatform getPlatform() { return SupportedPlatform.ORACLE; }
+	@Override public String getDriverInitClass() { return null; }
     @Override public short getMaxActive() { return 20; }
     @Override public short getMaxIdle() { return 20; }
     @Override public short getMinIdle() { return 5; }

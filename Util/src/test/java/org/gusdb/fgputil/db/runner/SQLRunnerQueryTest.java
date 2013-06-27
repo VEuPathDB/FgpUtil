@@ -48,7 +48,7 @@ public class SQLRunnerQueryTest {
     
     assertEquals(_handler.getNumRows(), 2);
     assertEquals(_handler.getNumCols(), 3);
-    assertEquals(((Integer)_handler.getColumnTypes().get(2)).intValue(), Types.VARCHAR);
+    assertEquals(_handler.getColumnTypes().get(2).intValue(), Types.VARCHAR);
     
     /* Debug printouts
     printRow(_handler.getColumnNames());
