@@ -12,7 +12,7 @@ public class DBPlatformTest {
     @Override public String getLogin() { return "ryan"; }
     @Override public String getPassword() { return "mypw"; }
     @Override public String getConnectionUrl() { return "url://mydb"; }
-    @Override public SupportedPlatform getPlatform() { return SupportedPlatform.ORACLE; }
+    @Override public SupportedPlatform getPlatformEnum() { return SupportedPlatform.ORACLE; }
 	@Override public String getDriverInitClass() { return null; }
     @Override public short getMaxActive() { return 20; }
     @Override public short getMaxIdle() { return 20; }
@@ -24,7 +24,7 @@ public class DBPlatformTest {
   }
   
   private class PostgresConfig extends OracleConfig {
-    @Override public SupportedPlatform getPlatform() { return SupportedPlatform.POSTGRES; }
+    @Override public SupportedPlatform getPlatformEnum() { return SupportedPlatform.POSTGRES; }
   }
   
   // Cannot make this a unit test because it would require both Postgres and Oracle drivers to succeed

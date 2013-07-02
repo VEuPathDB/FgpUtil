@@ -8,7 +8,7 @@ public interface ConnectionPoolConfig {
   public String getLogin();
   public String getPassword();
   public String getConnectionUrl();
-  public SupportedPlatform getPlatform();
+  public SupportedPlatform getPlatformEnum();
   public String getDriverInitClass();
   
   public short getMaxActive();

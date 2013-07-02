@@ -32,7 +32,7 @@ public class DatabaseInstance {
   public DatabaseInstance(String name, ConnectionPoolConfig dbConfig) {
       _name = name;
       _dbConfig = dbConfig;
-      _platform = _dbConfig.getPlatform().getPlatformInstance();
+      _platform = _dbConfig.getPlatformEnum().getPlatformInstance();
       _defaultSchema = DBPlatform.normalizeSchema(_dbConfig.getLogin());
   }
   
