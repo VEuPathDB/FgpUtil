@@ -24,13 +24,16 @@ import org.gusdb.fgputil.db.SqlUtils;
 public class Oracle extends DBPlatform {
 
     private static final Logger LOG = Logger.getLogger(Oracle.class);
-  
-    private static final String DRIVER_NAME = "oracle.jdbc.OracleDriver";
     
-    public Oracle() throws SQLException {
-        super(DRIVER_NAME);
+    public Oracle() {
+      super();
     }
-    
+
+    @Override
+    public String getDriverClassName() {
+      return "oracle.jdbc.driver.OracleDriver";
+    }
+
     @Override
     public String getValidationQuery() {
       return "SELECT 'ok' FROM dual";
@@ -111,14 +114,14 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public int getNextId(DataSource dataSource, String schema, String table) throws SQLException, DBStateException {
-		schema = normalizeSchema(schema);
+      schema = normalizeSchema(schema);
 
-		StringBuffer sql = new StringBuffer("SELECT ");
-		sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
-		sql.append(".nextval FROM dual");
-		BigDecimal id = (BigDecimal) SqlUtils.executeScalar(
+      StringBuffer sql = new StringBuffer("SELECT ");
+      sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
+      sql.append(".nextval FROM dual");
+      BigDecimal id = (BigDecimal) SqlUtils.executeScalar(
             dataSource, sql.toString(), "wdk-select-next-id");
-		return id.intValue();
+      return id.intValue();
     }
 
     /*
