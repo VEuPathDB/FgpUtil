@@ -1,11 +1,10 @@
 package org.gusdb.fgputil.db.platform;
 
 import java.io.StringReader;
-import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import javax.sql.DataSource;
 
@@ -29,24 +28,6 @@ public abstract class DBPlatform {
     //#########################################################################
     // Platform-related static helper functions
     //#########################################################################
-
-    public DBPlatform(String driverClassName) throws SQLException {
-      registerDriver(driverClassName);
-    }
-
-    private static void registerDriver(String driverClassName) throws SQLException {
-      try {
-        // register the driver
-        @SuppressWarnings("unchecked")
-        Class<? extends Driver> driverClass = (Class<? extends Driver>)Class.forName(driverClassName);
-        DriverManager.registerDriver(driverClass.newInstance());
-        //System.setProperty("jdbc.drivers", DRIVER_NAME);
-      }
-      catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-        throw new SQLException("Unable to register Oracle driver.  " +
-            "Is the appropriate ojdbc jar file in your classpath?", e);
-      }
-    }
     
     /**
      * Normalize the schema name.  If not empty, a dot will be appended to the
@@ -107,6 +88,8 @@ public abstract class DBPlatform {
 
     public abstract void disableStatistics(DataSource dataSource, String schema, String tableName) throws SQLException;
 
+    public abstract String getDriverClassName();
+    
     public abstract String getValidationQuery();
     
     /**
@@ -130,9 +113,14 @@ public abstract class DBPlatform {
     //#########################################################################
 
     public int setClobData(PreparedStatement ps, int columnIndex,
-            String content, boolean commit) throws SQLException {
-      StringReader reader = new StringReader(content);
-      ps.setCharacterStream(columnIndex, reader, content.length());
+        String content, boolean commit) throws SQLException {
+      if (content == null) {
+        ps.setNull(columnIndex, Types.CLOB);
+      }
+      else {
+        StringReader reader = new StringReader(content);
+        ps.setCharacterStream(columnIndex, reader, content.length());
+      }
       return (commit ? ps.executeUpdate() : 0);
     }
 }

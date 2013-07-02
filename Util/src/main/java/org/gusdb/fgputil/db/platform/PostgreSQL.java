@@ -21,8 +21,13 @@ public class PostgreSQL extends DBPlatform {
 
     public static final String DRIVER_NAME = "org.postgresql.Driver";
   
-    public PostgreSQL() throws SQLException {
-        super(DRIVER_NAME);
+    public PostgreSQL() {
+      super();
+    }
+
+    @Override
+    public String getDriverClassName() {
+      return "org.postgresql.Driver";
     }
 
     @Override
@@ -86,7 +91,8 @@ public class PostgreSQL extends DBPlatform {
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getMinusOperator()
      */
-    public String getMinusOperator() {
+    @Override
+	public String getMinusOperator() {
         return "EXCEPT";
     }
 
@@ -96,7 +102,8 @@ public class PostgreSQL extends DBPlatform {
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String,
      * java.lang.String)
      */
-    public int getNextId(DataSource dataSource, String schema, String table)
+    @Override
+	public int getNextId(DataSource dataSource, String schema, String table)
         throws SQLException, DBStateException {
         schema = normalizeSchema(schema);
 
@@ -114,7 +121,8 @@ public class PostgreSQL extends DBPlatform {
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String,
      * java.lang.String)
      */
-    public String getNextIdSqlExpression(String schema, String table) {
+    @Override
+	public String getNextIdSqlExpression(String schema, String table) {
         schema = normalizeSchema(schema);
 
         StringBuffer sql = new StringBuffer("nextval('");
@@ -128,7 +136,8 @@ public class PostgreSQL extends DBPlatform {
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getNumberDataType(int)
      */
-    public String getNumberDataType(int size) {
+    @Override
+	public String getNumberDataType(int size) {
         return "NUMERIC(" + size + ")";
     }
 
@@ -138,7 +147,8 @@ public class PostgreSQL extends DBPlatform {
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String,
      * int, int)
      */
-    public String getPagedSql(String sql, int startIndex, int endIndex) {
+    @Override
+	public String getPagedSql(String sql, int startIndex, int endIndex) {
         StringBuffer buffer = new StringBuffer("SELECT f.* FROM ");
         buffer.append("(").append(sql).append(") f ");
         buffer.append(" LIMIT ").append(endIndex - startIndex + 1);
@@ -151,7 +161,8 @@ public class PostgreSQL extends DBPlatform {
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getStringDataType(int)
      */
-    public String getStringDataType(int size) {
+    @Override
+	public String getStringDataType(int size) {
         return "VARCHAR(" + size + ")";
     }
 
