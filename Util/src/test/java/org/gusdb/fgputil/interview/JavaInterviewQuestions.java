@@ -137,7 +137,7 @@ public class JavaInterviewQuestions {
 	public String getUniqueCharsBetter(String str) {
 		int[] chars = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 		for (int i=0; i < str.length(); i++) {
-			chars[(int)str.charAt(i) - 97] = 1;
+			chars[str.charAt(i) - 97] = 1;
 		}
 		StringBuilder result = new StringBuilder();
 		for (int i=0; i < chars.length; i++) {
