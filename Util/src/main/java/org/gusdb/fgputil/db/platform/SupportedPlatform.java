@@ -5,7 +5,7 @@ import java.util.List;
 
 public enum SupportedPlatform {
   ORACLE(Oracle.class),
-  POSTGRES(PostgreSQL.class);
+  POSTGRESQL(PostgreSQL.class);
   
   private Class<? extends DBPlatform> _platformClass;
   
