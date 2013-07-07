@@ -78,7 +78,6 @@ public final class SqlUtils {
    * Close the statement and underlying connection
    * 
    * @param stmt
-   * @throws SQLException
    */
   public static void closeStatement(Statement stmt) {
     try {
@@ -126,9 +125,6 @@ public final class SqlUtils {
    * @param dataSource
    * @param sql
    * @return
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
   public static boolean executePreparedStatement(PreparedStatement stmt,
       String sql, String name) throws SQLException {
@@ -149,9 +145,6 @@ public final class SqlUtils {
    * @param dataSource
    * @param sql
    * @return
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
   public static int executeUpdate(DataSource dataSource,
       String sql, String name) throws SQLException {
@@ -182,9 +175,6 @@ public final class SqlUtils {
    * @param connection
    * @param sql
    * @return
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
   public static int executeUpdate(Connection connection,
       String sql, String name) throws SQLException {
@@ -211,9 +201,6 @@ public final class SqlUtils {
    * @param dataSource
    * @param sql
    * @return
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
   public static ResultSet executeQuery(DataSource dataSource, String sql, String name)
       throws SQLException {
@@ -250,8 +237,7 @@ public final class SqlUtils {
    * @param dataSource
    * @param sql
    * @return the first column of the first row in the result
-   * @throws SQLException
-   *           database or query failure
+   * @throws SQLException database or query failure
    */
   public static Object executeScalar(DataSource dataSource,
       String sql, String name) throws SQLException, DBStateException {
