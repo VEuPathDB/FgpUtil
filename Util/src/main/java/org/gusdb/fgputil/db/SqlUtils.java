@@ -148,6 +148,7 @@ public final class SqlUtils {
    */
   public static int executeUpdate(DataSource dataSource,
       String sql, String name) throws SQLException {
+    logger.trace("running sql: " + name + "\n" + sql);
     Connection connection = null;
     Statement stmt = null;
     try {
@@ -178,6 +179,7 @@ public final class SqlUtils {
    */
   public static int executeUpdate(Connection connection,
       String sql, String name) throws SQLException {
+    logger.trace("running sql: " + name + "\n" + sql);
     Statement stmt = null;
     try {
       long start = System.currentTimeMillis();
@@ -209,6 +211,7 @@ public final class SqlUtils {
 
   public static ResultSet executeQuery(DataSource dataSource, String sql, String name, int fetchSize)
       throws SQLException {
+    logger.trace("running sql: " + name + "\n" + sql);
     ResultSet resultSet = null;
     Connection connection = null;
     try {
