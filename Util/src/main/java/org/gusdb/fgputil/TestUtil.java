@@ -55,7 +55,7 @@ public final class TestUtil {
 	/**
 	 * @param resourcePath resource name (including package, i.e. org.gusdb.fgputil.test.TestFile.txt)
 	 * @return absolute path to the file
-	 * @throws FileNotFoundException 
+	 * @throws FileNotFoundException if unable to find resource at the given path
 	 */
 	public static String getResourceFilePath(String resourcePath) throws FileNotFoundException {
 		URL url = TestUtil.class.getClassLoader().getResource(resourcePath);

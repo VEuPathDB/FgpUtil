@@ -24,7 +24,7 @@ public class DBPlatformTest {
   }
   
   private class PostgresConfig extends OracleConfig {
-    @Override public SupportedPlatform getPlatformEnum() { return SupportedPlatform.POSTGRES; }
+    @Override public SupportedPlatform getPlatformEnum() { return SupportedPlatform.POSTGRESQL; }
   }
   
   // Cannot make this a unit test because it would require both Postgres and Oracle drivers to succeed
