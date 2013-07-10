@@ -141,7 +141,7 @@ public class DatabaseInstance {
    * configured) the connection pool logger thread.  Resets initialized flag,
    * so this DB can be reinitialized if desired.
    * 
-   * @throws Exception
+   * @throws Exception if error while closing connection pool
    */
   public void close() throws Exception {
     synchronized(this) {

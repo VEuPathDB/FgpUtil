@@ -3,9 +3,11 @@ package org.gusdb.fgputil.db.platform;
 import java.util.Arrays;
 import java.util.List;
 
+import org.gusdb.fgputil.db.pool.DefaultDbDriverInitializer;
+
 public enum SupportedPlatform {
   ORACLE(Oracle.class),
-  POSTGRES(PostgreSQL.class);
+  POSTGRESQL(PostgreSQL.class);
   
   private Class<? extends DBPlatform> _platformClass;
   
@@ -38,5 +40,10 @@ public enum SupportedPlatform {
       sb.append(", ").append(pList.get(i).name());
     }
     return sb.toString();
+  }
+  
+  public void register() throws ClassNotFoundException {
+    new DefaultDbDriverInitializer().initializeDriver(
+        getPlatformInstance().getDriverClassName(), "", null);
   }
 }
