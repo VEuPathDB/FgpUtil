@@ -26,7 +26,7 @@ public class DatabaseResultStream extends InputStream implements Wrapper {
    * 
    * @param resultSet ResultSet from which to retrieve data
    * @param dataFieldName name of field containing binary data
-   * @throws SQLException
+   * @throws SQLException if column name is invalid or other DB problem occurs
    */
   public DatabaseResultStream(ResultSet resultSet, String dataFieldName)
       throws SQLException {

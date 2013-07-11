@@ -99,7 +99,7 @@ public abstract class DBPlatform {
      *            schema, it has to be the login user name.
      * @param pattern
      * @return list of table names
-     * @throws SQLException
+     * @throws SQLException if error occurs
      */
     public abstract String[] queryTableNames(DataSource dataSource, String schema, String pattern)
             throws SQLException;

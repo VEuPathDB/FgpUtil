@@ -20,7 +20,7 @@ public interface DbDriverInitializer {
    * @param connectionUrl URL that will be used to connect to this database
    * @param props initial connection properties
    * @return modified URL to be used to connect instead of the passed URL
-   * @throws ClassNotFoundException
+   * @throws ClassNotFoundException if driver class specified cannot be found
    */
   public String initializeDriver(String driverClassName, String connectionUrl, Properties props) throws ClassNotFoundException;
 
