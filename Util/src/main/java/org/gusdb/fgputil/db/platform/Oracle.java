@@ -182,12 +182,15 @@ public class Oracle extends DBPlatform {
     @Override
     public boolean checkTableExists(DataSource dataSource, String schema, String tableName)
             throws SQLException, DBStateException {
+        if (schema == null) schema = "";
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM ALL_TABLES ");
         sql.append("WHERE table_name = '");
         sql.append(tableName.toUpperCase()).append("'");
-        if (schema.charAt(schema.length() - 1) == '.')
+        if (schema.length() != 0) {
+          if (schema.charAt(schema.length() - 1) == '.')
             schema = schema.substring(0, schema.length() - 1);
-        sql.append(" AND owner = '").append(schema.toUpperCase()).append("'");
+          sql.append(" AND owner = '").append(schema.toUpperCase()).append("'");
+        }
 
         BigDecimal count = (BigDecimal) SqlUtils.executeScalar(
                 dataSource, sql.toString(), "wdk-check-table-exist");
