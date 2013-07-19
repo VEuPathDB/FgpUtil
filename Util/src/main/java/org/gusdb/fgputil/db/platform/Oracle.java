@@ -253,7 +253,8 @@ public class Oracle extends DBPlatform {
   @Override
   public void disableStatistics(DataSource dataSource, String schema,
       String tableName) throws SQLException {
-    schema = schema.toUpperCase();
+    schema = schema.trim().toUpperCase();
+    if (schema.endsWith(".")) schema = schema.substring(0, schema.length() - 1);
     tableName = tableName.toUpperCase();
     Connection connection = null;
     CallableStatement stUnlock = null, stDelete = null, stLock = null;
