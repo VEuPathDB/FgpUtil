@@ -33,7 +33,7 @@ public class DatabaseInstance {
       _name = name;
       _dbConfig = dbConfig;
       _platform = _dbConfig.getPlatformEnum().getPlatformInstance();
-      _defaultSchema = DBPlatform.normalizeSchema(_dbConfig.getLogin());
+      _defaultSchema = _platform.getDefaultSchema(_dbConfig.getLogin());
   }
   
   public void initialize() {
