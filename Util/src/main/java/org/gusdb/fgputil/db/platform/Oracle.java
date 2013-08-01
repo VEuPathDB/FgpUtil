@@ -234,7 +234,7 @@ public class Oracle extends DBPlatform {
       boolean purge) throws SQLException {
     String name = "wdk-drop-table-" + table;
     String sql = "DROP TABLE ";
-    if (schema != null) sql = schema;
+    if (schema != null) sql += schema;
     sql += table;
     if (purge) {
       sql += " PURGE";

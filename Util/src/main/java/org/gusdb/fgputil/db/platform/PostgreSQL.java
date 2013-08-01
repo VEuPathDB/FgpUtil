@@ -226,7 +226,7 @@ public class PostgreSQL extends DBPlatform {
   public void dropTable(DataSource dataSource, String schema, String table,
       boolean purge) throws SQLException {
     String sql = "DROP TABLE ";
-    if (schema != null) sql = schema;
+    if (schema != null) sql += schema;
     sql += table;
     // ignore purge option
     SqlUtils.executeUpdate(dataSource, sql, "wdk-drop-table" + table);
