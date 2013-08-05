@@ -32,7 +32,6 @@ public abstract class Node implements Runnable {
     UNRUN,
     /** Node and all its dependencies have completed successfully */
     COMPLETE;
-
   }
   
   private volatile RunStatus _status = RunStatus.STANDBY;
