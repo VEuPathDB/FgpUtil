@@ -22,12 +22,26 @@ public class QueryLogger {
    * @author Steve Fischer
    * Allow logging of example queries to a separate logger.
    */
-  public static final class SqlExampleLog {
-    static final Logger logger = Logger.getLogger(SqlExampleLog.class);
-    private SqlExampleLog() {}
+  static final class ExampleQueryLog {
+    static final Logger logger = Logger.getLogger(getInnerClassLog4jName(ExampleQueryLog.class));
+    private ExampleQueryLog() {}
   }
-  public static final class ErrorLog {
-    static final Logger logger = Logger.getLogger(ErrorLog.class);
+  static final class SlowQueryLog {
+    static final Logger logger = Logger.getLogger(getInnerClassLog4jName(SlowQueryLog.class));
+    private SlowQueryLog() {}
+  }
+  
+  /**
+   * Log4j only accepts logger names using dot delimiters, but Class.getName()
+   * returns "package.InnerClass$OuterClass", which is not referenceable by
+   * the name attribute of a logger tag in log4j.xml.  This function gives a
+   * name usable by both.
+   * 
+   * @param clazz inner class name
+   * @return the "code-style" inner class name
+   */
+  private static String getInnerClassLog4jName(Class<?> clazz) {
+	  return clazz.getName().replace("$", ".");
   }
   
   private static class QueryLogInfo {
@@ -46,8 +60,11 @@ public class QueryLogger {
 
   public static synchronized void initialize(QueryLogConfig config) {
     if (_initialized) {
-      ErrorLog.logger.warn("Multiple calls to initialize().  Ignoring...");
+      logger.warn("Multiple calls to initialize().  Ignoring...");
     } else {
+      logger.info("Initializing QueryLogger (slow and example query logs)");
+      ExampleQueryLog.logger.debug("Initializing example query log");
+      SlowQueryLog.logger.debug("Initializing slow query log");
       _config = config;
       _initialized = true;
     }
@@ -127,25 +144,24 @@ public class QueryLogger {
  
     String details = " [" + name + "] execute: " + firstPageSeconds + " last page: " + lastPageSeconds + " seconds" + (isLeak? " LEAK " : "");
     if (lastPageSeconds < 0 || firstPageSeconds < 0) {
-      logger.error("code error, negative exec time:");
+      logger.error("code error, negative exec time:" + details);
       new Exception().printStackTrace();
     }
     // convert the time to seconds
     // log time & sql for slow query. goes to warn log
     if (lastPageSeconds >= _config.getSlow() && !_config.isIgnoredSlow(sql)) {
-      logger.warn("SLOW QUERY LOG" + details + "\n"
-          + sql);
+      SlowQueryLog.logger.warn("SLOW QUERY LOG" + details + "\n" + sql);
     }
 
     // log time for baseline query, and only sql for the first time. goes to
     // info log
     else if (lastPageSeconds >= _config.getBaseline() && !_config.isIgnoredBaseline(sql)) {
-      logger.warn("QUERY LOG" + details);
+      SlowQueryLog.logger.warn("QUERY LOG" + details);
 
       synchronized (_queryNames) {
         if (!_queryNames.contains(name)) {
           _queryNames.add(name);
-          SqlExampleLog.logger.info("EXAMPLE QUERY" + details + "\n" + sql);
+          ExampleQueryLog.logger.info("EXAMPLE QUERY" + details + "\n" + sql);
         }
       }
     }
