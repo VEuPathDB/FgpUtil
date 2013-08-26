@@ -57,6 +57,15 @@ public abstract class Node implements Runnable {
   public abstract ExecutorService getExecutorService();
   
   /**
+   * Allows nodes to pass information back and forth through a standard
+   * interface.
+   * 
+   * @param fromNode node sending the data
+   * @param data data object
+   */
+  protected abstract void receiveData(Node fromNode, Object data);
+  
+  /**
    * Add the passed node as a dependency of this node.
    * 
    * @param node depended node
@@ -69,12 +78,18 @@ public abstract class Node implements Runnable {
     return this;
   }
 
-  private void addParent(Node node) {
+  protected void addParent(Node node) {
     _parents.add(node);
   }
 
-  private Set<Node> getDependencies() {
+  protected Set<Node> getDependencies() {
     return _dependencies;
+  }
+  
+  protected void sendToParents(Object data) {
+    for (Node parent : _parents) {
+      parent.receiveData(this, data);
+    }
   }
   
   /**
@@ -124,6 +139,15 @@ public abstract class Node implements Runnable {
     }
   }
 
+  protected Set<Node> getParents() {
+    return _parents;
+  }
+  
+  protected void notifyComplete() {
+    for (Node parent : _parents) {
+      parent.notifyComplete(this);
+    }
+  }
   /**
    * Kicks off the dependencies of this node, waits for them to complete, then
    * runs this node and notifies its parent(s).
@@ -132,18 +156,16 @@ public abstract class Node implements Runnable {
   public void run() {
     runDependencies();
     runSelf();
-    for (Node parent : _parents) {
-      parent.notifyComplete(this);
-    }
+    notifyComplete();
   }
   
   /**
    * Runs this node, handles errors thrown by implementations, assigns status
    * at each step.
    */
-  private void runSelf() {
+  protected void runSelf() {
     try {
-      if (!_status.equals(RunStatus.UNRUN)) {
+      if (!getStatus().equals(RunStatus.UNRUN)) {
         setStatus(RunStatus.RUNNING);
         doWork();
         setStatus(RunStatus.COMPLETE);
@@ -160,17 +182,25 @@ public abstract class Node implements Runnable {
    * Note "complete" in this context means either successful or unsuccessful
    * completion.
    */
-  private void runDependencies() {
-    _numCompleteDeps = 0;
+  protected void runDependencies() {
+    resetCompleteDependencies();
     setStatus(RunStatus.WAITING);
-    for (Node node : _dependencies) {
+    for (Node node : getDependencies()) {
       getExecutorService().execute(node);
     }
     while (true) {
-      if (_numCompleteDeps == _dependencies.size()) {
+      if (allDependenciesComplete()) {
         break;
       }
     }
+  }
+  
+  protected void resetCompleteDependencies() {
+    _numCompleteDeps = 0;
+  }
+  
+  protected boolean allDependenciesComplete() {
+    return _numCompleteDeps == _dependencies.size();
   }
   
   /**
@@ -182,7 +212,7 @@ public abstract class Node implements Runnable {
     return _status;
   }
   
-  private void setStatus(RunStatus status) {
+  protected void setStatus(RunStatus status) {
     LOG.info("Status change: " + this + ": From " + _status + " to " + status);
     _status = status;
   }

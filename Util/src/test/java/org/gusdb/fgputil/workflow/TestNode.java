@@ -37,5 +37,9 @@ public class TestNode extends Node {
   public String toString() {
     return "Node " + _id + ", " + _duration;
   }
-  
+
+  @Override
+  protected void receiveData(Node fromNode, Object data) {
+    // we don't expect any data from child nodes; ignore
+  }
 }
