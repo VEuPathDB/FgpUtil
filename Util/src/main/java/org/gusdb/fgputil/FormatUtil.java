@@ -42,4 +42,25 @@ public class FormatUtil {
 		}
 		return sb.append(" ]").toString();
 	}
+	
+    public static String getCamelCaseDisplayVal(String str) {
+    	StringBuilder newStr = new StringBuilder();
+        boolean justSawSpace = true; // set so first char is upper case
+        str = str.trim();
+        for (int i=0; i < str.length(); i++) {
+        	char thisChar = str.charAt(i);
+        	if (thisChar == ' ' || thisChar == '_' || thisChar == '-') {
+        		if (!justSawSpace) { // only do a single whitespace char
+        			newStr.append(' ');
+        			justSawSpace = true;
+        		}
+        	} else if (justSawSpace) {
+        		newStr.append(String.valueOf(thisChar).toUpperCase());
+        		justSawSpace = false;
+        	} else {
+        		newStr.append(String.valueOf(thisChar).toLowerCase());
+        	}
+        }
+        return newStr.toString();
+    }
 }
