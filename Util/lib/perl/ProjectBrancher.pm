@@ -5,6 +5,8 @@ use strict;
 sub branch {
     my ($branch, $comment, $delete, $projects) = @_;
 
+    usage() unless ($branch && $comment);
+
     if ($delete) {
 	print "\nYou are about to DELETE the $branch branch\nType the name of the branch to confirm: ";
 	my $confirm = <STDIN>;
