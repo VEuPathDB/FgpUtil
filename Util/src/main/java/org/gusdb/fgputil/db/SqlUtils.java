@@ -26,9 +26,10 @@ public final class SqlUtils {
    * private constructor, make sure SqlUtils cannot be instanced.
    */
   private SqlUtils() {}
-  
+
   /**
-   * Close the resultSet and the underlying statement, connection. Log the query.
+   * Close the resultSet and the underlying statement, connection. Log the
+   * query.
    * 
    * @param resultSet
    */
@@ -73,7 +74,7 @@ public final class SqlUtils {
       throw new RuntimeException(ex);
     }
   }
-  
+
   /**
    * Close the statement and underlying connection
    * 
@@ -146,8 +147,8 @@ public final class SqlUtils {
    * @param sql
    * @return
    */
-  public static int executeUpdate(DataSource dataSource,
-      String sql, String name) throws SQLException {
+  public static int executeUpdate(DataSource dataSource, String sql, String name)
+      throws SQLException {
     logger.trace("running sql: " + name + "\n" + sql);
     Connection connection = null;
     Statement stmt = null;
@@ -177,8 +178,8 @@ public final class SqlUtils {
    * @param sql
    * @return
    */
-  public static int executeUpdate(Connection connection,
-      String sql, String name) throws SQLException {
+  public static int executeUpdate(Connection connection, String sql, String name)
+      throws SQLException {
     logger.trace("running sql: " + name + "\n" + sql);
     Statement stmt = null;
     try {
@@ -204,19 +205,23 @@ public final class SqlUtils {
    * @param sql
    * @return
    */
-  public static ResultSet executeQuery(DataSource dataSource, String sql, String name)
-      throws SQLException {
+  public static ResultSet executeQuery(DataSource dataSource, String sql,
+      String name) throws SQLException {
     return executeQuery(dataSource, sql, name, 100);
   }
 
-  public static ResultSet executeQuery(DataSource dataSource, String sql, String name, int fetchSize)
-      throws SQLException {
+  public static ResultSet executeQuery(DataSource dataSource, String sql,
+      String name, int fetchSize) throws SQLException {
+    Connection connection = dataSource.getConnection();
+    return executeQuery(connection, sql, name, fetchSize);
+  }
+
+  public static ResultSet executeQuery(Connection connection, String sql,
+      String name, int fetchSize) throws SQLException {
     logger.trace("running sql: " + name + "\n" + sql);
     ResultSet resultSet = null;
-    Connection connection = null;
     try {
       long start = System.currentTimeMillis();
-      connection = dataSource.getConnection();
       Statement stmt = connection.createStatement();
       stmt.setFetchSize(fetchSize);
       resultSet = stmt.executeQuery(sql);
@@ -240,10 +245,11 @@ public final class SqlUtils {
    * @param dataSource
    * @param sql
    * @return the first column of the first row in the result
-   * @throws SQLException database or query failure
+   * @throws SQLException
+   *           database or query failure
    */
-  public static Object executeScalar(DataSource dataSource,
-      String sql, String name) throws SQLException, DBStateException {
+  public static Object executeScalar(DataSource dataSource, String sql,
+      String name) throws SQLException, DBStateException {
     ResultSet resultSet = null;
     try {
       resultSet = executeQuery(dataSource, sql, name);
@@ -284,20 +290,21 @@ public final class SqlUtils {
       logger.error("Could not roll back transaction!", e);
     }
   }
-  
+
   /**
    * This method provides "quiet" (i.e. no logging, no exceptions thrown)
    * closing of the following implementations of Wrapper:
    * <ul>
-   *   <li>{@link java.sql.CallableStatement}</li>
-   *   <li>{@link java.sql.Connection}</li>
-   *   <li>{@link java.sql.PreparedStatement}</li>
-   *   <li>{@link java.sql.ResultSet}</li>
-   *   <li>{@link java.sql.Statement}</li>
-   *   <li>{@link org.gusdb.fgputil.db.DatabaseResultStream}</li>
+   * <li>{@link java.sql.CallableStatement}</li>
+   * <li>{@link java.sql.Connection}</li>
+   * <li>{@link java.sql.PreparedStatement}</li>
+   * <li>{@link java.sql.ResultSet}</li>
+   * <li>{@link java.sql.Statement}</li>
+   * <li>{@link org.gusdb.fgputil.db.DatabaseResultStream}</li>
    * </ul>
    * 
-   * @param wrappers varargs array of wrappers to be closed
+   * @param wrappers
+   *          varargs array of wrappers to be closed
    */
   public static void closeQuietly(Wrapper... wrappers) {
     for (Wrapper wrap : wrappers) {
