@@ -111,7 +111,7 @@ public final class SqlUtils {
       ps.setFetchSize(100);
       return ps;
     } catch (SQLException ex) {
-      logger.error("Failed to prepare query:\n" + sql);
+      logger.error("Failed to prepare query: \n" + sql, ex);
       closeStatement(ps);
 
       if (ps == null && connection != null)
