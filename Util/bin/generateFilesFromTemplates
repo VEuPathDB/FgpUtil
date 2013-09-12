@@ -2,17 +2,17 @@
 
 use strict;
 
-usage unless scalar(@ARGV) == 3;
+usage() unless scalar(@ARGV) == 3;
 
-usage {
+sub usage {
   die "
-Generate a set of files from templates and a yaml configuration files.
+Generate a set of files from templates and yaml configuration files.
 
-Usage: generateFilesFromTemplates templates_meta_file config_file meta_file
+Usage: generateFilesFromTemplates  templates_meta_file  config_file  meta_file
 
 Where:
   templates_meta_file: a tab file with two columns, specifying the templates to insert the values into,
-                       and optionally, for each template, where to write the output.
+                       and optionally, for each template, where to write the output (see below).
   config_file:         a yaml file that specifies values to substitute into the templates (see below)
   meta_file:           a yaml file that specifies required meta config (see below).
 
@@ -22,25 +22,26 @@ The templates meta file contains a list of the templates to generate from, and o
 a destination file. It looks like this:
 
 /home/wherever/happy.xml.tmpl
-/home/noplace/sad.conf.tmpl ${gus_home}/config/sad.conf
+/home/noplace/sad.conf.tmpl \${gus_home}/config/sad.conf
 
 The first column is the name of a template file.  A template file can be any file whatsoever, but
-must have a .tmpl extenion.  If it contains macros of the form $[hi_i_am_a_macro_key], then those macros
+must have a .tmpl extension.  If it contains macros of the form \${hi_i_am_a_macro_key}, then those macros
 will be replaced by a value that matches the macro key, as provided by the config_file.  Macro keys
 that are not found in the config_file produce an error.
 
-The second column is optional.  If absent the output file for the template will be in the same
+The second column is optional.  If absent, the output file for the template will be in the same
 directory as the template, and have the same name, minus the .tmpl extension.  If present, the output
 will be written to the specified file.
 
 The meta template file is itself a template file:  it may have macros.  The values for these macros
 are provided by the 'required:' section of the meta config file (see below).  The subsitution occurs
-before the template file names are used to read and write files.
+before the template file names are used to read and write files.  Every macro in the template file
+must have a key in the 'required:' section, and vice versa.
 
 
 == Config File ==
 The config_file is a yaml file that provides keys/values to substitute into the templates.  The meta
-config file configure this file, resolving it into a simple set of key value pairs to apply to the templates.
+config file configures this file, resolving it into a simple set of key value pairs to apply to the templates.
 
 The config_file looks like this:
 
@@ -51,7 +52,7 @@ default: {
 
 some_section_name: {
  k3: v3
- k4: ${some_macro_name}
+ k4: \${some_macro_name}
 }
 
 some_other_section_name: {
@@ -64,9 +65,9 @@ maybe_another_section_name: {
 }
 
 The 'default:' section is required, though may be empty.  It provides default key/value pairs to subsitute into the templates.
-The other sections are optional.  They can have arbitrary names, and, like the default section, provide key/values pairs
-for substitution into the templates.  Each of these sections is ignored unless it is mentioned in the 'sections:' section of
-the meta file (see below).
+The other sections are optional.  There may be zero or more of them and they can have arbitrary names.  Like the default section,
+they provide key/values pairs for substitution into the templates.  Each of these sections is ignored unless it is mentioned in the
+'sections:' section of the meta file (see below).
 
 The config file may contain macros (in that sense it too is a template file).  All macros in the config file
 must have key/value pairs mentioned in the 'required:' section of the meta file (see below).
@@ -89,15 +90,15 @@ custom: {
 }
 
 The 'required:' section provides keys and values for macros in the config_file (if any).  The config_file
-may contain macros of the form ${someMacroName}.  Each of those macro names must be a key in the
+may contain macros of the form \${someMacroName}.  Each of those macro names must be a key in the
 'required:' section, and must have a value to substitute in to the macro.  This substitution
 makes the config_file a valid and complete yaml file.
 
 The 'sections:' section contains an ordered list of optional sections to read from the config file.
 Any section not mentioned in the 'sections:' section is ignored.  The sections mentioned are unioned
 into the growing list of key/value pairs.  The sections are applied in the order listed in the 'sections:'
-section, and overrides existing key/value pairs.  Thus the default section has lowest priority, and
-the earlier sections in the 'sections:' section have lower priority than those that follow.
+section, with later sections overriding existing key/value pairs.  Thus the default section has lowest
+ priority, and the earlier sections in the 'sections:' section have lower priority than those that follow.
 
 The 'custom:' section is optional.  It has the highest priority of all sections, and is used as
 an escape hatch to customize the configuration.
