@@ -1,24 +1,86 @@
 #!/usr/bin/perl
 
 use strict;
+use YAML::XS;
+use Data::Dumper;
 
 usage() unless scalar(@ARGV) == 3;
+
+my ($templatesListFile, $configFile, $metaFile) = @ARGV;
+
+open(F, $metaFile) || die "Can't open meta file '$metaFile'\n";
+my @metaAsArray = <F>;
+close(F);
+
+my $metaConfig = Load(join("", @metaAsArray));
+print Dumper($metaConfig), "\n";
+
+my $metaConfig = parseMetaFile($metaFile);  # validates too
+
+my $configFileAsLines = readConfigFile($configFile);
+
+my $updatedConfigFileAsText = substituteMacros($metaConfig->{required}, $configFileAsTest, $metaFile);
+
+my $config = parseConfigText($updatedConfigFileAsText);
+
+my $keyValues;
+
+addKeyValues($keyValues, $config->{default});
+
+foreach my $section (@{$metaConfig->{sections}}) {
+  addKeyValues($keyValues, $config->{$section});
+}
+
+addKeyValues($keyValues, $config->{custom});
+
+my $templatesList = parseTemplatesListFile($templatesListFile);
+
+foreach my $templateSpec (@templatesList) {
+  $templateAsText = readFile($templateSpec[0]);
+  substituteMacros($keyValues, $templateAsText, $templateSpec[0]);
+  my $outputFile;
+  if ($templateSpec[1]) {
+    $outputFile = $templateSpec[1];
+  } else {
+  }
+    
+}
+
+sub substituteMacros {
+  my ($keyValues, $textArray, $fileName) = @_;
+
+  my @output;
+  my $lineNum;
+  foreach my $line (@textArray) {
+    $lineNum++;
+    my @macroKeys = $line =~ /\$\{(.*?)\}/g;
+    foreach my $key (@macroKeys) {
+      my $value = $keyValues->{$key};
+      die "Line $lineNum in file $fileName contains macro \${$macroKey} that cannot be resolved\n" if (!$value);
+      $line =~ s/\$\{$key\}/$value/g;
+    }
+    push(@output, $line);
+  }
+  return join("\n", @output);
+}
+
 
 sub usage {
   die "
 Generate a set of files from templates and yaml configuration files.
 
-Usage: generateFilesFromTemplates  templates_meta_file  config_file  meta_file
+Usage: generateFilesFromTemplates  templates_list_file  config_file  meta_file [-custom 'key1:value1 key2:value2']
 
 Where:
-  templates_meta_file: a tab file with two columns, specifying the templates to insert the values into,
+  templates_list_file: a tab file with two columns, specifying the templates to insert the values into,
                        and optionally, for each template, where to write the output (see below).
   config_file:         a yaml file that specifies values to substitute into the templates (see below)
   meta_file:           a yaml file that specifies required meta config (see below).
+  -custom:             an optional list of custom key/values to add to the 'custom:' section in the meta file
 
 
-== Templates Meta File ==
-The templates meta file contains a list of the templates to generate from, and optionally, for each,
+== Templates List File ==
+The templates list file contains a list of the templates to generate from, and optionally, for each,
 a destination file. It looks like this:
 
 /home/wherever/happy.xml.tmpl
@@ -33,7 +95,7 @@ The second column is optional.  If absent, the output file for the template will
 directory as the template, and have the same name, minus the .tmpl extension.  If present, the output
 will be written to the specified file.
 
-The meta template file is itself a template file:  it may have macros.  The values for these macros
+The template lists file is itself a template file:  it may have macros.  The values for these macros
 are provided by the 'required:' section of the meta config file (see below).  The subsitution occurs
 before the template file names are used to read and write files.  Every macro in the template file
 must have a key in the 'required:' section, and vice versa.
