@@ -1,49 +1,67 @@
 #!/usr/bin/perl
 
 use strict;
-use YAML::XS;
+use YAML;
 use Data::Dumper;
+
 
 usage() unless scalar(@ARGV) == 3;
 
 my ($templatesListFile, $configFile, $metaFile) = @ARGV;
 
-open(F, $metaFile) || die "Can't open meta file '$metaFile'\n";
-my @metaAsArray = <F>;
-close(F);
+my $metaConfig = parseAndValidateMetaFile($metaFile);
 
-my $metaConfig = Load(join("", @metaAsArray));
-print Dumper($metaConfig), "\n";
+my $config = readAndResolveConfigFile($configFile, $metaConfig);
 
-my $metaConfig = parseMetaFile($metaFile);  # validates too
+my $keyValues = buildKeyValuesFromConfig($config, $metaConfig->{sections});
 
-my $configFileAsLines = readConfigFile($configFile);
+instantiateTemplates($keyValues,$templatesListFile);
 
-my $updatedConfigFileAsText = substituteMacros($metaConfig->{required}, $configFileAsTest, $metaFile);
 
-my $config = parseConfigText($updatedConfigFileAsText);
+#############################  subroutines #######################################
 
-my $keyValues;
 
-addKeyValues($keyValues, $config->{default});
-
-foreach my $section (@{$metaConfig->{sections}}) {
-  addKeyValues($keyValues, $config->{$section});
+sub parseAndValidateMetaFile {
+  open(F, $metaFile) || die "Error: Can't open meta file '$metaFile'\n";
+  my @metaAsArray = <F>;
+  close(F);
+  my $meta = Load(join("", @metaAsArray));
+  die "Error: Meta file '$metaFile' is missing the 'required:' section\n" unless $meta->{required};
+  die "Error: Meta file '$metaFile' is missing the 'sections:' section\n" unless $meta->{sections};
+  die "Error: Meta file '$metaFile' must only have three sections: 'required:', 'sections:' and optionally 'custom:'\n"
+    if scalar(keys(%$meta)) > 3 || (scalar(keys(%$meta)) == 3 && ! $meta->{custom});
+  print Dumper($meta), "\n";
 }
 
-addKeyValues($keyValues, $config->{custom});
+sub readAndResolveConfigFile {
+  my ($configFile, $metaConfig) = @_;
+  open(F, $configFile) || die "Error: Can't open config file '$configFile'\n";
+  my @configFileAsLines = <F>;
+  close(F);
+  my $updatedConfigFileAsText = substituteMacros($metaConfig->{required}, \@configFileAsLines, $configFile);
+  my $config = Load($updatedConfigFileAsText);
+  die "Error: Config file '$configFile' is missing the required 'default:' section" unless $config->{default};
+  return $config;
+}
 
-my $templatesList = parseTemplatesListFile($templatesListFile);
+sub buildKeyValuesFromConfig {
+  my ($config, $optionalSections, $configFile) = @_;
 
-foreach my $templateSpec (@templatesList) {
-  $templateAsText = readFile($templateSpec[0]);
-  substituteMacros($keyValues, $templateAsText, $templateSpec[0]);
-  my $outputFile;
-  if ($templateSpec[1]) {
-    $outputFile = $templateSpec[1];
-  } else {
+  addKeyValues($keyValues, $config->{default});
+
+  foreach my $section (@$optionalSections) {
+    die "Error: Config file '$configFile' is missing the  '$section:' section mentioned in the meta file" unless $config->{$section};
+    addKeyValues($keyValues, $config->{$section});
   }
-    
+
+  addKeyValues($keyValues, $config->{custom}) if $config->{custom};
+}
+
+sub addKeyValues {
+  my ($keyValues, $hashToAdd) = @_;
+  foreach my $key (keys(%$hashToAdd)) {
+    $keyValues->{$key} = $hashToAdd->{$key}
+  }
 }
 
 sub substituteMacros {
@@ -51,12 +69,12 @@ sub substituteMacros {
 
   my @output;
   my $lineNum;
-  foreach my $line (@textArray) {
+  foreach my $line (@$textArray) {
     $lineNum++;
     my @macroKeys = $line =~ /\$\{(.*?)\}/g;
     foreach my $key (@macroKeys) {
       my $value = $keyValues->{$key};
-      die "Line $lineNum in file $fileName contains macro \${$macroKey} that cannot be resolved\n" if (!$value);
+      die "Error: Line $lineNum in file $fileName contains macro \${$key} that cannot be resolved\n" if (!$value);
       $line =~ s/\$\{$key\}/$value/g;
     }
     push(@output, $line);
@@ -64,6 +82,34 @@ sub substituteMacros {
   return join("\n", @output);
 }
 
+sub instantiateTemplates {
+  my ($keyValues, $templatesListFile) = @_;
+
+  open(F, $templatesListFile) || die "Error: Can't open templates list file '$templatesListFile'\n";
+  while(<F>) {
+    chomp;
+    my @templateSpec = split(/\t/);
+    die "Error: Template list file '' contains an invalid line:\n '$_'\n" unless scalar(@templateSpec) <= 2;
+    my $templateFile = $templateSpec->[0];
+
+    die "Error: Template file '$templateFile' does not have a .tmpl extention" unless $templateFile =~ /\.tmpl$/;
+
+    open(T, $templateFile) || die "Error: Can't open template file '$templateFile'\n";
+    my @templateAsTextArray = <T>;
+    close(T);
+    my $intantiatedTemplate = substituteMacros($keyValues, \@templateAsTextArray, $templateFile);
+    my $outputFile;
+    if ($templateSpec->[1]) {
+      $outputFile = $templateSpec->[1];
+    } else {
+      $outputFile = $templateSpec->[1];
+      $outputFile =~ s/\.tmpl//;
+    }
+    open(I, ">$outputFile") || die "Error: can't open template output file '$outputFile' for writing\n";
+    print I $instantiatedTemplate;
+    close(I);
+  }
+}
 
 sub usage {
   die "
@@ -96,7 +142,7 @@ directory as the template, and have the same name, minus the .tmpl extension.  I
 will be written to the specified file.
 
 The template lists file is itself a template file:  it may have macros.  The values for these macros
-are provided by the 'required:' section of the meta config file (see below).  The subsitution occurs
+are provided by the 'required:' section of the meta config file (see below).  The substitution occurs
 before the template file names are used to read and write files.  Every macro in the template file
 must have a key in the 'required:' section, and vice versa.
 
@@ -126,7 +172,7 @@ maybe_another_section_name: {
  k7: v7
 }
 
-The 'default:' section is required, though may be empty.  It provides default key/value pairs to subsitute into the templates.
+The 'default:' section is required, though may be empty.  It provides default key/value pairs to substitute into the templates.
 The other sections are optional.  There may be zero or more of them and they can have arbitrary names.  Like the default section,
 they provide key/values pairs for substitution into the templates.  Each of these sections is ignored unless it is mentioned in the
 'sections:' section of the meta file (see below).
