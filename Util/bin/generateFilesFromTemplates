@@ -13,7 +13,7 @@ my $metaConfig = parseAndValidateMetaFile($metaFile);
 
 my $config = readAndResolveConfigFile($configFile, $metaConfig);
 
-my $keyValues = buildKeyValuesFromConfig($config, $metaConfig->{sections});
+my $keyValues = buildKeyValuesFromConfig($config, $metaConfig->{sections}, $configFile, $metaConfig);
 
 instantiateTemplates($keyValues,$templatesListFile);
 
@@ -30,7 +30,7 @@ sub parseAndValidateMetaFile {
   die "Error: Meta file '$metaFile' is missing the 'sections:' section\n" unless $meta->{sections};
   die "Error: Meta file '$metaFile' must only have three sections: 'required:', 'sections:' and optionally 'custom:'\n"
     if scalar(keys(%$meta)) > 3 || (scalar(keys(%$meta)) == 3 && ! $meta->{custom});
-  print Dumper($meta), "\n";
+  return $meta;
 }
 
 sub readAndResolveConfigFile {
@@ -41,12 +41,14 @@ sub readAndResolveConfigFile {
   my $updatedConfigFileAsText = substituteMacros($metaConfig->{required}, \@configFileAsLines, $configFile);
   my $config = Load($updatedConfigFileAsText);
   die "Error: Config file '$configFile' is missing the required 'default:' section" unless $config->{default};
+#  print Dumper($config), "\n";
   return $config;
 }
 
 sub buildKeyValuesFromConfig {
-  my ($config, $optionalSections, $configFile) = @_;
+  my ($config, $optionalSections, $configFile, $metaConfig) = @_;
 
+  my $keyValues = {};
   addKeyValues($keyValues, $config->{default});
 
   foreach my $section (@$optionalSections) {
@@ -54,7 +56,9 @@ sub buildKeyValuesFromConfig {
     addKeyValues($keyValues, $config->{$section});
   }
 
-  addKeyValues($keyValues, $config->{custom}) if $config->{custom};
+  addKeyValues($keyValues, $metaConfig->{custom}) if $metaConfig->{custom};
+#  print Dumper $keyValues;
+  return $keyValues;
 }
 
 sub addKeyValues {
@@ -70,6 +74,7 @@ sub substituteMacros {
   my @output;
   my $lineNum;
   foreach my $line (@$textArray) {
+    chomp $line;
     $lineNum++;
     my @macroKeys = $line =~ /\$\{(.*?)\}/g;
     foreach my $key (@macroKeys) {
@@ -90,19 +95,19 @@ sub instantiateTemplates {
     chomp;
     my @templateSpec = split(/\t/);
     die "Error: Template list file '' contains an invalid line:\n '$_'\n" unless scalar(@templateSpec) <= 2;
-    my $templateFile = $templateSpec->[0];
-
+    my $templateFile = $templateSpec[0];
     die "Error: Template file '$templateFile' does not have a .tmpl extention" unless $templateFile =~ /\.tmpl$/;
 
     open(T, $templateFile) || die "Error: Can't open template file '$templateFile'\n";
     my @templateAsTextArray = <T>;
     close(T);
-    my $intantiatedTemplate = substituteMacros($keyValues, \@templateAsTextArray, $templateFile);
+
+    my $instantiatedTemplate = substituteMacros($keyValues, \@templateAsTextArray, $templateFile);
     my $outputFile;
-    if ($templateSpec->[1]) {
-      $outputFile = $templateSpec->[1];
+    if ($templateSpec[1]) {
+      $outputFile = $templateSpec[1];
     } else {
-      $outputFile = $templateSpec->[1];
+      $outputFile = $templateSpec[0];
       $outputFile =~ s/\.tmpl//;
     }
     open(I, ">$outputFile") || die "Error: can't open template output file '$outputFile' for writing\n";
