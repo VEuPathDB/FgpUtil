@@ -17,7 +17,7 @@ my $config = readAndResolveConfigFile($configFile, $metaConfig, $commandLineConf
 
 my $keyValues = buildKeyValuesFromConfig($config, $metaConfig->{sections}, $configFile, $metaConfig);
 
-instantiateTemplates($keyValues);
+instantiateTemplates($keyValues, $metaConfig);
 
 
 #############################  subroutines #######################################
@@ -27,7 +27,8 @@ sub parseAndValidateMetaFile {
   open(F, $metaFile) || die "Error: Can't open meta file '$metaFile'\n";
   my @metaAsArray = <F>;
   close(F);
-  my $meta = Load(join("", @metaAsArray));
+  $ENV{GUS_HOME} = 'template';
+  my $meta = Load(join("", map {s/\$ENV\{GUS_HOME\}/$ENV{GUS_HOME}/g; $_} @metaAsArray));
   die "Error: Meta file '$metaFile' is missing the 'required:' section\n" unless $meta->{required};
   die "Error: Meta file '$metaFile' is missing the 'sections:' section\n" unless $meta->{sections};
   die "Error: Meta file '$metaFile' must only have three sections: 'required:', 'sections:' and optionally 'custom:'\n"
@@ -41,9 +42,9 @@ sub parseCommandLineConfig {
   chomp $commandLineConfig;
   my $commandLineConfig = {};
   if ($commandLineConfigTxt) {
-    my @keyValuesTxt = split(/,\s*/, $commandLineConfig);
+    my @keyValuesTxt = split(/,\s*/, $commandLineConfigTxt);
     foreach my $keyValue (@keyValuesTxt) {
-      my ($key, $value) = split(/:/, $keyValue);
+      my ($key, $value) = split(/:\s*/, $keyValue);
       die "Invalid command line configuration item '$keyValue'" unless $key && $value;
       $commandLineConfig->{$key} = $value;
     }
@@ -108,13 +109,20 @@ sub substituteMacros {
 }
 
 sub instantiateTemplates {
-  my ($keyValues) = @_;
+  my ($keyValues, $metaConfig) = @_;
 
   my $count = 0;
   while(<STDIN>) {
+    $count++;
     chomp;
-    my @templateSpec = split(/\t/);
+
+    # substitute
+    my @a = ($_);
+    my $instantiatedTemplateSpecLine = substituteMacros($metaConfig->{required}, \@a, "stdin");
+
+    my @templateSpec = split(/\t/, $instantiatedTemplateSpecLine);
     die "Error: Template list file '' contains an invalid line:\n '$_'\n" unless scalar(@templateSpec) <= 2;
+
     my $templateFile = $templateSpec[0];
     die "Error: Template file '$templateFile' does not have a .tmpl extention" unless $templateFile =~ /\.tmpl$/;
 
