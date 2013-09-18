@@ -17,6 +17,8 @@ my $config = readAndResolveConfigFile($configFile, $metaConfig, $commandLineConf
 
 my $keyValues = buildKeyValuesFromConfig($config, $metaConfig->{sections}, $configFile, $metaConfig);
 
+print STDERR Dumper $keyValues;
+
 instantiateTemplates($keyValues, $metaConfig);
 
 
@@ -32,7 +34,7 @@ sub parseAndValidateMetaFile {
   die "Error: Meta file '$metaFile' is missing the 'required:' section\n" unless $meta->{required};
   die "Error: Meta file '$metaFile' is missing the 'sections:' section\n" unless $meta->{sections};
   die "Error: Meta file '$metaFile' must only have three sections: 'required:', 'sections:' and optionally 'custom:'\n"
-    if scalar(keys(%$meta)) > 3 || (scalar(keys(%$meta)) == 3 && ! $meta->{custom});
+    if scalar(keys(%$meta)) > 3 || (scalar(keys(%$meta)) == 3 && ! grep(/custom/, keys(%$meta)));
   return $meta;
 }
 
@@ -142,7 +144,7 @@ sub instantiateTemplates {
     open(I, ">$outputFile") || die "Error: can't open template output file '$outputFile' for writing\n";
     print I $instantiatedTemplate;
     close(I);
-    print STDERR "Wrote output file '$outputFile'\n";
+    print STDERR "Wrote output file '$outputFile'\n\n";
 
   }
   die "Error: you did not provide a templates file list on stdin\n" if $count == 0;
