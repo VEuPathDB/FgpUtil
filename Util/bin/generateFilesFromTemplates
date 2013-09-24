@@ -122,7 +122,7 @@ sub instantiateTemplates {
     my @a = ($_);
     my $instantiatedTemplateSpecLine = substituteMacros($metaConfig->{required}, \@a, "stdin");
 
-    my @templateSpec = split(/\t/, $instantiatedTemplateSpecLine);
+    my @templateSpec = split(/\s*\t\s*/, $instantiatedTemplateSpecLine);
     die "Error: Template list file '' contains an invalid line:\n '$_'\n" unless scalar(@templateSpec) <= 2;
 
     my $templateFile = $templateSpec[0];
