@@ -150,7 +150,8 @@ public class Oracle extends DBPlatform {
   public String getClobData(ResultSet rs, String columnName)
       throws SQLException {
     Clob messageClob = rs.getClob(columnName);
-    if (messageClob == null) return null;
+    if (messageClob == null)
+      return null;
     return messageClob.getSubString(1, (int) messageClob.length());
   }
 
@@ -234,7 +235,8 @@ public class Oracle extends DBPlatform {
       boolean purge) throws SQLException {
     String name = "wdk-drop-table-" + table;
     String sql = "DROP TABLE ";
-    if (schema != null) sql += schema;
+    if (schema != null)
+      sql += schema;
     sql += table;
     if (purge) {
       sql += " PURGE";
@@ -243,18 +245,24 @@ public class Oracle extends DBPlatform {
     SqlUtils.executeUpdate(dataSource, sql, name);
   }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * We clean and lock the stats on a table, so that Oracle will use Dynamic
+   * Sampling to compute execution plans.
    * 
-   * @see
-   * org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String,
-   * java.lang.String)
+   * One use case of this is on WDK cache tables, which has frequent inserts and
+   * the stats (if turned on) can get stale quickly, which may result in bad
+   * execution plans. Locking the stats will force Oracle to sample the data in
+   * the cache table.
+   * 
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String,
+   *      java.lang.String)
    */
   @Override
   public void disableStatistics(DataSource dataSource, String schema,
       String tableName) throws SQLException {
     schema = schema.trim().toUpperCase();
-    if (schema.endsWith(".")) schema = schema.substring(0, schema.length() - 1);
+    if (schema.endsWith("."))
+      schema = schema.substring(0, schema.length() - 1);
     tableName = tableName.toUpperCase();
     Connection connection = null;
     CallableStatement stUnlock = null, stDelete = null, stLock = null;
