@@ -33,12 +33,16 @@ public class FormatUtil {
   }
 
   public static String arrayToString(Object[] array) {
+    return arrayToString(array, ", ");
+  }
+
+  public static String arrayToString(Object[] array, String delim) {
     StringBuilder sb = new StringBuilder("[ ");
     if (array.length > 0) {
       sb.append(array[0].toString());
     }
     for (int i = 1; i < array.length; i++) {
-      sb.append(", ").append(array[i].toString());
+      sb.append(delim).append(array[i].toString());
     }
     return sb.append(" ]").toString();
   }
