@@ -94,6 +94,7 @@ public final class TestUtil {
     }
     finally {
       SqlUtils.closeQuietly(conn);
+      IoUtil.closeQuietly(br);
     }
   }
 }
