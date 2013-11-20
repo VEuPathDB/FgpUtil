@@ -19,6 +19,7 @@ public class ListBuilder<T> {
   }
   
   public ListBuilder(T obj) {
+    this();
     _myList.add(obj);
   }
   
