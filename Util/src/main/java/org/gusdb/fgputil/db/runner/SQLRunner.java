@@ -22,7 +22,6 @@ import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.UpdateExecutor;
  */
 public class SQLRunner {
 
-  @SuppressWarnings("unused")
   private static Logger LOG = Logger.getLogger(SQLRunner.class.getName());
 
   /**
@@ -57,21 +56,47 @@ public class SQLRunner {
     public int getBatchSize();
   }
   
-  private boolean _responsibleForConnection;
   private DataSource _ds;
   private Connection _conn;
   private String _sql;
+  private boolean _useAutoCommit;
+  private boolean _responsibleForConnection;
+  
+  /**
+   * Constructor with DataSource.  Sets auto-commit to true by default.
+   * 
+   * @param ds data source on which to operate
+   * @param sql SQL to execute via a PreparedStatement
+   */
+  public SQLRunner(DataSource ds, String sql) {
+    this(ds, sql, true);
+  }
   
   /**
    * Constructor with DataSource.
    * 
    * @param ds data source on which to operate
    * @param sql SQL to execute via a PreparedStatement
+   * @param useAutoCommit whether to use autoCommit during processing
    */
-  public SQLRunner(DataSource ds, String sql) {
+  public SQLRunner(DataSource ds, String sql, boolean useAutoCommit) {
     _ds = ds;
     _sql = sql;
+    _useAutoCommit = useAutoCommit;
     _responsibleForConnection = true;
+  }
+
+  /**
+   * Constructor with Connection.  Note that callers of this constructor are
+   * responsible for closing the connection they pass in.  To delegate that
+   * responsibility to this class, use the constructor that takes a DataSource
+   * parameter.  Sets auto-commit to true by default.
+   * 
+   * @param conn connection on which to operate
+   * @param sql SQL to execute via a PreparedStatement
+   */
+  public SQLRunner(Connection conn, String sql) {
+    this(conn, sql, true);
   }
 
   /**
@@ -82,10 +107,12 @@ public class SQLRunner {
    * 
    * @param conn connection on which to operate
    * @param sql SQL to execute via a PreparedStatement
+   * @param useAutoCommit whether to use autoCommit during processing
    */
-  public SQLRunner(Connection conn, String sql) {
+  public SQLRunner(Connection conn, String sql, boolean useAutoCommit) {
     _conn = conn;
     _sql = sql;
+    _useAutoCommit = useAutoCommit;
     _responsibleForConnection = false;
   }
   
@@ -183,8 +210,11 @@ public class SQLRunner {
   private void executeSql(PreparedStatementExecutor exec) {
     Connection conn = null;
     PreparedStatement stmt = null;
+    Boolean origAutoCommit = null;
     try {
       conn = getConnection();
+      origAutoCommit = conn.getAutoCommit();
+      conn.setAutoCommit(_useAutoCommit);
       // record start
       stmt = conn.prepareStatement(_sql);
       // record prepare
@@ -194,14 +224,22 @@ public class SQLRunner {
       // record execute
       exec.handleResult();
       // record handling and write results
+      conn.commit();
     }
     catch (SQLException e) {
       // record error and write results
+      try { conn.rollback(); } catch (SQLException e2) {
+        // don't rethrow as it will mask the original exception
+        LOG.error("Exception thrown while attempting rollback.", e2);
+      }
       throw new SQLRunnerException("Unable to run query with SQL <" + _sql + "> and args: " + exec.getParamsToString(), e);
     }
     finally {
       exec.closeQuietly();
       SqlUtils.closeQuietly(stmt);
+      // try to reset auto-commit to original value
+      if (conn != null) try { conn.setAutoCommit(origAutoCommit); } catch (SQLException e) {
+        LOG.warn("Unable to reset auto-commit flag to original value (" + origAutoCommit + ")"); }
       closeConnection();
     }
   }
