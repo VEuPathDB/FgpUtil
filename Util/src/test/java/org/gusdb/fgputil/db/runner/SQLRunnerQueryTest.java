@@ -76,7 +76,7 @@ public class SQLRunnerQueryTest {
     argBatch.add(new Object[]{ 4, "brian", "nairb" });
     argBatch.add(new Object[]{ 5, "omar", "ramo" });
     argBatch.add(new Object[]{ 6, "cristina", "anitsirc" });
-    int rowsChanged = db.executeBatchUpdate(argBatch);
+    int rowsChanged = db.executeUpdateBatch(argBatch);
     
     assertEquals(rowsChanged, 3);
   }

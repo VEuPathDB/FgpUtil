@@ -104,6 +104,17 @@ public class SQLRunner {
   public void executeStatement(Object[] args) {
     executeSql(new StatementExecutor(args));
   }
+  
+  /**
+   * Executes a batch statement operation using sets of SQL parameters retrieved
+   * from the passed argument batch.  Uses the batch's getBatchSize() method
+   * to determine how many operations to group into each batch.
+   * 
+   * @param batch set of SQL parameter sets containing
+   */
+  public void executeStatementBatch(ArgumentBatch batch) {
+    executeSql(new BatchUpdateExecutor(batch));
+  }
 
   /**
    * Executes this runner's SQL and assumes no SQL parameters.  When doing so,
@@ -141,7 +152,7 @@ public class SQLRunner {
    * @param batch set of SQL parameter sets containing
    * @return number of rows updated
    */
-  public int executeBatchUpdate(ArgumentBatch batch) {
+  public int executeUpdateBatch(ArgumentBatch batch) {
     BatchUpdateExecutor runner = new BatchUpdateExecutor(batch);
     executeSql(runner);
     return runner.getNumUpdates();
