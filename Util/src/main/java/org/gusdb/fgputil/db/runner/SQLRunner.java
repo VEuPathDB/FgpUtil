@@ -230,7 +230,7 @@ public class SQLRunner {
    * @param handler handler implementation to process results
    */
   public void executeQuery(ResultSetHandler handler) {
-    executeQuery(handler, new Object[]{ }, null);
+    executeQuery(new Object[]{ }, null, handler);
   }
   
   /**
@@ -241,8 +241,8 @@ public class SQLRunner {
    * @param handler handler implementation to process results
    * @param args SQL parameters
    */
-  public void executeQuery(ResultSetHandler handler, Object[] args) {
-    executeQuery(handler, args, null);
+  public void executeQuery(Object[] args, ResultSetHandler handler) {
+    executeQuery(args, null, handler);
   }
   
   /**
@@ -254,7 +254,7 @@ public class SQLRunner {
    * @param args SQL parameters
    * @param types SQL types of parameters
    */
-  public void executeQuery(ResultSetHandler handler, Object[] args, Integer[] types) {
+  public void executeQuery(Object[] args, Integer[] types, ResultSetHandler handler) {
     executeSql(new QueryExecutor(handler, args, types));
   }
   

@@ -44,7 +44,7 @@ public class SQLRunnerQueryTest {
     testInsert();
 
     SQLRunner db = new SQLRunner(_ds, SELECT_BY_NAME);
-    db.executeQuery(_handler, new Object[] { "ryan" });
+    db.executeQuery(new Object[] { "ryan" }, _handler);
     
     assertEquals(_handler.getNumRows(), 2);
     assertEquals(_handler.getNumCols(), 3);
