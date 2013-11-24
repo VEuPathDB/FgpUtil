@@ -3,6 +3,7 @@ package org.gusdb.fgputil.db.runner;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
@@ -38,15 +39,22 @@ class SQLRunnerExecutors {
   static abstract class PreparedStatementExecutor {
     
     private Object[] _args;
+    private Integer[] _types;
 
     /**
      * Constructor.
      * 
      * @param args SQL parameters to be assigned to the PreparedStatement in
      * methods to be called later
+     * @param types SQL parameter types for the given args
      */
-    public PreparedStatementExecutor(Object[] args) {
+    public PreparedStatementExecutor(Object[] args, Integer[] types) {
       _args = args;
+      _types = types;
+      if (_types != null && args.length != types.length) {
+        throw new SQLRunnerException("Number of types specified (" + types.length +
+            ") must match number of arguments (" + args.length + ").");
+      }
     }
 
     /**
@@ -65,7 +73,7 @@ class SQLRunnerExecutors {
      * @throws SQLException if error occurs while setting params
      */
     public void setParams(PreparedStatement stmt) throws SQLException {
-      setParams(stmt, _args);
+      setParams(stmt, _args, _types);
     }
 
     /**
@@ -76,9 +84,17 @@ class SQLRunnerExecutors {
      * @param args params to assign
      * @throws SQLException if error occurs while setting params
      */
-    protected static void setParams(PreparedStatement stmt, Object[] args) throws SQLException {
+    protected static void setParams(PreparedStatement stmt, Object[] args, Integer[] types) throws SQLException {
       for (int i = 0; i < args.length; i++) {
-        stmt.setObject(i+1, args[i]);
+        if (types == null || types[i] == null) {
+          stmt.setObject(i+1, args[i]);
+        }
+        else if (args[i] == null) {
+          stmt.setNull(i+1, types[i]);
+        }
+        else {
+          stmt.setObject(i+1, args[i], types[i]);
+        }
       }
     }
     
@@ -115,7 +131,7 @@ class SQLRunnerExecutors {
    * @author rdoherty
    */
   static class StatementExecutor extends PreparedStatementExecutor {
-    public StatementExecutor(Object[] args) { super(args); }
+    public StatementExecutor(Object[] args, Integer[] types) { super(args, types); }
     @Override public void run(PreparedStatement stmt) throws SQLException { stmt.execute(); }
   }
 
@@ -127,7 +143,7 @@ class SQLRunnerExecutors {
    */
   static class UpdateExecutor extends PreparedStatementExecutor {
     private int _numUpdates;
-    public UpdateExecutor(Object[] args) { super(args); }
+    public UpdateExecutor(Object[] args, Integer[] types) { super(args, types); }
     @Override public void run(PreparedStatement stmt) throws SQLException { _numUpdates = stmt.executeUpdate(); }
     public int getNumUpdates() { return _numUpdates; }
   }
@@ -144,8 +160,21 @@ class SQLRunnerExecutors {
     private int _numUpdates;
     
     public BatchUpdateExecutor(ArgumentBatch argBatch) {
-      super(new Object[]{ });
+      super(new Object[]{ }, null);
       _argBatch = argBatch;
+      validiateArgumentBatch(_argBatch);
+    }
+
+    private void validiateArgumentBatch(ArgumentBatch argBatch) {
+      // make sure number of types at least matches num args in first record
+      Integer[] colTypes = _argBatch.getParameterTypes();
+      Iterator<Object[]> iter = _argBatch.iterator();
+      Object[] first;
+      if (iter.hasNext() && colTypes != null &&
+          (first = iter.next()).length != colTypes.length) {
+        throw new SQLRunnerException("Number of types specified (" + colTypes.length +
+            ") must match number of arguments in first record (" + first.length + ").");
+      }
     }
 
     @Override
@@ -159,7 +188,7 @@ class SQLRunnerExecutors {
       _numUpdates = 0;
       int numUnexecuted = 0;
       for (Object[] args : _argBatch) {
-        setParams(stmt, args);
+        setParams(stmt, args, _argBatch.getParameterTypes());
         stmt.addBatch();
         numUnexecuted++;
         if (numUnexecuted == _argBatch.getBatchSize()) {
@@ -181,7 +210,7 @@ class SQLRunnerExecutors {
     }
 
     @Override
-	public String getParamsToString() {
+    public String getParamsToString() {
       return "Batch of arguments.";
     }
   }
@@ -197,8 +226,8 @@ class SQLRunnerExecutors {
     private ResultSetHandler _handler;
     private ResultSet _results;
     
-    public QueryExecutor(Object[] args, ResultSetHandler handler) {
-      super(args);
+    public QueryExecutor(ResultSetHandler handler, Object[] args, Integer[] types) {
+      super(args, types);
       _handler = handler;
     }
     

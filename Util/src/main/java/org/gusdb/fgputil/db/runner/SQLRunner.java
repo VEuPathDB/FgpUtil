@@ -54,6 +54,18 @@ public class SQLRunner {
      * @return how many instructions should be added before executing a batch
      */
     public int getBatchSize();
+    
+    /**
+     * Tells SQLRunner what type of data is being submitted for each parameter.
+     * Please use values from java.sql.Types.  A value of null for a given
+     * param tells SQLRunner to intelligently 'guess' the type for that param.
+     * A value of null returned by this method tells SQLRunner to guess for all
+     * params.  Note guessing is less efficient.
+     * 
+     * @return SQL types that will suggest the type of data to be passed, or
+     * null if SQLRunner is to guess the types.
+     */
+    public Integer[] getParameterTypes();
   }
   
   private DataSource _ds;
@@ -120,7 +132,7 @@ public class SQLRunner {
    * Executes this runner's SQL and assumes no SQL parameters
    */
   public void executeStatement() {
-    executeStatement(new Object[]{ });
+    executeStatement(new Object[]{ }, null);
   }
   
   /**
@@ -129,7 +141,18 @@ public class SQLRunner {
    * @param args SQL parameters
    */
   public void executeStatement(Object[] args) {
-    executeSql(new StatementExecutor(args));
+	executeStatement(args, null);
+  }
+  
+  /**
+   * Executes this runner's SQL using the passed parameter array and parameter
+   * types.  Use java.sql.Types to as type values.
+   * 
+   * @param args SQL parameters
+   * @param types SQL types of parameters
+   */
+  public void executeStatement(Object[] args, Integer[] types) {
+    executeSql(new StatementExecutor(args, types));
   }
   
   /**
@@ -152,7 +175,7 @@ public class SQLRunner {
    * @return number of rows updated
    */
   public int executeUpdate() {
-    return executeUpdate(new Object[]{ });
+    return executeUpdate(new Object[]{ }, null);
   }
   
   /**
@@ -165,7 +188,22 @@ public class SQLRunner {
    * @return number of rows updated
    */
   public int executeUpdate(Object[] args) {
-    UpdateExecutor runner = new UpdateExecutor(args);
+    return executeUpdate(args, null);
+  }
+  
+  /**
+   * Executes this runner's SQL using the passed parameter array and types.
+   * When doing so, captures the resulting number of updates.  This method
+   * should be called for insert or update operations where the caller would
+   * like to know the effects of the execution.  Use java.sql.Types to as type
+   * values.
+   * 
+   * @param args SQL parameters
+   * @param types SQL types of parameters
+   * @return number of rows updated
+   */
+  public int executeUpdate(Object[] args, Integer[] types) {
+    UpdateExecutor runner = new UpdateExecutor(args, types);
     executeSql(runner);
     return runner.getNumUpdates();
   }
@@ -192,7 +230,7 @@ public class SQLRunner {
    * @param handler handler implementation to process results
    */
   public void executeQuery(ResultSetHandler handler) {
-    executeQuery(new Object[]{ }, handler);
+    executeQuery(handler, new Object[]{ }, null);
   }
   
   /**
@@ -200,11 +238,24 @@ public class SQLRunner {
    * Executes an SQL query using the passed parameter array, passing results to
    * the given handler.  
    * 
-   * @param args SQL parameters
    * @param handler handler implementation to process results
+   * @param args SQL parameters
    */
-  public void executeQuery(Object[] args, ResultSetHandler handler) {
-    executeSql(new QueryExecutor(args, handler));
+  public void executeQuery(ResultSetHandler handler, Object[] args) {
+    executeQuery(handler, args, null);
+  }
+  
+  /**
+   * 
+   * Executes an SQL query using the passed parameter array, passing results to
+   * the given handler.  
+   * 
+   * @param handler handler implementation to process results
+   * @param args SQL parameters
+   * @param types SQL types of parameters
+   */
+  public void executeQuery(ResultSetHandler handler, Object[] args, Integer[] types) {
+    executeSql(new QueryExecutor(handler, args, types));
   }
   
   private void executeSql(PreparedStatementExecutor exec) {

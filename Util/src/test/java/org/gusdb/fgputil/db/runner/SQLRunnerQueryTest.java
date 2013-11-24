@@ -44,7 +44,7 @@ public class SQLRunnerQueryTest {
     testInsert();
 
     SQLRunner db = new SQLRunner(_ds, SELECT_BY_NAME);
-    db.executeQuery(new Object[] { "ryan" }, _handler);
+    db.executeQuery(_handler, new Object[] { "ryan" });
     
     assertEquals(_handler.getNumRows(), 2);
     assertEquals(_handler.getNumCols(), 3);
@@ -72,6 +72,20 @@ public class SQLRunnerQueryTest {
   public void testBatchUpdate() throws Exception {
     SQLRunner db = new SQLRunner(_ds, INSERT_USER);
     BasicArgumentBatch argBatch = new BasicArgumentBatch();
+    argBatch.setBatchSize(2);
+    argBatch.add(new Object[]{ 4, "brian", "nairb" });
+    argBatch.add(new Object[]{ 5, "omar", "ramo" });
+    argBatch.add(new Object[]{ 6, "cristina", "anitsirc" });
+    int rowsChanged = db.executeUpdateBatch(argBatch);
+    
+    assertEquals(rowsChanged, 3);
+  }
+  
+  @Test
+  public void testBatchUpdateWithTypes() throws Exception {
+    SQLRunner db = new SQLRunner(_ds, INSERT_USER);
+    BasicArgumentBatch argBatch = new BasicArgumentBatch();
+    argBatch.setParameterTypes(new Integer[]{ Types.INTEGER, Types.VARCHAR, Types.VARCHAR });
     argBatch.setBatchSize(2);
     argBatch.add(new Object[]{ 4, "brian", "nairb" });
     argBatch.add(new Object[]{ 5, "omar", "ramo" });

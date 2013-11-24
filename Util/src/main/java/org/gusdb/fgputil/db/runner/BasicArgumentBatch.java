@@ -20,6 +20,7 @@ public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentB
   public static final int DEFAULT_BATCH_SIZE = 100;
   
   private int _batchSize = DEFAULT_BATCH_SIZE;
+  private Integer[] _types;
 
   @Override
   public int getBatchSize() {
@@ -28,15 +29,25 @@ public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentB
   public void setBatchSize(int batchSize) {
     _batchSize = batchSize;
   }
-  
+
+  @Override
+  public Integer[] getParameterTypes() {
+    if (_types != null) {
+      return _types;
+    }
+    return new Integer[size()];
+  }
+  public void setParameterTypes(Integer[] types) {
+    _types = types;
+  }
+
   @Override
   public String toString() {
     StringBuilder out = new StringBuilder("ArgumentBatch of size ")
-    	.append(size()).append(" {").append(NL);
+        .append(size()).append(" {").append(NL);
     for (Object[] args : this) {
       out.append("   ").append(FormatUtil.arrayToString(args)).append(NL);
     }
     return out.append("}").append(NL).toString();
   }
-
 }
