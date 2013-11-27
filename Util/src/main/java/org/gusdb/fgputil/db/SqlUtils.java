@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db;
 
+import java.io.StringReader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -7,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.sql.Wrapper;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -291,6 +293,17 @@ public final class SqlUtils {
     }
   }
 
+  public static void setClobData(PreparedStatement ps, int columnIndex,
+	    String content) throws SQLException {
+    if (content == null) {
+      ps.setNull(columnIndex, Types.CLOB);
+    }
+    else {
+      StringReader reader = new StringReader(content);
+      ps.setCharacterStream(columnIndex, reader, content.length());
+    }
+  }
+
   /**
    * This method provides "quiet" (i.e. no logging, no exceptions thrown)
    * closing of the following implementations of Wrapper:
@@ -329,6 +342,33 @@ public final class SqlUtils {
             ((Connection) wrap).close();
           }
         } catch (Exception e) {}
+      }
+    }
+  }
+
+  /**
+   * Statically bind SQL params to the given statement.  This method enables
+   * child classes to assign different sets of params multiple times
+   * 
+   * @param stmt statement on which to assign params
+   * @param types types of params (values from java.sql.Types)
+   * @param args params to assign
+   * @throws SQLException if error occurs while setting params
+   */
+  public static void bindParamValues(PreparedStatement stmt, Integer[] types,
+	  Object[] args) throws SQLException {
+    for (int i = 0; i < args.length; i++) {
+      if (types == null || types[i] == null) {
+        stmt.setObject(i+1, args[i]);
+      }
+      else if (args[i] == null) {
+        stmt.setNull(i+1, types[i]);
+      }
+      else if (types[i].intValue() == Types.CLOB) {
+        SqlUtils.setClobData(stmt, i+1, args[i].toString());
+      }
+      else {
+        stmt.setObject(i+1, args[i], types[i]);
       }
     }
   }
