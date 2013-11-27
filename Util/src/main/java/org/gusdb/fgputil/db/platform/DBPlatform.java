@@ -1,15 +1,14 @@
 package org.gusdb.fgputil.db.platform;
 
-import java.io.StringReader;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.DBStateException;
+import org.gusdb.fgputil.db.SqlUtils;
 
 /**
  * Provides a base class for DB-vendor-specific interfaces.  This allows calling
@@ -116,13 +115,7 @@ public abstract class DBPlatform {
 
     public int setClobData(PreparedStatement ps, int columnIndex,
         String content, boolean commit) throws SQLException {
-      if (content == null) {
-        ps.setNull(columnIndex, Types.CLOB);
-      }
-      else {
-        StringReader reader = new StringReader(content);
-        ps.setCharacterStream(columnIndex, reader, content.length());
-      }
+      SqlUtils.setClobData(ps, columnIndex, content);
       return (commit ? ps.executeUpdate() : 0);
     }
 }
