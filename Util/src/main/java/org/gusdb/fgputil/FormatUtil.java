@@ -1,14 +1,21 @@
 package org.gusdb.fgputil;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 public class FormatUtil {
-	
+
+  public static final String NL = System.getProperty("line.separator");
+  
+  private FormatUtil() {}
+    
   public static String splitCamelCase(String s) {
     return s.replaceAll(
-			String.format("%s|%s|%s",
-				      "(?<=[A-Z])(?=[A-Z][a-z])",
-				      "(?<=[^A-Z])(?=[A-Z])",
-				      "(?<=[A-Za-z])(?=[^A-Za-z])"),
-			" ");
+            String.format("%s|%s|%s",
+                      "(?<=[A-Z])(?=[A-Z][a-z])",
+                      "(?<=[^A-Z])(?=[A-Z])",
+                      "(?<=[A-Za-z])(?=[^A-Za-z])"),
+            " ");
   }
 
   public static String multiLineFormat(String str, int maxCharsPerLine) {
@@ -46,7 +53,7 @@ public class FormatUtil {
     }
     return sb.append(" ]").toString();
   }
-	
+    
   public static String getCamelCaseDisplayVal(String str) {
     StringBuilder newStr = new StringBuilder();
     boolean justSawSpace = true; // set so first char is upper case
@@ -54,15 +61,15 @@ public class FormatUtil {
     for (int i=0; i < str.length(); i++) {
       char thisChar = str.charAt(i);
       if (thisChar == ' ' || thisChar == '_' || thisChar == '-') {
-	if (!justSawSpace) { // only do a single whitespace char
-	  newStr.append(' ');
-	  justSawSpace = true;
-	}
+        if (!justSawSpace) { // only do a single whitespace char
+          newStr.append(' ');
+          justSawSpace = true;
+        }
       } else if (justSawSpace) {
-	newStr.append(String.valueOf(thisChar).toUpperCase());
-	justSawSpace = false;
+        newStr.append(String.valueOf(thisChar).toUpperCase());
+        justSawSpace = false;
       } else {
-	newStr.append(String.valueOf(thisChar).toLowerCase());
+        newStr.append(String.valueOf(thisChar).toLowerCase());
       }
     }
     return newStr.toString();
@@ -71,5 +78,38 @@ public class FormatUtil {
   public static boolean isInteger(String s) {
     try { Integer.parseInt(s); return true; }
     catch (NumberFormatException e) { return false; }
+  }
+
+  public static enum Style {
+    SINGLE_LINE(" ", "", ", ", ""),
+    MULTI_LINE(NL, "   ", ","+NL, NL);
+    
+    public final String introDelimiter;
+    public final String recordIndent;
+    public final String mapArrow = " => ";
+    public final String recordDelimiter;
+    public final String endDelimiter;
+    
+    private Style(String id, String ri, String rd, String ed) {
+      introDelimiter = id; recordIndent = ri;
+      recordDelimiter = rd; endDelimiter = ed;
+    }
+  }
+  
+  public static <S,T> String prettyPrint(Map<S,T> map) {
+    return prettyPrint(map, Style.SINGLE_LINE);
+  }
+  
+  public static <S,T> String prettyPrint(Map<S,T> map, Style style) {
+    StringBuilder sb = new StringBuilder("{").append(style.introDelimiter);
+    boolean firstRecord = true;
+    for (Entry<S,T> entry : map.entrySet()) {
+      sb.append(firstRecord ? "" : style.recordDelimiter)
+        .append(style.recordIndent).append(entry.getKey().toString())
+        .append(style.mapArrow).append(entry.getValue().toString());
+      firstRecord = false;
+    }
+    return sb.append(style.endDelimiter).append("}")
+             .append(style.endDelimiter).toString();
   }
 }
