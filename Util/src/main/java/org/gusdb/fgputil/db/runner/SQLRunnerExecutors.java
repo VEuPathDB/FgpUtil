@@ -73,29 +73,7 @@ class SQLRunnerExecutors {
      * @throws SQLException if error occurs while setting params
      */
     public void setParams(PreparedStatement stmt) throws SQLException {
-      setParams(stmt, _args, _types);
-    }
-
-    /**
-     * Statically assign SQL params to the given statement.  This method enables
-     * child classes to assign different sets of params multiple times
-     * 
-     * @param stmt statement on which to assign params
-     * @param args params to assign
-     * @throws SQLException if error occurs while setting params
-     */
-    protected static void setParams(PreparedStatement stmt, Object[] args, Integer[] types) throws SQLException {
-      for (int i = 0; i < args.length; i++) {
-        if (types == null || types[i] == null) {
-          stmt.setObject(i+1, args[i]);
-        }
-        else if (args[i] == null) {
-          stmt.setNull(i+1, types[i]);
-        }
-        else {
-          stmt.setObject(i+1, args[i], types[i]);
-        }
-      }
+      SqlUtils.bindParamValues(stmt, _types, _args);
     }
     
     /**
@@ -188,7 +166,7 @@ class SQLRunnerExecutors {
       _numUpdates = 0;
       int numUnexecuted = 0;
       for (Object[] args : _argBatch) {
-        setParams(stmt, args, _argBatch.getParameterTypes());
+        SqlUtils.bindParamValues(stmt, _argBatch.getParameterTypes(), args);
         stmt.addBatch();
         numUnexecuted++;
         if (numUnexecuted == _argBatch.getBatchSize()) {
