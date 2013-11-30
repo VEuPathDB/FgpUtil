@@ -104,9 +104,9 @@ public class FormatUtil {
     StringBuilder sb = new StringBuilder("{").append(style.introDelimiter);
     boolean firstRecord = true;
     for (Entry<S,T> entry : map.entrySet()) {
-      sb.append(firstRecord ? "" : style.recordDelimiter)
-        .append(style.recordIndent).append(entry.getKey().toString())
-        .append(style.mapArrow).append(entry.getValue().toString());
+      sb.append(firstRecord ? "" : style.recordDelimiter).append(style.recordIndent)
+        .append(entry.getKey().toString()).append(style.mapArrow)
+        .append(entry.getValue() == null ? null : entry.getValue().toString());
       firstRecord = false;
     }
     return sb.append(style.endDelimiter).append("}")
