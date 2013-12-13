@@ -116,6 +116,6 @@ public class FormatUtil {
 
   public static String getPctFromRatio(long numerator, long denominator) {
     Double ratio = (double)numerator / (double)denominator;
-	return new DecimalFormat("##0.0").format(ratio * 100D) + "%";
+    return new DecimalFormat("##0.0").format(ratio * 100D) + "%";
   }
 }
