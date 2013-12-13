@@ -142,7 +142,7 @@ public class SQLRunner {
    * @param args SQL parameters
    */
   public void executeStatement(Object[] args) {
-	executeStatement(args, null);
+    executeStatement(args, null);
   }
   
   /**
@@ -311,6 +311,6 @@ public class SQLRunner {
   }
 
   public long getLastExecutionTime() {
-	return _lastExecutionTime;
+    return _lastExecutionTime;
   }
 }
