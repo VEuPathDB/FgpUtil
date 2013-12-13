@@ -73,6 +73,7 @@ public class SQLRunner {
   private String _sql;
   private boolean _useAutoCommit;
   private boolean _responsibleForConnection;
+  private long _lastExecutionTime = 0L;
   
   /**
    * Constructor with DataSource.  Sets auto-commit to true by default.
@@ -271,11 +272,12 @@ public class SQLRunner {
       // record prepare
       exec.setParams(stmt);
       // record params set
-      exec.run(stmt);
+      exec.runWithTimer(stmt);
       // record execute
       exec.handleResult();
       // record handling and write results
       conn.commit();
+      _lastExecutionTime = exec.getLastExecutionTime();
     }
     catch (SQLException e) {
       // record error and write results
@@ -306,5 +308,9 @@ public class SQLRunner {
     if (_responsibleForConnection) {
       SqlUtils.closeQuietly(_conn);
     }
+  }
+
+  public long getLastExecutionTime() {
+	return _lastExecutionTime;
   }
 }

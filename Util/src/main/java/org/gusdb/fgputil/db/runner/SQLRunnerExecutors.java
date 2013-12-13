@@ -40,6 +40,7 @@ class SQLRunnerExecutors {
     
     private Object[] _args;
     private Integer[] _types;
+    protected long _lastExecutionTime = 0L;
 
     /**
      * Constructor.
@@ -100,6 +101,16 @@ class SQLRunnerExecutors {
         sb.append(", ").append(_args[i]);
       }
       return sb.append(" ]").toString();
+    }
+
+    public long getLastExecutionTime() {
+      return _lastExecutionTime;
+    }
+
+    public void runWithTimer(PreparedStatement stmt) throws SQLException {
+      long startTime = System.currentTimeMillis();
+      run(stmt);
+      _lastExecutionTime = System.currentTimeMillis() - startTime;
     }
   }
   
@@ -162,27 +173,39 @@ class SQLRunnerExecutors {
     }
 
     @Override
+    public void runWithTimer(PreparedStatement stmt) throws SQLException {
+      // this class's run() method takes care of recording cumulative execution time
+      run(stmt);
+    }
+    
+    @Override
     public void run(PreparedStatement stmt) throws SQLException {
       _numUpdates = 0;
+      _lastExecutionTime = 0;
       int numUnexecuted = 0;
       for (Object[] args : _argBatch) {
         SqlUtils.bindParamValues(stmt, _argBatch.getParameterTypes(), args);
         stmt.addBatch();
         numUnexecuted++;
         if (numUnexecuted == _argBatch.getBatchSize()) {
-          for (int count : stmt.executeBatch()) {
-            _numUpdates += count;
-          }
+          executeBatch(stmt);
           numUnexecuted = 0;
         }
       }
       if (numUnexecuted > 0) {
-        for (int count : stmt.executeBatch()) {
-          _numUpdates += count;
-        }
+        executeBatch(stmt);
       }
     }
     
+    private void executeBatch(PreparedStatement stmt) throws SQLException {
+      long startTime = System.currentTimeMillis();
+      int[] numUpdatesArray = stmt.executeBatch();
+      _lastExecutionTime += (System.currentTimeMillis() - startTime);
+      for (int count : numUpdatesArray) {
+        _numUpdates += count;
+      }
+    }
+
     public int getNumUpdates() {
       return _numUpdates;
     }
