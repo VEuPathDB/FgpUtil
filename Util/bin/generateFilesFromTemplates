@@ -1,9 +1,8 @@
 #!/usr/bin/perl
 
 use strict;
-use YAML;
+use YAML qw 'Load LoadFile';
 use Data::Dumper;
-
 
 usage() unless scalar(@ARGV) == 2 || scalar(@ARGV);
 
@@ -56,11 +55,13 @@ sub parseCommandLineConfig {
 
 sub readAndResolveConfigFile {
   my ($configFile, $metaConfig, $commandLineConfig) = @_;
-  open(F, $configFile) || die "Error: Can't open config file '$configFile'\n";
-  my @configFileAsLines = <F>;
-  close(F);
-  my $updatedConfigFileAsText = substituteMacros($metaConfig->{required}, \@configFileAsLines, $configFile);
-  my $config = Load($updatedConfigFileAsText);
+  # open(F, $configFile) || die "Error: Can't open config file '$configFile'\n";
+  # my @configFileAsLines = <F>;
+  # close(F);
+  # my $updatedConfigFileAsText = substituteMacros($metaConfig->{required}, \@configFileAsLines, $configFile);
+  # my $config = Load($updatedConfigFileAsText);
+  my $configWithMacros = LoadFile($configFile);
+  my $config = substituteMacrosInHash($metaConfig->{required}, $configWithMacros, $configFile);
   die "Error: Config file '$configFile' is missing the required 'default:' section" unless $config->{default};
 #  print Dumper($config), "\n";
   return $config;
@@ -108,6 +109,33 @@ sub substituteMacros {
     push(@output, $line);
   }
   return join("\n", @output);
+}
+
+sub substituteMacrosInHash {
+  my ($keyValues, $hash, $fileName) = @_;
+
+  while (my ($key, $value) = each (%$hash)) {
+    if (ref $value eq 'HASH') {
+      $hash->{$key} = substituteMacrosInHash($keyValues, $value, $fileName);
+    } elsif (ref $value eq 'ARRAY') {
+      foreach my $v (@$value) {
+        my @macros = $v =~ /\${(.*?)\}/;
+        foreach my $macro (@macros) {
+          $v = $keyValues->{$macro};
+          print "Resolving $key\n";
+          die "Error: macro \${$key} cannot be resolved\n" unless (defined($v));
+        }
+      }
+      $hash->{$key} = $value;
+    } else {
+      my @macros = $value =~ /\${(.*?)\}/;
+      foreach my $macro (@macros) {
+        $hash->{$key} = $keyValues->{$macro};
+        die "Error: macro \${$key} cannot be resolved\n" unless (defined($value));
+      }
+    }
+  }
+  return $hash;
 }
 
 sub instantiateTemplates {
