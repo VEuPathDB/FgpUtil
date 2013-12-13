@@ -1,5 +1,6 @@
 package org.gusdb.fgputil;
 
+import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -111,5 +112,10 @@ public class FormatUtil {
     }
     return sb.append(style.endDelimiter).append("}")
              .append(style.endDelimiter).toString();
+  }
+
+  public static String getPctFromRatio(long numerator, long denominator) {
+    Double ratio = (double)numerator / (double)denominator;
+	return new DecimalFormat("##0.0").format(ratio * 100D) + "%";
   }
 }

@@ -21,4 +21,19 @@ public class FormatTest {
 			.append(FormatUtil.prettyPrint(fullMap, Style.MULTI_LINE)).append(NL)
 			.toString());
 	}
+	
+	@Test
+	public void testPercentFormat() throws Exception {
+		Integer[][] cases = new Integer[][]{
+			{ 12, 100 },
+			{ 56, 127 },
+			{ 0, 40 },
+			{ -8, 20 },
+			{ 5 , 0 }
+		};
+		for (Integer[] cas : cases) {
+			System.out.println(cas[0] + "/" + cas[1] + " = " +
+			    FormatUtil.getPctFromRatio(cas[0], cas[1]));
+		}
+	}
 }
