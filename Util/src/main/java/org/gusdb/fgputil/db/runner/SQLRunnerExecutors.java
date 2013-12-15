@@ -195,7 +195,7 @@ class SQLRunnerExecutors {
       int[] numUpdatesArray = stmt.executeBatch();
       long currentBatchTime = (System.currentTimeMillis() - startTime);
       _lastExecutionTime += currentBatchTime;
-      LOG.info(new StringBuilder("Writing batch ").append(batchNumber)
+      LOG.debug(new StringBuilder("Writing batch ").append(batchNumber)
           .append(" (").append(batchSize).append(" records) took ")
           .append(currentBatchTime).append(" ms. Cumulative batch execution time: ")
           .append(_lastExecutionTime).append(" ms").toString());
