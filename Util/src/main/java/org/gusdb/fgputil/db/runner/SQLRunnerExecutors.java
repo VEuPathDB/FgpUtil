@@ -3,7 +3,6 @@ package org.gusdb.fgputil.db.runner;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -154,19 +153,6 @@ class SQLRunnerExecutors {
     public BatchUpdateExecutor(ArgumentBatch argBatch) {
       super(new Object[]{ }, null);
       _argBatch = argBatch;
-      validiateArgumentBatch(_argBatch);
-    }
-
-    private void validiateArgumentBatch(ArgumentBatch argBatch) {
-      // make sure number of types at least matches num args in first record
-      Integer[] colTypes = _argBatch.getParameterTypes();
-      Iterator<Object[]> iter = _argBatch.iterator();
-      Object[] first;
-      if (iter.hasNext() && colTypes != null &&
-          (first = iter.next()).length != colTypes.length) {
-        throw new SQLRunnerException("Number of types specified (" + colTypes.length +
-            ") must match number of arguments in first record (" + first.length + ").");
-      }
     }
 
     @Override
