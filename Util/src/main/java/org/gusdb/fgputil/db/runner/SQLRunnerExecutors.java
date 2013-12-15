@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
@@ -24,6 +25,8 @@ import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
  */
 class SQLRunnerExecutors {
 
+  private static final Logger LOG = Logger.getLogger(SQLRunnerExecutors.class);
+    
   /**
    * Abstract parent of all other SQL executors.  The methods in each
    * implementation should be executed in the following order:
@@ -182,25 +185,34 @@ class SQLRunnerExecutors {
     public void run(PreparedStatement stmt) throws SQLException {
       _numUpdates = 0;
       _lastExecutionTime = 0;
+      int numBatches = 0;
       int numUnexecuted = 0;
       for (Object[] args : _argBatch) {
         SqlUtils.bindParamValues(stmt, _argBatch.getParameterTypes(), args);
         stmt.addBatch();
         numUnexecuted++;
         if (numUnexecuted == _argBatch.getBatchSize()) {
-          executeBatch(stmt);
+          numBatches++;
+          executeBatch(stmt, numBatches, numUnexecuted);
           numUnexecuted = 0;
         }
       }
       if (numUnexecuted > 0) {
-        executeBatch(stmt);
+        numBatches++;
+        executeBatch(stmt, numBatches, numUnexecuted);
       }
     }
     
-    private void executeBatch(PreparedStatement stmt) throws SQLException {
+    private void executeBatch(PreparedStatement stmt, int batchNumber, int batchSize)
+        throws SQLException {
       long startTime = System.currentTimeMillis();
       int[] numUpdatesArray = stmt.executeBatch();
-      _lastExecutionTime += (System.currentTimeMillis() - startTime);
+      long currentBatchTime = (System.currentTimeMillis() - startTime);
+      _lastExecutionTime += currentBatchTime;
+      LOG.info(new StringBuilder("Writing batch ").append(batchNumber)
+          .append(" (").append(batchSize).append(" records) took ")
+          .append(currentBatchTime).append(" ms. Cumulative batch execution time: ")
+          .append(_lastExecutionTime).append(" ms").toString());
       for (int count : numUpdatesArray) {
         _numUpdates += count;
       }
