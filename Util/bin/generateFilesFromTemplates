@@ -103,7 +103,7 @@ sub substituteMacros {
     my @macroKeys = $line =~ /\$\{(.*?)\}/g;
     foreach my $key (@macroKeys) {
       my $value = $keyValues->{$key};
-      die "Error: Line $lineNum in file $fileName contains macro \${$key} that cannot be resolved\n" if (!$value);
+      die "Error: Line $lineNum in file $fileName contains macro \${$key} that cannot be resolved\n" unless (defined($value));
       $line =~ s/\$\{$key\}/$value/g;
     }
     push(@output, $line);
