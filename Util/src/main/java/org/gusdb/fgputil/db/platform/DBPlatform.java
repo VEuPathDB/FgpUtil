@@ -108,6 +108,8 @@ public abstract class DBPlatform {
     public abstract String getResizeColumnSql(String tableName, String column, int size);
     
     public abstract String getDefaultSchema(String login);
+    
+    public abstract String getRowNumberColumn();
 
     //#########################################################################
     // Common methods are platform independent

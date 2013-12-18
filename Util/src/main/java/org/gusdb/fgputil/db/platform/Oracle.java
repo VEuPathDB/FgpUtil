@@ -348,4 +348,9 @@ public class Oracle extends DBPlatform {
   public String getDefaultSchema(String login) {
     return normalizeSchema(login);
   }
+
+  @Override
+  public String getRowNumberColumn() {
+    return "rownum";
+  }
 }

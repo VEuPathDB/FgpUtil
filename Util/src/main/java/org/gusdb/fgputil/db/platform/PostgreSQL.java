@@ -290,4 +290,9 @@ public class PostgreSQL extends DBPlatform {
   public String getDefaultSchema(String login) {
     return normalizeSchema("public");
   }
+
+  @Override
+  public String getRowNumberColumn() {
+    return "row_number() over()";
+  }
 }
