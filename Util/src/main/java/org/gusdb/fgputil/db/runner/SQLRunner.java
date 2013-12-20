@@ -67,16 +67,38 @@ public class SQLRunner {
      */
     public Integer[] getParameterTypes();
   }
+
+  /**
+   * The SQLRunner class has a number of options with regard to transactions.
+   * If the DataSource-based constructor is used, caller can specify auto-commit
+   * or to run all operations within a call inside a transaction.  If the
+   * Connection-based constructor is used, no change will be made to the passed
+   * Connection's commit mode.
+   */
+  private static enum TxStrategy {
+    // Commits happen with each DB call (auto-commit).
+    AUTO_COMMIT,
+    // Commit happens only at end of SQLRunner call (operations occur in
+    // transaction).  Note this is the default behavior when a DataSource-based
+    // constructor is used.
+    TRANSACTION,
+    // Auto-commit setting from passed Connection is used (setting inherited).
+    // Note this is the default behavior when a Connection-based constructor is
+    // used.
+    INHERIT;
+  }
   
   private DataSource _ds;
   private Connection _conn;
   private String _sql;
-  private boolean _useAutoCommit;
+  private TxStrategy _txStrategy;
   private boolean _responsibleForConnection;
   private long _lastExecutionTime = 0L;
   
   /**
-   * Constructor with DataSource.  Sets auto-commit to true by default.
+   * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
+   * new connection from the DataSource and will run each call in a transaction,
+   * committing at the end of the call.
    * 
    * @param ds data source on which to operate
    * @param sql SQL to execute via a PreparedStatement
@@ -86,16 +108,19 @@ public class SQLRunner {
   }
   
   /**
-   * Constructor with DataSource.
+   * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
+   * new connection from the DataSource, running in a transaction if specified.
    * 
    * @param ds data source on which to operate
    * @param sql SQL to execute via a PreparedStatement
-   * @param useAutoCommit whether to use autoCommit during processing
+   * @param runInTransaction if true, will wrap all batch calls in a transaction;
+   * else will use auto-commit
+   * @throws IllegalArgumentException if called with NO_COMMITS or INHERIT TX strategy
    */
-  public SQLRunner(DataSource ds, String sql, boolean useAutoCommit) {
+  public SQLRunner(DataSource ds, String sql, boolean runInTransaction) {
     _ds = ds;
     _sql = sql;
-    _useAutoCommit = useAutoCommit;
+    _txStrategy = (runInTransaction ? TxStrategy.TRANSACTION : TxStrategy.AUTO_COMMIT);
     _responsibleForConnection = true;
   }
 
@@ -103,29 +128,15 @@ public class SQLRunner {
    * Constructor with Connection.  Note that callers of this constructor are
    * responsible for closing the connection they pass in.  To delegate that
    * responsibility to this class, use the constructor that takes a DataSource
-   * parameter.  Sets auto-commit to true by default.
+   * parameter.  Will use the auto-commit setting of the passed Connection.
    * 
    * @param conn connection on which to operate
    * @param sql SQL to execute via a PreparedStatement
    */
   public SQLRunner(Connection conn, String sql) {
-    this(conn, sql, true);
-  }
-
-  /**
-   * Constructor with Connection.  Note that callers of this constructor are
-   * responsible for closing the connection they pass in.  To delegate that
-   * responsibility to this class, use the constructor that takes a DataSource
-   * parameter.
-   * 
-   * @param conn connection on which to operate
-   * @param sql SQL to execute via a PreparedStatement
-   * @param useAutoCommit whether to use autoCommit during processing
-   */
-  public SQLRunner(Connection conn, String sql, boolean useAutoCommit) {
     _conn = conn;
     _sql = sql;
-    _useAutoCommit = useAutoCommit;
+    _txStrategy = TxStrategy.INHERIT;
     _responsibleForConnection = false;
   }
   
@@ -262,11 +273,8 @@ public class SQLRunner {
   private void executeSql(PreparedStatementExecutor exec) {
     Connection conn = null;
     PreparedStatement stmt = null;
-    Boolean origAutoCommit = null;
     try {
       conn = getConnection();
-      origAutoCommit = conn.getAutoCommit();
-      conn.setAutoCommit(_useAutoCommit);
       // record start
       stmt = conn.prepareStatement(_sql);
       // record prepare
@@ -276,30 +284,42 @@ public class SQLRunner {
       // record execute
       exec.handleResult();
       // record handling and write results
-      conn.commit();
+      commit(conn);
       _lastExecutionTime = exec.getLastExecutionTime();
     }
     catch (SQLException e) {
-      // record error and write results
-      try { conn.rollback(); } catch (SQLException e2) {
-        // don't rethrow as it will mask the original exception
-        LOG.error("Exception thrown while attempting rollback.", e2);
-      }
+      attemptRollback(conn);
       throw new SQLRunnerException("Unable to run query with SQL <" + _sql + "> and args: " + exec.getParamsToString(), e);
     }
     finally {
       exec.closeQuietly();
       SqlUtils.closeQuietly(stmt);
-      // try to reset auto-commit to original value
-      if (conn != null) try { conn.setAutoCommit(origAutoCommit); } catch (SQLException e) {
-        LOG.warn("Unable to reset auto-commit flag to original value (" + origAutoCommit + ")"); }
       closeConnection();
+    }
+  }
+
+  private void commit(Connection conn) throws SQLException {
+    // only need to commit here if using internal transaction
+    if (_txStrategy.equals(TxStrategy.TRANSACTION)) {
+      conn.commit();
+    }
+  }
+
+  private void attemptRollback(Connection conn) {
+    // only need to attempt rollback if using internal transaction
+    if (_txStrategy.equals(TxStrategy.TRANSACTION)) {
+      try { conn.rollback(); } catch (SQLException e2) {
+        // don't rethrow as it will mask the original exception
+        LOG.error("Exception thrown while attempting rollback.", e2);
+      }
     }
   }
 
   private Connection getConnection() throws SQLException {
     if (_responsibleForConnection) {
       _conn = _ds.getConnection();
+      // set auto-commit to true if caller specified auto-commit
+      _conn.setAutoCommit(_txStrategy.equals(TxStrategy.AUTO_COMMIT));
     }
     return _conn;
   }
