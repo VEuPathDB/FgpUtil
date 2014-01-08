@@ -119,19 +119,20 @@ sub substituteMacrosInHash {
       $hash->{$key} = substituteMacrosInHash($keyValues, $value, $fileName);
     } elsif (ref $value eq 'ARRAY') {
       foreach my $v (@$value) {
-        my @macros = $v =~ /\${(.*?)\}/;
+        my @macros = $v =~ /\$\{(.*?)\}/g;
         foreach my $macro (@macros) {
-          $v = $keyValues->{$macro};
-          print "Resolving $key\n";
+          my $newValue = $keyValues->{$macro};
           die "Error: macro \${$key} cannot be resolved\n" unless (defined($v));
+          $v =~ s/\$\{$macro\}/$newValue/g;
         }
       }
       $hash->{$key} = $value;
     } else {
-      my @macros = $value =~ /\${(.*?)\}/;
+      my @macros = $value =~ /\$\{(.*?)\}/g;
       foreach my $macro (@macros) {
-        $hash->{$key} = $keyValues->{$macro};
+        my $newValue = $keyValues->{$macro};
         die "Error: macro \${$key} cannot be resolved\n" unless (defined($value));
+        $hash->{$key} =~ s/\$\{$macro\}/$newValue/g;
       }
     }
   }
