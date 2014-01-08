@@ -16,9 +16,13 @@ my $config = readAndResolveConfigFile($configFile, $metaConfig, $commandLineConf
 
 my $keyValues = buildKeyValuesFromConfig($config, $metaConfig->{sections}, $configFile, $metaConfig);
 
-print STDERR Dumper $keyValues;
+#print STDERR Dumper $keyValues;
 
 instantiateTemplates($keyValues, $metaConfig);
+
+foreach my $key (sort keys(%$keyValues)) {
+		printf "%-8s %s\n", $key, $keyValues->{$key};
+}
 
 
 #############################  subroutines #######################################
@@ -28,7 +32,6 @@ sub parseAndValidateMetaFile {
   open(F, $metaFile) || die "Error: Can't open meta file '$metaFile'\n";
   my @metaAsArray = <F>;
   close(F);
-  $ENV{GUS_HOME} = 'template';
   my $meta = Load(join("", map {s/\$ENV\{GUS_HOME\}/$ENV{GUS_HOME}/g; $_} @metaAsArray));
   die "Error: Meta file '$metaFile' is missing the 'required:' section\n" unless $meta->{required};
   die "Error: Meta file '$metaFile' is missing the 'sections:' section\n" unless $meta->{sections};
