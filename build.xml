@@ -1,9 +1,8 @@
-<project name="CBIL" default="Installation" basedir=".">
+<project name="FgpUtil" default="Installation" basedir=".">
 
   <!-- ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-
   
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
@@ -24,7 +23,9 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="FgpUtil-Installation" depends="FgpUtil/Util-Installation, FgpUtil-MavenInstallation">
-    <ant target="defaultProjectInstall"/>
+    <ant target="defaultProjectInstall">
+      <property name="project" value="FgpUtil"/>
+    </ant>
   </target>  
    
 
@@ -58,9 +59,12 @@
   </target>
 
   <target name="FgpUtil-MavenInstallation">
-    <ant target="mavenCleanInstall"/>
+    <ant target="mavenCleanInstall">
+      <property name="project" value="FgpUtil"/>
+    </ant>
     <ant target="deployMavenArtifacts">
-      <property name="module" value="Util"/>
+      <property name="project" value="FgpUtil"/>
+      <property name="component" value="Util"/>
     </ant>
   </target>
 
