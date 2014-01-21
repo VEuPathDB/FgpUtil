@@ -10,6 +10,8 @@ my ($configFile, $metaFile, $commandLineConfigTxt) = @ARGV;
 
 my $metaConfig = parseAndValidateMetaFile($metaFile);
 
+#print $commandLineConfigTxt;
+
 my $commandLineConfig = parseCommandLineConfig($commandLineConfigTxt);
 
 my $config = readAndResolveConfigFile($configFile, $metaConfig, $commandLineConfig);
@@ -42,14 +44,14 @@ sub parseAndValidateMetaFile {
 
 sub parseCommandLineConfig {
   my ($commandLineConfigTxt) = @_;
-
   chomp $commandLineConfig;
   my $commandLineConfig = {};
   if ($commandLineConfigTxt) {
-    my @keyValuesTxt = split(/,\s*/, $commandLineConfigTxt);
+		my @keyValuesTxt = split(/(?<!:)\s/, $commandLineConfigTxt);
     foreach my $keyValue (@keyValuesTxt) {
       my ($key, $value) = split(/:\s*/, $keyValue);
       die "Invalid command line configuration item '$keyValue'" unless $key && $value;
+			#print $key,"--", $value; 	print "\n\n\n";
       $commandLineConfig->{$key} = $value;
     }
     return $commandLineConfig;
