@@ -37,7 +37,8 @@ public class GusHome {
 		return GUS_HOME;
 	}
 
-	public static void webInit(ServletContext context) {
+	public static String webInit(ServletContext context) {
 		GUS_HOME = context.getRealPath(context.getInitParameter(GUS_HOME_WEB_PROPERTY));
+		return GUS_HOME;
 	}
 }
