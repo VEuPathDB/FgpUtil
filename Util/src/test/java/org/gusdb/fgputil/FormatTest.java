@@ -36,4 +36,12 @@ public class FormatTest {
           FormatUtil.getPctFromRatio(cas[0], cas[1]));
     }
   }
+  
+  @Test
+  public void testExceptionToString() throws Exception {
+    Exception orig = new Exception("Nested Exception");
+    Exception e = new Exception("Oh no!", orig);
+    String stackTrace = FormatUtil.getStackTrace(e);
+    System.out.println(stackTrace);
+  }
 }

@@ -1,5 +1,7 @@
 package org.gusdb.fgputil;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -9,7 +11,13 @@ public class FormatUtil {
   public static final String NL = System.getProperty("line.separator");
   
   private FormatUtil() {}
-    
+  
+  public static String getStackTrace(Throwable t) {
+    StringWriter str = new StringWriter(150);
+    t.printStackTrace(new PrintWriter(str));
+    return str.toString();
+  }
+  
   public static String splitCamelCase(String s) {
     return s.replaceAll(
             String.format("%s|%s|%s",
