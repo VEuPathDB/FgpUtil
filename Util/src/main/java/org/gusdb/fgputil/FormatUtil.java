@@ -55,10 +55,10 @@ public class FormatUtil {
   public static String arrayToString(Object[] array, String delim) {
     StringBuilder sb = new StringBuilder("[ ");
     if (array.length > 0) {
-      sb.append(array[0].toString());
+      sb.append(array[0] == null ? "null" : array[0].toString());
     }
     for (int i = 1; i < array.length; i++) {
-      sb.append(delim).append(array[i].toString());
+      sb.append(delim).append(array[i] == null ? "null" : array[i].toString());
     }
     return sb.append(" ]").toString();
   }
