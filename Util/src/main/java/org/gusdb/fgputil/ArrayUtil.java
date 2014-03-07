@@ -28,4 +28,34 @@ public class ArrayUtil {
     return combinedArray;
   }
 
+  /**
+   * Returns a copy of the passed array with the passed values appended to the
+   * end, in order.
+   * 
+   * @param array base array
+   * @param values values to be appended
+   * @return new array with values appended
+   */
+  @SafeVarargs
+  public static <T> T[] append(T[] array, T... values) {
+    return concatenate(array, values);
+  }
+  
+  /**
+   * Returns a copy of the passed array with the passed values inserted at the
+   * index specified.  Note: while still O(N), this method executes two passes
+   * through the array.
+   * 
+   * @param array base array
+   * @param index values to be inserted
+   * @param values new array with values inserted
+   * @return
+   */
+  @SafeVarargs
+  public static <T> T[] insert(T[] array, int index, T... values) {
+    T[] begin = Arrays.copyOfRange(array, 0, index);
+    T[] end = Arrays.copyOfRange(array, index, array.length);
+    return concatenate(begin, values, end);
+  }
+
 }
