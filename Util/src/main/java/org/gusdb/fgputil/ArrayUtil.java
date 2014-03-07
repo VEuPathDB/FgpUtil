@@ -47,9 +47,9 @@ public class ArrayUtil {
    * through the array.
    * 
    * @param array base array
-   * @param index values to be inserted
-   * @param values new array with values inserted
-   * @return
+   * @param index index at which to insert values
+   * @param values values to be inserted
+   * @return new array with values inserted
    */
   @SafeVarargs
   public static <T> T[] insert(T[] array, int index, T... values) {
