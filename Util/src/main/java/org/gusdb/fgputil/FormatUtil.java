@@ -49,10 +49,9 @@ public class FormatUtil {
   }
 
   public static String join(Object[] array, String delim) {
+    if (array == null || array.length == 0) return "";
     StringBuilder sb = new StringBuilder();
-    if (array.length > 0) {
-      sb.append(array[0] == null ? "null" : array[0].toString());
-    }
+    sb.append(array[0] == null ? "null" : array[0].toString());
     for (int i = 1; i < array.length; i++) {
       sb.append(delim).append(array[i] == null ? "null" : array[i].toString());
     }
