@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 
 public class FormatUtil {
 
-  public static final String NL = System.getProperty("line.separator");
+  public static final String NL = System.lineSeparator();
   public static final String TAB = "\t";
   
   private FormatUtil() {}
