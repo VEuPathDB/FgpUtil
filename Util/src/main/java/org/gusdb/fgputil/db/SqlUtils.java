@@ -238,6 +238,22 @@ public final class SqlUtils {
     }
   }
 
+    public static ResultSet executePreparedQuery(PreparedStatement stmt, String sql,
+      String name) throws SQLException {
+    logger.trace("running sql: " + name + "\n" + sql);
+    ResultSet resultSet = null;
+    try {
+      long start = System.currentTimeMillis();
+      resultSet = stmt.executeQuery();
+      QueryLogger.logStartResultsProcessing(sql, name, start, resultSet);
+      return resultSet;
+    } catch (SQLException ex) {
+      logger.error("Failed to run query:\n" + sql);
+      closeResultSetAndStatement(resultSet);
+      throw ex;
+    }
+  }
+
   /**
    * Run the scalar value and returns a single value. If the query returns no
    * rows or more than one row, a WdkModelException will be thrown; if the query
