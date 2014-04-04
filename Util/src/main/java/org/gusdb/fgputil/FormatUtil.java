@@ -8,7 +8,8 @@ import java.util.Map.Entry;
 
 public class FormatUtil {
 
-  public static final String NL = System.getProperty("line.separator");
+  public static final String NL = System.lineSeparator();
+  public static final String TAB = "\t";
   
   private FormatUtil() {}
   
@@ -48,18 +49,23 @@ public class FormatUtil {
     return newS;
   }
 
+  public static String join(Object[] array, String delim) {
+    if (array == null || array.length == 0) return "";
+    StringBuilder sb = new StringBuilder();
+    sb.append(array[0] == null ? "null" : array[0].toString());
+    for (int i = 1; i < array.length; i++) {
+      sb.append(delim).append(array[i] == null ? "null" : array[i].toString());
+    }
+    return sb.toString();
+  }
+  
   public static String arrayToString(Object[] array) {
     return arrayToString(array, ", ");
   }
 
   public static String arrayToString(Object[] array, String delim) {
     StringBuilder sb = new StringBuilder("[ ");
-    if (array.length > 0) {
-      sb.append(array[0] == null ? "null" : array[0].toString());
-    }
-    for (int i = 1; i < array.length; i++) {
-      sb.append(delim).append(array[i] == null ? "null" : array[i].toString());
-    }
+    sb.append(join(array, delim));
     return sb.append(" ]").toString();
   }
     

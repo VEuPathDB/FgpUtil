@@ -9,6 +9,12 @@ import org.junit.Test;
 public class FormatTest {
 
   @Test
+  public void testArrayToString() throws Exception {
+    String[] sample = { "a", "b", "c", "d" };
+    System.out.println(FormatUtil.arrayToString(sample));
+  }
+  
+  @Test
   public void testPrettyPrint() throws Exception {
     String NL = FormatUtil.NL;
     Map<Integer,String> emptyMap = new HashMap<>();
