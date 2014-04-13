@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
@@ -194,5 +195,38 @@ public class IoUtil {
          ObjectInputStream objStream = new ObjectInputStream(byteStream)) {
       return objStream.readObject();
     }
+  }
+
+  /**
+   * Read all available characters from the passed Reader and return them as a
+   * String.
+   * 
+   * @param charReader Reader from which to read chars
+   * @return String containing chars read from reader
+   * @throws IOException if unable to read chars
+   */
+  public static String readAllChars(Reader charReader) throws IOException {
+    if (charReader == null) return null;
+    StringBuilder buffer = new StringBuilder();
+    int c;
+    while ((c = charReader.read()) > -1) {
+      buffer.append((char)c);
+    }
+    return buffer.toString();
+  }
+
+  /**
+   * Reads all available bytes from the passed input stream and returns them as
+   * a byte array.
+   * 
+   * @param inputStream stream from which to read bytes
+   * @return byte array containing bytes read from stream
+   * @throws IOException if unable to read bytes
+   */
+  public static byte[] readAllBytes(InputStream inputStream) throws IOException {
+    if (inputStream == null) return null;
+    ByteArrayOutputStream byteCollector = new ByteArrayOutputStream();
+    transferStream(byteCollector, inputStream);
+    return byteCollector.toByteArray();
   }
 }

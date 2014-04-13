@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.db.pool;
 
+import java.sql.SQLException;
+import java.sql.Wrapper;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -12,7 +14,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 
-public class DatabaseInstance {
+public class DatabaseInstance implements Wrapper {
   
   private static final Logger LOG = Logger.getLogger(DatabaseInstance.class);
   
@@ -184,5 +186,15 @@ public class DatabaseInstance {
   public DataSource getDataSource() {
     checkInit();
     return _dataSource;
+  }
+
+  @Override
+  public <T> T unwrap(Class<T> iface) throws SQLException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean isWrapperFor(Class<?> iface) throws SQLException {
+    return false;
   }
 }
