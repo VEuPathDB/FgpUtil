@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db;
 
+import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -16,6 +17,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 
 /**
  * @author Jerric Gao
@@ -238,6 +240,22 @@ public final class SqlUtils {
     }
   }
 
+    public static ResultSet executePreparedQuery(PreparedStatement stmt, String sql,
+      String name) throws SQLException {
+    logger.trace("running sql: " + name + "\n" + sql);
+    ResultSet resultSet = null;
+    try {
+      long start = System.currentTimeMillis();
+      resultSet = stmt.executeQuery();
+      QueryLogger.logStartResultsProcessing(sql, name, start, resultSet);
+      return resultSet;
+    } catch (SQLException ex) {
+      logger.error("Failed to run query:\n" + sql);
+      closeResultSetAndStatement(resultSet);
+      throw ex;
+    }
+  }
+
   /**
    * Run the scalar value and returns a single value. If the query returns no
    * rows or more than one row, a WdkModelException will be thrown; if the query
@@ -294,13 +312,24 @@ public final class SqlUtils {
   }
 
   public static void setClobData(PreparedStatement ps, int columnIndex,
-	    String content) throws SQLException {
+      String content) throws SQLException {
     if (content == null) {
       ps.setNull(columnIndex, Types.CLOB);
     }
     else {
       StringReader reader = new StringReader(content);
       ps.setCharacterStream(columnIndex, reader, content.length());
+    }
+  }
+
+  public static void setBlobData(PreparedStatement ps, int columnIndex,
+      byte[] content) throws SQLException {
+    if (content == null) {
+      ps.setNull(columnIndex, Types.BLOB);
+    }
+    else {
+      ByteArrayInputStream inStream = new ByteArrayInputStream(content);
+      ps.setBinaryStream(columnIndex, inStream, content.length);
     }
   }
 
@@ -314,6 +343,7 @@ public final class SqlUtils {
    * <li>{@link java.sql.ResultSet}</li>
    * <li>{@link java.sql.Statement}</li>
    * <li>{@link org.gusdb.fgputil.db.DatabaseResultStream}</li>
+   * <li>{@link org.gusdb.fgputil.db.pool.DatabaseInstance}</li>
    * </ul>
    * 
    * @param wrappers
@@ -323,6 +353,9 @@ public final class SqlUtils {
     for (Wrapper wrap : wrappers) {
       if (wrap != null) {
         try {
+          if (wrap instanceof DatabaseInstance) {
+            ((DatabaseInstance) wrap).close();
+          }
           if (wrap instanceof DatabaseResultStream) {
             ((DatabaseResultStream) wrap).close();
           }
@@ -366,6 +399,9 @@ public final class SqlUtils {
       }
       else if (types[i].intValue() == Types.CLOB) {
         SqlUtils.setClobData(stmt, i+1, args[i].toString());
+      }
+      else if (types[i].intValue() == Types.BLOB) {
+        SqlUtils.setBlobData(stmt, i+1, (byte[])args[i]);
       }
       else {
         stmt.setObject(i+1, args[i], types[i]);
