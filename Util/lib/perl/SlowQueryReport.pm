@@ -66,7 +66,7 @@ sub makeReport {
 	  or die "couldn't open ssh command to cat logfile";
 
       while(<LOGFILE>) {
-	my ($reject, $timestamp, $seconds, $name) = $parseLogRecord->($_);
+	my ($reject, $timestamp, $seconds, $name) = $parseLogRecord->($_, $debug);
 	next if $reject;
 	next if ($time_min && $timestamp < $time_min);
 	next if ($time_max && $timestamp > $time_max);
