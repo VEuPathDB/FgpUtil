@@ -68,6 +68,8 @@ public abstract class DBPlatform {
     public abstract String getDateDataType();
 
     public abstract String getMinusOperator();
+    
+    public abstract int getBooleanType();
 
     public abstract void createSequence(DataSource dataSource, String sequence, int start,
             int increment) throws SQLException;
