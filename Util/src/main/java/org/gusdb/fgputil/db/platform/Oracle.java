@@ -96,6 +96,11 @@ public class Oracle extends DBPlatform {
     return "CLOB";
   }
 
+  @Override
+  public String getBlobDataType() {
+    return "BLOB";
+  }
+
   /*
    * (non-Javadoc)
    * 

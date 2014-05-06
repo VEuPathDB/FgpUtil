@@ -65,6 +65,8 @@ public abstract class DBPlatform {
 
     public abstract String getClobDataType();
 
+    public abstract String getBlobDataType();
+    
     public abstract String getDateDataType();
 
     public abstract String getMinusOperator();
