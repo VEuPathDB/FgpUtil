@@ -28,7 +28,7 @@ public class ConnectionPoolLogger implements Runnable {
 
           logger.info(display);
           long elapsed = (System.currentTimeMillis() - startTime) / 1000;
-          if (elapsed > duration) break;
+          if (duration > 0 && elapsed > duration) break;
           try {
               Thread.sleep(interval * 1000);
           } catch (InterruptedException ex) {
