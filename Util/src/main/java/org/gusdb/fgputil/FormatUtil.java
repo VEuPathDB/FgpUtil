@@ -64,6 +64,7 @@ public class FormatUtil {
   }
 
   public static String arrayToString(Object[] array, String delim) {
+    if (array == null) return "null";
     StringBuilder sb = new StringBuilder("[ ");
     sb.append(join(array, delim));
     return sb.append(" ]").toString();
