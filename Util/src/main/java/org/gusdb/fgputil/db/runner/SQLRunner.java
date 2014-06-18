@@ -142,6 +142,8 @@ public class SQLRunner {
   
   /**
    * Executes this runner's SQL and assumes no SQL parameters
+   * 
+   * @throws SQLRunnerException if error occurs during processing
    */
   public void executeStatement() {
     executeStatement(new Object[]{ }, null);
@@ -151,6 +153,7 @@ public class SQLRunner {
    * Executes this runner's SQL using the passed parameter array
    * 
    * @param args SQL parameters
+   * @throws SQLRunnerException if error occurs during processing
    */
   public void executeStatement(Object[] args) {
     executeStatement(args, null);
@@ -162,6 +165,7 @@ public class SQLRunner {
    * 
    * @param args SQL parameters
    * @param types SQL types of parameters
+   * @throws SQLRunnerException if error occurs during processing
    */
   public void executeStatement(Object[] args, Integer[] types) {
     executeSql(new StatementExecutor(args, types));
@@ -173,6 +177,7 @@ public class SQLRunner {
    * to determine how many operations to group into each batch.
    * 
    * @param batch set of SQL parameter sets containing
+   * @throws SQLRunnerException if error occurs during processing
    */
   public void executeStatementBatch(ArgumentBatch batch) {
     executeSql(new BatchUpdateExecutor(batch));
@@ -185,6 +190,7 @@ public class SQLRunner {
    * effects of the execution.
    * 
    * @return number of rows updated
+   * @throws SQLRunnerException if error occurs during processing
    */
   public int executeUpdate() {
     return executeUpdate(new Object[]{ }, null);
@@ -198,6 +204,7 @@ public class SQLRunner {
    * 
    * @param args SQL parameters
    * @return number of rows updated
+   * @throws SQLRunnerException if error occurs during processing
    */
   public int executeUpdate(Object[] args) {
     return executeUpdate(args, null);
@@ -213,6 +220,7 @@ public class SQLRunner {
    * @param args SQL parameters
    * @param types SQL types of parameters
    * @return number of rows updated
+   * @throws SQLRunnerException if error occurs during processing
    */
   public int executeUpdate(Object[] args, Integer[] types) {
     UpdateExecutor runner = new UpdateExecutor(args, types);
@@ -228,6 +236,7 @@ public class SQLRunner {
    * 
    * @param batch set of SQL parameter sets containing
    * @return number of rows updated
+   * @throws SQLRunnerException if error occurs during processing
    */
   public int executeUpdateBatch(ArgumentBatch batch) {
     BatchUpdateExecutor runner = new BatchUpdateExecutor(batch);
@@ -240,6 +249,7 @@ public class SQLRunner {
    * assumes no SQL parameters in this runner's SQL.
    * 
    * @param handler handler implementation to process results
+   * @throws SQLRunnerException if error occurs during processing
    */
   public void executeQuery(ResultSetHandler handler) {
     executeQuery(new Object[]{ }, null, handler);
@@ -252,6 +262,7 @@ public class SQLRunner {
    * 
    * @param handler handler implementation to process results
    * @param args SQL parameters
+   * @throws SQLRunnerException if error occurs during processing
    */
   public void executeQuery(Object[] args, ResultSetHandler handler) {
     executeQuery(args, null, handler);
@@ -265,6 +276,7 @@ public class SQLRunner {
    * @param handler handler implementation to process results
    * @param args SQL parameters
    * @param types SQL types of parameters
+   * @throws SQLRunnerException if error occurs during processing
    */
   public void executeQuery(Object[] args, Integer[] types, ResultSetHandler handler) {
     executeSql(new QueryExecutor(handler, args, types));

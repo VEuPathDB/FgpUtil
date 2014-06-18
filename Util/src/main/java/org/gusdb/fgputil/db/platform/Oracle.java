@@ -9,6 +9,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,6 +94,11 @@ public class Oracle extends DBPlatform {
   @Override
   public String getClobDataType() {
     return "CLOB";
+  }
+
+  @Override
+  public String getBlobDataType() {
+    return "BLOB";
   }
 
   /*
@@ -352,5 +358,10 @@ public class Oracle extends DBPlatform {
   @Override
   public String getRowNumberColumn() {
     return "rownum";
+  }
+
+  @Override
+  public int getBooleanType() {
+    return Types.BIT;
   }
 }

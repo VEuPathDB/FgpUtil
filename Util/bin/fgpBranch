@@ -12,7 +12,7 @@ my $delete = $ARGV[2];
 usage() unless ($branch && $comment);
 usage() if ($delete && $delete ne '-delete');
 
-my @projects = ('EuPathPresenters:apidb', 'EuPathSiteCommon:apidb', 'EuPathWebSvcCommon:apidb', 'ApiCommonData:apidb', 'ApiCommonShared:apidb', 'ApiCommonWebService:apidb', 'ApiCommonWebsite:apidb', 'ApiCommonWorkflow:apidb', 'GBrowse:apidb', 'CBIL:gus', 'DJob:gus', 'DoTS:apidb', 'EuPathDatasets:apidb', 'FgpUtil:gus', 'GGTools:apidb', 'GusAppFramework:gus', 'GusSchema:gus', 'install:gus', 'OrthoMCLData:apidb', , 'OrthoMCLDatasets:apidb', 'OrthoMCLEngine:apidb', 'OrthoMCLShared:apidb', 'OrthoMCLWebsite:apidb', , 'OrthoMCLWebService:apidb', , 'OrthoMCLWorkflow:apidb', 'ReFlow:gus', 'WDK:gus', 'WSF:gus', 'WDKTemplateSite:gus', 'WSFTemplate:gus');
+my @projects = ('EuPathPresenters:apidb', 'EuPathSiteCommon:apidb', 'EuPathWebSvcCommon:apidb', 'ApiCommonData:apidb', 'ApiCommonShared:apidb', 'ApiCommonWebService:apidb', 'ApiCommonWebsite:apidb', 'ApiCommonWorkflow:apidb', 'GBrowse:apidb', 'CBIL:gus', 'DJob:gus', 'DoTS:apidb', 'EuPathDatasets:apidb', 'FgpUtil:gus', 'GGTools:apidb', 'GusAppFramework:gus', 'GusSchema:gus', 'install:gus', 'OrthoMCLData:apidb', , 'OrthoMCLDatasets:apidb', 'OrthoMCLEngine:apidb', 'OrthoMCLShared:apidb', 'OrthoMCLWebsite:apidb', , 'OrthoMCLWebService:apidb', , 'OrthoMCLWorkflow:apidb', 'ReFlow:gus', 'WDK:gus', 'WSF:gus', 'WDKTemplateSite:gus', 'WSFTemplate:gus', 'TuningManager:gus');
 
 FgpUtil::Util::ProjectBrancher::branch($branch, $comment, $delete, \@projects);
 

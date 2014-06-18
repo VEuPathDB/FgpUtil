@@ -46,7 +46,7 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
     }
 
     @Override
-    public short getMaxWait() {
+    public long getMaxWait() {
         return 1000;
     }
 

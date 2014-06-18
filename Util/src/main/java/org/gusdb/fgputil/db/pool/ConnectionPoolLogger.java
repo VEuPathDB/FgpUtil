@@ -4,40 +4,49 @@ import org.apache.log4j.Logger;
 
 public class ConnectionPoolLogger implements Runnable {
 
-  private static final Logger logger = Logger.getLogger(ConnectionPoolLogger.class);
-  
+  private static final Logger LOG = Logger.getLogger(ConnectionPoolLogger.class);
+
   private final DatabaseInstance _dbInstance;
   private volatile boolean _shutdownFlag = false;
-  
+
   public ConnectionPoolLogger(DatabaseInstance dbInstance) {
     _dbInstance = dbInstance;
   }
-  
+
   @Override
   public void run() {
-      ConnectionPoolConfig config = _dbInstance.getConfig();
-      long interval = config.getShowConnectionsInterval();
-      long duration = config.getShowConnectionsDuration();
-      long startTime = System.currentTimeMillis();
-      while (!Thread.currentThread().isInterrupted() && !_shutdownFlag) {
-          StringBuffer display = new StringBuffer();
-          display.append("[").append(_dbInstance.getName()).append("]");
-          display.append(" Connections: Active = ").append(
-                  _dbInstance.getActiveCount());
-          display.append(", Idle = ").append(_dbInstance.getIdleCount());
+    ConnectionPoolConfig config = _dbInstance.getConfig();
+    long intervalMs = config.getShowConnectionsInterval();
+    long durationSecs = config.getShowConnectionsDuration();
+    LOG.info("Connection Pool Logger started.  Will log every " + intervalMs +
+        "milliseconds" + (durationSecs > 0 ? " for " + durationSecs +
+            " seconds, then shut down." : "."));
+    long startTime = System.currentTimeMillis();
+    while (!Thread.currentThread().isInterrupted() && !_shutdownFlag) {
+      LOG.info(new StringBuilder()
+        .append("[").append(_dbInstance.getName()).append("]")
+        .append(" Connections: Active = ").append(_dbInstance.getActiveCount())
+        .append(", Idle = ").append(_dbInstance.getIdleCount())
+        .toString());
 
-          logger.info(display);
-          long elapsed = (System.currentTimeMillis() - startTime) / 1000;
-          if (elapsed > duration) break;
-          try {
-              Thread.sleep(interval * 1000);
-          } catch (InterruptedException ex) {
-              break;
-          }
+      long elapsedSecs = (System.currentTimeMillis() - startTime) / 1000;
+      if (durationSecs > 0 && elapsedSecs > durationSecs) {
+        LOG.info("Times up!  Shutting down Connection Pool Logger.");
+        break;
       }
+      try {
+        Thread.sleep(intervalMs * 1000);
+      }
+      catch (InterruptedException ex) {
+        LOG.info("Connection Pool Logger interrupted.  Shutting down.");
+        break;
+      }
+    }
+    LOG.info("Connection Pool Logger is shut down.");
   }
 
   public void shutDown() {
+    LOG.info("Signaling Connection Pool Logger to shut down.");
     _shutdownFlag = true;
   }
 }
