@@ -4,10 +4,7 @@
   
   <name>Functional Genomics Platform</name>
   <url>http://gusdb.org</url>
-  
-  <groupId>org.gusdb</groupId>
   <artifactId>fgputil</artifactId>
-  <version>1.0.0</version>
   <packaging>pom</packaging>
   
   <modules>
