@@ -5,6 +5,49 @@
   <name>EuPathDB BRC Global Parent POM</name>
   <url>http://eupathdb.org</url>
   
+  <issueManagement>
+    <system>RedMine</system>
+    <url>https://redmine.apidb.org</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci.apidb.org</url>
+  </ciManagement>
+  
+  <developers>
+    <developer>
+      <name>Steve Fischer</name>
+      <email>sfischer@upenn.edu</email>
+      <roles><role>Senior Software Developer</role></roles>
+      <organization>University of Pennsylvania</organization>
+    </developer>
+    <developer>
+      <name>Jerric Gao</name>
+      <email>xingao@upenn.edu</email>
+      <roles><role>Senior Software Developer</role></roles>
+      <organization>University of Pennsylvania</organization>
+    </developer>
+    <developer>
+      <name>Ryan Doherty</name>
+      <email>rdoherty@upenn.edu</email>
+      <roles><role>Senior Software Developer</role></roles>
+      <organization>University of Pennsylvania</organization>
+    </developer>
+    <developer>
+      <name>Dave Faulk</name>
+      <email>dfaulk@uga.edu</email>
+      <roles><role>Senior Software Developer</role></roles>
+      <organization>University of Georgia</organization>
+    </developer>
+    <developer>
+      <name>Cristina Aurrecoechea</name>
+      <email>aurreco@uga.edu</email>
+      <roles><role>Senior Software Developer</role></roles>
+      <organization>University of Georgia</organization>
+    </developer>
+  </developers>
+  
   <groupId>org.gusdb</groupId>
   <artifactId>base-pom</artifactId>
   <version>1.0.0</version>
@@ -204,27 +247,47 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.4</version>
         <configuration>
           <reportPlugins>
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-project-info-reports-plugin</artifactId>
-              <version>2.4</version>
+              <version>2.7</version>
               <configuration>
                 <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
                 <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
               </configuration>
-              <!-- simpler configuration without reportSets available for usual cases -->
+              <!-- See more available reports at http://maven.apache.org/plugins -->
               <reports>
+                <report>project-info-reports</report>
                 <report>dependencies</report>
                 <report>scm</report>
+                <report>changelog</report>
+                <report>checkstyle</report>
+                <report>jxr</report>
+                <report>surefire-report</report>
+                <report>pmd</report>
               </reports>
             </plugin>
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-javadoc-plugin</artifactId>
               <version>2.8</version>
+              <reportSets>
+                <reportSet><!-- by default, id = "default" -->
+                  <reports><!-- select non-aggregate reports -->
+                    <report>javadoc</report>
+                  </reports>
+                </reportSet>
+                <reportSet><!-- aggregate reportSet, to define in poms having modules -->
+                  <id>aggregate</id>
+                  <inherited>false</inherited><!-- don't run aggregate in child modules -->
+                  <reports>
+                    <report>aggregate</report>
+                  </reports>
+                </reportSet>
+              </reportSets>
             </plugin>
           </reportPlugins>
         </configuration>
