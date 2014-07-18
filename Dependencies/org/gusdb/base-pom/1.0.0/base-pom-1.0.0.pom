@@ -258,7 +258,6 @@
                 <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
                 <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
               </configuration>
-              <!-- See more available reports at http://maven.apache.org/plugins -->
               <reports>
                 <report>project-info-reports</report>
                 <report>dependencies</report>
