@@ -145,6 +145,29 @@ public final class SqlUtils {
   }
 
   /**
+   * Executes a batch update; returns numbers of rows affected by each batch
+   * 
+   * @param stmt PrepatedStatement to which batches were added
+   * @param sql SQL of prepared statement (for logging)
+   * @param name name of this operation (for logging)
+   * @return an array of row counts; each item is the # of rows updated
+   * by a batch of params added to the statement
+   * @throws SQLException if unable to execute batch
+   */
+  public static int[] executePreparedStatementBatch(PreparedStatement stmt,
+      String sql, String name) throws SQLException {
+    try {
+      long start = System.currentTimeMillis();
+      int[] numUpdates = stmt.executeBatch();
+      QueryLogger.logEndStatementExecution(sql, name, start);
+      return numUpdates;
+    } catch (SQLException ex) {
+      logger.error("Failed to execute statement batch: \n" + sql);
+      throw ex;
+    }
+  }
+
+  /**
    * execute the update, and returns the number of rows affected.
    * 
    * @param dataSource

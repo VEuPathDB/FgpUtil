@@ -71,7 +71,7 @@ public class FormatUtil {
   }
 
   public static String printArray(String[] array) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("{");
     for (String s : array) {
         if (sb.length() > 1) sb.append(", ");
@@ -83,7 +83,7 @@ public class FormatUtil {
 
   public static String printArray(String[][] array) {
     String newline = System.getProperty("line.separator");
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (String[] parts : array) {
         sb.append(printArray(parts));
         sb.append(newline);
