@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.fgputil.db.platform;
 
 import java.sql.ResultSet;
@@ -11,12 +8,12 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 
 /**
  * @author Jerric Gao
- * 
  */
 public class PostgreSQL extends DBPlatform {
 
@@ -28,7 +25,7 @@ public class PostgreSQL extends DBPlatform {
 
   @Override
   public String getDriverClassName() {
-    return "org.postgresql.Driver";
+    return DRIVER_NAME;
   }
 
   @Override
@@ -295,12 +292,6 @@ public class PostgreSQL extends DBPlatform {
 
   @Override
   public String prepareExpressionList(String[] values) {
-    StringBuilder buffer = new StringBuilder();
-    for (String value : values) {
-      if (buffer.length() > 0)
-        buffer.append(",");
-      buffer.append(value);
-    }
-    return buffer.toString();
+    return FormatUtil.join(values, ",");
   }
 }
