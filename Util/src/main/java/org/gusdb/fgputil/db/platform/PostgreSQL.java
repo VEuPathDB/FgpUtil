@@ -39,12 +39,11 @@ public class PostgreSQL extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#createSequence(java.lang.String,
-   * int, int)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#createSequence(java.lang.String, int, int)
    */
   @Override
-  public void createSequence(DataSource dataSource, String sequence, int start,
-      int increment) throws SQLException {
+  public void createSequence(DataSource dataSource, String sequence, int start, int increment)
+      throws SQLException {
     StringBuffer sql = new StringBuffer("CREATE SEQUENCE ");
     sql.append(sequence);
     sql.append(" START ");
@@ -67,12 +66,10 @@ public class PostgreSQL extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getClobData(java.sql.ResultSet,
-   * java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#getClobData(java.sql.ResultSet, java.lang.String)
    */
   @Override
-  public String getClobData(ResultSet rs, String columnName)
-      throws SQLException {
+  public String getClobData(ResultSet rs, String columnName) throws SQLException {
     return rs.getString(columnName);
   }
 
@@ -104,27 +101,24 @@ public class PostgreSQL extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String,
-   * java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String, java.lang.String)
    */
   @Override
-  public int getNextId(DataSource dataSource, String schema, String table)
-      throws SQLException, DBStateException {
+  public int getNextId(DataSource dataSource, String schema, String table) throws SQLException,
+      DBStateException {
     schema = normalizeSchema(schema);
 
     StringBuffer sql = new StringBuffer("SELECT nextval('");
     sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
     sql.append("')");
-    long id = (Long) SqlUtils.executeScalar(dataSource, sql.toString(),
-        "wdk-select-next-id");
+    long id = (Long) SqlUtils.executeScalar(dataSource, sql.toString(), "wdk-select-next-id");
     return (int) id;
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String,
-   * java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String, java.lang.String)
    */
   @Override
   public String getNextIdSqlExpression(String schema, String table) {
@@ -149,8 +143,7 @@ public class PostgreSQL extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String, int,
-   * int)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String, int, int)
    */
   @Override
   public String getPagedSql(String sql, int startIndex, int endIndex) {
@@ -172,14 +165,14 @@ public class PostgreSQL extends DBPlatform {
   }
 
   /**
-   * Check the existence of a table. If the schema is null or empty, the schema
-   * will will be ignored, and will look up the table in the public schema.
+   * Check the existence of a table. If the schema is null or empty, the schema will will be ignored, and will
+   * look up the table in the public schema.
    * 
    * @see org.gusdb.wdk.model.dbms.DBPlatform#isTableExisted(java.lang.String)
    */
   @Override
-  public boolean checkTableExists(DataSource dataSource, String schema,
-      String tableName) throws SQLException, DBStateException {
+  public boolean checkTableExists(DataSource dataSource, String schema, String tableName)
+      throws SQLException, DBStateException {
     if (schema.endsWith("."))
       schema = schema.substring(0, schema.length() - 1);
     tableName = tableName.toLowerCase();
@@ -187,8 +180,7 @@ public class PostgreSQL extends DBPlatform {
     StringBuffer sql = new StringBuffer("SELECT count(*) FROM pg_tables ");
     sql.append("WHERE tablename = '").append(tableName).append("'");
     sql.append(" AND schemaname = '").append(schema).append("'");
-    long count = (Long) SqlUtils.executeScalar(dataSource, sql.toString(),
-        "wdk-check-table-exist");
+    long count = (Long) SqlUtils.executeScalar(dataSource, sql.toString(), "wdk-check-table-exist");
     return (count > 0);
   }
 
@@ -225,14 +217,14 @@ public class PostgreSQL extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#dropTable(java.lang.String,
-   * java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#dropTable(java.lang.String, java.lang.String)
    */
   @Override
-  public void dropTable(DataSource dataSource, String schema, String table,
-      boolean purge) throws SQLException {
+  public void dropTable(DataSource dataSource, String schema, String table, boolean purge)
+      throws SQLException {
     String sql = "DROP TABLE ";
-    if (schema != null) sql += schema;
+    if (schema != null)
+      sql += schema;
     sql += table;
     // ignore purge option
     SqlUtils.executeUpdate(dataSource, sql, "wdk-drop-table" + table);
@@ -241,31 +233,25 @@ public class PostgreSQL extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String,
-   * java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String, java.lang.String)
    */
   @Override
-  public void disableStatistics(DataSource dataSource, String schema,
-      String tableName) {
+  public void disableStatistics(DataSource dataSource, String schema, String tableName) {
     // do nothing in PSQL.
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getTables(java.lang.String,
-   * java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#getTables(java.lang.String, java.lang.String)
    */
   @Override
-  public String[] queryTableNames(DataSource dataSource, String schema,
-      String pattern) throws SQLException {
-    String sql = "SELECT tablename FROM pg_tables WHERE schemaname = '"
-        + schema + "' AND tablename LIKE '" + pattern + "'";
+  public String[] queryTableNames(DataSource dataSource, String schema, String pattern) throws SQLException {
+    String sql = "SELECT tablename FROM pg_tables WHERE schemaname = '" + schema + "' AND tablename LIKE '" +
+        pattern + "'";
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql,
-          "wdk-postgres-select-table-names");
+      resultSet = SqlUtils.executeQuery(dataSource, sql, "wdk-postgres-select-table-names");
       List<String> tables = new ArrayList<String>();
       while (resultSet.next()) {
         tables.add(resultSet.getString("tablename"));
@@ -273,7 +259,8 @@ public class PostgreSQL extends DBPlatform {
       String[] array = new String[tables.size()];
       tables.toArray(array);
       return array;
-    } finally {
+    }
+    finally {
       SqlUtils.closeResultSetAndStatement(resultSet);
     }
   }
@@ -285,8 +272,7 @@ public class PostgreSQL extends DBPlatform {
 
   @Override
   public String getResizeColumnSql(String tableName, String column, int size) {
-    return "ALTER TABLE " + tableName + " ALTER COLUMN " + column
-        + " TYPE varchar(" + size + ")";
+    return "ALTER TABLE " + tableName + " ALTER COLUMN " + column + " TYPE varchar(" + size + ")";
   }
 
   /**
@@ -305,5 +291,16 @@ public class PostgreSQL extends DBPlatform {
   @Override
   public int getBooleanType() {
     return Types.BOOLEAN;
+  }
+
+  @Override
+  public String prepareExpressionList(String[] values) {
+    StringBuilder buffer = new StringBuilder();
+    for (String value : values) {
+      if (buffer.length() > 0)
+        buffer.append(",");
+      buffer.append(value);
+    }
+    return buffer.toString();
   }
 }
