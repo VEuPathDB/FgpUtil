@@ -143,17 +143,14 @@
         <artifactId>commons-dbcp</artifactId>
         <version>1.4</version>
       </dependency>
-      <dependency>
-        <groupId>postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <version>7.4.1-jdbc3</version>
-      </dependency>
+      <!-- Will probably need this in ApiCommon when we convert to maven
       <dependency>
         <groupId>com.oracle</groupId>
         <artifactId>ojdbc6</artifactId>
         <version>11.2.0.3</version>
         <scope>provided</scope>
       </dependency>
+      -->
       
       <!-- JAX-RS / RESTful Web Services -->
       <dependency>
