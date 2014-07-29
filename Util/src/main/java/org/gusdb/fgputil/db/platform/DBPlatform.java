@@ -114,6 +114,8 @@ public abstract class DBPlatform {
     public abstract String getDefaultSchema(String login);
     
     public abstract String getRowNumberColumn();
+    
+    public abstract String prepareExpressionList(String[] values);
 
     //#########################################################################
     // Common methods are platform independent

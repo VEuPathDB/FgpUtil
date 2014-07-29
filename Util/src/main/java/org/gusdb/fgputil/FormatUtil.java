@@ -69,7 +69,28 @@ public class FormatUtil {
     sb.append(join(array, delim));
     return sb.append(" ]").toString();
   }
-    
+
+  public static String printArray(String[] array) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("{");
+    for (String s : array) {
+        if (sb.length() > 1) sb.append(", ");
+        sb.append("\"" + s + "\"");
+    }
+    sb.append("}");
+    return sb.toString();
+  }
+
+  public static String printArray(String[][] array) {
+    String newline = System.getProperty("line.separator");
+    StringBuilder sb = new StringBuilder();
+    for (String[] parts : array) {
+        sb.append(printArray(parts));
+        sb.append(newline);
+    }
+    return sb.toString();
+  }
+
   public static String getCamelCaseDisplayVal(String str) {
     StringBuilder newStr = new StringBuilder();
     boolean justSawSpace = true; // set so first char is upper case

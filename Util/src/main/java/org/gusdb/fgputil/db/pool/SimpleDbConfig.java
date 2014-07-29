@@ -12,6 +12,31 @@ import org.gusdb.fgputil.db.platform.SupportedPlatform;
  */
 public abstract class SimpleDbConfig implements ConnectionPoolConfig {
 
+    /**
+     * Creates a simple database configuration with connection pool of size 1.  This is for
+     * single-threaded applications that simply want access to a database.
+     * 
+     * @param dbType platform of the DB to connect to
+     * @param connectionUrl connection URL
+     * @param username login name
+     * @param password login password
+     * @return configuration to create a database instance
+     */
+    public static SimpleDbConfig create(final SupportedPlatform dbType, final String connectionUrl,
+        final String username, final String password) {
+      return create(dbType, connectionUrl, username, password, (short)1);
+    }
+    
+    /**
+     * Creates a simple database configuration for a connection pool of the desired size.
+     * 
+     * @param dbType platform of the DB to connect to
+     * @param connectionUrl connection URL
+     * @param username login name
+     * @param password login password
+     * @param connectionPoolSize size of connection pool
+     * @return configuration to create a database instance
+     */
     public static SimpleDbConfig create(final SupportedPlatform dbType, final String connectionUrl,
         final String username, final String password, final short connectionPoolSize) {
       return new SimpleDbConfig() {
