@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -24,6 +25,10 @@ import org.gusdb.fgputil.FormatUtil;
 
 public class WrappedDataSource implements DataSource {
 
+  // must use fully qualified Logger name since java.util Logger is part of the interface
+  private static final org.apache.log4j.Logger LOG =
+      org.apache.log4j.Logger.getLogger(WrappedDataSource.class);
+  
   private static class UnclosedConnectionInfo {
 
     private String _dbName;
@@ -50,7 +55,7 @@ public class WrappedDataSource implements DataSource {
       return new StringBuilder()
           .append("Connection to ").append(_dbName)
           .append(", open for ").append(secondsOpen)
-          .append(", retrieved from pool at ").append(timeOpenedStr)
+          .append(" seconds, retrieved from pool at ").append(timeOpenedStr)
           .toString();
     }
 
@@ -89,17 +94,24 @@ public class WrappedDataSource implements DataSource {
   }
 
   public void unregisterClosedConnection(Connection conn) {
+    if (LOG.isDebugEnabled()) {
+      // log hash for this connection; let caller know which connection was closed
+      UnclosedConnectionInfo info = _unclosedConnectionMap.get(conn);
+      LOG.debug("Closing connection associated with stacktrace hash " +
+      info.getStackTraceHash() + " : " + info.getBasicInfo());
+    }
     _unclosedConnectionMap.remove(conn);
   }
 
   public String dumpUnclosedConnectionInfo() {
     
     // accumulate counts of stack traces
+    Collection<UnclosedConnectionInfo> rawInfoList = _unclosedConnectionMap.values();
     Map<String, List<UnclosedConnectionInfo>> countsMap = new HashMap<>();
     List<List<UnclosedConnectionInfo>> countsList = new ArrayList<>();
 
     // getting map values should be thread safe; values are simple pojos
-    for (UnclosedConnectionInfo info : _unclosedConnectionMap.values()) {
+    for (UnclosedConnectionInfo info : rawInfoList) {
       String hash = info.getStackTraceHash();
       List<UnclosedConnectionInfo> counts = countsMap.get(hash);
       if (counts == null) {
@@ -119,7 +131,8 @@ public class WrappedDataSource implements DataSource {
 
     // build output
     StringBuilder sb = new StringBuilder(NL)
-        .append("Unclosed Connection Statistics:").append(NL).append(NL);
+        .append("Unclosed Connection Statistics (").append(rawInfoList.size())
+        .append(" total open connections):").append(NL).append(NL);
     for (List<UnclosedConnectionInfo> infoList : countsList) {
       UnclosedConnectionInfo firstInfo = infoList.get(0);
       sb.append("  ").append(infoList.size()).append(" : ").append(firstInfo.getStackTraceHash()).append(NL);
@@ -128,12 +141,14 @@ public class WrappedDataSource implements DataSource {
     for (List<UnclosedConnectionInfo> infoList : countsList) {
       UnclosedConnectionInfo firstInfo = infoList.get(0);
       sb.append(firstInfo.getStackTraceHash()).append(": ")
-        .append(infoList.size()).append(" instances").append(NL)
-        .append("  Instance details:").append(NL);
+        .append(infoList.size()).append(" instances").append(NL).append(NL)
+        .append("  Instance details:").append(NL).append(NL);
       for (UnclosedConnectionInfo info : infoList) {
         sb.append("    ").append(info.getBasicInfo()).append(NL);
       }
-      sb.append("  Stack trace:").append(NL).append("    ").append(firstInfo.getStackTrace()).append(NL);
+      sb.append(NL)
+        .append("  Stack trace:").append(NL).append(NL)
+        .append("    ").append(firstInfo.getStackTrace()).append(NL);
     }
     return sb.toString();
   }

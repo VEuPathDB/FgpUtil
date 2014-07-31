@@ -23,7 +23,7 @@ public class WrappedConnection implements Connection {
 
   private final Connection _underlyingConnection;
   private final WrappedDataSource _parentDataSource;
-  
+
   public WrappedConnection(Connection underlyingConnection, WrappedDataSource parentDataSource) {
     _underlyingConnection = underlyingConnection;
     _parentDataSource = parentDataSource;
@@ -35,7 +35,7 @@ public class WrappedConnection implements Connection {
   }
 
   /************ ALL METHODS BELOW THIS LINE ARE SIMPLE WRAPPERS ************/
-  
+
   public <T> T unwrap(Class<T> iface) throws SQLException {
     return _underlyingConnection.unwrap(iface);
   }
