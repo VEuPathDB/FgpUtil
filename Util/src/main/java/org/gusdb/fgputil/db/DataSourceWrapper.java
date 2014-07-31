@@ -23,11 +23,11 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 
-public class WrappedDataSource implements DataSource {
+public class DataSourceWrapper implements DataSource {
 
   // must use fully qualified Logger name since java.util Logger is part of the interface
   private static final org.apache.log4j.Logger LOG =
-      org.apache.log4j.Logger.getLogger(WrappedDataSource.class);
+      org.apache.log4j.Logger.getLogger(DataSourceWrapper.class);
   
   private static class UnclosedConnectionInfo {
 
@@ -74,7 +74,7 @@ public class WrappedDataSource implements DataSource {
   private final DataSource _underlyingDataSource;
   private final Map<Connection, UnclosedConnectionInfo> _unclosedConnectionMap = new ConcurrentHashMap<>();
   
-  public WrappedDataSource(String dbName, DataSource underlyingDataSource) {
+  public DataSourceWrapper(String dbName, DataSource underlyingDataSource) {
     _dbName = dbName;
     _underlyingDataSource = underlyingDataSource;
   }
@@ -88,7 +88,7 @@ public class WrappedDataSource implements DataSource {
   }
 
   private Connection wrapConnection(Connection conn) {
-    WrappedConnection wrapper = new WrappedConnection(conn, this);
+    ConnectionWrapper wrapper = new ConnectionWrapper(conn, this);
     _unclosedConnectionMap.put(conn, new UnclosedConnectionInfo(_dbName));
     return wrapper;
   }

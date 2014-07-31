@@ -19,14 +19,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-public class WrappedConnection implements Connection {
+public class ConnectionWrapper implements Connection {
 
   private final Connection _underlyingConnection;
-  private final WrappedDataSource _parentDataSource;
+  private final DataSourceWrapper _parentDataSource;
 
-  public WrappedConnection(Connection underlyingConnection, WrappedDataSource parentDataSource) {
+  public ConnectionWrapper(Connection underlyingConnection, DataSourceWrapper parentDataSource) {
     _underlyingConnection = underlyingConnection;
     _parentDataSource = parentDataSource;
+  }
+
+  public Connection getUnderlyingConnection() {
+    return _underlyingConnection;
   }
 
   public void close() throws SQLException {

@@ -12,7 +12,7 @@ import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.db.WrappedDataSource;
+import org.gusdb.fgputil.db.DataSourceWrapper;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 
 public class DatabaseInstance implements Wrapper {
@@ -24,7 +24,7 @@ public class DatabaseInstance implements Wrapper {
   private boolean _initialized = false;
   private DBPlatform _platform;
   private GenericObjectPool _connectionPool;
-  private WrappedDataSource _dataSource;
+  private DataSourceWrapper _dataSource;
   private String _defaultSchema;
   private ConnectionPoolLogger _logger;
 
@@ -63,7 +63,7 @@ public class DatabaseInstance implements Wrapper {
   
         PoolingDataSource dataSource = new PoolingDataSource(_connectionPool);
         dataSource.setAccessToUnderlyingConnectionAllowed(true);
-        _dataSource = new WrappedDataSource(_name, dataSource);
+        _dataSource = new DataSourceWrapper(_name, dataSource);
   
         // start the connection monitor if needed
         if (_dbConfig.isShowConnections()) {

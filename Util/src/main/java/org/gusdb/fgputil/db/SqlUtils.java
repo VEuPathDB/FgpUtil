@@ -25,7 +25,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 public final class SqlUtils {
 
   private static final Logger logger = Logger.getLogger(SqlUtils.class.getName());
-
+  
   /**
    * private constructor, make sure SqlUtils cannot be instanced.
    */
@@ -85,23 +85,26 @@ public final class SqlUtils {
    * @param stmt
    */
   public static void closeStatement(Statement stmt) {
-    try {
-      if (stmt != null) {
-        // close the connection in any way
-        Connection connection = null;
+    if (stmt != null) {
+      Connection connection = null;
+      try {
         try {
-          try {
-            connection = stmt.getConnection();
-          } finally {
-            stmt.close();
-          }
-        } finally {
-          if (connection != null)
-            connection.close();
+          connection = ConnectionMapping.getConnection(stmt);
+        }
+        finally {
+          // close statement regardless of whether we
+          //   succeed in getting connection
+          closeQuietly(stmt);
         }
       }
-    } catch (SQLException ex) {
-      throw new RuntimeException(ex);
+      catch (SQLException e) {
+        // don't make calling code handle inability to fetch underlying connection
+        throw new RuntimeException(e);
+      }
+      finally {
+        // unclear what happened above, but connection must be closed
+        closeQuietly(connection);
+      }
     }
   }
 
@@ -110,7 +113,7 @@ public final class SqlUtils {
     Connection connection = null;
     PreparedStatement ps = null;
     try {
-      connection = dataSource.getConnection();
+      connection = ConnectionMapping.getConnection(dataSource);
       ps = connection.prepareStatement(sql);
       ps.setFetchSize(100);
       return ps;
@@ -239,22 +242,19 @@ public final class SqlUtils {
 
   public static ResultSet executeQuery(DataSource dataSource, String sql,
       String name, int fetchSize) throws SQLException {
-    Connection connection = dataSource.getConnection();
-    return executeQuery(connection, sql, name, fetchSize);
-  }
-
-  public static ResultSet executeQuery(Connection connection, String sql,
-      String name, int fetchSize) throws SQLException {
+    Connection connection = ConnectionMapping.getConnection(dataSource);
     logger.trace("running sql: " + name + "\n" + sql);
+    Statement stmt = null;
     ResultSet resultSet = null;
     try {
       long start = System.currentTimeMillis();
-      Statement stmt = connection.createStatement();
+      stmt = connection.createStatement();
       stmt.setFetchSize(fetchSize);
       resultSet = stmt.executeQuery(sql);
       QueryLogger.logStartResultsProcessing(sql, name, start, resultSet);
       return resultSet;
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       logger.error("Failed to run query:\n" + sql);
       if (resultSet == null && connection != null)
         SqlUtils.closeQuietly(connection);
