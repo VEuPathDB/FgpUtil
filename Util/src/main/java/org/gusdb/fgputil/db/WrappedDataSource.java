@@ -122,16 +122,18 @@ public class WrappedDataSource implements DataSource {
         .append("Unclosed Connection Statistics:").append(NL).append(NL);
     for (List<UnclosedConnectionInfo> infoList : countsList) {
       UnclosedConnectionInfo firstInfo = infoList.get(0);
-      sb.append("   ").append(infoList.size()).append(" : ").append(firstInfo.getStackTraceHash()).append(NL);
+      sb.append("  ").append(infoList.size()).append(" : ").append(firstInfo.getStackTraceHash()).append(NL);
     }
     sb.append(NL).append("Unclosed Connections:").append(NL).append(NL);
     for (List<UnclosedConnectionInfo> infoList : countsList) {
       UnclosedConnectionInfo firstInfo = infoList.get(0);
-      sb.append(firstInfo.getStackTraceHash()).append(NL).append("Instance details:").append(NL);
+      sb.append(firstInfo.getStackTraceHash()).append(": ")
+        .append(infoList.size()).append(" instances").append(NL)
+        .append("  Instance details:").append(NL);
       for (UnclosedConnectionInfo info : infoList) {
-        sb.append("   ").append(info.getBasicInfo()).append(NL);
+        sb.append("    ").append(info.getBasicInfo()).append(NL);
       }
-      sb.append("Stack trace:").append(NL).append("   ").append(firstInfo.getStackTrace()).append(NL);
+      sb.append("  Stack trace:").append(NL).append("    ").append(firstInfo.getStackTrace()).append(NL);
     }
     return sb.toString();
   }
