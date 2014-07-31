@@ -12,6 +12,7 @@ import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.WrappedDataSource;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 
 public class DatabaseInstance implements Wrapper {
@@ -23,7 +24,7 @@ public class DatabaseInstance implements Wrapper {
   private boolean _initialized = false;
   private DBPlatform _platform;
   private GenericObjectPool _connectionPool;
-  private DataSource _dataSource;
+  private WrappedDataSource _dataSource;
   private String _defaultSchema;
   private ConnectionPoolLogger _logger;
 
@@ -62,7 +63,7 @@ public class DatabaseInstance implements Wrapper {
   
         PoolingDataSource dataSource = new PoolingDataSource(_connectionPool);
         dataSource.setAccessToUnderlyingConnectionAllowed(true);
-        _dataSource = dataSource;
+        _dataSource = new WrappedDataSource(_name, dataSource);
   
         // start the connection monitor if needed
         if (_dbConfig.isShowConnections()) {
@@ -93,10 +94,9 @@ public class DatabaseInstance implements Wrapper {
     boolean defaultReadOnly = false;
     boolean defaultAutoCommit = true;
       
-    @SuppressWarnings("unused")  // object is created only to link factory and pool
-    PoolableConnectionFactory poolableConnectionFactory =
-        new PoolableConnectionFactory(connectionFactory, connectionPool, null,
-            platform.getValidationQuery(), defaultReadOnly, defaultAutoCommit);
+    // object is created only to link factory and pool
+    new PoolableConnectionFactory(connectionFactory, connectionPool, null,
+        platform.getValidationQuery(), defaultReadOnly, defaultAutoCommit);
     
     return connectionPool;
   }
@@ -137,6 +137,10 @@ public class DatabaseInstance implements Wrapper {
       throw new IllegalStateException("Instance must be initialized with " +
           "initialize() before this method is called.");
     }
+  }
+  
+  public String getUnclosedConnectionInfo() {
+    return _dataSource.dumpUnclosedConnectionInfo();
   }
   
   /**
