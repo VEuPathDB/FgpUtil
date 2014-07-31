@@ -140,10 +140,15 @@ public class DataSourceWrapper implements DataSource {
         .append("  ").append(_numConnectionsOpened.get()).append(" connections opened").append(NL)
         .append("  ").append(_numConnectionsClosed.get()).append(" connections closed").append(NL)
         .append("  ").append(rawInfoList.size()).append(" currently open connections").append(NL).append(NL);
+
+    // if no unclosed connections exist, no more to add
+    if (rawInfoList.isEmpty()) return sb.toString();
+
     for (List<UnclosedConnectionInfo> infoList : countsList) {
       UnclosedConnectionInfo firstInfo = infoList.get(0);
       sb.append("  ").append(infoList.size()).append(" : ").append(firstInfo.getStackTraceHash()).append(NL);
     }
+
     sb.append(NL).append("Unclosed Connections").append(NL).append(NL);
     for (List<UnclosedConnectionInfo> infoList : countsList) {
       UnclosedConnectionInfo firstInfo = infoList.get(0);
