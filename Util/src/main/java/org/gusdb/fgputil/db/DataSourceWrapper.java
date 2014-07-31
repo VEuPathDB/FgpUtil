@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
@@ -73,6 +74,8 @@ public class DataSourceWrapper implements DataSource {
   private final String _dbName;
   private final DataSource _underlyingDataSource;
   private final Map<Connection, UnclosedConnectionInfo> _unclosedConnectionMap = new ConcurrentHashMap<>();
+  private final AtomicInteger _numConnectionsOpened = new AtomicInteger(0);
+  private final AtomicInteger _numConnectionsClosed = new AtomicInteger(0);
   
   public DataSourceWrapper(String dbName, DataSource underlyingDataSource) {
     _dbName = dbName;
@@ -90,6 +93,7 @@ public class DataSourceWrapper implements DataSource {
   private Connection wrapConnection(Connection conn) {
     ConnectionWrapper wrapper = new ConnectionWrapper(conn, this);
     _unclosedConnectionMap.put(conn, new UnclosedConnectionInfo(_dbName));
+    _numConnectionsOpened.incrementAndGet();
     return wrapper;
   }
 
@@ -100,6 +104,7 @@ public class DataSourceWrapper implements DataSource {
       LOG.debug("Closing connection associated with stacktrace hash " +
       info.getStackTraceHash() + " : " + info.getBasicInfo());
     }
+    _numConnectionsClosed.incrementAndGet();
     _unclosedConnectionMap.remove(conn);
   }
 
@@ -131,13 +136,15 @@ public class DataSourceWrapper implements DataSource {
 
     // build output
     StringBuilder sb = new StringBuilder(NL)
-        .append("Unclosed Connection Statistics (").append(rawInfoList.size())
-        .append(" total open connections):").append(NL).append(NL);
+        .append("Unclosed Connection Statistics").append(NL).append(NL)
+        .append("  ").append(_numConnectionsOpened.get()).append(" connections opened").append(NL)
+        .append("  ").append(_numConnectionsClosed.get()).append(" connections closed").append(NL)
+        .append("  ").append(rawInfoList.size()).append(" currently open connections").append(NL).append(NL);
     for (List<UnclosedConnectionInfo> infoList : countsList) {
       UnclosedConnectionInfo firstInfo = infoList.get(0);
       sb.append("  ").append(infoList.size()).append(" : ").append(firstInfo.getStackTraceHash()).append(NL);
     }
-    sb.append(NL).append("Unclosed Connections:").append(NL).append(NL);
+    sb.append(NL).append("Unclosed Connections").append(NL).append(NL);
     for (List<UnclosedConnectionInfo> infoList : countsList) {
       UnclosedConnectionInfo firstInfo = infoList.get(0);
       sb.append(firstInfo.getStackTraceHash()).append(": ")
