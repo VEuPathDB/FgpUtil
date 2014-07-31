@@ -189,13 +189,13 @@ public final class SqlUtils {
       int result = stmt.executeUpdate(sql);
       QueryLogger.logEndStatementExecution(sql, name, start);
       return result;
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       logger.error("Failed to run nonQuery:\n" + sql);
       throw ex;
-    } finally {
-      closeStatement(stmt);
-      if (stmt == null && connection != null)
-        SqlUtils.closeQuietly(connection);
+    }
+    finally {
+      SqlUtils.closeQuietly(stmt, connection);
     }
   }
 
