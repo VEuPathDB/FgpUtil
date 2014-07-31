@@ -12,7 +12,14 @@ public class FormatUtil {
   public static final String TAB = "\t";
   
   private FormatUtil() {}
+
+  @SuppressWarnings("serial")
+  private static class CurrentStackTrace extends Throwable { }
   
+  public static String getCurrentStackTrace() {
+    return getStackTrace(new CurrentStackTrace());
+  }
+
   public static String getStackTrace(Throwable t) {
     StringWriter str = new StringWriter(150);
     t.printStackTrace(new PrintWriter(str));
@@ -154,4 +161,5 @@ public class FormatUtil {
     Double ratio = (double)numerator / (double)denominator;
     return new DecimalFormat("##0.0").format(ratio * 100D) + "%";
   }
+
 }
