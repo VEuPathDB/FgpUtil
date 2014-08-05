@@ -349,19 +349,21 @@ public class Oracle extends DBPlatform {
   public int getBooleanType() {
     return Types.BIT;
   }
+  
+  private static final int EXPRESSION_LIMIT = 999;
 
   @Override
   public String prepareExpressionList(String[] values) {
     StringBuilder buffer = new StringBuilder();
-    if (values.length <= 1000) { // Oracle has a hard limit on the # of items in one expression list
+    if (values.length <= EXPRESSION_LIMIT) { // Oracle has a hard limit on the # of items in one expression list
       appendItems(buffer, values, 0, values.length);
     }
     else { // over the limit, will need to convert the list into unions
-      for (int i = 0; i < values.length; i += 1000) {
+      for (int i = 0; i < values.length; i += EXPRESSION_LIMIT) {
         if (buffer.length() > 0)
           buffer.append(" UNION ");
         buffer.append("SELECT * FROM table(SYS.DBMS_DEBUG_VC2COLL(");
-        int end = Math.min(i + 1000, values.length);
+        int end = Math.min(i + EXPRESSION_LIMIT, values.length);
         appendItems(buffer, values, i, end);
         buffer.append("))");
       }
