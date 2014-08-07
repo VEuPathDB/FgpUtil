@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -35,15 +36,18 @@ public class DataSourceWrapper implements DataSource {
     private String _dbName;
     private Date _timeOpened;
     private String _stackTrace;
+    private String _stackTraceHash;
 
-    public UnclosedConnectionInfo(String dbName) {
+    public UnclosedConnectionInfo(String dbName, Map<String, String> globalStacktraceMap) {
       _dbName = dbName;
       _timeOpened = new Date();
       _stackTrace = FormatUtil.getCurrentStackTrace();
+      _stackTraceHash = EncryptionUtil.encryptNoCatch(_stackTrace);
+      globalStacktraceMap.put(_stackTraceHash, _stackTrace);
     }
 
     public String getStackTraceHash() {
-      return EncryptionUtil.encryptNoCatch(_stackTrace);
+      return _stackTraceHash;
     }
 
     public String getStackTrace() {
@@ -71,9 +75,11 @@ public class DataSourceWrapper implements DataSource {
   }
   
   private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+  
   private final String _dbName;
   private final DataSource _underlyingDataSource;
   private final Map<Connection, UnclosedConnectionInfo> _unclosedConnectionMap = new ConcurrentHashMap<>();
+  private final Map<String, String> _globalStacktraceMap = new ConcurrentHashMap<>();
   private final AtomicInteger _numConnectionsOpened = new AtomicInteger(0);
   private final AtomicInteger _numConnectionsClosed = new AtomicInteger(0);
   
@@ -91,8 +97,14 @@ public class DataSourceWrapper implements DataSource {
   }
 
   private Connection wrapConnection(Connection conn) {
+    UnclosedConnectionInfo info = new UnclosedConnectionInfo(_dbName, _globalStacktraceMap);
+    if (LOG.isDebugEnabled()) {
+      // log hash for this connection; let caller know which connection was opened
+      LOG.debug("Opening connection associated with stacktrace hash " +
+          info.getStackTraceHash() + " : " + info.getBasicInfo());
+    }
     ConnectionWrapper wrapper = new ConnectionWrapper(conn, this);
-    _unclosedConnectionMap.put(conn, new UnclosedConnectionInfo(_dbName));
+    _unclosedConnectionMap.put(conn, info);
     _numConnectionsOpened.incrementAndGet();
     return wrapper;
   }
@@ -136,32 +148,52 @@ public class DataSourceWrapper implements DataSource {
 
     // build output
     StringBuilder sb = new StringBuilder(NL)
-        .append("Unclosed Connection Statistics").append(NL).append(NL)
+        .append("================================").append(NL)
+        .append(" Unclosed Connection Statistics ").append(NL)
+        .append("================================").append(NL).append(NL)
         .append("  ").append(_numConnectionsOpened.get()).append(" connections opened").append(NL)
         .append("  ").append(_numConnectionsClosed.get()).append(" connections closed").append(NL)
         .append("  ").append(rawInfoList.size()).append(" currently open connections").append(NL).append(NL);
 
-    // if no unclosed connections exist, no more to add
-    if (rawInfoList.isEmpty()) return sb.toString();
+    // if no unclosed connections exist, skip unclosed section
+    if (!rawInfoList.isEmpty()) {
 
-    for (List<UnclosedConnectionInfo> infoList : countsList) {
-      UnclosedConnectionInfo firstInfo = infoList.get(0);
-      sb.append("  ").append(infoList.size()).append(" : ").append(firstInfo.getStackTraceHash()).append(NL);
-    }
-
-    sb.append(NL).append("Unclosed Connections").append(NL).append(NL);
-    for (List<UnclosedConnectionInfo> infoList : countsList) {
-      UnclosedConnectionInfo firstInfo = infoList.get(0);
-      sb.append(firstInfo.getStackTraceHash()).append(": ")
-        .append(infoList.size()).append(" instances").append(NL).append(NL)
-        .append("  Instance details:").append(NL).append(NL);
-      for (UnclosedConnectionInfo info : infoList) {
-        sb.append("    ").append(info.getBasicInfo()).append(NL);
+      for (List<UnclosedConnectionInfo> infoList : countsList) {
+        UnclosedConnectionInfo firstInfo = infoList.get(0);
+        sb.append("  ").append(infoList.size()).append(" : ").append(firstInfo.getStackTraceHash()).append(NL);
       }
+
       sb.append(NL)
-        .append("  Stack trace:").append(NL).append(NL)
-        .append("    ").append(firstInfo.getStackTrace()).append(NL);
+        .append("======================").append(NL)
+        .append(" Unclosed Connections ").append(NL)
+        .append("======================").append(NL).append(NL);
+      for (List<UnclosedConnectionInfo> infoList : countsList) {
+        UnclosedConnectionInfo firstInfo = infoList.get(0);
+        sb.append(firstInfo.getStackTraceHash()).append(": ")
+          .append(infoList.size()).append(" instances").append(NL).append(NL)
+          .append("  Instance details:").append(NL).append(NL);
+        for (UnclosedConnectionInfo info : infoList) {
+          sb.append("    ").append(info.getBasicInfo()).append(NL);
+        }
+        sb.append(NL)
+          .append("  Stack trace:").append(NL).append(NL)
+          .append("    ").append(firstInfo.getStackTrace()).append(NL);
+      }
     }
+
+    // show entire mapping of hash -> stacktrace
+    sb.append(NL)
+      .append("================================").append(NL)
+      .append(" Historical Stacktrace Hash Map ").append(NL)
+      .append("================================").append(NL).append(NL)
+      .append(_globalStacktraceMap.size())
+      .append(" distinct stack traces opened connections since initialization.")
+      .append(NL).append(NL);
+    for (Entry<String, String> hashMapping : _globalStacktraceMap.entrySet()) {
+      sb.append(hashMapping.getKey()).append(NL).append("  ")
+        .append(hashMapping.getValue()).append(NL).append(NL);
+    }
+
     return sb.toString();
   }
  
