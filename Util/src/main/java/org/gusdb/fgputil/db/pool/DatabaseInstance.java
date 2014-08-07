@@ -143,6 +143,18 @@ public class DatabaseInstance implements Wrapper {
     return _dataSource.dumpUnclosedConnectionInfo();
   }
   
+  public int getNumConnectionsOpened() {
+    return _dataSource.getNumConnectionsOpened();
+  }
+
+  public int getNumConnectionsClosed() {
+    return _dataSource.getNumConnectionsClosed();
+  }
+
+  public int getConnectionsCurrentlyOpen() {
+    return _dataSource.getConnectionsCurrentlyOpen();
+  }
+  
   /**
    * If this DB is initialized, shuts down the connection pool, and (if
    * configured) the connection pool logger thread.  Resets initialized flag,
@@ -178,16 +190,87 @@ public class DatabaseInstance implements Wrapper {
     return _platform;
   }
   
+  /**
+   * Return the number of instances currently borrowed from this pool.
+   */
   public int getActiveCount() {
     checkInit();
     return _connectionPool.getNumActive();
   }
 
+  /**
+   * Return the number of instances currently idle in this pool
+   */
   public int getIdleCount() {
     checkInit();
     return _connectionPool.getNumIdle();
   }
   
+  /**
+   * Returns the minimum number of objects allowed in the pool before the 
+   * evictor thread (if active) spawns new objects
+   */
+  public int getMinIdle() {
+    checkInit();
+    return _connectionPool.getMinIdle();
+  }
+
+  /**
+   * Returns the cap on the number of "idle" instances in the pool.
+   */
+  public int getMaxIdle() {
+    checkInit();
+    return _connectionPool.getMaxIdle();
+  }
+  
+  /**
+   * Returns the minimum amount of time an object may sit idle in the pool 
+   * before it is eligible for eviction by the idle object evictor (if any).
+   */
+  public long getMinEvictableIdleTimeMillis() {
+    checkInit();
+    return _connectionPool.getMinEvictableIdleTimeMillis();
+  }
+
+  /**
+   * Returns the minimum amount of time an object may sit idle in the pool 
+   * before it is eligible for eviction by the idle object evictor (if any),
+   * with the extra condition that at least "minIdle" amount of object remain in the pool.
+   */
+  public long getSoftMinEvictableIdleTimeMillis() {
+    checkInit();
+    return _connectionPool.getSoftMinEvictableIdleTimeMillis();
+  }
+
+  /**
+   * Returns the number of milliseconds to sleep between runs of the idle object evictor thread.
+   */
+  public long getTimeBetweenEvictionRunsMillis() {
+    checkInit();
+    return _connectionPool.getTimeBetweenEvictionRunsMillis();
+  }
+
+  /**
+   * When true, objects will be validated before being returned by the borrowObject() method.
+   */
+	public boolean getTestOnBorrow() {
+    return _connectionPool.getTestOnBorrow();
+	}
+	
+  /**
+   * When true, objects will be validated before being returned to the pool within the returnObject(T).
+   */
+  public boolean getTestOnReturn() {
+    return _connectionPool.getTestOnReturn();
+  }
+
+  /**
+   * When true, objects will be validated by the idle object evictor (if any).
+   */
+  public boolean getTestWhileIdle() {
+    return _connectionPool.getTestWhileIdle();
+  }
+
   public DataSource getDataSource() {
     checkInit();
     return _dataSource;
