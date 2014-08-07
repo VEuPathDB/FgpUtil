@@ -164,6 +164,18 @@ public class DataSourceWrapper implements DataSource {
     }
     return sb.toString();
   }
+ 
+  public int getNumConnectionsOpened() {
+    return _numConnectionsOpened.get();
+  }
+
+  public int getNumConnectionsClosed() {
+    return _numConnectionsClosed.get();
+  }
+
+  public int getConnectionsCurrentlyOpen() {
+    return _unclosedConnectionMap.values().size();
+  }
 
   /************ ALL METHODS BELOW THIS LINE ARE SIMPLE WRAPPERS ************/
 
