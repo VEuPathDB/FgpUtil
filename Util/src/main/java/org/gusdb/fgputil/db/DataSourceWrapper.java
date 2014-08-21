@@ -88,10 +88,12 @@ public class DataSourceWrapper implements DataSource {
     _underlyingDataSource = underlyingDataSource;
   }
 
+  @Override
   public Connection getConnection() throws SQLException {
     return wrapConnection(_underlyingDataSource.getConnection());
   }
 
+  @Override
   public Connection getConnection(String username, String password) throws SQLException {
     return wrapConnection(_underlyingDataSource.getConnection(username, password));
   }
@@ -141,6 +143,7 @@ public class DataSourceWrapper implements DataSource {
 
     // sort by number of instances (descending)
     Collections.sort(countsList, new Comparator<List<UnclosedConnectionInfo>>() {
+      @Override
       public int compare(List<UnclosedConnectionInfo> o1, List<UnclosedConnectionInfo> o2) {
         return o2.size() - o1.size();
       }
@@ -211,30 +214,37 @@ public class DataSourceWrapper implements DataSource {
 
   /************ ALL METHODS BELOW THIS LINE ARE SIMPLE WRAPPERS ************/
 
+  @Override
   public PrintWriter getLogWriter() throws SQLException {
     return _underlyingDataSource.getLogWriter();
   }
 
+  @Override
   public void setLogWriter(PrintWriter out) throws SQLException {
     _underlyingDataSource.setLogWriter(out);
   }
 
+  @Override
   public void setLoginTimeout(int seconds) throws SQLException {
     _underlyingDataSource.setLoginTimeout(seconds);
   }
 
+  @Override
   public int getLoginTimeout() throws SQLException {
     return _underlyingDataSource.getLoginTimeout();
   }
 
+  @Override
   public Logger getParentLogger() throws SQLFeatureNotSupportedException {
     return _underlyingDataSource.getParentLogger();
   }
 
+  @Override
   public <T> T unwrap(Class<T> iface) throws SQLException {
     return _underlyingDataSource.unwrap(iface);
   }
 
+  @Override
   public boolean isWrapperFor(Class<?> iface) throws SQLException {
     return _underlyingDataSource.isWrapperFor(iface);
   }
