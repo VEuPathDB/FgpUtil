@@ -15,7 +15,7 @@ public final class InstanceManager {
   public static <T extends Manageable<T>> T getInstance(Class<T> instanceClass, String gusHome, String projectId)
       throws UnfetchableInstanceException {
 
-    // get a map<gusHome->map<projectId,instance>>
+    // get a map<gusHome->map<projectId->instance>>
     Map<String, Map<String, Manageable<?>>> gusMap;
     synchronized (instanceClass) {
       gusMap = INSTANCES.get(instanceClass.getName());
@@ -25,7 +25,7 @@ public final class InstanceManager {
       }
     }
 
-    // get a map<projectId,instance>
+    // get a map<projectId->instance>
     Map<String, Manageable<?>> projectMap;
     gusHome = gusHome.intern();
     synchronized(gusHome) {
