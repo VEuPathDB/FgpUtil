@@ -66,6 +66,7 @@ public class DatabaseInstance implements Wrapper {
   
         // start the connection monitor if needed
         if (_dbConfig.isShowConnections()) {
+          LOG.info("Starting Connection Pool Logger for instance; " + _name);
           _logger = new ConnectionPoolLogger(this);
           new Thread(_logger).start();
         }

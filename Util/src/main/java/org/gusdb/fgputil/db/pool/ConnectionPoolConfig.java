@@ -14,7 +14,7 @@ public interface ConnectionPoolConfig {
   public short getMaxActive();
   public short getMaxIdle();
   public short getMinIdle();
-  public short getMaxWait();
+  public long getMaxWait();
   
   public boolean isShowConnections();
   public long getShowConnectionsInterval();

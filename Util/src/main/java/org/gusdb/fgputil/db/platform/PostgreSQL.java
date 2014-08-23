@@ -5,6 +5,7 @@ package org.gusdb.fgputil.db.platform;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,6 +84,11 @@ public class PostgreSQL extends DBPlatform {
   @Override
   public String getClobDataType() {
     return "text";
+  }
+
+  @Override
+  public String getBlobDataType() {
+    return "BYTEA";
   }
 
   /*
@@ -294,5 +300,10 @@ public class PostgreSQL extends DBPlatform {
   @Override
   public String getRowNumberColumn() {
     return "row_number() over()";
+  }
+
+  @Override
+  public int getBooleanType() {
+    return Types.BOOLEAN;
   }
 }
