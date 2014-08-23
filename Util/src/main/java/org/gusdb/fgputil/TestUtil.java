@@ -26,10 +26,10 @@ public final class TestUtil {
   private TestUtil() { }
   
 	public static void assertFilesEqual(String filePath1, String filePath2) throws IOException {
-		BufferedReader br1 = null, br2 = null;
-		try {
-			br1 = new BufferedReader(new FileReader(filePath1));
-			br2 = new BufferedReader(new FileReader(filePath2));
+		try (FileReader fr1 = new FileReader(filePath1);
+			 BufferedReader br1 = new BufferedReader(fr1);
+			 FileReader fr2 = new FileReader(filePath2);
+			 BufferedReader br2 = new BufferedReader(fr2)) {
 			while (br1.ready()) {
 				if (!br2.ready()) {
 					throw new AssertionError(filePath2 + " ended before " + filePath1);
@@ -45,10 +45,6 @@ public final class TestUtil {
 			if (br2.ready()) {
 				throw new AssertionError(filePath1 + " ended before " + filePath2);
 			}
-		}
-		finally {
-			IoUtil.closeQuietly(br2);
-			IoUtil.closeQuietly(br1);
 		}
 	}
 

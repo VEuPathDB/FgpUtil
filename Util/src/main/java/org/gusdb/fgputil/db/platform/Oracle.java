@@ -43,12 +43,11 @@ public class Oracle extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#createSequence(java.lang.String,
-   * int, int)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#createSequence(java.lang.String, int, int)
    */
   @Override
-  public void createSequence(DataSource dataSource, String sequence, int start,
-      int increment) throws SQLException {
+  public void createSequence(DataSource dataSource, String sequence, int start, int increment)
+      throws SQLException {
     StringBuffer sql = new StringBuffer("CREATE SEQUENCE ");
     sql.append(sequence);
     sql.append(" START WITH ").append(start);
@@ -114,27 +113,24 @@ public class Oracle extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String,
-   * java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String, java.lang.String)
    */
   @Override
-  public int getNextId(DataSource dataSource, String schema, String table)
-      throws SQLException, DBStateException {
+  public int getNextId(DataSource dataSource, String schema, String table) throws SQLException,
+      DBStateException {
     schema = normalizeSchema(schema);
 
     StringBuffer sql = new StringBuffer("SELECT ");
     sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
     sql.append(".nextval FROM dual");
-    BigDecimal id = (BigDecimal) SqlUtils.executeScalar(dataSource,
-        sql.toString(), "wdk-select-next-id");
+    BigDecimal id = (BigDecimal) SqlUtils.executeScalar(dataSource, sql.toString(), "wdk-select-next-id");
     return id.intValue();
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextIdSqlExpression(java.lang.
-   * String, java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextIdSqlExpression(java.lang. String, java.lang.String)
    */
   @Override
   public String getNextIdSqlExpression(String schema, String table) {
@@ -149,12 +145,10 @@ public class Oracle extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getClobData(java.sql.ResultSet,
-   * java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#getClobData(java.sql.ResultSet, java.lang.String)
    */
   @Override
-  public String getClobData(ResultSet rs, String columnName)
-      throws SQLException {
+  public String getClobData(ResultSet rs, String columnName) throws SQLException {
     Clob messageClob = rs.getClob(columnName);
     if (messageClob == null)
       return null;
@@ -164,8 +158,7 @@ public class Oracle extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String, int,
-   * int)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String, int, int)
    */
   @Override
   public String getPagedSql(String sql, int startIndex, int endIndex) {
@@ -186,8 +179,8 @@ public class Oracle extends DBPlatform {
    * @see org.gusdb.wdk.model.dbms.DBPlatform#isTableExist(java.lang.String)
    */
   @Override
-  public boolean checkTableExists(DataSource dataSource, String schema,
-      String tableName) throws SQLException, DBStateException {
+  public boolean checkTableExists(DataSource dataSource, String schema, String tableName)
+      throws SQLException, DBStateException {
     StringBuffer sql = new StringBuffer("SELECT count(*) FROM ALL_TABLES ");
     sql.append("WHERE table_name = '");
     sql.append(tableName.toUpperCase()).append("'");
@@ -195,8 +188,8 @@ public class Oracle extends DBPlatform {
       schema = schema.substring(0, schema.length() - 1);
     sql.append(" AND owner = '").append(schema.toUpperCase()).append("'");
 
-    BigDecimal count = (BigDecimal) SqlUtils.executeScalar(dataSource,
-        sql.toString(), "wdk-check-table-exist");
+    BigDecimal count = (BigDecimal) SqlUtils.executeScalar(dataSource, sql.toString(),
+        "wdk-check-table-exist");
     return (count.longValue() > 0);
   }
 
@@ -233,12 +226,11 @@ public class Oracle extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#dropTable(java.lang.String,
-   * java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#dropTable(java.lang.String, java.lang.String)
    */
   @Override
-  public void dropTable(DataSource dataSource, String schema, String table,
-      boolean purge) throws SQLException {
+  public void dropTable(DataSource dataSource, String schema, String table, boolean purge)
+      throws SQLException {
     String name = "wdk-drop-table-" + table;
     String sql = "DROP TABLE ";
     if (schema != null)
@@ -252,20 +244,17 @@ public class Oracle extends DBPlatform {
   }
 
   /**
-   * We clean and lock the stats on a table, so that Oracle will use Dynamic
-   * Sampling to compute execution plans.
+   * We clean and lock the stats on a table, so that Oracle will use Dynamic Sampling to compute execution
+   * plans.
    * 
-   * One use case of this is on WDK cache tables, which has frequent inserts and
-   * the stats (if turned on) can get stale quickly, which may result in bad
-   * execution plans. Locking the stats will force Oracle to sample the data in
-   * the cache table.
+   * One use case of this is on WDK cache tables, which has frequent inserts and the stats (if turned on) can
+   * get stale quickly, which may result in bad execution plans. Locking the stats will force Oracle to sample
+   * the data in the cache table.
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String,
-   *      java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String, java.lang.String)
    */
   @Override
-  public void disableStatistics(DataSource dataSource, String schema,
-      String tableName) throws SQLException {
+  public void disableStatistics(DataSource dataSource, String schema, String tableName) throws SQLException {
     schema = schema.trim().toUpperCase();
     if (schema.endsWith("."))
       schema = schema.substring(0, schema.length() - 1);
@@ -277,29 +266,29 @@ public class Oracle extends DBPlatform {
       connection.setAutoCommit(false);
 
       stUnlock = connection.prepareCall(tableName);
-      stUnlock.executeUpdate("{call DBMS_STATS.unlock_table_stats('" + schema
-          + "', '" + tableName + "') }");
+      stUnlock.executeUpdate("{call DBMS_STATS.unlock_table_stats('" + schema + "', '" + tableName + "') }");
       stUnlock.executeUpdate();
 
       stDelete = connection.prepareCall(tableName);
-      stDelete.executeUpdate("{call DBMS_STATS.DELETE_TABLE_STATS('" + schema
-          + "', '" + tableName + "') }");
+      stDelete.executeUpdate("{call DBMS_STATS.DELETE_TABLE_STATS('" + schema + "', '" + tableName + "') }");
       stDelete.executeUpdate();
 
       stLock = connection.prepareCall(tableName);
-      stLock.executeUpdate("{call DBMS_STATS.LOCK_TABLE_STATS('" + schema
-          + "', '" + tableName + "') }");
+      stLock.executeUpdate("{call DBMS_STATS.LOCK_TABLE_STATS('" + schema + "', '" + tableName + "') }");
       stLock.executeUpdate();
 
       connection.commit();
-    } catch (SQLException e) {
+    }
+    catch (SQLException e) {
       connection.rollback();
       throw e;
-    } finally {
+    }
+    finally {
       SqlUtils.closeQuietly(stUnlock, stDelete, stLock);
       try {
         connection.setAutoCommit(true);
-      } catch (SQLException e) {
+      }
+      catch (SQLException e) {
         LOG.error("Unable to set connection's auto-commit back to true.", e);
       }
       SqlUtils.closeQuietly(connection);
@@ -309,19 +298,15 @@ public class Oracle extends DBPlatform {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getTables(java.lang.String,
-   * java.lang.String)
+   * @see org.gusdb.wdk.model.dbms.DBPlatform#getTables(java.lang.String, java.lang.String)
    */
   @Override
-  public String[] queryTableNames(DataSource dataSource, String schema,
-      String pattern) throws SQLException {
-    String sql = "SELECT table_name FROM all_tables WHERE owner = '"
-        + schema.toUpperCase() + "' AND table_name LIKE '"
-        + pattern.toUpperCase() + "'";
+  public String[] queryTableNames(DataSource dataSource, String schema, String pattern) throws SQLException {
+    String sql = "SELECT table_name FROM all_tables WHERE owner = '" + schema.toUpperCase() +
+        "' AND table_name LIKE '" + pattern.toUpperCase() + "'";
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql,
-          "wdk-oracle-select-table-names");
+      resultSet = SqlUtils.executeQuery(dataSource, sql, "wdk-oracle-select-table-names");
       List<String> tables = new ArrayList<String>();
       while (resultSet.next()) {
         tables.add(resultSet.getString("table_name"));
@@ -329,7 +314,8 @@ public class Oracle extends DBPlatform {
       String[] array = new String[tables.size()];
       tables.toArray(array);
       return array;
-    } finally {
+    }
+    finally {
       SqlUtils.closeResultSetAndStatement(resultSet);
     }
   }
@@ -341,8 +327,7 @@ public class Oracle extends DBPlatform {
 
   @Override
   public String getResizeColumnSql(String tableName, String column, int size) {
-    return "ALTER TABLE " + tableName + " MODIFY (" + column + " varchar("
-        + size + ") )";
+    return "ALTER TABLE " + tableName + " MODIFY (" + column + " varchar(" + size + ") )";
   }
 
   /**
@@ -363,5 +348,44 @@ public class Oracle extends DBPlatform {
   @Override
   public int getBooleanType() {
     return Types.BIT;
+  }
+  
+  private static final int EXPRESSION_LIMIT = 999;
+
+  @Override
+  public String prepareExpressionList(String[] values) {
+    StringBuilder buffer = new StringBuilder();
+    if (values.length <= EXPRESSION_LIMIT) { // Oracle has a hard limit on the # of items in one expression list
+      appendItems(buffer, values, 0, values.length);
+    }
+    else { // over the limit, will need to convert the list into unions
+      for (int i = 0; i < values.length; i += EXPRESSION_LIMIT) {
+        if (buffer.length() > 0)
+          buffer.append(" UNION ");
+        buffer.append("SELECT * FROM table(SYS.DBMS_DEBUG_VC2COLL(");
+        int end = Math.min(i + EXPRESSION_LIMIT, values.length);
+        appendItems(buffer, values, i, end);
+        buffer.append("))");
+      }
+    }
+    return buffer.toString();
+  }
+
+  /**
+   * append the values into the buffer, comma separated.
+   * 
+   * @param buffer
+   * @param values
+   * @param start
+   *          the start of the values to be appended, inclusive.
+   * @param end
+   *          the end of the values to be appended. exclusive.
+   */
+  private void appendItems(StringBuilder buffer, String[] values, int start, int end) {
+    for (int i = start; i < end; i++) {
+      if (i > start)
+        buffer.append(",");
+      buffer.append(values[i]);
+    }
   }
 }

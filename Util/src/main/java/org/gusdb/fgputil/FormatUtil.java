@@ -12,7 +12,14 @@ public class FormatUtil {
   public static final String TAB = "\t";
   
   private FormatUtil() {}
+
+  @SuppressWarnings("serial")
+  private static class CurrentStackTrace extends Throwable { }
   
+  public static String getCurrentStackTrace() {
+    return getStackTrace(new CurrentStackTrace());
+  }
+
   public static String getStackTrace(Throwable t) {
     StringWriter str = new StringWriter(150);
     t.printStackTrace(new PrintWriter(str));
@@ -71,7 +78,7 @@ public class FormatUtil {
   }
 
   public static String printArray(String[] array) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("{");
     for (String s : array) {
         if (sb.length() > 1) sb.append(", ");
@@ -83,7 +90,7 @@ public class FormatUtil {
 
   public static String printArray(String[][] array) {
     String newline = System.getProperty("line.separator");
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (String[] parts : array) {
         sb.append(printArray(parts));
         sb.append(newline);
@@ -154,4 +161,5 @@ public class FormatUtil {
     Double ratio = (double)numerator / (double)denominator;
     return new DecimalFormat("##0.0").format(ratio * 100D) + "%";
   }
+
 }

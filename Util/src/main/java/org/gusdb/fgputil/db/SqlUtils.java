@@ -25,7 +25,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 public final class SqlUtils {
 
   private static final Logger logger = Logger.getLogger(SqlUtils.class.getName());
-
+  
   /**
    * private constructor, make sure SqlUtils cannot be instanced.
    */
@@ -85,23 +85,26 @@ public final class SqlUtils {
    * @param stmt
    */
   public static void closeStatement(Statement stmt) {
-    try {
-      if (stmt != null) {
-        // close the connection in any way
-        Connection connection = null;
+    if (stmt != null) {
+      Connection connection = null;
+      try {
         try {
-          try {
-            connection = stmt.getConnection();
-          } finally {
-            stmt.close();
-          }
-        } finally {
-          if (connection != null)
-            connection.close();
+          connection = ConnectionMapping.getConnection(stmt);
+        }
+        finally {
+          // close statement regardless of whether we
+          //   succeed in getting connection
+          closeQuietly(stmt);
         }
       }
-    } catch (SQLException ex) {
-      throw new RuntimeException(ex);
+      catch (SQLException e) {
+        // don't make calling code handle inability to fetch underlying connection
+        throw new RuntimeException(e);
+      }
+      finally {
+        // unclear what happened above, but connection must be closed
+        closeQuietly(connection);
+      }
     }
   }
 
@@ -110,7 +113,7 @@ public final class SqlUtils {
     Connection connection = null;
     PreparedStatement ps = null;
     try {
-      connection = dataSource.getConnection();
+      connection = ConnectionMapping.getConnection(dataSource);
       ps = connection.prepareStatement(sql);
       ps.setFetchSize(100);
       return ps;
@@ -145,6 +148,29 @@ public final class SqlUtils {
   }
 
   /**
+   * Executes a batch update; returns numbers of rows affected by each batch
+   * 
+   * @param stmt PrepatedStatement to which batches were added
+   * @param sql SQL of prepared statement (for logging)
+   * @param name name of this operation (for logging)
+   * @return an array of row counts; each item is the # of rows updated
+   * by a batch of params added to the statement
+   * @throws SQLException if unable to execute batch
+   */
+  public static int[] executePreparedStatementBatch(PreparedStatement stmt,
+      String sql, String name) throws SQLException {
+    try {
+      long start = System.currentTimeMillis();
+      int[] numUpdates = stmt.executeBatch();
+      QueryLogger.logEndStatementExecution(sql, name, start);
+      return numUpdates;
+    } catch (SQLException ex) {
+      logger.error("Failed to execute statement batch: \n" + sql);
+      throw ex;
+    }
+  }
+
+  /**
    * execute the update, and returns the number of rows affected.
    * 
    * @param dataSource
@@ -163,13 +189,13 @@ public final class SqlUtils {
       int result = stmt.executeUpdate(sql);
       QueryLogger.logEndStatementExecution(sql, name, start);
       return result;
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       logger.error("Failed to run nonQuery:\n" + sql);
       throw ex;
-    } finally {
-      closeStatement(stmt);
-      if (stmt == null && connection != null)
-        SqlUtils.closeQuietly(connection);
+    }
+    finally {
+      SqlUtils.closeQuietly(stmt, connection);
     }
   }
 
@@ -216,22 +242,19 @@ public final class SqlUtils {
 
   public static ResultSet executeQuery(DataSource dataSource, String sql,
       String name, int fetchSize) throws SQLException {
-    Connection connection = dataSource.getConnection();
-    return executeQuery(connection, sql, name, fetchSize);
-  }
-
-  public static ResultSet executeQuery(Connection connection, String sql,
-      String name, int fetchSize) throws SQLException {
+    Connection connection = ConnectionMapping.getConnection(dataSource);
     logger.trace("running sql: " + name + "\n" + sql);
+    Statement stmt = null;
     ResultSet resultSet = null;
     try {
       long start = System.currentTimeMillis();
-      Statement stmt = connection.createStatement();
+      stmt = connection.createStatement();
       stmt.setFetchSize(fetchSize);
       resultSet = stmt.executeQuery(sql);
       QueryLogger.logStartResultsProcessing(sql, name, start, resultSet);
       return resultSet;
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       logger.error("Failed to run query:\n" + sql);
       if (resultSet == null && connection != null)
         SqlUtils.closeQuietly(connection);
