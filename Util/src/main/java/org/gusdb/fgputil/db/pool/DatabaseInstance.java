@@ -1,7 +1,10 @@
 package org.gusdb.fgputil.db.pool;
 
+import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.sql.Wrapper;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -16,9 +19,11 @@ import org.gusdb.fgputil.db.DataSourceWrapper;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 
 public class DatabaseInstance implements Wrapper {
-  
+
   private static final Logger LOG = Logger.getLogger(DatabaseInstance.class);
-  
+
+  private static final Map<String, WeakReference<DatabaseInstance>> ALL_INSTANCES = new LinkedHashMap<>();
+
   private final String _name;
   private final ConnectionPoolConfig _dbConfig;
   private boolean _initialized = false;
@@ -31,14 +36,57 @@ public class DatabaseInstance implements Wrapper {
   /**
    * Initialize connection pool. The driver should have been registered by the
    * platform implementation.
+   * 
+   * @throws IllegalArgumentException if name is null, empty, or already taken
    */
   public DatabaseInstance(String name, ConnectionPoolConfig dbConfig) {
-      _name = name;
-      _dbConfig = dbConfig;
-      _platform = _dbConfig.getPlatformEnum().getPlatformInstance();
-      _defaultSchema = _platform.getDefaultSchema(_dbConfig.getLogin());
+    _name = name;
+    _dbConfig = dbConfig;
+    _platform = _dbConfig.getPlatformEnum().getPlatformInstance();
+    _defaultSchema = _platform.getDefaultSchema(_dbConfig.getLogin());
+    addInstance(this);
+  }
+
+  private static synchronized void addInstance(DatabaseInstance databaseInstance) {
+    String name = databaseInstance._name;
+    if (name == null || name.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Cannot instantiate Database Instance with null or empty name");
+    }
+    if (ALL_INSTANCES.containsKey(name)) {
+      throw new IllegalArgumentException(
+          "Cannot instantiate Database Instance with name " + name + ".  Name already taken.");
+    }
+    ALL_INSTANCES.put(name, new WeakReference<DatabaseInstance>(databaseInstance));
+  }
+
+  public static synchronized Map<String, DatabaseInstance> getAllInstances() {
+    Map<String, DatabaseInstance> instanceMap = new LinkedHashMap<>();
+    for (WeakReference<DatabaseInstance> ref : ALL_INSTANCES.values()) {
+      DatabaseInstance db = ref.get();
+      instanceMap.put(db.getName(), db);
+    }
+    return instanceMap;
+  }
+
+  @Override
+  public void finalize() {
+    removeInstance(this);
+    if (_initialized) {
+      try {
+        // try to close this resource if not closed already
+        close();
+      }
+      catch (Exception e) {
+        LOG.warn("Unable to shut down DatabaseInstance in finalize", e);
+      }
+    }
   }
   
+  private static synchronized void removeInstance(DatabaseInstance dbInstance) {
+    ALL_INSTANCES.remove(dbInstance.getName());
+  }
+
   public void initialize() {
     synchronized(this) {
       if (_initialized) {
@@ -159,8 +207,6 @@ public class DatabaseInstance implements Wrapper {
    * If this DB is initialized, shuts down the connection pool, and (if
    * configured) the connection pool logger thread.  Resets initialized flag,
    * so this DB can be reinitialized if desired.
-   * 
-   * @throws Exception if error while closing connection pool
    */
   public void close() throws Exception {
     synchronized(this) {
