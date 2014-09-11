@@ -22,15 +22,19 @@ public class DatabaseInstance implements Wrapper {
 
   private static final Logger LOG = Logger.getLogger(DatabaseInstance.class);
 
-  private static final Map<String, WeakReference<DatabaseInstance>> ALL_INSTANCES = new LinkedHashMap<>();
+  private static final Map<String, WeakReference<DatabaseInstance>> INITIALIZED_INSTANCES = new LinkedHashMap<>();
 
-  private final String _name;
-  private final ConnectionPoolConfig _dbConfig;
   private boolean _initialized = false;
-  private DBPlatform _platform;
+
+  // fields initialized by constructor
+  private final ConnectionPoolConfig _dbConfig;
+  private final DBPlatform _platform;
+  private final String _defaultSchema;
+
+  // fields initialized by initialize()
+  private String _name;
   private GenericObjectPool _connectionPool;
   private DataSourceWrapper _dataSource;
-  private String _defaultSchema;
   private ConnectionPoolLogger _logger;
 
   /**
@@ -39,94 +43,72 @@ public class DatabaseInstance implements Wrapper {
    * 
    * @throws IllegalArgumentException if name is null, empty, or already taken
    */
-  public DatabaseInstance(String name, ConnectionPoolConfig dbConfig) {
-    _name = name;
+  public DatabaseInstance(ConnectionPoolConfig dbConfig) {
     _dbConfig = dbConfig;
     _platform = _dbConfig.getPlatformEnum().getPlatformInstance();
     _defaultSchema = _platform.getDefaultSchema(_dbConfig.getLogin());
-    addInstance(this);
   }
 
-  private static synchronized void addInstance(DatabaseInstance databaseInstance) {
-    String name = databaseInstance._name;
-    if (name == null || name.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Cannot instantiate Database Instance with null or empty name");
-    }
-    if (ALL_INSTANCES.containsKey(name)) {
-      throw new IllegalArgumentException(
-          "Cannot instantiate Database Instance with name " + name + ".  Name already taken.");
-    }
-    ALL_INSTANCES.put(name, new WeakReference<DatabaseInstance>(databaseInstance));
-  }
-
-  public static synchronized Map<String, DatabaseInstance> getAllInstances() {
-    Map<String, DatabaseInstance> instanceMap = new LinkedHashMap<>();
-    for (WeakReference<DatabaseInstance> ref : ALL_INSTANCES.values()) {
-      DatabaseInstance db = ref.get();
-      instanceMap.put(db.getName(), db);
-    }
-    return instanceMap;
-  }
-
-  @Override
-  public void finalize() {
-    removeInstance(this);
-    if (_initialized) {
-      try {
-        // try to close this resource if not closed already
-        close();
-      }
-      catch (Exception e) {
-        LOG.warn("Unable to shut down DatabaseInstance in finalize", e);
-      }
-    }
-  }
-  
-  private static synchronized void removeInstance(DatabaseInstance dbInstance) {
-    ALL_INSTANCES.remove(dbInstance.getName());
-  }
-
-  public void initialize() {
+  /**
+   * Initializes the connection pool, data source, and (if configured) logger
+   * for this instance.  Also registers the instance under the passed name so
+   * it will appear in the map returned by getAllInstances()
+   * 
+   * @param name name to register this instance under
+   * @return this instance
+   * @throws IllegalArgumentException if name is invalid or already taken
+   */
+  public DatabaseInstance initialize(String name) {
     synchronized(this) {
       if (_initialized) {
         LOG.warn("Multiple calls to initialize().  Ignoring...");
-        return;
+        return this;
       }
       else {
-        LOG.info("DB Connection [" + _name + "]: " + _dbConfig.getConnectionUrl());
-        
-        _connectionPool = createConnectionPool(_dbConfig, _platform);
-  
-        // configure the connection pool
-        _connectionPool.setMaxWait(_dbConfig.getMaxWait());
-        _connectionPool.setMaxIdle(_dbConfig.getMaxIdle());
-        _connectionPool.setMinIdle(_dbConfig.getMinIdle());
-        _connectionPool.setMaxActive(_dbConfig.getMaxActive());
-  
-        // configure validationQuery tests
-        _connectionPool.setTestOnBorrow(true);
-        _connectionPool.setTestOnReturn(true);
-        _connectionPool.setWhenExhaustedAction(GenericObjectPool.WHEN_EXHAUSTED_GROW);
-  
-        PoolingDataSource dataSource = new PoolingDataSource(_connectionPool);
-        dataSource.setAccessToUnderlyingConnectionAllowed(true);
-        _dataSource = new DataSourceWrapper(_name, dataSource);
-  
-        // start the connection monitor if needed
-        if (_dbConfig.isShowConnections()) {
-          LOG.info("Starting Connection Pool Logger for instance; " + _name);
-          _logger = new ConnectionPoolLogger(this);
-          new Thread(_logger).start();
+        addInstance(this, name);
+        _name = name;
+
+        try {
+          LOG.info("DB Connection [" + _name + "]: " + _dbConfig.getConnectionUrl());
+
+          _connectionPool = createConnectionPool(_dbConfig, _platform);
+
+          // configure the connection pool
+          _connectionPool.setMaxWait(_dbConfig.getMaxWait());
+          _connectionPool.setMaxIdle(_dbConfig.getMaxIdle());
+          _connectionPool.setMinIdle(_dbConfig.getMinIdle());
+          _connectionPool.setMaxActive(_dbConfig.getMaxActive());
+
+          // configure validationQuery tests
+          _connectionPool.setTestOnBorrow(true);
+          _connectionPool.setTestOnReturn(true);
+          _connectionPool.setWhenExhaustedAction(GenericObjectPool.WHEN_EXHAUSTED_GROW);
+
+          PoolingDataSource dataSource = new PoolingDataSource(_connectionPool);
+          dataSource.setAccessToUnderlyingConnectionAllowed(true);
+          _dataSource = new DataSourceWrapper(_name, dataSource);
+
+          // start the connection monitor if needed
+          if (_dbConfig.isShowConnections()) {
+            LOG.info("Starting Connection Pool Logger for instance; " + _name);
+            _logger = new ConnectionPoolLogger(this);
+            new Thread(_logger).start();
+          }
+
+          _initialized = true;
+          return this;
         }
-        
-        _initialized = true;
+        catch (Exception e) {
+          removeInstance(this);
+          _name = null;
+          throw e;
+        }
       }
     }
   }
-  
+
   private static GenericObjectPool createConnectionPool(ConnectionPoolConfig dbConfig, DBPlatform platform) {
-    
+
     GenericObjectPool connectionPool = new GenericObjectPool(null);
 
     Properties props = new Properties();
@@ -141,11 +123,11 @@ public class DatabaseInstance implements Wrapper {
     // link connection factory to connection pool with assigned settings
     boolean defaultReadOnly = false;
     boolean defaultAutoCommit = true;
-      
+
     // object is created only to link factory and pool
     new PoolableConnectionFactory(connectionFactory, connectionPool, null,
         platform.getValidationQuery(), defaultReadOnly, defaultAutoCommit);
-    
+
     return connectionPool;
   }
 
@@ -180,29 +162,31 @@ public class DatabaseInstance implements Wrapper {
     }
   }
 
-  private void checkInit() {
-    if (!_initialized) {
-      throw new IllegalStateException("Instance must be initialized with " +
-          "initialize() before this method is called.");
+  private static synchronized void addInstance(DatabaseInstance databaseInstance, String name) {
+    if (name == null || name.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Cannot instantiate Database Instance with null or empty name");
     }
-  }
-  
-  public String getUnclosedConnectionInfo() {
-    return _dataSource.dumpUnclosedConnectionInfo();
-  }
-  
-  public int getNumConnectionsOpened() {
-    return _dataSource.getNumConnectionsOpened();
+    if (INITIALIZED_INSTANCES.containsKey(name)) {
+      throw new IllegalArgumentException(
+          "Cannot instantiate Database Instance with name " + name + ".  Name already taken.");
+    }
+    INITIALIZED_INSTANCES.put(name, new WeakReference<DatabaseInstance>(databaseInstance));
   }
 
-  public int getNumConnectionsClosed() {
-    return _dataSource.getNumConnectionsClosed();
+  private static synchronized void removeInstance(DatabaseInstance dbInstance) {
+    INITIALIZED_INSTANCES.remove(dbInstance.getName());
   }
 
-  public int getConnectionsCurrentlyOpen() {
-    return _dataSource.getConnectionsCurrentlyOpen();
+  public static synchronized Map<String, DatabaseInstance> getAllInstances() {
+    Map<String, DatabaseInstance> instanceMap = new LinkedHashMap<>();
+    for (WeakReference<DatabaseInstance> ref : INITIALIZED_INSTANCES.values()) {
+      DatabaseInstance db = ref.get();
+      instanceMap.put(db.getName(), db);
+    }
+    return instanceMap;
   }
-  
+
   /**
    * If this DB is initialized, shuts down the connection pool, and (if
    * configured) the connection pool logger thread.  Resets initialized flag,
@@ -210,32 +194,87 @@ public class DatabaseInstance implements Wrapper {
    */
   public void close() throws Exception {
     synchronized(this) {
+      removeInstance(this);
       if (_initialized) {
         if (_dbConfig.isShowConnections()) {
           _logger.shutDown();
         }
         _connectionPool.close();
+        _initialized = false;
       }
-      _initialized = false;
+    }
+  }
+
+  @Override
+  public void finalize() {
+    if (_initialized) {
+      try {
+        // try to close this resource if not closed already
+        close();
+      }
+      catch (Exception e) {
+        LOG.warn("Unable to shut down DatabaseInstance in finalize", e);
+      }
     }
   }
 
   public ConnectionPoolConfig getConfig() {
+    // do not need to checkInit() since this is set in constructor
     return _dbConfig;
   }
 
-  public String getName() {
-    return _name;
+  public DBPlatform getPlatform() {
+    // do not need to checkInit() since this is set in constructor
+    return _platform;
   }
 
   public String getDefaultSchema() {
+    // do not need to checkInit() since this is set in constructor
     return _defaultSchema;
   }
 
-  public DBPlatform getPlatform() {
-    return _platform;
+  /**
+   * Checks whether this instance has been initialized.
+   * 
+   * @throws IllegalStateException if not initialized
+   */
+  private void checkInit() {
+    if (!_initialized) {
+      throw new IllegalStateException("Instance must be initialized with " +
+          "initialize(name) before this method is called.");
+    }
   }
-  
+
+  public String getName() {
+    checkInit();
+    return _name;
+  }
+
+  public DataSource getDataSource() {
+    checkInit();
+    return _dataSource;
+  }
+
+  public String getUnclosedConnectionInfo() {
+    checkInit();
+    return _dataSource.dumpUnclosedConnectionInfo();
+  }
+
+  public int getNumConnectionsOpened() {
+    checkInit();
+    return _dataSource.getNumConnectionsOpened();
+  }
+
+  public int getNumConnectionsClosed() {
+    checkInit();
+    return _dataSource.getNumConnectionsClosed();
+  }
+
+  public int getConnectionsCurrentlyOpen() {
+    checkInit();
+    return _dataSource.getConnectionsCurrentlyOpen();
+  }
+
   /**
    * Return the number of instances currently borrowed from this pool.
    */
@@ -251,7 +290,7 @@ public class DatabaseInstance implements Wrapper {
     checkInit();
     return _connectionPool.getNumIdle();
   }
-  
+
   /**
    * Returns the minimum number of objects allowed in the pool before the 
    * evictor thread (if active) spawns new objects
@@ -268,7 +307,7 @@ public class DatabaseInstance implements Wrapper {
     checkInit();
     return _connectionPool.getMaxIdle();
   }
-  
+
   /**
    * Returns the minimum amount of time an object may sit idle in the pool 
    * before it is eligible for eviction by the idle object evictor (if any).
@@ -299,14 +338,16 @@ public class DatabaseInstance implements Wrapper {
   /**
    * When true, objects will be validated before being returned by the borrowObject() method.
    */
-	public boolean getTestOnBorrow() {
+  public boolean getTestOnBorrow() {
+    checkInit();
     return _connectionPool.getTestOnBorrow();
-	}
-	
+  }
+
   /**
    * When true, objects will be validated before being returned to the pool within the returnObject(T).
    */
   public boolean getTestOnReturn() {
+    checkInit();
     return _connectionPool.getTestOnReturn();
   }
 
@@ -315,11 +356,6 @@ public class DatabaseInstance implements Wrapper {
    */
   public boolean getTestWhileIdle() {
     return _connectionPool.getTestWhileIdle();
-  }
-
-  public DataSource getDataSource() {
-    checkInit();
-    return _dataSource;
   }
 
   @Override
