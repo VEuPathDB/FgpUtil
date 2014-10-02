@@ -38,12 +38,19 @@ public class DataSourceWrapper implements DataSource {
     private String _stackTrace;
     private String _stackTraceHash;
 
+    public UnclosedConnectionInfo(String dbName) {
+      this(dbName, null);
+    }
+
     public UnclosedConnectionInfo(String dbName, Map<String, String> globalStacktraceMap) {
       _dbName = dbName;
       _timeOpened = new Date();
       _stackTrace = FormatUtil.getCurrentStackTrace();
       _stackTraceHash = EncryptionUtil.encryptNoCatch(_stackTrace);
-      globalStacktraceMap.put(_stackTraceHash, _stackTrace);
+      // only add stack trace to global map if specified
+      if (globalStacktraceMap != null) {
+        globalStacktraceMap.put(_stackTraceHash, _stackTrace);
+      }
     }
 
     public String getStackTraceHash() {
@@ -82,10 +89,16 @@ public class DataSourceWrapper implements DataSource {
   private final Map<String, String> _globalStacktraceMap = new ConcurrentHashMap<>();
   private final AtomicInteger _numConnectionsOpened = new AtomicInteger(0);
   private final AtomicInteger _numConnectionsClosed = new AtomicInteger(0);
-  
+  private final boolean _recordAllStacktraces;
+
   public DataSourceWrapper(String dbName, DataSource underlyingDataSource) {
+    this(dbName, underlyingDataSource, false);
+  }
+
+  public DataSourceWrapper(String dbName, DataSource underlyingDataSource, boolean recordAllStacktraces) {
     _dbName = dbName;
     _underlyingDataSource = underlyingDataSource;
+    _recordAllStacktraces = recordAllStacktraces;
   }
 
   @Override
@@ -99,7 +112,9 @@ public class DataSourceWrapper implements DataSource {
   }
 
   private Connection wrapConnection(Connection conn) {
-    UnclosedConnectionInfo info = new UnclosedConnectionInfo(_dbName, _globalStacktraceMap);
+    UnclosedConnectionInfo info = (_recordAllStacktraces ?
+      new UnclosedConnectionInfo(_dbName, _globalStacktraceMap) :
+      new UnclosedConnectionInfo(_dbName));
     if (LOG.isDebugEnabled()) {
       // log hash for this connection; let caller know which connection was opened
       LOG.debug("Opening connection associated with stacktrace hash " +
@@ -185,16 +200,18 @@ public class DataSourceWrapper implements DataSource {
     }
 
     // show entire mapping of hash -> stacktrace
-    sb.append(NL)
-      .append("================================").append(NL)
-      .append(" Historical Stacktrace Hash Map ").append(NL)
-      .append("================================").append(NL).append(NL)
-      .append(_globalStacktraceMap.size())
-      .append(" distinct stack traces opened connections since initialization.")
-      .append(NL).append(NL);
-    for (Entry<String, String> hashMapping : _globalStacktraceMap.entrySet()) {
-      sb.append(hashMapping.getKey()).append(NL).append("  ")
-        .append(hashMapping.getValue()).append(NL).append(NL);
+    if (_recordAllStacktraces) {
+      sb.append(NL)
+        .append("================================").append(NL)
+        .append(" Historical Stacktrace Hash Map ").append(NL)
+        .append("================================").append(NL).append(NL)
+        .append(_globalStacktraceMap.size())
+        .append(" distinct stack traces opened connections since initialization.")
+        .append(NL).append(NL);
+      for (Entry<String, String> hashMapping : _globalStacktraceMap.entrySet()) {
+        sb.append(hashMapping.getKey()).append(NL).append("  ")
+          .append(hashMapping.getValue()).append(NL).append(NL);
+      }
     }
 
     return sb.toString();
