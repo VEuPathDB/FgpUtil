@@ -51,9 +51,8 @@ public class TestLobAccess {
   public static void main(String[] args) {
     DatabaseInstance db = null;
     try {
-      db = new DatabaseInstance("TEST", SimpleDbConfig.create(SupportedPlatform.ORACLE,
-          CONNECTION_URL, DB_USERNAME, DB_PASSWORD, (short)1));
-      db.initialize();
+      db = new DatabaseInstance(SimpleDbConfig.create(SupportedPlatform.ORACLE,
+          CONNECTION_URL, DB_USERNAME, DB_PASSWORD, (short)1)).initialize("TEST");
       DataSource ds = db.getDataSource();
       TestLobAccess tester = new TestLobAccess(ds);
       tester.createTable().saveRecords();

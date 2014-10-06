@@ -54,6 +54,7 @@ public class IoUtil {
    * @throws IOException if unable to delete directory tree
    */
   // NOTE: this does the same thing as deleteDirectoryTree(Path); pick one!
+  @Deprecated
   public static void deleteDirectory(File directory) throws IOException {
     if (!directory.exists())
       throw new IOException("Unable to find directory at path: " + directory.getAbsolutePath());
