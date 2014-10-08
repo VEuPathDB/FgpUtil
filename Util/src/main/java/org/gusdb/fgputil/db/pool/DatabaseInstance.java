@@ -38,8 +38,8 @@ public class DatabaseInstance implements Wrapper {
   private ConnectionPoolLogger _logger;
 
   /**
-   * Initialize connection pool. The driver should have been registered by the
-   * platform implementation.
+   * Create uninitialized connection pool with the given identifier. The driver
+   * should have been registered by the platform implementation.
    * 
    * @throws IllegalArgumentException if name is null, empty, or already taken
    */
