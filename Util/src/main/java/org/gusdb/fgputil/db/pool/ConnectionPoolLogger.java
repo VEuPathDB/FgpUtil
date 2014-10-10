@@ -24,7 +24,7 @@ public class ConnectionPoolLogger implements Runnable {
     long startTime = System.currentTimeMillis();
     while (!Thread.currentThread().isInterrupted() && !_shutdownFlag) {
       LOG.info(new StringBuilder()
-        .append("[").append(_dbInstance.getName()).append("]")
+        .append("[").append(_dbInstance.getIdentifier()).append("]")
         .append(" Connections: Active = ").append(_dbInstance.getActiveCount())
         .append(", Idle = ").append(_dbInstance.getIdleCount())
         .toString());

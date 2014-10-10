@@ -33,8 +33,8 @@ public class DBPlatformTest {
     ConnectionPoolConfig appConfig = new OracleConfig();
     ConnectionPoolConfig userConfig = new PostgresConfig();
 
-    DatabaseInstance appDb = new DatabaseInstance(appConfig).initialize("APP");
-    DatabaseInstance userDb = new DatabaseInstance(userConfig).initialize("USER");
+    DatabaseInstance appDb = new DatabaseInstance(appConfig, "APP");
+    DatabaseInstance userDb = new DatabaseInstance(userConfig, "USER");
 
     // later, in actions, etc...
     DataSource appDs = appDb.getDataSource();

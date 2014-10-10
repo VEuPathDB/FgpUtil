@@ -6,6 +6,7 @@ import java.sql.Wrapper;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
@@ -24,6 +25,9 @@ public class DatabaseInstance implements Wrapper {
 
   private static final Map<String, WeakReference<DatabaseInstance>> INITIALIZED_INSTANCES = new LinkedHashMap<>();
 
+  private static final String ANONYMOUS_DB_ID_PREFIX = "UNNAMED_DB_INSTANCE_";
+  private static final AtomicInteger ANONYMOUS_DB_ID_SEQ = new AtomicInteger(1);
+
   private boolean _initialized = false;
 
   // fields initialized by constructor
@@ -32,44 +36,57 @@ public class DatabaseInstance implements Wrapper {
   private final String _defaultSchema;
 
   // fields initialized by initialize()
-  private String _name;
+  private String _identifier;
   private GenericObjectPool _connectionPool;
   private DataSourceWrapper _dataSource;
   private ConnectionPoolLogger _logger;
 
   /**
-   * Create uninitialized connection pool with the given identifier. The driver
+   * Creates an initialized connection pool with a default identifier. The driver
    * should have been registered by the platform implementation.
-   * 
-   * @throws IllegalArgumentException if name is null, empty, or already taken
    */
   public DatabaseInstance(ConnectionPoolConfig dbConfig) {
-    _dbConfig = dbConfig;
-    _platform = _dbConfig.getPlatformEnum().getPlatformInstance();
-    _defaultSchema = _platform.getDefaultSchema(_dbConfig.getLogin());
+    this (dbConfig, getNextDbName());
   }
 
   /**
-   * Initializes the connection pool, data source, and (if configured) logger
+   * Creates an initialized connection pool with the given identifier. The driver
+   * should have been registered by the platform implementation.
+   * 
+   * @throws IllegalArgumentException if identifier is null, empty, or already taken
+   */
+  public DatabaseInstance(ConnectionPoolConfig dbConfig, String identifier) {
+    _dbConfig = dbConfig;
+    _platform = _dbConfig.getPlatformEnum().getPlatformInstance();
+    _defaultSchema = _platform.getDefaultSchema(_dbConfig.getLogin());
+    reinitialize(identifier);
+  }
+
+  private static String getNextDbName() {
+    return ANONYMOUS_DB_ID_PREFIX + ANONYMOUS_DB_ID_SEQ.getAndIncrement();
+  }
+
+  /**
+   * Reinitializes the connection pool, data source, and (if configured) logger
    * for this instance.  Also registers the instance under the passed name so
    * it will appear in the map returned by getAllInstances()
    * 
-   * @param name name to register this instance under
+   * @param identifier identifier to register this instance under
    * @return this instance
    * @throws IllegalArgumentException if name is invalid or already taken
    */
-  public DatabaseInstance initialize(String name) {
+  public DatabaseInstance reinitialize(String identifier) {
     synchronized(this) {
       if (_initialized) {
         LOG.warn("Multiple calls to initialize().  Ignoring...");
         return this;
       }
       else {
-        addInstance(this, name);
-        _name = name;
+        addInstance(this, identifier);
+        _identifier = identifier;
 
         try {
-          LOG.info("DB Connection [" + _name + "]: " + _dbConfig.getConnectionUrl());
+          LOG.info("DB Connection [" + _identifier + "]: " + _dbConfig.getConnectionUrl());
 
           _connectionPool = createConnectionPool(_dbConfig, _platform);
 
@@ -86,11 +103,11 @@ public class DatabaseInstance implements Wrapper {
 
           PoolingDataSource dataSource = new PoolingDataSource(_connectionPool);
           dataSource.setAccessToUnderlyingConnectionAllowed(true);
-          _dataSource = new DataSourceWrapper(_name, dataSource);
+          _dataSource = new DataSourceWrapper(_identifier, dataSource);
 
           // start the connection monitor if needed
           if (_dbConfig.isShowConnections()) {
-            LOG.info("Starting Connection Pool Logger for instance; " + _name);
+            LOG.info("Starting Connection Pool Logger for instance; " + _identifier);
             _logger = new ConnectionPoolLogger(this);
             new Thread(_logger).start();
           }
@@ -100,7 +117,7 @@ public class DatabaseInstance implements Wrapper {
         }
         catch (Exception e) {
           removeInstance(this);
-          _name = null;
+          _identifier = null;
           throw e;
         }
       }
@@ -175,14 +192,14 @@ public class DatabaseInstance implements Wrapper {
   }
 
   private static synchronized void removeInstance(DatabaseInstance dbInstance) {
-    INITIALIZED_INSTANCES.remove(dbInstance.getName());
+    INITIALIZED_INSTANCES.remove(dbInstance.getIdentifier());
   }
 
   public static synchronized Map<String, DatabaseInstance> getAllInstances() {
     Map<String, DatabaseInstance> instanceMap = new LinkedHashMap<>();
     for (WeakReference<DatabaseInstance> ref : INITIALIZED_INSTANCES.values()) {
       DatabaseInstance db = ref.get();
-      instanceMap.put(db.getName(), db);
+      instanceMap.put(db.getIdentifier(), db);
     }
     return instanceMap;
   }
@@ -245,9 +262,9 @@ public class DatabaseInstance implements Wrapper {
     }
   }
 
-  public String getName() {
+  public String getIdentifier() {
     checkInit();
-    return _name;
+    return _identifier;
   }
 
   public DataSource getDataSource() {
