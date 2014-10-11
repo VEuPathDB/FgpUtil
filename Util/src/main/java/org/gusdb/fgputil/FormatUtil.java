@@ -2,6 +2,8 @@ package org.gusdb.fgputil;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,6 +12,7 @@ public class FormatUtil {
 
   public static final String NL = System.lineSeparator();
   public static final String TAB = "\t";
+  public static final String UTF8_ENCODING = "UTF-8";
   
   private FormatUtil() {}
 
@@ -24,6 +27,16 @@ public class FormatUtil {
     StringWriter str = new StringWriter(150);
     t.printStackTrace(new PrintWriter(str));
     return str.toString();
+  }
+
+  public static String getUtf8EncodedString(String s) {
+    try {
+      return URLEncoder.encode(s, UTF8_ENCODING);
+    }
+    catch (UnsupportedEncodingException e) {
+      // this should never happen; if it does, wrap in RuntimeException
+      throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
+    }
   }
   
   public static String splitCamelCase(String s) {
