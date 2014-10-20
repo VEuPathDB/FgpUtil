@@ -138,7 +138,7 @@ public class FormatUtil {
   }
 
   public static enum Style {
-    SINGLE_LINE(" ", "", ", ", ""),
+    SINGLE_LINE(" ", "", ", ", " "),
     MULTI_LINE(NL, "   ", ","+NL, NL);
     
     public final String introDelimiter;
