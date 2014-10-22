@@ -23,12 +23,14 @@ public class QueryLogger {
    * Allow logging of example queries to a separate logger.
    */
   static final class ExampleQueryLog {
-    static final Logger logger = Logger.getLogger(getInnerClassLog4jName(ExampleQueryLog.class));
+    private static final Logger _logger = Logger.getLogger(getInnerClassLog4jName(ExampleQueryLog.class));
     private ExampleQueryLog() {}
+    public static Logger getLogger() { return _logger; }
   }
   static final class SlowQueryLog {
-    static final Logger logger = Logger.getLogger(getInnerClassLog4jName(SlowQueryLog.class));
+    private static final Logger _logger = Logger.getLogger(getInnerClassLog4jName(SlowQueryLog.class));
     private SlowQueryLog() {}
+    public static Logger getLogger() { return _logger; }
   }
   
   /**
@@ -63,8 +65,8 @@ public class QueryLogger {
       logger.warn("Multiple calls to initialize().  Ignoring...");
     } else {
       logger.info("Initializing QueryLogger (slow and example query logs)");
-      ExampleQueryLog.logger.debug("Initializing example query log");
-      SlowQueryLog.logger.debug("Initializing slow query log");
+      ExampleQueryLog.getLogger().debug("Initializing example query log");
+      SlowQueryLog.getLogger().debug("Initializing slow query log");
       _config = config;
       _initialized = true;
     }
@@ -150,18 +152,18 @@ public class QueryLogger {
     // convert the time to seconds
     // log time & sql for slow query. goes to warn log
     if (lastPageSeconds >= _config.getSlow() && !_config.isIgnoredSlow(sql)) {
-      SlowQueryLog.logger.warn("SLOW QUERY LOG" + details + "\n" + sql);
+      SlowQueryLog.getLogger().warn("SLOW QUERY LOG" + details + "\n" + sql);
     }
 
     // log time for baseline query, and only sql for the first time. goes to
     // info log
     else if (lastPageSeconds >= _config.getBaseline() && !_config.isIgnoredBaseline(sql)) {
-      SlowQueryLog.logger.warn("QUERY LOG" + details);
+      SlowQueryLog.getLogger().warn("QUERY LOG" + details);
 
       synchronized (_queryNames) {
         if (!_queryNames.contains(name)) {
           _queryNames.add(name);
-          ExampleQueryLog.logger.info("EXAMPLE QUERY" + details + "\n" + sql);
+          ExampleQueryLog.getLogger().info("EXAMPLE QUERY" + details + "\n" + sql);
         }
       }
     }

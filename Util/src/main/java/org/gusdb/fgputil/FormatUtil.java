@@ -2,6 +2,8 @@ package org.gusdb.fgputil;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,13 +12,31 @@ public class FormatUtil {
 
   public static final String NL = System.lineSeparator();
   public static final String TAB = "\t";
+  public static final String UTF8_ENCODING = "UTF-8";
   
   private FormatUtil() {}
+
+  @SuppressWarnings("serial")
+  private static class CurrentStackTrace extends Throwable { }
   
+  public static String getCurrentStackTrace() {
+    return getStackTrace(new CurrentStackTrace());
+  }
+
   public static String getStackTrace(Throwable t) {
     StringWriter str = new StringWriter(150);
     t.printStackTrace(new PrintWriter(str));
     return str.toString();
+  }
+
+  public static String getUtf8EncodedString(String s) {
+    try {
+      return URLEncoder.encode(s, UTF8_ENCODING);
+    }
+    catch (UnsupportedEncodingException e) {
+      // this should never happen; if it does, wrap in RuntimeException
+      throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
+    }
   }
   
   public static String splitCamelCase(String s) {
@@ -69,7 +89,28 @@ public class FormatUtil {
     sb.append(join(array, delim));
     return sb.append(" ]").toString();
   }
-    
+
+  public static String printArray(String[] array) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("{");
+    for (String s : array) {
+        if (sb.length() > 1) sb.append(", ");
+        sb.append("\"" + s + "\"");
+    }
+    sb.append("}");
+    return sb.toString();
+  }
+
+  public static String printArray(String[][] array) {
+    String newline = System.getProperty("line.separator");
+    StringBuilder sb = new StringBuilder();
+    for (String[] parts : array) {
+        sb.append(printArray(parts));
+        sb.append(newline);
+    }
+    return sb.toString();
+  }
+
   public static String getCamelCaseDisplayVal(String str) {
     StringBuilder newStr = new StringBuilder();
     boolean justSawSpace = true; // set so first char is upper case
@@ -97,7 +138,7 @@ public class FormatUtil {
   }
 
   public static enum Style {
-    SINGLE_LINE(" ", "", ", ", ""),
+    SINGLE_LINE(" ", "", ", ", " "),
     MULTI_LINE(NL, "   ", ","+NL, NL);
     
     public final String introDelimiter;
@@ -133,4 +174,5 @@ public class FormatUtil {
     Double ratio = (double)numerator / (double)denominator;
     return new DecimalFormat("##0.0").format(ratio * 100D) + "%";
   }
+
 }

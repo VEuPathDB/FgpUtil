@@ -1,8 +1,12 @@
 package org.gusdb.fgputil.db.pool;
 
+import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.sql.Wrapper;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
@@ -12,72 +16,117 @@ import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.DataSourceWrapper;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 
 public class DatabaseInstance implements Wrapper {
-  
+
   private static final Logger LOG = Logger.getLogger(DatabaseInstance.class);
-  
-  private final String _name;
-  private final ConnectionPoolConfig _dbConfig;
+
+  private static final Map<String, WeakReference<DatabaseInstance>> INITIALIZED_INSTANCES = new LinkedHashMap<>();
+
+  private static final String ANONYMOUS_DB_ID_PREFIX = "UNNAMED_DB_INSTANCE_";
+  private static final AtomicInteger ANONYMOUS_DB_ID_SEQ = new AtomicInteger(1);
+
   private boolean _initialized = false;
-  private DBPlatform _platform;
+
+  // fields initialized by constructor
+  private final ConnectionPoolConfig _dbConfig;
+  private final DBPlatform _platform;
+  private final String _defaultSchema;
+
+  // fields initialized by initialize()
+  private String _identifier;
   private GenericObjectPool _connectionPool;
-  private DataSource _dataSource;
-  private String _defaultSchema;
+  private DataSourceWrapper _dataSource;
   private ConnectionPoolLogger _logger;
 
   /**
-   * Initialize connection pool. The driver should have been registered by the
-   * platform implementation.
+   * Creates an initialized connection pool with a default identifier. The driver
+   * should have been registered by the platform implementation.
    */
-  public DatabaseInstance(String name, ConnectionPoolConfig dbConfig) {
-      _name = name;
-      _dbConfig = dbConfig;
-      _platform = _dbConfig.getPlatformEnum().getPlatformInstance();
-      _defaultSchema = _platform.getDefaultSchema(_dbConfig.getLogin());
+  public DatabaseInstance(ConnectionPoolConfig dbConfig) {
+    this (dbConfig, getNextDbName());
   }
-  
-  public void initialize() {
+
+  /**
+   * Creates an initialized connection pool with the given identifier. The driver
+   * should have been registered by the platform implementation.
+   * 
+   * @throws IllegalArgumentException if identifier is null, empty, or already taken
+   */
+  public DatabaseInstance(ConnectionPoolConfig dbConfig, String identifier) {
+    _dbConfig = dbConfig;
+    _platform = _dbConfig.getPlatformEnum().getPlatformInstance();
+    _defaultSchema = _platform.getDefaultSchema(_dbConfig.getLogin());
+    reinitialize(identifier);
+  }
+
+  private static String getNextDbName() {
+    return ANONYMOUS_DB_ID_PREFIX + ANONYMOUS_DB_ID_SEQ.getAndIncrement();
+  }
+
+  /**
+   * Reinitializes the connection pool, data source, and (if configured) logger
+   * for this instance.  Also registers the instance under the passed name so
+   * it will appear in the map returned by getAllInstances()
+   * 
+   * @param identifier identifier to register this instance under
+   * @return this instance
+   * @throws IllegalArgumentException if name is invalid or already taken
+   */
+  public DatabaseInstance reinitialize(String identifier) {
     synchronized(this) {
       if (_initialized) {
         LOG.warn("Multiple calls to initialize().  Ignoring...");
-        return;
+        return this;
       }
       else {
-        LOG.info("DB Connection [" + _name + "]: " + _dbConfig.getConnectionUrl());
-        
-        _connectionPool = createConnectionPool(_dbConfig, _platform);
-  
-        // configure the connection pool
-        _connectionPool.setMaxWait(_dbConfig.getMaxWait());
-        _connectionPool.setMaxIdle(_dbConfig.getMaxIdle());
-        _connectionPool.setMinIdle(_dbConfig.getMinIdle());
-        _connectionPool.setMaxActive(_dbConfig.getMaxActive());
-  
-        // configure validationQuery tests
-        _connectionPool.setTestOnBorrow(true);
-        _connectionPool.setTestOnReturn(true);
-        _connectionPool.setWhenExhaustedAction(GenericObjectPool.WHEN_EXHAUSTED_GROW);
-  
-        PoolingDataSource dataSource = new PoolingDataSource(_connectionPool);
-        dataSource.setAccessToUnderlyingConnectionAllowed(true);
-        _dataSource = dataSource;
-  
-        // start the connection monitor if needed
-        if (_dbConfig.isShowConnections()) {
-          LOG.info("Starting Connection Pool Logger for instance; " + _name);
-          _logger = new ConnectionPoolLogger(this);
-          new Thread(_logger).start();
+        addInstance(this, identifier);
+        _identifier = identifier;
+
+        try {
+          LOG.info("DB Connection [" + _identifier + "]: " + _dbConfig.getConnectionUrl());
+
+          _connectionPool = createConnectionPool(_dbConfig, _platform);
+
+          // configure the connection pool
+          _connectionPool.setMaxWait(_dbConfig.getMaxWait());
+          _connectionPool.setMaxIdle(_dbConfig.getMaxIdle());
+          _connectionPool.setMinIdle(_dbConfig.getMinIdle());
+          _connectionPool.setMaxActive(_dbConfig.getMaxActive());
+
+          // configure validationQuery tests
+          _connectionPool.setTestOnBorrow(true);
+          _connectionPool.setTestOnReturn(true);
+          _connectionPool.setWhenExhaustedAction(GenericObjectPool.WHEN_EXHAUSTED_GROW);
+
+          PoolingDataSource dataSource = new PoolingDataSource(_connectionPool);
+          dataSource.setAccessToUnderlyingConnectionAllowed(true);
+          _dataSource = new DataSourceWrapper(_identifier, dataSource,
+              _dbConfig.getDefaultAutoCommit(), _dbConfig.getDefaultReadOnly());
+
+          // start the connection monitor if needed
+          if (_dbConfig.isShowConnections()) {
+            LOG.info("Starting Connection Pool Logger for instance; " + _identifier);
+            _logger = new ConnectionPoolLogger(this);
+            new Thread(_logger).start();
+          }
+
+          _initialized = true;
+          return this;
         }
-        
-        _initialized = true;
+        catch (Exception e) {
+          removeInstance(this);
+          _identifier = null;
+          throw e;
+        }
       }
     }
   }
-  
+
   private static GenericObjectPool createConnectionPool(ConnectionPoolConfig dbConfig, DBPlatform platform) {
-    
+
     GenericObjectPool connectionPool = new GenericObjectPool(null);
 
     Properties props = new Properties();
@@ -90,14 +139,10 @@ public class DatabaseInstance implements Wrapper {
     ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectionUrl, props);
 
     // link connection factory to connection pool with assigned settings
-    boolean defaultReadOnly = false;
-    boolean defaultAutoCommit = true;
-      
-    @SuppressWarnings("unused")  // object is created only to link factory and pool
-    PoolableConnectionFactory poolableConnectionFactory =
-        new PoolableConnectionFactory(connectionFactory, connectionPool, null,
-            platform.getValidationQuery(), defaultReadOnly, defaultAutoCommit);
-    
+    // object is created only to link factory and pool
+    new PoolableConnectionFactory(connectionFactory, connectionPool, null,
+        platform.getValidationQuery(), dbConfig.getDefaultReadOnly(), dbConfig.getDefaultAutoCommit());
+
     return connectionPool;
   }
 
@@ -132,61 +177,200 @@ public class DatabaseInstance implements Wrapper {
     }
   }
 
-  private void checkInit() {
-    if (!_initialized) {
-      throw new IllegalStateException("Instance must be initialized with " +
-          "initialize() before this method is called.");
+  private static synchronized void addInstance(DatabaseInstance databaseInstance, String name) {
+    if (name == null || name.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Cannot instantiate Database Instance with null or empty name");
     }
+    if (INITIALIZED_INSTANCES.containsKey(name)) {
+      throw new IllegalArgumentException(
+          "Cannot instantiate Database Instance with name " + name + ".  Name already taken.");
+    }
+    INITIALIZED_INSTANCES.put(name, new WeakReference<DatabaseInstance>(databaseInstance));
   }
-  
+
+  private static synchronized void removeInstance(DatabaseInstance dbInstance) {
+    INITIALIZED_INSTANCES.remove(dbInstance.getIdentifier());
+  }
+
+  public static synchronized Map<String, DatabaseInstance> getAllInstances() {
+    Map<String, DatabaseInstance> instanceMap = new LinkedHashMap<>();
+    for (WeakReference<DatabaseInstance> ref : INITIALIZED_INSTANCES.values()) {
+      DatabaseInstance db = ref.get();
+      instanceMap.put(db.getIdentifier(), db);
+    }
+    return instanceMap;
+  }
+
   /**
    * If this DB is initialized, shuts down the connection pool, and (if
    * configured) the connection pool logger thread.  Resets initialized flag,
    * so this DB can be reinitialized if desired.
-   * 
-   * @throws Exception if error while closing connection pool
    */
   public void close() throws Exception {
     synchronized(this) {
+      removeInstance(this);
       if (_initialized) {
         if (_dbConfig.isShowConnections()) {
           _logger.shutDown();
         }
         _connectionPool.close();
+        _initialized = false;
       }
-      _initialized = false;
+    }
+  }
+
+  @Override
+  public void finalize() {
+    if (_initialized) {
+      try {
+        // try to close this resource if not closed already
+        close();
+      }
+      catch (Exception e) {
+        LOG.warn("Unable to shut down DatabaseInstance in finalize", e);
+      }
     }
   }
 
   public ConnectionPoolConfig getConfig() {
+    // do not need to checkInit() since this is set in constructor
     return _dbConfig;
   }
 
-  public String getName() {
-    return _name;
+  public DBPlatform getPlatform() {
+    // do not need to checkInit() since this is set in constructor
+    return _platform;
   }
 
   public String getDefaultSchema() {
+    // do not need to checkInit() since this is set in constructor
     return _defaultSchema;
   }
 
-  public DBPlatform getPlatform() {
-    return _platform;
+  /**
+   * Checks whether this instance has been initialized.
+   * 
+   * @throws IllegalStateException if not initialized
+   */
+  private void checkInit() {
+    if (!_initialized) {
+      throw new IllegalStateException("Instance must be initialized with " +
+          "initialize(name) before this method is called.");
+    }
   }
-  
+
+  public String getIdentifier() {
+    checkInit();
+    return _identifier;
+  }
+
+  public DataSource getDataSource() {
+    checkInit();
+    return _dataSource;
+  }
+
+  public String getUnclosedConnectionInfo() {
+    checkInit();
+    return _dataSource.dumpUnclosedConnectionInfo();
+  }
+
+  public int getNumConnectionsOpened() {
+    checkInit();
+    return _dataSource.getNumConnectionsOpened();
+  }
+
+  public int getNumConnectionsClosed() {
+    checkInit();
+    return _dataSource.getNumConnectionsClosed();
+  }
+
+  public int getConnectionsCurrentlyOpen() {
+    checkInit();
+    return _dataSource.getConnectionsCurrentlyOpen();
+  }
+
+  /**
+   * Return the number of instances currently borrowed from this pool.
+   */
   public int getActiveCount() {
     checkInit();
     return _connectionPool.getNumActive();
   }
 
+  /**
+   * Return the number of instances currently idle in this pool
+   */
   public int getIdleCount() {
     checkInit();
     return _connectionPool.getNumIdle();
   }
-  
-  public DataSource getDataSource() {
+
+  /**
+   * Returns the minimum number of objects allowed in the pool before the 
+   * evictor thread (if active) spawns new objects
+   */
+  public int getMinIdle() {
     checkInit();
-    return _dataSource;
+    return _connectionPool.getMinIdle();
+  }
+
+  /**
+   * Returns the cap on the number of "idle" instances in the pool.
+   */
+  public int getMaxIdle() {
+    checkInit();
+    return _connectionPool.getMaxIdle();
+  }
+
+  /**
+   * Returns the minimum amount of time an object may sit idle in the pool 
+   * before it is eligible for eviction by the idle object evictor (if any).
+   */
+  public long getMinEvictableIdleTimeMillis() {
+    checkInit();
+    return _connectionPool.getMinEvictableIdleTimeMillis();
+  }
+
+  /**
+   * Returns the minimum amount of time an object may sit idle in the pool 
+   * before it is eligible for eviction by the idle object evictor (if any),
+   * with the extra condition that at least "minIdle" amount of object remain in the pool.
+   */
+  public long getSoftMinEvictableIdleTimeMillis() {
+    checkInit();
+    return _connectionPool.getSoftMinEvictableIdleTimeMillis();
+  }
+
+  /**
+   * Returns the number of milliseconds to sleep between runs of the idle object evictor thread.
+   */
+  public long getTimeBetweenEvictionRunsMillis() {
+    checkInit();
+    return _connectionPool.getTimeBetweenEvictionRunsMillis();
+  }
+
+  /**
+   * When true, objects will be validated before being returned by the borrowObject() method.
+   */
+  public boolean getTestOnBorrow() {
+    checkInit();
+    return _connectionPool.getTestOnBorrow();
+  }
+
+  /**
+   * When true, objects will be validated before being returned to the pool within the returnObject(T).
+   */
+  public boolean getTestOnReturn() {
+    checkInit();
+    return _connectionPool.getTestOnReturn();
+  }
+
+  /**
+   * When true, objects will be validated by the idle object evictor (if any).
+   */
+  public boolean getTestWhileIdle() {
+    return _connectionPool.getTestWhileIdle();
   }
 
   @Override
