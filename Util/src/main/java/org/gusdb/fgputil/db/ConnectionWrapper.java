@@ -23,10 +23,15 @@ public class ConnectionWrapper implements Connection {
 
   private final Connection _underlyingConnection;
   private final DataSourceWrapper _parentDataSource;
+  private final boolean _autoCommitResetValue;
+  private final boolean _readOnlyResetValue;
 
-  public ConnectionWrapper(Connection underlyingConnection, DataSourceWrapper parentDataSource) {
+  public ConnectionWrapper(Connection underlyingConnection, DataSourceWrapper parentDataSource,
+      boolean autoCommitResetValue, boolean readOnlyResetValue) {
     _underlyingConnection = underlyingConnection;
     _parentDataSource = parentDataSource;
+    _autoCommitResetValue = autoCommitResetValue;
+    _readOnlyResetValue = readOnlyResetValue;
   }
 
   public Connection getUnderlyingConnection() {
@@ -36,6 +41,11 @@ public class ConnectionWrapper implements Connection {
   @Override
   public void close() throws SQLException {
     _parentDataSource.unregisterClosedConnection(_underlyingConnection);
+
+    // reset connection-specific values back to default in case client code changed them
+    _underlyingConnection.setAutoCommit(_autoCommitResetValue);
+    _underlyingConnection.setReadOnly(_readOnlyResetValue);
+
     _underlyingConnection.close();
   }
 

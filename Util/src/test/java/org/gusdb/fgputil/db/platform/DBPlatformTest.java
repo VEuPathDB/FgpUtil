@@ -21,6 +21,8 @@ public class DBPlatformTest {
     @Override public boolean isShowConnections() { return true; }
     @Override public long getShowConnectionsInterval() { return 5; }
     @Override public long getShowConnectionsDuration() { return 30; }
+    @Override public boolean getDefaultAutoCommit() { return true; }
+    @Override public boolean getDefaultReadOnly() { return false; }
   }
 
   private class PostgresConfig extends OracleConfig {

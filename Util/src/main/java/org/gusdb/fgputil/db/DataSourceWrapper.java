@@ -90,14 +90,20 @@ public class DataSourceWrapper implements DataSource {
   private final AtomicInteger _numConnectionsOpened = new AtomicInteger(0);
   private final AtomicInteger _numConnectionsClosed = new AtomicInteger(0);
   private final boolean _recordAllStacktraces;
+  private final boolean _autoCommitResetValue;
+  private final boolean _readOnlyResetValue;
 
-  public DataSourceWrapper(String dbName, DataSource underlyingDataSource) {
-    this(dbName, underlyingDataSource, false);
+  public DataSourceWrapper(String dbName, DataSource underlyingDataSource,
+      boolean autoCommitResetValue, boolean readOnlyResetValue) {
+    this(dbName, underlyingDataSource, autoCommitResetValue, readOnlyResetValue, false);
   }
 
-  public DataSourceWrapper(String dbName, DataSource underlyingDataSource, boolean recordAllStacktraces) {
+  public DataSourceWrapper(String dbName, DataSource underlyingDataSource,
+      boolean autoCommitResetValue, boolean readOnlyResetValue, boolean recordAllStacktraces) {
     _dbName = dbName;
     _underlyingDataSource = underlyingDataSource;
+    _autoCommitResetValue = autoCommitResetValue;
+    _readOnlyResetValue = readOnlyResetValue;
     _recordAllStacktraces = recordAllStacktraces;
   }
 
@@ -120,7 +126,7 @@ public class DataSourceWrapper implements DataSource {
       LOG.debug("Opening connection associated with stacktrace hash " +
           info.getStackTraceHash() + " : " + info.getBasicInfo());
     }
-    ConnectionWrapper wrapper = new ConnectionWrapper(conn, this);
+    ConnectionWrapper wrapper = new ConnectionWrapper(conn, this, _autoCommitResetValue, _readOnlyResetValue);
     _unclosedConnectionMap.put(conn, info);
     _numConnectionsOpened.incrementAndGet();
     return wrapper;
