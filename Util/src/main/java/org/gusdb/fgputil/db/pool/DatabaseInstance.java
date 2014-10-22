@@ -111,7 +111,8 @@ public class DatabaseInstance implements Wrapper {
   
         PoolingDataSource dataSource = new PoolingDataSource(_connectionPool);
         dataSource.setAccessToUnderlyingConnectionAllowed(true);
-        _dataSource = new DataSourceWrapper(_name, dataSource);
+        _dataSource = new DataSourceWrapper(_name, dataSource,
+            _dbConfig.getDefaultAutoCommit(), _dbConfig.getDefaultReadOnly());
   
         // start the connection monitor if needed
         if (_dbConfig.isShowConnections()) {
@@ -139,12 +140,9 @@ public class DatabaseInstance implements Wrapper {
     ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectionUrl, props);
 
     // link connection factory to connection pool with assigned settings
-    boolean defaultReadOnly = false;
-    boolean defaultAutoCommit = true;
-      
     // object is created only to link factory and pool
     new PoolableConnectionFactory(connectionFactory, connectionPool, null,
-        platform.getValidationQuery(), defaultReadOnly, defaultAutoCommit);
+        platform.getValidationQuery(), dbConfig.getDefaultReadOnly(), dbConfig.getDefaultAutoCommit());
     
     return connectionPool;
   }

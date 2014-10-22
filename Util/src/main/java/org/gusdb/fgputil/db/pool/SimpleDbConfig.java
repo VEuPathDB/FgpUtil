@@ -90,4 +90,13 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
         return 0;
     }
 
+    @Override
+    public boolean getDefaultAutoCommit() {
+      return true;
+    }
+
+    @Override
+    public boolean getDefaultReadOnly() {
+      return false;
+    }
 }
