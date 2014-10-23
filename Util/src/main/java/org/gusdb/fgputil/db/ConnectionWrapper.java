@@ -51,7 +51,6 @@ public class ConnectionWrapper implements Connection {
 
     // check to see if uncommitted changes are present in this connection
     boolean uncommittedChangesPresent = checkForUncommittedChanges();
-    LOG.info("Closing connection; uncommited changes present? " + uncommittedChangesPresent);
 
     // roll back any changes before returning connection to pool
     if (uncommittedChangesPresent)
