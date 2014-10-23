@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db.platform;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -94,7 +95,19 @@ public abstract class DBPlatform {
     public abstract String getDriverClassName();
     
     public abstract String getValidationQuery();
-    
+
+    /**
+     * This method consults the database and checks whether any insert, update, or delete
+     * statements have been executed on this transaction but not yet committed.
+     * 
+     * @param c connection to check
+     * @return true if uncommitted operations have been performed; else false
+     * @throws SQLException if error occurs while attempting determination (also if permission denied)
+     * @throws UnsupportedOperationException if this method is unsupported in the platform implementation
+     */
+    public abstract boolean containsUncommittedActions(Connection c)
+        throws SQLException, UnsupportedOperationException;
+
     /**
      * @param dataSource data source to use
      * @param schema

@@ -103,7 +103,7 @@ public class DatabaseInstance implements Wrapper {
 
           PoolingDataSource dataSource = new PoolingDataSource(_connectionPool);
           dataSource.setAccessToUnderlyingConnectionAllowed(true);
-          _dataSource = new DataSourceWrapper(_identifier, dataSource,
+          _dataSource = new DataSourceWrapper(_identifier, dataSource, _platform,
               _dbConfig.getDefaultAutoCommit(), _dbConfig.getDefaultReadOnly());
 
           // start the connection monitor if needed

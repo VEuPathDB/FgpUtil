@@ -18,6 +18,9 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 
 /**
  * @author Jerric Gao
@@ -386,6 +389,39 @@ public class Oracle extends DBPlatform {
       if (i > start)
         buffer.append(",");
       buffer.append(values[i]);
+    }
+  }
+
+  private static final String UNCOMMITED_STATEMENT_CHECK_SQL =
+      "SELECT COUNT(*)" +
+      " FROM v$transaction t, v$session s, v$mystat m" +
+      " WHERE t.ses_addr = s.saddr "+
+      " AND s.sid = m.sid" +
+      " AND ROWNUM = 1";
+
+  @Override
+  public boolean containsUncommittedActions(Connection c)
+      throws SQLException, UnsupportedOperationException {
+    final boolean[] result = { false };
+    try {
+      new SQLRunner(c, UNCOMMITED_STATEMENT_CHECK_SQL).executeQuery(new ResultSetHandler() {
+        @Override public void handleResult(ResultSet rs) throws SQLException {
+          if (rs.next()) {
+            int count = rs.getInt(1);
+            LOG.info("Retrieving result of statement check: " + count);
+            result[0] = (count > 0);
+            return;
+          }
+          throw new SQLException("Count query returned zero rows."); // should never happen
+        }
+      });
+      return result[0];
+    }
+    catch (SQLRunnerException e) {
+      if (e.getCause() instanceof SQLException) {
+        throw (SQLException)e.getCause();
+      }
+      throw e;
     }
   }
 }

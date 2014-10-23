@@ -19,17 +19,24 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.platform.DBPlatform;
+
 public class ConnectionWrapper implements Connection {
+
+  private static final Logger LOG = Logger.getLogger(ConnectionWrapper.class);
 
   private final Connection _underlyingConnection;
   private final DataSourceWrapper _parentDataSource;
+  private final DBPlatform _underlyingPlatform;
   private final boolean _autoCommitResetValue;
   private final boolean _readOnlyResetValue;
 
   public ConnectionWrapper(Connection underlyingConnection, DataSourceWrapper parentDataSource,
-      boolean autoCommitResetValue, boolean readOnlyResetValue) {
+      DBPlatform underlyingPlatform, boolean autoCommitResetValue, boolean readOnlyResetValue) {
     _underlyingConnection = underlyingConnection;
     _parentDataSource = parentDataSource;
+    _underlyingPlatform = underlyingPlatform;
     _autoCommitResetValue = autoCommitResetValue;
     _readOnlyResetValue = readOnlyResetValue;
   }
@@ -42,11 +49,40 @@ public class ConnectionWrapper implements Connection {
   public void close() throws SQLException {
     _parentDataSource.unregisterClosedConnection(_underlyingConnection);
 
+    // check to see if uncommitted changes are present in this connection
+    boolean uncommittedChangesPresent = checkForUncommittedChanges();
+    LOG.info("Closing connection; uncommited changes present? " + uncommittedChangesPresent);
+
+    // roll back any changes before returning connection to pool
+    if (uncommittedChangesPresent)
+      SqlUtils.attemptRollback(_underlyingConnection);
+
     // reset connection-specific values back to default in case client code changed them
     _underlyingConnection.setAutoCommit(_autoCommitResetValue);
     _underlyingConnection.setReadOnly(_readOnlyResetValue);
 
     _underlyingConnection.close();
+    
+    if (uncommittedChangesPresent) {
+      throw new UncommittedChangesException("Connection returned to pool with active transaction and uncommitted changes.");
+    }
+  }
+
+  private boolean checkForUncommittedChanges() {
+    boolean uncommittedChangesPresent = false;
+    try {
+      if (_underlyingPlatform.containsUncommittedActions(_underlyingConnection)) {
+        uncommittedChangesPresent = true;
+      }
+    }
+    catch (UnsupportedOperationException e) {
+      // ignore; platform does not support this check
+    }
+    catch (Exception e) {
+      // this feature is not meant to interrupt execution flow unless we can be sure there is a problem
+      LOG.error("Error occurred while trying to determine if uncommitted statements exist on connection", e);
+    }
+    return uncommittedChangesPresent;
   }
 
   /************ ALL METHODS BELOW THIS LINE ARE SIMPLE WRAPPERS ************/

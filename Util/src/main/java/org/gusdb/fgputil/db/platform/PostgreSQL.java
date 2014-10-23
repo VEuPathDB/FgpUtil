@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db.platform;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -293,5 +294,16 @@ public class PostgreSQL extends DBPlatform {
   @Override
   public String prepareExpressionList(String[] values) {
     return FormatUtil.join(values, ",");
+  }
+
+  /**
+   * Postgres implementation does not yet support this method
+   * TODO: Support this method; information on a possible solution might be found here:
+   * http://stackoverflow.com/questions/1651219/how-to-check-for-pending-operations-in-a-postgresql-transaction
+   */
+  @Override
+  public boolean containsUncommittedActions(Connection c)
+      throws SQLException, UnsupportedOperationException {
+    throw new UnsupportedOperationException("Method not yet supported.");
   }
 }
