@@ -70,7 +70,8 @@ public class ConnectionWrapper implements Connection {
   private boolean checkForUncommittedChanges() {
     boolean uncommittedChangesPresent = false;
     try {
-      if (_underlyingPlatform.containsUncommittedActions(_underlyingConnection)) {
+      if (!_underlyingConnection.getAutoCommit() &&
+          _underlyingPlatform.containsUncommittedActions(_underlyingConnection)) {
         uncommittedChangesPresent = true;
       }
     }

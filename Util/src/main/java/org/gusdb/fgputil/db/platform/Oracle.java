@@ -406,13 +406,10 @@ public class Oracle extends DBPlatform {
     try {
       new SQLRunner(c, UNCOMMITED_STATEMENT_CHECK_SQL).executeQuery(new ResultSetHandler() {
         @Override public void handleResult(ResultSet rs) throws SQLException {
-          if (rs.next()) {
-            int count = rs.getInt(1);
-            LOG.info("Retrieving result of statement check: " + count);
-            result[0] = (count > 0);
-            return;
+          if (!rs.next()) {
+            throw new SQLException("Count query returned zero rows."); // should never happen
           }
-          throw new SQLException("Count query returned zero rows."); // should never happen
+          result[0] = (rs.getInt(1) > 0);
         }
       });
       return result[0];
