@@ -1,7 +1,7 @@
 package org.gusdb.fgputil.events;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CompletionStatus {
@@ -12,7 +12,7 @@ public class CompletionStatus {
 
   private Map<EventListener, Status> _statuses = new ConcurrentHashMap<>();
 
-  public CompletionStatus(List<EventListener> listeners) {
+  public CompletionStatus(Set<EventListener> listeners) {
     for (EventListener listener : listeners) {
       _statuses.put(listener, Status.NOTIFIED);
     }

@@ -2,8 +2,10 @@ package org.gusdb.fgputil.events;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,9 +46,19 @@ public class Events {
     }
   }
 
-  public static void subscribe(String eventCode, EventListener listener) {
+  public static void subscribe(EventListener listener, String... eventCodes) {
     checkInit();
-    EVENTS.addListener(eventCode, listener);
+    for (String eventCode : eventCodes) {
+      EVENTS.addListener(eventCode, listener);
+    }
+  }
+
+  @SafeVarargs
+  public static void subscribe(EventListener listener, Class<? extends Event>... eventTypes) {
+    checkInit();
+    for (Class<? extends Event> eventType : eventTypes) {
+      EVENTS.addListener(eventType, listener);
+    }
   }
 
   public static CompletionStatus submit(Event event) {
@@ -70,9 +82,11 @@ public class Events {
 
   private ExecutorService _execService;
 
-  private ReadWriteLock _mapLock = new ReentrantReadWriteLock();
+  private Map<String, List<EventListener>> _eventCodeMap = new HashMap<>();
+  private Map<String, List<EventListener>> _eventTypeMap = new HashMap<>();
 
-  private Map<String, List<EventListener>> _listenerMap = new HashMap<>();
+  private ReadWriteLock _eventCodeMapLock = new ReentrantReadWriteLock();
+  private ReadWriteLock _eventTypeMapLock = new ReentrantReadWriteLock();
 
   private Events(EventsConfig config) {
     _execService = Executors.newFixedThreadPool(config.getThreadPoolSize());
@@ -80,16 +94,31 @@ public class Events {
 
   private void addListener(String eventCode, EventListener listener) {
     try {
-      _mapLock.writeLock().lock();
-      List<EventListener> listeners = _listenerMap.get(eventCode);
+      _eventCodeMapLock.writeLock().lock();
+      List<EventListener> listeners = _eventCodeMap.get(eventCode);
       if (listeners == null) {
         listeners = new ArrayList<>();
-        _listenerMap.put(eventCode, listeners);
+        _eventCodeMap.put(eventCode, listeners);
       }
       listeners.add(listener);
     }
     finally {
-      _mapLock.writeLock().unlock();
+      _eventCodeMapLock.writeLock().unlock();
+    }
+  }
+
+  private void addListener(Class<? extends Event> eventType, EventListener listener) {
+    try {
+      _eventTypeMapLock.writeLock().lock();
+      List<EventListener> listeners = _eventCodeMap.get(eventType);
+      if (listeners == null) {
+        listeners = new ArrayList<>();
+        _eventTypeMap.put(eventType.getName(), listeners);
+      }
+      listeners.add(listener);
+    }
+    finally {
+      _eventTypeMapLock.writeLock().unlock();
     }
   }
 
@@ -124,24 +153,33 @@ public class Events {
   private CompletionStatus submitEvent(Event event) {
     // get list of listeners, notify them each in a different thread
     try {
-      _mapLock.readLock().lock();
-      List<EventListener> listeners = _listenerMap.get(event.getEventCode());
-      if (listeners == null) { 
-        // no listeners; use empty list
-        listeners = new ArrayList<>();
-      }
+      _eventCodeMapLock.readLock().lock();
+      _eventTypeMapLock.readLock().lock();
+
+      List<EventListener> codeListeners = _eventCodeMap.get(event.getEventCode());
+      List<EventListener> typeListeners = _eventTypeMap.get(event.getClass().getName());
+
+      // use a set to ensure each listener is notified only once per event
+      Set<EventListener> listeners = new HashSet<>();
+      if (codeListeners != null) listeners.addAll(codeListeners);
+      if (typeListeners != null) listeners.addAll(typeListeners);
+
       CompletionStatus statuser = new CompletionStatus(listeners);
       for (EventListener listener : listeners) {
         _execService.submit(new NotificationWrapper(listener, event, statuser));
       }
+
       return statuser;
     }
     finally {
-      _mapLock.readLock().unlock();
+      _eventTypeMapLock.readLock().unlock();
+      _eventCodeMapLock.readLock().unlock();
     }
   }
 
   private void stop() {
+    _eventCodeMap.clear();
+    _eventTypeMap.clear();
     _execService.shutdownNow();
   }
 }
