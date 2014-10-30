@@ -21,6 +21,7 @@ public class Events {
 
   private static final EventsConfig DEFAULT_EVENTS_CONFIG = new EventsConfig() {
     @Override public int getThreadPoolSize() { return 20; }
+    @Override public boolean isTrackEventCallStacks() { return false; }
   };
 
   // singleton Events object
@@ -74,13 +75,18 @@ public class Events {
     }
   }
 
+  public static boolean isTrackEventCallStacks() {
+    return EVENTS.getConfig().isTrackEventCallStacks();
+  }
+
   private static void checkInit() {
     if (EVENTS == null) throw new RuntimeException("Events not initialized, or initialized but shut down.");
   }
 
   /*%%%%%%%%%%%%%% INSTANCE MEMBERS %%%%%%%%%%%%%%*/
 
-  private ExecutorService _execService;
+  private final EventsConfig _config;
+  private final ExecutorService _execService;
 
   private Map<String, List<EventListener>> _eventCodeMap = new HashMap<>();
   private Map<String, List<EventListener>> _eventTypeMap = new HashMap<>();
@@ -89,7 +95,12 @@ public class Events {
   private ReadWriteLock _eventTypeMapLock = new ReentrantReadWriteLock();
 
   private Events(EventsConfig config) {
+    _config = config;
     _execService = Executors.newFixedThreadPool(config.getThreadPoolSize());
+  }
+
+  private EventsConfig getConfig() {
+    return _config;
   }
 
   private void addListener(String eventCode, EventListener listener) {
