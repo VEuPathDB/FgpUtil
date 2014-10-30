@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.gusdb.fgputil.AlreadyInitializedException;
+import org.gusdb.fgputil.events.CompletionStatus.Status;
 
 public class Events {
 
@@ -51,6 +52,14 @@ public class Events {
   public static CompletionStatus submit(Event event) {
     checkInit();
     return EVENTS.submitEvent(event);
+  }
+
+  public static <T extends Exception> void submitAndWait(Event event, T exceptionToThrow) throws T {
+    CompletionStatus status = submit(event);
+    while (!status.isFinished()){}
+    if (status.getCollectiveStatus().equals(Status.ERRORED)) {
+      throw exceptionToThrow;
+    }
   }
 
   private static void checkInit() {
