@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CompletionStatus {
 
   public static enum Status {
-    NOTIFIED, COMPLETE, ERRORED;
+    NOTIFIED, SUCCESS, ERRORED;
   }
 
   private Map<EventListener, Status> _statuses = new ConcurrentHashMap<>();
@@ -18,8 +18,8 @@ public class CompletionStatus {
     }
   }
 
-  public void notifyComplete(EventListener listener) {
-    _statuses.put(listener, Status.COMPLETE);
+  public void notifySuccess(EventListener listener) {
+    _statuses.put(listener, Status.SUCCESS);
   }
 
   public void notifyError(EventListener listener) {
@@ -37,11 +37,11 @@ public class CompletionStatus {
           errorPresent = true;
       }
     }
-    return (errorPresent ? Status.ERRORED : Status.COMPLETE);
+    return (errorPresent ? Status.ERRORED : Status.SUCCESS);
   }
 
   public boolean isFinished() {
     Status status = getCollectiveStatus();
-    return (status.equals(Status.COMPLETE) || status.equals(Status.ERRORED));
+    return (status.equals(Status.SUCCESS) || status.equals(Status.ERRORED));
   }
 }

@@ -12,12 +12,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AlreadyInitializedException;
 import org.gusdb.fgputil.events.CompletionStatus.Status;
 
 public class Events {
 
   /*%%%%%%%%%%%%%% STATIC MEMBERS %%%%%%%%%%%%%%*/
+
+  private static final Logger LOG = Logger.getLogger(Events.class);
 
   private static final EventsConfig DEFAULT_EVENTS_CONFIG = new EventsConfig() {
     @Override public int getThreadPoolSize() { return 20; }
@@ -149,8 +152,8 @@ public class Events {
     public String call() throws Exception {
       try {
         _listener.notifyEvent(_event);
-        _statuser.notifyComplete(_listener);
-        return CompletionStatus.Status.COMPLETE.toString();
+        _statuser.notifySuccess(_listener);
+        return CompletionStatus.Status.SUCCESS.toString();
       }
       catch (Exception e) {
         Events.submit(new NotificationErrorEvent(_listener, _event, e));
@@ -167,13 +170,18 @@ public class Events {
       _eventCodeMapLock.readLock().lock();
       _eventTypeMapLock.readLock().lock();
 
-      List<EventListener> codeListeners = _eventCodeMap.get(event.getEventCode());
-      List<EventListener> typeListeners = _eventTypeMap.get(event.getClass().getName());
-
       // use a set to ensure each listener is notified only once per event
+      // accumulate all the listeners we should notify of this event; this includes:
       Set<EventListener> listeners = new HashSet<>();
-      if (codeListeners != null) listeners.addAll(codeListeners);
-      if (typeListeners != null) listeners.addAll(typeListeners);
+
+      //   1. Listeners that subscribed to this event's code
+      if (_eventCodeMap.containsKey(event.getEventCode())) {
+        listeners.addAll(_eventCodeMap.get(event.getEventCode()));
+      }
+
+      //   2. Listeners that subscribed to this event's class
+      //   3. Listeners that subscribed to classes that are superclasses of this event's class
+      addListenersForClassAndParents(listeners, event.getClass(), _eventTypeMap);
 
       CompletionStatus statuser = new CompletionStatus(listeners);
       for (EventListener listener : listeners) {
@@ -186,6 +194,17 @@ public class Events {
       _eventTypeMapLock.readLock().unlock();
       _eventCodeMapLock.readLock().unlock();
     }
+  }
+
+  private static void addListenersForClassAndParents(Set<EventListener> listeners,
+      Class<?> type, Map<String, List<EventListener>> eventTypeMap) {
+    if (type == null || type == Object.class) return;
+    LOG.debug("Adding listeners for type: " + type);
+    // otherwise assume this is an Event type
+    if (eventTypeMap.containsKey(type.getName())) {
+      listeners.addAll(eventTypeMap.get(type.getName()));
+    }
+    addListenersForClassAndParents(listeners, type.getSuperclass(), eventTypeMap);
   }
 
   private void stop() {

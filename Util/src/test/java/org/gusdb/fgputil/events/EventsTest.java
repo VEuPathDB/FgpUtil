@@ -32,8 +32,12 @@ public class EventsTest implements EventListener {
       Events.init();
       Events.subscribe(this, TestEvent.TEST_EVENT_CODE);
       Events.subscribe(this, NotificationErrorEvent.class);
+      Events.subscribe(new EventListener() {
+        @Override public void notifyEvent(Event event) throws Exception {
+          System.out.println("Event submitted with code: " + event.getEventCode());
+        }}, Event.class);
       Status status = getStatusWhenSubmitting("some message");
-      assertEquals(status, Status.COMPLETE);
+      assertEquals(status, Status.SUCCESS);
       status = getStatusWhenSubmitting(THROW_ERROR);
       assertEquals(status, Status.ERRORED);
     }
