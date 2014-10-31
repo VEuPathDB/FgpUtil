@@ -2,6 +2,6 @@ package org.gusdb.fgputil.events;
 
 public interface EventListener {
 
-  public void notifyEvent(Event event) throws Exception;
+  public void eventTriggered(Event event) throws Exception;
 
 }

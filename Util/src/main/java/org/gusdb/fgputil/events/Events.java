@@ -65,13 +65,13 @@ public class Events {
     }
   }
 
-  public static CompletionStatus submit(Event event) {
+  public static CompletionStatus trigger(Event event) {
     checkInit();
     return EVENTS.submitEvent(event);
   }
 
-  public static <T extends Exception> void submitAndWait(Event event, T exceptionToThrow) throws T {
-    CompletionStatus status = submit(event);
+  public static <T extends Exception> void triggerAndWait(Event event, T exceptionToThrow) throws T {
+    CompletionStatus status = trigger(event);
     while (!status.isFinished()){}
     if (status.getCollectiveStatus().equals(Status.ERRORED)) {
       throw exceptionToThrow;
@@ -151,12 +151,12 @@ public class Events {
     @Override
     public String call() throws Exception {
       try {
-        _listener.notifyEvent(_event);
+        _listener.eventTriggered(_event);
         _statuser.notifySuccess(_listener);
         return CompletionStatus.Status.SUCCESS.toString();
       }
       catch (Exception e) {
-        Events.submit(new NotificationErrorEvent(_listener, _event, e));
+        Events.trigger(new NotificationErrorEvent(_listener, _event, e));
         _statuser.notifyError(_listener);
         return CompletionStatus.Status.ERRORED.toString();
       }

@@ -33,7 +33,7 @@ public class EventsTest implements EventListener {
       Events.subscribe(this, TestEvent.TEST_EVENT_CODE);
       Events.subscribe(this, NotificationErrorEvent.class);
       Events.subscribe(new EventListener() {
-        @Override public void notifyEvent(Event event) throws Exception {
+        @Override public void eventTriggered(Event event) throws Exception {
           System.out.println("Event submitted with code: " + event.getEventCode());
         }}, Event.class);
       Status status = getStatusWhenSubmitting("some message");
@@ -47,7 +47,7 @@ public class EventsTest implements EventListener {
   }
 
   private Status getStatusWhenSubmitting(String message) {
-    CompletionStatus status = Events.submit(new TestEvent(message));
+    CompletionStatus status = Events.trigger(new TestEvent(message));
     while (!status.isFinished()) {
       System.out.println("Checking completion: " + status.getCollectiveStatus());
       sleep(20);
@@ -58,7 +58,7 @@ public class EventsTest implements EventListener {
   }
 
   @Override
-  public void notifyEvent(Event event) throws Exception {
+  public void eventTriggered(Event event) throws Exception {
     System.out.println("Received event with code '" + event.getEventCode() + "' of type: " + event.getClass().getName());
     if (event instanceof TestEvent) {
       sleep(100);
