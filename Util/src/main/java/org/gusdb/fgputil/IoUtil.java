@@ -46,28 +46,6 @@ public class IoUtil {
   public static InputStream getStreamFromString(String str) {
     return getStreamFromBytes(str.getBytes(Charset.defaultCharset()));
   }
-  
-  /**
-   * Recursively removes the passed directory
-   * 
-   * @param directory directory to remove
-   * @throws IOException if unable to delete directory tree
-   */
-  // NOTE: this does the same thing as deleteDirectoryTree(Path); pick one!
-  @Deprecated
-  public static void deleteDirectory(File directory) throws IOException {
-    if (!directory.exists())
-      throw new IOException("Unable to find directory at path: " + directory.getAbsolutePath());
-    for (File f : directory.listFiles()) {
-      if (f.isDirectory())
-        deleteDirectory(f);
-      else
-        if (!f.delete())
-          throw new IOException("Unable to delete file at path: " + f.getAbsolutePath());
-      if (!directory.delete())
-        throw new IOException("Unable to delete directory at path: " + directory.getAbsolutePath());
-    }
-  }
 
   /**
    * Recursively removes the passed directory
@@ -75,7 +53,6 @@ public class IoUtil {
    * @param directory directory to remove
    * @throws IOException if unable to delete directory tree
    */
-  // NOTE: this does the same thing as deleteDir(File); pick one!
   public static void deleteDirectoryTree(Path directory) throws IOException {
     Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
       @Override

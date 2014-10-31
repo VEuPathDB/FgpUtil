@@ -373,6 +373,7 @@ public final class SqlUtils {
    *          varargs array of wrappers to be closed
    */
   public static void closeQuietly(Wrapper... wrappers) {
+    UncommittedChangesException toThrow = null;
     for (Wrapper wrap : wrappers) {
       if (wrap != null) {
         try {
@@ -397,9 +398,17 @@ public final class SqlUtils {
           if (wrap instanceof Connection) {
             ((Connection) wrap).close();
           }
-        } catch (Exception e) {}
+        }
+        catch (UncommittedChangesException e) {
+          // set exception to throw to be the first UncommittedChangesException experienced
+          if (toThrow == null) toThrow = e;
+        }
+        catch (Exception e) {
+          // ignore all other exceptions
+        }
       }
     }
+    if (toThrow != null) throw toThrow;
   }
 
   /**

@@ -24,13 +24,14 @@ import javax.sql.DataSource;
 
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 
 public class DataSourceWrapper implements DataSource {
 
   // must use fully qualified Logger name since java.util Logger is part of the interface
   private static final org.apache.log4j.Logger LOG =
       org.apache.log4j.Logger.getLogger(DataSourceWrapper.class);
-  
+
   private static class UnclosedConnectionInfo {
 
     private String _dbName;
@@ -80,24 +81,32 @@ public class DataSourceWrapper implements DataSource {
         .toString();
     }
   }
-  
+
   private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-  
+
   private final String _dbName;
   private final DataSource _underlyingDataSource;
+  private final DBPlatform _underlyingPlatform;
   private final Map<Connection, UnclosedConnectionInfo> _unclosedConnectionMap = new ConcurrentHashMap<>();
   private final Map<String, String> _globalStacktraceMap = new ConcurrentHashMap<>();
   private final AtomicInteger _numConnectionsOpened = new AtomicInteger(0);
   private final AtomicInteger _numConnectionsClosed = new AtomicInteger(0);
   private final boolean _recordAllStacktraces;
+  private final boolean _autoCommitResetValue;
+  private final boolean _readOnlyResetValue;
 
-  public DataSourceWrapper(String dbName, DataSource underlyingDataSource) {
-    this(dbName, underlyingDataSource, false);
+  public DataSourceWrapper(String dbName, DataSource underlyingDataSource, DBPlatform underlyingPlatform,
+      boolean autoCommitResetValue, boolean readOnlyResetValue) {
+    this(dbName, underlyingDataSource, underlyingPlatform, autoCommitResetValue, readOnlyResetValue, false);
   }
 
-  public DataSourceWrapper(String dbName, DataSource underlyingDataSource, boolean recordAllStacktraces) {
+  public DataSourceWrapper(String dbName, DataSource underlyingDataSource, DBPlatform underlyingPlatform,
+      boolean autoCommitResetValue, boolean readOnlyResetValue, boolean recordAllStacktraces) {
     _dbName = dbName;
     _underlyingDataSource = underlyingDataSource;
+    _underlyingPlatform = underlyingPlatform;
+    _autoCommitResetValue = autoCommitResetValue;
+    _readOnlyResetValue = readOnlyResetValue;
     _recordAllStacktraces = recordAllStacktraces;
   }
 
@@ -120,7 +129,8 @@ public class DataSourceWrapper implements DataSource {
       LOG.debug("Opening connection associated with stacktrace hash " +
           info.getStackTraceHash() + " : " + info.getBasicInfo());
     }
-    ConnectionWrapper wrapper = new ConnectionWrapper(conn, this);
+    ConnectionWrapper wrapper = new ConnectionWrapper(conn, this,
+        _underlyingPlatform, _autoCommitResetValue, _readOnlyResetValue);
     _unclosedConnectionMap.put(conn, info);
     _numConnectionsOpened.incrementAndGet();
     return wrapper;
