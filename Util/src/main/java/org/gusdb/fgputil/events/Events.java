@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.AlreadyInitializedException;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.CompletionStatus.Status;
 
 public class Events {
@@ -25,21 +25,28 @@ public class Events {
   private static final EventsConfig DEFAULT_EVENTS_CONFIG = new EventsConfig() {
     @Override public int getThreadPoolSize() { return 20; }
     @Override public boolean isTrackEventCallStacks() { return false; }
+    @Override public String toString() {
+      return "Default Events Config { threadPoolSize = " + getThreadPoolSize() +
+          ", trackEventCallStacks? " + isTrackEventCallStacks() + " }";
+    }
   };
 
   // singleton Events object
   private static Events EVENTS;
 
-  public static final void init() {
-    init(DEFAULT_EVENTS_CONFIG);
+  public static final boolean init() {
+    return init(DEFAULT_EVENTS_CONFIG);
   }
 
-  public static synchronized void init(EventsConfig config) {
+  public static synchronized boolean init(EventsConfig config) {
     if (EVENTS == null) {
       EVENTS = new Events(config);
+      return true;
     }
     else {
-      throw new AlreadyInitializedException("Events already initialized.");
+      LOG.warn("Events already initialized with config: " +
+          FormatUtil.NL + EVENTS.getConfig().toString());
+      return false;
     }
   }
 
