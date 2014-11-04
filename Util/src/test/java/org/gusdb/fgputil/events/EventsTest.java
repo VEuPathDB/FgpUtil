@@ -3,7 +3,7 @@ package org.gusdb.fgputil.events;
 import static org.junit.Assert.assertEquals;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.events.CompletionStatus.Status;
+import org.gusdb.fgputil.events.ListenerStatus.Status;
 import org.junit.Test;
 
 public class EventsTest implements EventListener {
@@ -31,7 +31,7 @@ public class EventsTest implements EventListener {
     try {
       Events.init();
       Events.subscribe(this, TestEvent.TEST_EVENT_CODE);
-      Events.subscribe(this, NotificationErrorEvent.class);
+      Events.subscribe(this, ListenerExceptionEvent.class);
       Events.subscribe(new EventListener() {
         @Override public void eventTriggered(Event event) throws Exception {
           System.out.println("Event submitted with code: " + event.getEventCode());
@@ -47,7 +47,7 @@ public class EventsTest implements EventListener {
   }
 
   private Status getStatusWhenSubmitting(String message) {
-    CompletionStatus status = Events.trigger(new TestEvent(message));
+    ListenerStatus status = Events.trigger(new TestEvent(message));
     while (!status.isFinished()) {
       System.out.println("Checking completion: " + status.getCollectiveStatus());
       sleep(20);
@@ -68,8 +68,8 @@ public class EventsTest implements EventListener {
         throw new Exception("Problem!");
       }
     }
-    else if (event instanceof NotificationErrorEvent) {
-      NotificationErrorEvent errorEvent = (NotificationErrorEvent)event;
+    else if (event instanceof ListenerExceptionEvent) {
+      ListenerExceptionEvent errorEvent = (ListenerExceptionEvent)event;
       System.out.println("Handling error event. Class " + errorEvent.getListener().getClass().getName() +
           " received event class " + errorEvent.getEvent().getClass().getName() +
           " and threw Exception:" + FormatUtil.NL + FormatUtil.getStackTrace(errorEvent.getException()));
