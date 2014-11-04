@@ -68,11 +68,11 @@ public class JavaInterviewQuestions {
 	 * solution is needed to work on all systems or with different character sets.
 	 * 
 	 * p.s. This will still not protect us from out-of-memory errors if the file is one long
-	 * line (without newlines), or has extrememly long lines.  Candidate will hopefully
+	 * line (without newlines), or has extremely long lines.  Candidate will hopefully
 	 * volunteer this.
 	 * 
-	 * @param inputFilePath
-	 * @param reversedFilePath
+	 * @param inputFilePath original file path (file to read)
+	 * @param reversedFilePath reversed file path (file to write)
 	 */
 	public void reverseFileMemSafe(String inputFilePath, String reversedFilePath) {
 		RandomAccessFile inFile = null;
@@ -112,8 +112,8 @@ public class JavaInterviewQuestions {
 	/**
 	 * Finds the set of unique characters in str and prints them out alphabetically
 	 * 
-	 * @param str
-	 * @return
+	 * @param str string from which to assess unique chars
+	 * @return string of unique characters found in the passed string
 	 */
 	public String getUniqueChars(String str) {
 		 // hash vs. tree?  sort now vs. sort later?  does it matter?
@@ -131,8 +131,8 @@ public class JavaInterviewQuestions {
 	/**
 	 * Finds the set of unique characters in str and prints them out alphabetically
 	 * 
-	 * @param str
-	 * @return
+     * @param str string from which to assess unique chars
+     * @return string of unique characters found in the passed string
 	 */
 	public String getUniqueCharsBetter(String str) {
 		int[] chars = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };

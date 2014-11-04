@@ -254,7 +254,7 @@ public class Oracle extends DBPlatform {
    * get stale quickly, which may result in bad execution plans. Locking the stats will force Oracle to sample
    * the data in the cache table.
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String, java.lang.String)
+   * @see DBPlatform#disableStatistics(DataSource, String, String)
    */
   @Override
   public void disableStatistics(DataSource dataSource, String schema, String tableName) throws SQLException {

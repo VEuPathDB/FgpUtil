@@ -166,7 +166,7 @@ public class PostgreSQL extends DBPlatform {
    * Check the existence of a table. If the schema is null or empty, the schema will will be ignored, and will
    * look up the table in the public schema.
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#isTableExisted(java.lang.String)
+   * @see org.gusdb.fgputil.db.platform.DBPlatform#checkTableExists(DataSource, String, String)
    */
   @Override
   public boolean checkTableExists(DataSource dataSource, String schema, String tableName)

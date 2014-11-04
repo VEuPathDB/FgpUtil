@@ -96,7 +96,7 @@ public class IoUtil {
    * Checks if the passed file exists and is readable and calls
    * System.exit() with the default exit error code if not
    * 
-   * @param directoryName directory to check
+   * @param fileName directory to check
    * @return File object for found, writable directory
    */
   public static File getReadableFileOrDie(String fileName) {

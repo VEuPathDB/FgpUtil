@@ -6,7 +6,7 @@ package org.gusdb.fgputil.events;
  * a group, and doesn't provide details, listening for this event is the
  * only way to capture exceptions that occur when listeners fail.
  * 
- * @see ListenerStatus
+ * @see ListenerStatus#getCollectiveStatus()
  * @author ryan
  */
 public class ListenerExceptionEvent extends Event {

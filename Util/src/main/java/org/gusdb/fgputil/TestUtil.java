@@ -65,7 +65,8 @@ public final class TestUtil {
 	 * Establishes an in-memory database (currently HSQL) and returns a Java
 	 * DataSource object representing it.
 	 * 
-	 * @return
+	 * @param name value to name the test datasource
+	 * @return test datasource
 	 */
   public static DataSource getTestDataSource(String name) {
     JDBCDataSource ds = new JDBCDataSource();

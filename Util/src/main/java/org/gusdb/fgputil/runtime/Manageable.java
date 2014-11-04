@@ -7,8 +7,7 @@ package org.gusdb.fgputil.runtime;
  *         stub instance can be created, in order for the manager to call the
  *         {@link #getInstance(String, String)} method.
  *
- * @param <T>
- * 
+ * @param <T> the type of the class implementing this interface
  * @author Jerric
  */
 public interface Manageable<T extends Manageable<?>> {
@@ -19,8 +18,8 @@ public interface Manageable<T extends Manageable<?>> {
    * manager will create a stub object of the class, then call this method to create the singleton instance it
    * will manage.
    * 
-   * @param projectId
-   * @param gusHome
+   * @param projectId project id used to configure instance
+   * @param gusHome gus home used to configure instance
    * @return new instance of T for the given gusHome and projectId
    * @throws Exception if unable to create instance
    */

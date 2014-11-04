@@ -16,7 +16,7 @@ import org.gusdb.fgputil.db.SqlUtils;
  * code to make requests of the database without knowing the underlying vendor.
  * 
  * @author Jerric Gao
- * @modified Ryan Doherty
+ * @author Ryan Doherty
  */
 public abstract class DBPlatform {
 
@@ -109,11 +109,12 @@ public abstract class DBPlatform {
         throws SQLException, UnsupportedOperationException;
 
     /**
+     * 
+     * 
      * @param dataSource data source to use
-     * @param schema
-     *            the schema cannot be empty. if you are searching in a local
-     *            schema, it has to be the login user name.
-     * @param pattern
+     * @param schema schema name. The schema cannot be empty. If you are searching
+     *        in a local schema, the login user name should be used.
+     * @param pattern pattern to match table names against; this may be platform-specific
      * @return list of table names
      * @throws SQLException if error occurs
      */

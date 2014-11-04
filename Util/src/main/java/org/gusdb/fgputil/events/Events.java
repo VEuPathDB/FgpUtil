@@ -136,7 +136,7 @@ public class Events {
    * subscribe twice; a listener will only ever receive an event one time.
    * 
    * @param listener listener to subscribe
-   * @param eventCodes event codes to subscribe to
+   * @param eventTypes event types to subscribe to
    */
   @SafeVarargs
   public static void subscribe(EventListener listener, Class<? extends Event>... eventTypes) {
@@ -208,8 +208,10 @@ public class Events {
    * information received from the <code>CompletionStatus</code>
    * object returned.
    * 
+   * @param <T> type of exception passed, parameterized so calling code must only catch the exception it passes
    * @param event event to trigger
-   * @return listener result aggregator for this event
+   * @param exceptionToThrow exception to throw if any of the listeners fail to complete successfully
+   * @throws T the passed exception if any listeners fail
    */
   public static <T extends Exception> void triggerAndWait(Event event, T exceptionToThrow) throws T {
     ListenerStatus status = trigger(event);

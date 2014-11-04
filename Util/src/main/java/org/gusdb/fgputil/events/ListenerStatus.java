@@ -9,11 +9,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * to call the <code>eventTriggered</code> method of a set of respective
  * <code>EventListener</code>s.
  * 
- * @see Events.trigger(Event)
+ * @see Events#trigger(Event)
  * @author ryan
  */
 public class ListenerStatus {
 
+  /**
+   * Set of values representing the processing status of a particular event
+   * listener, or collectively a list of listeners
+   * 
+   * @author ryan
+   */
   public static enum Status {
     NOTIFIED, SUCCESS, ERRORED;
   }

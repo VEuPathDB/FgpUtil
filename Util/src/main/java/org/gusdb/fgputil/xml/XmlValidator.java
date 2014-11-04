@@ -15,6 +15,8 @@ public class XmlValidator extends XmlParser {
 	/**
 	 * Simply validates an XML file against an RNG file Takes two arguments: XML
 	 * file and RNG file (absolute paths)
+	 * 
+	 * @param args arguments passed from command line
 	 */
 	public static void main(String[] args) {
 		try {

@@ -42,7 +42,7 @@ public class Event {
    * will be notified (but only once per event, even is subscribed
    * to both type and code).
    * 
-   * @param eventCode
+   * @param eventCode event code for this event
    */
   public Event(String eventCode) {
     if (eventCode == null) throw new NullPointerException(
