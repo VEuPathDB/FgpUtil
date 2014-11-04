@@ -182,10 +182,19 @@ public final class SqlUtils {
     logger.debug("executeUpdate with DataSource: running sql: " + name + "\n" + sql);
     Connection connection = null;
     Statement stmt = null;
+
     try {
       long start = System.currentTimeMillis();
       connection = dataSource.getConnection();
       stmt = connection.createStatement();
+			// refs #17294 portal id bug; temp code for testing, purpose is as in wdk-remote-dataset-dummy
+			if (name.equals("GeneId.GeneByLocusTag__insert-cache") || name.equals("GeneId.GeneByLocusTag__create-cache") ) {
+				ResultSet myRS = stmt.executeQuery("select count(*) from userlogins5.datasets@prods.login_comment");
+				myRS.next();
+				int rsCount = myRS.getInt(1);
+				myRS.close();
+				logger.debug("****executeUpdate with Datasource: TEST DATASET query result count:  " + rsCount + "\n\n\n");
+			}
       int result = stmt.executeUpdate(sql);
       QueryLogger.logEndStatementExecution(sql, name, start);
       return result;
@@ -250,6 +259,21 @@ public final class SqlUtils {
       long start = System.currentTimeMillis();
       stmt = connection.createStatement();
       stmt.setFetchSize(fetchSize);
+
+			/*  questionform breaks when trying to validate the IDs, 
+         right after the datasetFactory creates the dataset in apicomm,
+			*/
+			/*
+			if (name.equals("wdk-dataset-by-dataset-id")) {
+				//SqlUtils.executeScalar(dataSource, "SELECT count(*) FROM userlogins5.datasets@prods.login_comment", "new-wdk-remote-dataset-dummy");
+				ResultSet myRS = stmt.executeQuery("select count(*) from userlogins5.datasets@prods.login_comment");
+				myRS.next();
+				int rsCount = myRS.getInt(1);
+				myRS.close();
+				logger.debug("****executeQuery: query result count:  " + rsCount + "\n\n\n");
+			}
+			*/
+
       resultSet = stmt.executeQuery(sql);
       QueryLogger.logStartResultsProcessing(sql, name, start, resultSet);
       return resultSet;
@@ -261,9 +285,10 @@ public final class SqlUtils {
       closeResultSetAndStatement(resultSet);
       throw ex;
     }
+
   }
 
-    public static ResultSet executePreparedQuery(PreparedStatement stmt, String sql,
+	public static ResultSet executePreparedQuery(PreparedStatement stmt, String sql,
       String name) throws SQLException {
     logger.debug("executePreparedQuery: running sql: " + name + "\n" + sql);
     ResultSet resultSet = null;
@@ -291,6 +316,7 @@ public final class SqlUtils {
    * @throws SQLException
    *           database or query failure
    */
+
   public static Object executeScalar(DataSource dataSource, String sql,
       String name) throws SQLException, DBStateException {
     ResultSet resultSet = null;
