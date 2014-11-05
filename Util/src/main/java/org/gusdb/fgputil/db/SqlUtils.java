@@ -35,7 +35,7 @@ public final class SqlUtils {
    * Close the resultSet and the underlying statement, connection. Log the
    * query.
    * 
-   * @param resultSet
+   * @param resultSet result set to close
    */
   public static void closeResultSetAndStatement(ResultSet resultSet) {
     try {
@@ -60,7 +60,7 @@ public final class SqlUtils {
   /**
    * Close the resultSet but not its statement. Log the query.
    * 
-   * @param resultSet
+   * @param resultSet result set to close
    */
   public static void closeResultSetOnly(ResultSet resultSet) {
     try {
@@ -82,7 +82,7 @@ public final class SqlUtils {
   /**
    * Close the statement and underlying connection
    * 
-   * @param stmt
+   * @param stmt statement to close
    */
   public static void closeStatement(Statement stmt) {
     if (stmt != null) {
@@ -130,9 +130,11 @@ public final class SqlUtils {
   /**
    * execute the update, and returns the number of rows affected.
    * 
-   * @param dataSource
-   * @param sql
-   * @return
+   * @param stmt statement to execute
+   * @param sql SQL inside prepared statement (for logging purposes)
+   * @param name name of operation (for logging purposes)
+   * @return true if statement succeeded; else false
+   * @throws SQLException if unable to execute statement
    */
   public static boolean executePreparedStatement(PreparedStatement stmt,
       String sql, String name) throws SQLException {
@@ -173,9 +175,11 @@ public final class SqlUtils {
   /**
    * execute the update, and returns the number of rows affected.
    * 
-   * @param dataSource
-   * @param sql
-   * @return
+   * @param dataSource data source from which to get connection on which to execute update
+   * @param sql SQL to execute
+   * @param name name of operation (for logging purposes)
+   * @return number of rows affected
+   * @throws SQLException if problem executing update
    */
   public static int executeUpdate(DataSource dataSource, String sql, String name)
       throws SQLException {
@@ -200,13 +204,15 @@ public final class SqlUtils {
   }
 
   /**
-   * execute the update using an open connection, and returns the number of rows
-   * affected. Use this if you have a connection you want to use again such as
+   * Executes the update using an open connection, and returns the number of rows
+   * affected.  Use this if you have a connection you want to use again such as
    * one that is autocommit=false
    * 
-   * @param connection
-   * @param sql
-   * @return
+   * @param connection conneciton on which to execute the update
+   * @param sql SQL to execute
+   * @param name name of operation (for logging purposes)
+   * @return number of rows affected
+   * @throws SQLException if problem executing update
    */
   public static int executeUpdate(Connection connection, String sql, String name)
       throws SQLException {
@@ -231,9 +237,11 @@ public final class SqlUtils {
    * Run a query and returns a resultSet. the calling code is responsible for
    * closing the resultSet using the helper method in SqlUtils.
    * 
-   * @param dataSource
-   * @param sql
-   * @return
+   * @param dataSource data source from which to get connection on which to run query
+   * @param sql SQL to run
+   * @param name name of operation (for logging purposes)
+   * @return result set of query
+   * @throws SQLException if problem running query
    */
   public static ResultSet executeQuery(DataSource dataSource, String sql,
       String name) throws SQLException {
@@ -285,19 +293,20 @@ public final class SqlUtils {
    * returns a single row with many columns, the value in the first column will
    * be returned.
    * 
-   * @param dataSource
-   * @param sql
+   * @param dataSource data source on which to run query
+   * @param sql SQL to run
+   * @param name name of operation (for logging purposes)
    * @return the first column of the first row in the result
-   * @throws SQLException
-   *           database or query failure
+   * @throws SQLException database or query failure
+   * @throws IllegalArgumentException if passed SQL does not return any rows
    */
   public static Object executeScalar(DataSource dataSource, String sql,
-      String name) throws SQLException, DBStateException {
+      String name) throws SQLException {
     ResultSet resultSet = null;
     try {
       resultSet = executeQuery(dataSource, sql, name);
       if (!resultSet.next())
-        throw new DBStateException("The SQL doesn't return any row:\n" + sql);
+        throw new IllegalArgumentException("The SQL doesn't return any row:\n" + sql);
       return resultSet.getObject(1);
     } finally {
       closeResultSetAndStatement(resultSet);
@@ -319,7 +328,7 @@ public final class SqlUtils {
    * Escapes the input string for use in LIKE clauses to allow matching special
    * chars
    * 
-   * @param value
+   * @param value string on which to operate
    * @return the input value with special characters escaped
    */
   public static String escapeWildcards(String value) {

@@ -9,6 +9,7 @@ public class ArrayUtil {
    * implementation uses generics to allow type-safe concatenation of arrays
    * of any type.
    * 
+   * @param <T> type contained in the arrays
    * @param firstArray an array
    * @param moreArrays more arrays of the same type
    * @return a new array containing all the contents of the passed arrays
@@ -32,6 +33,7 @@ public class ArrayUtil {
    * Returns a copy of the passed array with the passed values appended to the
    * end, in order.
    * 
+   * @param <T> type contained in the arrays
    * @param array base array
    * @param values values to be appended
    * @return new array with values appended
@@ -46,6 +48,7 @@ public class ArrayUtil {
    * index specified.  Note: while still O(N), this method executes two passes
    * through the array.
    * 
+   * @param <T> type contained in the arrays
    * @param array base array
    * @param index index at which to insert values
    * @param values values to be inserted

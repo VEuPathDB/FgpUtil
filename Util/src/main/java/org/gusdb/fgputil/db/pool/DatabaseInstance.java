@@ -44,6 +44,8 @@ public class DatabaseInstance implements Wrapper {
   /**
    * Creates an initialized connection pool with a default identifier. The driver
    * should have been registered by the platform implementation.
+   * 
+   * @param dbConfig configuration for this instance
    */
   public DatabaseInstance(ConnectionPoolConfig dbConfig) {
     this (dbConfig, getNextDbName());
@@ -53,6 +55,8 @@ public class DatabaseInstance implements Wrapper {
    * Creates an initialized connection pool with the given identifier. The driver
    * should have been registered by the platform implementation.
    * 
+   * @param dbConfig configuration for this instance
+   * @param identifier identifier for this instance
    * @throws IllegalArgumentException if identifier is null, empty, or already taken
    */
   public DatabaseInstance(ConnectionPoolConfig dbConfig, String identifier) {
@@ -206,6 +210,8 @@ public class DatabaseInstance implements Wrapper {
    * If this DB is initialized, shuts down the connection pool, and (if
    * configured) the connection pool logger thread.  Resets initialized flag,
    * so this DB can be reinitialized if desired.
+   * 
+   * @throws Exception if problem while shutting down DB instance
    */
   public void close() throws Exception {
     synchronized(this) {
@@ -291,7 +297,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Return the number of instances currently borrowed from this pool.
+   * @return the number of instances currently borrowed from this pool.
    */
   public int getActiveCount() {
     checkInit();
@@ -299,7 +305,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Return the number of instances currently idle in this pool
+   * @return the number of instances currently idle in this pool
    */
   public int getIdleCount() {
     checkInit();
@@ -307,7 +313,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Returns the minimum number of objects allowed in the pool before the 
+   * @return the minimum number of objects allowed in the pool before the 
    * evictor thread (if active) spawns new objects
    */
   public int getMinIdle() {
@@ -316,7 +322,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Returns the cap on the number of "idle" instances in the pool.
+   * @return the cap on the number of "idle" instances in the pool.
    */
   public int getMaxIdle() {
     checkInit();
@@ -324,7 +330,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Returns the minimum amount of time an object may sit idle in the pool 
+   * @return the minimum amount of time an object may sit idle in the pool 
    * before it is eligible for eviction by the idle object evictor (if any).
    */
   public long getMinEvictableIdleTimeMillis() {
@@ -333,7 +339,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Returns the minimum amount of time an object may sit idle in the pool 
+   * @return the minimum amount of time an object may sit idle in the pool 
    * before it is eligible for eviction by the idle object evictor (if any),
    * with the extra condition that at least "minIdle" amount of object remain in the pool.
    */
@@ -343,7 +349,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Returns the number of milliseconds to sleep between runs of the idle object evictor thread.
+   * @return the number of milliseconds to sleep between runs of the idle object evictor thread.
    */
   public long getTimeBetweenEvictionRunsMillis() {
     checkInit();
@@ -352,6 +358,8 @@ public class DatabaseInstance implements Wrapper {
 
   /**
    * When true, objects will be validated before being returned by the borrowObject() method.
+   * 
+   * @return true if objects will be validated before being returned by the #borrowObject() method, else false
    */
   public boolean getTestOnBorrow() {
     checkInit();
@@ -360,6 +368,8 @@ public class DatabaseInstance implements Wrapper {
 
   /**
    * When true, objects will be validated before being returned to the pool within the returnObject(T).
+   * 
+   * @return true if objects will be validated before being returned by the #returnObject(T) method, else false
    */
   public boolean getTestOnReturn() {
     checkInit();
@@ -368,6 +378,8 @@ public class DatabaseInstance implements Wrapper {
 
   /**
    * When true, objects will be validated by the idle object evictor (if any).
+   * 
+   * @return true if objects will be validated by the idle object evictor, else false
    */
   public boolean getTestWhileIdle() {
     return _connectionPool.getTestWhileIdle();
