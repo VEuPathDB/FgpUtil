@@ -22,12 +22,19 @@
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="FgpUtil-Installation" depends="FgpUtil/Util-Installation, FgpUtil-MavenInstallation">
+  <target name="FgpUtil-Installation" depends="FgpUtil-MavenInstallation,
+                                               FgpUtil/Util-Installation">
     <ant target="defaultProjectInstall">
       <property name="project" value="FgpUtil"/>
     </ant>
   </target>  
-   
+
+  <target name="FgpUtil-MavenInstallation">
+    <ant target="mavenBuildProject">
+      <property name="project" value="FgpUtil"/>
+    </ant>
+    <property name="alreadyBuilt" value="true"/>
+  </target>   
 
   <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
 
@@ -46,6 +53,7 @@
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
 
   <target name="FgpUtil/Util-Installation">
+
     <ant target="defaultComponentInstall">
       <property name="project" value="FgpUtil"/>
       <property name="component" value="Util"/>
@@ -56,16 +64,6 @@
     <available file="${targetDir}/config/log4j.properties" property="log4j.config.exist" />
     <available file="${targetDir}/config/log4j.xml" property="log4j.config.exist" />
     <antcall target="copyLog4jConfig" />
-  </target>
-
-  <target name="FgpUtil-MavenInstallation">
-    <ant target="mavenCleanInstall">
-      <property name="project" value="FgpUtil"/>
-    </ant>
-    <ant target="deployMavenArtifacts">
-      <property name="project" value="FgpUtil"/>
-      <property name="component" value="Util"/>
-    </ant>
   </target>
 
   <target name="copyLog4jConfig" unless="log4j.config.exist">
