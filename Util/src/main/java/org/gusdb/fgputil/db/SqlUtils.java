@@ -310,6 +310,26 @@ public final class SqlUtils {
    *          name of operation (for logging purposes)
    * @param fetchSize
    *          the number of rows to be pre-fetched.
+   * @return result set of query
+   * @throws SQLException
+   *           if problem running query
+   */
+  public static ResultSet executeQuery(DataSource dataSource, String sql, String name, int fetchSize) throws SQLException {
+    return executeQuery(dataSource, sql, name, fetchSize, false);
+  }
+
+  /**
+   * Run a query and returns a resultSet. the calling code is responsible for closing the resultSet using the
+   * helper method in SqlUtils.
+   * 
+   * @param dataSource
+   *          data source from which to get connection on which to run query
+   * @param sql
+   *          SQL to run
+   * @param name
+   *          name of operation (for logging purposes)
+   * @param fetchSize
+   *          the number of rows to be pre-fetched.
    * @param useDBLink
    *          indicates whether this sql uses db_links or not; if db_link is used, a commit will be called
    *          before the sql being executed. This is an Oracle only feature.
