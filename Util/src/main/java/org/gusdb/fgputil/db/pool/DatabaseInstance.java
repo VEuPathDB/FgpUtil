@@ -5,16 +5,13 @@ import java.sql.SQLException;
 import java.sql.Wrapper;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.DataSourceWrapper;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -37,7 +34,7 @@ public class DatabaseInstance implements Wrapper {
 
   // fields initialized by initialize()
   private String _identifier;
-  private GenericObjectPool _connectionPool;
+  private BasicDataSource _connectionPool;
   private DataSourceWrapper _dataSource;
   private ConnectionPoolLogger _logger;
 
@@ -94,20 +91,7 @@ public class DatabaseInstance implements Wrapper {
 
           _connectionPool = createConnectionPool(_dbConfig, _platform);
 
-          // configure the connection pool
-          _connectionPool.setMaxWait(_dbConfig.getMaxWait());
-          _connectionPool.setMaxIdle(_dbConfig.getMaxIdle());
-          _connectionPool.setMinIdle(_dbConfig.getMinIdle());
-          _connectionPool.setMaxActive(_dbConfig.getMaxActive());
-
-          // configure validationQuery tests
-          _connectionPool.setTestOnBorrow(true);
-          _connectionPool.setTestOnReturn(true);
-          _connectionPool.setWhenExhaustedAction(GenericObjectPool.WHEN_EXHAUSTED_GROW);
-
-          PoolingDataSource dataSource = new PoolingDataSource(_connectionPool);
-          dataSource.setAccessToUnderlyingConnectionAllowed(true);
-          _dataSource = new DataSourceWrapper(_identifier, dataSource, _platform,
+          _dataSource = new DataSourceWrapper(_identifier, _connectionPool, _platform,
               _dbConfig.getDefaultAutoCommit(), _dbConfig.getDefaultReadOnly());
 
           // start the connection monitor if needed
@@ -129,25 +113,44 @@ public class DatabaseInstance implements Wrapper {
     }
   }
 
-  private static GenericObjectPool createConnectionPool(ConnectionPoolConfig dbConfig, DBPlatform platform) {
-
-    GenericObjectPool connectionPool = new GenericObjectPool(null);
-
-    Properties props = new Properties();
-    props.put("user", dbConfig.getLogin());
-    props.put("password", dbConfig.getPassword());
+  private static BasicDataSource createConnectionPool(ConnectionPoolConfig dbConfig, DBPlatform platform) {
 
     // initialize DB driver; (possibly modified) url will be returned, connection properties may also be modified
+    Properties props = new Properties();
     String connectionUrl = initializeDbDriver(platform.getDriverClassName(), dbConfig.getDriverInitClass(), props, dbConfig.getConnectionUrl());
 
-    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectionUrl, props);
+    // create connection pool and set basic properties
+    BasicDataSource connectionPool = new BasicDataSource();
+    connectionPool.setUrl(connectionUrl);
+    connectionPool.setUsername(dbConfig.getLogin());
+    connectionPool.setPassword(dbConfig.getPassword());
+    connectionPool.setConnectionProperties(getPropertyString(props));
 
-    // link connection factory to connection pool with assigned settings
-    // object is created only to link factory and pool
-    new PoolableConnectionFactory(connectionFactory, connectionPool, null,
-        platform.getValidationQuery(), dbConfig.getDefaultReadOnly(), dbConfig.getDefaultAutoCommit());
+    // configure how connections are created
+    connectionPool.setDefaultReadOnly(dbConfig.getDefaultReadOnly());
+    connectionPool.setDefaultAutoCommit(dbConfig.getDefaultAutoCommit());
+
+    // configure the connection pool
+    connectionPool.setMaxWait(dbConfig.getMaxWait());
+    connectionPool.setMaxIdle(dbConfig.getMaxIdle());
+    connectionPool.setMinIdle(dbConfig.getMinIdle());
+    connectionPool.setMaxActive(dbConfig.getMaxActive());
+
+    // configure validationQuery tests
+    connectionPool.setValidationQuery(platform.getValidationQuery());
+    connectionPool.setTestOnBorrow(true);
+    connectionPool.setTestOnReturn(true);
+    connectionPool.setAccessToUnderlyingConnectionAllowed(true);
 
     return connectionPool;
+  }
+
+  private static String getPropertyString(Properties props) {
+    StringBuilder str = new StringBuilder();
+    for (Entry<Object,Object> prop : props.entrySet()) {
+      str.append(prop.getKey()).append("=").append(prop.getValue()).append(";");
+    }
+    return str.toString();
   }
 
   private static String initializeDbDriver(String driverClassName, String driverInitClassName,
@@ -336,16 +339,6 @@ public class DatabaseInstance implements Wrapper {
   public long getMinEvictableIdleTimeMillis() {
     checkInit();
     return _connectionPool.getMinEvictableIdleTimeMillis();
-  }
-
-  /**
-   * @return the minimum amount of time an object may sit idle in the pool 
-   * before it is eligible for eviction by the idle object evictor (if any),
-   * with the extra condition that at least "minIdle" amount of object remain in the pool.
-   */
-  public long getSoftMinEvictableIdleTimeMillis() {
-    checkInit();
-    return _connectionPool.getSoftMinEvictableIdleTimeMillis();
   }
 
   /**
