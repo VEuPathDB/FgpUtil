@@ -159,7 +159,7 @@ public abstract class BaseCLI {
   }
 
   /**
-   * @param name
+   * @param name name of option to check
    * @return If the option doesn't exist, a default value of the option will be returned. If the option
    *         exists, and it doesn't require value, it will return true; if the option requires a single value,
    *         the string of that value will be returned; if the option allows multiple value, a String[] will

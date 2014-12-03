@@ -30,7 +30,7 @@ class SQLRunnerExecutors {
    * Abstract parent of all other SQL executors.  The methods in each
    * implementation should be executed in the following order:
    * <ol>
-   *   <li>{@link #setParams(PreparedStatement}</li>
+   *   <li>{@link #setParams(PreparedStatement)}</li>
    *   <li>{@link #run(PreparedStatement)}</li>
    *   <li>{@link #handleResult()}</li>
    *   <li>{@link #closeQuietly()}</li>

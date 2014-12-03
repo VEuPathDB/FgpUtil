@@ -23,19 +23,21 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
  * @author Jerric Gao
  */
 public final class SqlUtils {
+  
+  public static final int DEFAULT_FETCH_SIZE = 100;
 
   private static final Logger logger = Logger.getLogger(SqlUtils.class.getName());
-  
+
   /**
    * private constructor, make sure SqlUtils cannot be instanced.
    */
   private SqlUtils() {}
 
   /**
-   * Close the resultSet and the underlying statement, connection. Log the
-   * query.
+   * Close the resultSet and the underlying statement, connection. Log the query.
    * 
    * @param resultSet
+   *          result set to close
    */
   public static void closeResultSetAndStatement(ResultSet resultSet) {
     try {
@@ -45,14 +47,17 @@ public final class SqlUtils {
         try {
           try {
             stmt = resultSet.getStatement();
-          } finally {
+          }
+          finally {
             closeResultSetOnly(resultSet);
           }
-        } finally {
+        }
+        finally {
           closeStatement(stmt);
         }
       }
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       throw new RuntimeException(ex);
     }
   }
@@ -61,6 +66,7 @@ public final class SqlUtils {
    * Close the resultSet but not its statement. Log the query.
    * 
    * @param resultSet
+   *          result set to close
    */
   public static void closeResultSetOnly(ResultSet resultSet) {
     try {
@@ -74,7 +80,8 @@ public final class SqlUtils {
       // log orphaned result sets, ie, those that are closed but still in hash
       QueryLogger.logOrphanedResultSets();
 
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       throw new RuntimeException(ex);
     }
   }
@@ -83,6 +90,7 @@ public final class SqlUtils {
    * Close the statement and underlying connection
    * 
    * @param stmt
+   *          statement to close
    */
   public static void closeStatement(Statement stmt) {
     if (stmt != null) {
@@ -93,7 +101,7 @@ public final class SqlUtils {
         }
         finally {
           // close statement regardless of whether we
-          //   succeed in getting connection
+          // succeed in getting connection
           closeQuietly(stmt);
         }
       }
@@ -108,8 +116,7 @@ public final class SqlUtils {
     }
   }
 
-  public static PreparedStatement getPreparedStatement(DataSource dataSource,
-      String sql) throws SQLException {
+  public static PreparedStatement getPreparedStatement(DataSource dataSource, String sql) throws SQLException {
     Connection connection = null;
     PreparedStatement ps = null;
     try {
@@ -117,7 +124,8 @@ public final class SqlUtils {
       ps = connection.prepareStatement(sql);
       ps.setFetchSize(100);
       return ps;
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       logger.error("Failed to prepare query: \n" + sql, ex);
       closeStatement(ps);
 
@@ -130,18 +138,25 @@ public final class SqlUtils {
   /**
    * execute the update, and returns the number of rows affected.
    * 
-   * @param dataSource
+   * @param stmt
+   *          statement to execute
    * @param sql
-   * @return
+   *          SQL inside prepared statement (for logging purposes)
+   * @param name
+   *          name of operation (for logging purposes)
+   * @return true if statement succeeded; else false
+   * @throws SQLException
+   *           if unable to execute statement
    */
-  public static boolean executePreparedStatement(PreparedStatement stmt,
-      String sql, String name) throws SQLException {
+  public static boolean executePreparedStatement(PreparedStatement stmt, String sql, String name)
+      throws SQLException {
     try {
       long start = System.currentTimeMillis();
       boolean result = stmt.execute();
       QueryLogger.logEndStatementExecution(sql, name, start);
       return result;
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       logger.error("Failed to execute statement: \n" + sql);
       throw ex;
     }
@@ -150,21 +165,26 @@ public final class SqlUtils {
   /**
    * Executes a batch update; returns numbers of rows affected by each batch
    * 
-   * @param stmt PrepatedStatement to which batches were added
-   * @param sql SQL of prepared statement (for logging)
-   * @param name name of this operation (for logging)
-   * @return an array of row counts; each item is the # of rows updated
-   * by a batch of params added to the statement
-   * @throws SQLException if unable to execute batch
+   * @param stmt
+   *          PrepatedStatement to which batches were added
+   * @param sql
+   *          SQL of prepared statement (for logging)
+   * @param name
+   *          name of this operation (for logging)
+   * @return an array of row counts; each item is the # of rows updated by a batch of params added to the
+   *         statement
+   * @throws SQLException
+   *           if unable to execute batch
    */
-  public static int[] executePreparedStatementBatch(PreparedStatement stmt,
-      String sql, String name) throws SQLException {
+  public static int[] executePreparedStatementBatch(PreparedStatement stmt, String sql, String name)
+      throws SQLException {
     try {
       long start = System.currentTimeMillis();
       int[] numUpdates = stmt.executeBatch();
       QueryLogger.logEndStatementExecution(sql, name, start);
       return numUpdates;
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       logger.error("Failed to execute statement batch: \n" + sql);
       throw ex;
     }
@@ -174,10 +194,37 @@ public final class SqlUtils {
    * execute the update, and returns the number of rows affected.
    * 
    * @param dataSource
+   *          data source from which to get connection on which to execute update
    * @param sql
-   * @return
+   *          SQL to execute
+   * @param name
+   *          name of operation (for logging purposes)
+   * @return number of rows affected
+   * @throws SQLException
+   *           if problem executing update
    */
-  public static int executeUpdate(DataSource dataSource, String sql, String name)
+  public static int executeUpdate(DataSource dataSource, String sql, String name) throws SQLException {
+    return executeUpdate(dataSource, sql, name, false);
+  }
+
+  /**
+   * execute the update, and returns the number of rows affected.
+   * 
+   * @param dataSource
+   *          data source from which to get connection on which to execute update
+   * @param sql
+   *          SQL to execute
+   * @param name
+   *          name of operation (for logging purposes)
+   * @param useDBLink
+   *          a flag indicating if a dblink is used in this sql; If a dblink is used, a commit will be called
+   *          before execution, to make sure the query get the latest copy of data from dblink. This is an
+   *          Oracle only requirement.
+   * @return number of rows affected
+   * @throws SQLException
+   *           if problem executing update
+   */
+  public static int executeUpdate(DataSource dataSource, String sql, String name, boolean useDBLink)
       throws SQLException {
     logger.trace("running sql: " + name + "\n" + sql);
     Connection connection = null;
@@ -200,16 +247,20 @@ public final class SqlUtils {
   }
 
   /**
-   * execute the update using an open connection, and returns the number of rows
-   * affected. Use this if you have a connection you want to use again such as
-   * one that is autocommit=false
+   * Executes the update using an open connection, and returns the number of rows affected. Use this if you
+   * have a connection you want to use again such as one that is autocommit=false
    * 
    * @param connection
+   *          conneciton on which to execute the update
    * @param sql
-   * @return
+   *          SQL to execute
+   * @param name
+   *          name of operation (for logging purposes)
+   * @return number of rows affected
+   * @throws SQLException
+   *           if problem executing update
    */
-  public static int executeUpdate(Connection connection, String sql, String name)
-      throws SQLException {
+  public static int executeUpdate(Connection connection, String sql, String name) throws SQLException {
     logger.trace("running sql: " + name + "\n" + sql);
     Statement stmt = null;
     try {
@@ -218,30 +269,76 @@ public final class SqlUtils {
       int result = stmt.executeUpdate(sql);
       QueryLogger.logEndStatementExecution(sql, name, start);
       return result;
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       logger.error("Failed to run nonQuery:\n" + sql);
       throw ex;
-    } finally {
+    }
+    finally {
       if (stmt != null)
         stmt.close();
     }
   }
 
   /**
-   * Run a query and returns a resultSet. the calling code is responsible for
-   * closing the resultSet using the helper method in SqlUtils.
+   * Run a query and returns a resultSet. the calling code is responsible for closing the resultSet using the
+   * helper method in SqlUtils.
    * 
    * @param dataSource
+   *          data source from which to get connection on which to run query
    * @param sql
-   * @return
+   *          SQL to run
+   * @param name
+   *          name of operation (for logging purposes)
+   * @return result set of query
+   * @throws SQLException
+   *           if problem running query
    */
-  public static ResultSet executeQuery(DataSource dataSource, String sql,
-      String name) throws SQLException {
-    return executeQuery(dataSource, sql, name, 100);
+  public static ResultSet executeQuery(DataSource dataSource, String sql, String name) throws SQLException {
+    return executeQuery(dataSource, sql, name, DEFAULT_FETCH_SIZE, false);
   }
 
-  public static ResultSet executeQuery(DataSource dataSource, String sql,
-      String name, int fetchSize) throws SQLException {
+  /**
+   * Run a query and returns a resultSet. the calling code is responsible for closing the resultSet using the
+   * helper method in SqlUtils.
+   * 
+   * @param dataSource
+   *          data source from which to get connection on which to run query
+   * @param sql
+   *          SQL to run
+   * @param name
+   *          name of operation (for logging purposes)
+   * @param fetchSize
+   *          the number of rows to be pre-fetched.
+   * @return result set of query
+   * @throws SQLException
+   *           if problem running query
+   */
+  public static ResultSet executeQuery(DataSource dataSource, String sql, String name, int fetchSize) throws SQLException {
+    return executeQuery(dataSource, sql, name, fetchSize, false);
+  }
+
+  /**
+   * Run a query and returns a resultSet. the calling code is responsible for closing the resultSet using the
+   * helper method in SqlUtils.
+   * 
+   * @param dataSource
+   *          data source from which to get connection on which to run query
+   * @param sql
+   *          SQL to run
+   * @param name
+   *          name of operation (for logging purposes)
+   * @param fetchSize
+   *          the number of rows to be pre-fetched.
+   * @param useDBLink
+   *          indicates whether this sql uses db_links or not; if db_link is used, a commit will be called
+   *          before the sql being executed. This is an Oracle only feature.
+   * @return result set of query
+   * @throws SQLException
+   *           if problem running query
+   */
+  public static ResultSet executeQuery(DataSource dataSource, String sql, String name, int fetchSize,
+      boolean useDBLink) throws SQLException {
     Connection connection = ConnectionMapping.getConnection(dataSource);
     logger.trace("running sql: " + name + "\n" + sql);
     Statement stmt = null;
@@ -263,8 +360,8 @@ public final class SqlUtils {
     }
   }
 
-    public static ResultSet executePreparedQuery(PreparedStatement stmt, String sql,
-      String name) throws SQLException {
+  public static ResultSet executePreparedQuery(PreparedStatement stmt, String sql, String name)
+      throws SQLException {
     logger.trace("running sql: " + name + "\n" + sql);
     ResultSet resultSet = null;
     try {
@@ -272,7 +369,8 @@ public final class SqlUtils {
       resultSet = stmt.executeQuery();
       QueryLogger.logStartResultsProcessing(sql, name, start, resultSet);
       return resultSet;
-    } catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
       logger.error("Failed to run query:\n" + sql);
       closeResultSetAndStatement(resultSet);
       throw ex;
@@ -280,32 +378,36 @@ public final class SqlUtils {
   }
 
   /**
-   * Run the scalar value and returns a single value. If the query returns no
-   * rows or more than one row, a WdkModelException will be thrown; if the query
-   * returns a single row with many columns, the value in the first column will
-   * be returned.
+   * Run the scalar value and returns a single value. If the query returns no rows or more than one row, a
+   * WdkModelException will be thrown; if the query returns a single row with many columns, the value in the
+   * first column will be returned.
    * 
    * @param dataSource
+   *          data source on which to run query
    * @param sql
+   *          SQL to run
+   * @param name
+   *          name of operation (for logging purposes)
    * @return the first column of the first row in the result
    * @throws SQLException
    *           database or query failure
+   * @throws IllegalArgumentException
+   *           if passed SQL does not return any rows
    */
-  public static Object executeScalar(DataSource dataSource, String sql,
-      String name) throws SQLException, DBStateException {
+  public static Object executeScalar(DataSource dataSource, String sql, String name) throws SQLException {
     ResultSet resultSet = null;
     try {
       resultSet = executeQuery(dataSource, sql, name);
       if (!resultSet.next())
-        throw new DBStateException("The SQL doesn't return any row:\n" + sql);
+        throw new IllegalArgumentException("The SQL doesn't return any row:\n" + sql);
       return resultSet.getObject(1);
-    } finally {
+    }
+    finally {
       closeResultSetAndStatement(resultSet);
     }
   }
 
-  public static Set<String> getColumnNames(ResultSet resultSet)
-      throws SQLException {
+  public static Set<String> getColumnNames(ResultSet resultSet) throws SQLException {
     Set<String> columns = new LinkedHashSet<String>();
     ResultSetMetaData metaData = resultSet.getMetaData();
     int count = metaData.getColumnCount();
@@ -316,10 +418,10 @@ public final class SqlUtils {
   }
 
   /**
-   * Escapes the input string for use in LIKE clauses to allow matching special
-   * chars
+   * Escapes the input string for use in LIKE clauses to allow matching special chars
    * 
    * @param value
+   *          string on which to operate
    * @return the input value with special characters escaped
    */
   public static String escapeWildcards(String value) {
@@ -329,13 +431,13 @@ public final class SqlUtils {
   public static void attemptRollback(Connection connection) {
     try {
       connection.rollback();
-    } catch (SQLException e) {
+    }
+    catch (SQLException e) {
       logger.error("Could not roll back transaction!", e);
     }
   }
 
-  public static void setClobData(PreparedStatement ps, int columnIndex,
-      String content) throws SQLException {
+  public static void setClobData(PreparedStatement ps, int columnIndex, String content) throws SQLException {
     if (content == null) {
       ps.setNull(columnIndex, Types.CLOB);
     }
@@ -345,8 +447,7 @@ public final class SqlUtils {
     }
   }
 
-  public static void setBlobData(PreparedStatement ps, int columnIndex,
-      byte[] content) throws SQLException {
+  public static void setBlobData(PreparedStatement ps, int columnIndex, byte[] content) throws SQLException {
     if (content == null) {
       ps.setNull(columnIndex, Types.BLOB);
     }
@@ -357,8 +458,8 @@ public final class SqlUtils {
   }
 
   /**
-   * This method provides "quiet" (i.e. no logging, no exceptions thrown)
-   * closing of the following implementations of Wrapper:
+   * This method provides "quiet" (i.e. no logging, no exceptions thrown) closing of the following
+   * implementations of Wrapper:
    * <ul>
    * <li>{@link java.sql.CallableStatement}</li>
    * <li>{@link java.sql.Connection}</li>
@@ -373,6 +474,7 @@ public final class SqlUtils {
    *          varargs array of wrappers to be closed
    */
   public static void closeQuietly(Wrapper... wrappers) {
+    UncommittedChangesException toThrow = null;
     for (Wrapper wrap : wrappers) {
       if (wrap != null) {
         try {
@@ -397,37 +499,51 @@ public final class SqlUtils {
           if (wrap instanceof Connection) {
             ((Connection) wrap).close();
           }
-        } catch (Exception e) {}
+        }
+        catch (UncommittedChangesException e) {
+          // set exception to throw to be the first UncommittedChangesException experienced
+          if (toThrow == null)
+            toThrow = e;
+        }
+        catch (Exception e) {
+          // ignore all other exceptions
+        }
       }
     }
+    if (toThrow != null)
+      throw toThrow;
   }
 
   /**
-   * Statically bind SQL params to the given statement.  This method enables
-   * child classes to assign different sets of params multiple times
+   * Statically bind SQL params to the given statement. This method enables child classes to assign different
+   * sets of params multiple times
    * 
-   * @param stmt statement on which to assign params
-   * @param types types of params (values from java.sql.Types)
-   * @param args params to assign
-   * @throws SQLException if error occurs while setting params
+   * @param stmt
+   *          statement on which to assign params
+   * @param types
+   *          types of params (values from java.sql.Types)
+   * @param args
+   *          params to assign
+   * @throws SQLException
+   *           if error occurs while setting params
    */
-  public static void bindParamValues(PreparedStatement stmt, Integer[] types,
-	  Object[] args) throws SQLException {
+  public static void bindParamValues(PreparedStatement stmt, Integer[] types, Object[] args)
+      throws SQLException {
     for (int i = 0; i < args.length; i++) {
       if (types == null || types[i] == null) {
-        stmt.setObject(i+1, args[i]);
+        stmt.setObject(i + 1, args[i]);
       }
       else if (args[i] == null) {
-        stmt.setNull(i+1, types[i]);
+        stmt.setNull(i + 1, types[i]);
       }
       else if (types[i].intValue() == Types.CLOB) {
-        SqlUtils.setClobData(stmt, i+1, args[i].toString());
+        SqlUtils.setClobData(stmt, i + 1, args[i].toString());
       }
       else if (types[i].intValue() == Types.BLOB) {
-        SqlUtils.setBlobData(stmt, i+1, (byte[])args[i]);
+        SqlUtils.setBlobData(stmt, i + 1, (byte[]) args[i]);
       }
       else {
-        stmt.setObject(i+1, args[i], types[i]);
+        stmt.setObject(i + 1, args[i], types[i]);
       }
     }
   }

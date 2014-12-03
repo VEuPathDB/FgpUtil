@@ -5,16 +5,13 @@ import java.sql.SQLException;
 import java.sql.Wrapper;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.DataSourceWrapper;
 import org.gusdb.fgputil.db.platform.DBPlatform;
@@ -37,13 +34,15 @@ public class DatabaseInstance implements Wrapper {
 
   // fields initialized by initialize()
   private String _identifier;
-  private GenericObjectPool _connectionPool;
+  private BasicDataSource _connectionPool;
   private DataSourceWrapper _dataSource;
   private ConnectionPoolLogger _logger;
 
   /**
    * Creates an initialized connection pool with a default identifier. The driver
    * should have been registered by the platform implementation.
+   * 
+   * @param dbConfig configuration for this instance
    */
   public DatabaseInstance(ConnectionPoolConfig dbConfig) {
     this (dbConfig, getNextDbName());
@@ -53,6 +52,8 @@ public class DatabaseInstance implements Wrapper {
    * Creates an initialized connection pool with the given identifier. The driver
    * should have been registered by the platform implementation.
    * 
+   * @param dbConfig configuration for this instance
+   * @param identifier identifier for this instance
    * @throws IllegalArgumentException if identifier is null, empty, or already taken
    */
   public DatabaseInstance(ConnectionPoolConfig dbConfig, String identifier) {
@@ -90,20 +91,7 @@ public class DatabaseInstance implements Wrapper {
 
           _connectionPool = createConnectionPool(_dbConfig, _platform);
 
-          // configure the connection pool
-          _connectionPool.setMaxWait(_dbConfig.getMaxWait());
-          _connectionPool.setMaxIdle(_dbConfig.getMaxIdle());
-          _connectionPool.setMinIdle(_dbConfig.getMinIdle());
-          _connectionPool.setMaxActive(_dbConfig.getMaxActive());
-
-          // configure validationQuery tests
-          _connectionPool.setTestOnBorrow(true);
-          _connectionPool.setTestOnReturn(true);
-          _connectionPool.setWhenExhaustedAction(GenericObjectPool.WHEN_EXHAUSTED_GROW);
-
-          PoolingDataSource dataSource = new PoolingDataSource(_connectionPool);
-          dataSource.setAccessToUnderlyingConnectionAllowed(true);
-          _dataSource = new DataSourceWrapper(_identifier, dataSource,
+          _dataSource = new DataSourceWrapper(_identifier, _connectionPool, _platform,
               _dbConfig.getDefaultAutoCommit(), _dbConfig.getDefaultReadOnly());
 
           // start the connection monitor if needed
@@ -125,25 +113,44 @@ public class DatabaseInstance implements Wrapper {
     }
   }
 
-  private static GenericObjectPool createConnectionPool(ConnectionPoolConfig dbConfig, DBPlatform platform) {
-
-    GenericObjectPool connectionPool = new GenericObjectPool(null);
-
-    Properties props = new Properties();
-    props.put("user", dbConfig.getLogin());
-    props.put("password", dbConfig.getPassword());
+  private static BasicDataSource createConnectionPool(ConnectionPoolConfig dbConfig, DBPlatform platform) {
 
     // initialize DB driver; (possibly modified) url will be returned, connection properties may also be modified
+    Properties props = new Properties();
     String connectionUrl = initializeDbDriver(platform.getDriverClassName(), dbConfig.getDriverInitClass(), props, dbConfig.getConnectionUrl());
 
-    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectionUrl, props);
+    // create connection pool and set basic properties
+    BasicDataSource connectionPool = new BasicDataSource();
+    connectionPool.setUrl(connectionUrl);
+    connectionPool.setUsername(dbConfig.getLogin());
+    connectionPool.setPassword(dbConfig.getPassword());
+    connectionPool.setConnectionProperties(getPropertyString(props));
 
-    // link connection factory to connection pool with assigned settings
-    // object is created only to link factory and pool
-    new PoolableConnectionFactory(connectionFactory, connectionPool, null,
-        platform.getValidationQuery(), dbConfig.getDefaultReadOnly(), dbConfig.getDefaultAutoCommit());
+    // configure how connections are created
+    connectionPool.setDefaultReadOnly(dbConfig.getDefaultReadOnly());
+    connectionPool.setDefaultAutoCommit(dbConfig.getDefaultAutoCommit());
+
+    // configure the connection pool
+    connectionPool.setMaxWait(dbConfig.getMaxWait());
+    connectionPool.setMaxIdle(dbConfig.getMaxIdle());
+    connectionPool.setMinIdle(dbConfig.getMinIdle());
+    connectionPool.setMaxActive(dbConfig.getMaxActive());
+
+    // configure validationQuery tests
+    connectionPool.setValidationQuery(platform.getValidationQuery());
+    connectionPool.setTestOnBorrow(true);
+    connectionPool.setTestOnReturn(true);
+    connectionPool.setAccessToUnderlyingConnectionAllowed(true);
 
     return connectionPool;
+  }
+
+  private static String getPropertyString(Properties props) {
+    StringBuilder str = new StringBuilder();
+    for (Entry<Object,Object> prop : props.entrySet()) {
+      str.append(prop.getKey()).append("=").append(prop.getValue()).append(";");
+    }
+    return str.toString();
   }
 
   private static String initializeDbDriver(String driverClassName, String driverInitClassName,
@@ -206,6 +213,8 @@ public class DatabaseInstance implements Wrapper {
    * If this DB is initialized, shuts down the connection pool, and (if
    * configured) the connection pool logger thread.  Resets initialized flag,
    * so this DB can be reinitialized if desired.
+   * 
+   * @throws Exception if problem while shutting down DB instance
    */
   public void close() throws Exception {
     synchronized(this) {
@@ -291,7 +300,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Return the number of instances currently borrowed from this pool.
+   * @return the number of instances currently borrowed from this pool.
    */
   public int getActiveCount() {
     checkInit();
@@ -299,7 +308,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Return the number of instances currently idle in this pool
+   * @return the number of instances currently idle in this pool
    */
   public int getIdleCount() {
     checkInit();
@@ -307,7 +316,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Returns the minimum number of objects allowed in the pool before the 
+   * @return the minimum number of objects allowed in the pool before the 
    * evictor thread (if active) spawns new objects
    */
   public int getMinIdle() {
@@ -316,7 +325,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Returns the cap on the number of "idle" instances in the pool.
+   * @return the cap on the number of "idle" instances in the pool.
    */
   public int getMaxIdle() {
     checkInit();
@@ -324,7 +333,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Returns the minimum amount of time an object may sit idle in the pool 
+   * @return the minimum amount of time an object may sit idle in the pool 
    * before it is eligible for eviction by the idle object evictor (if any).
    */
   public long getMinEvictableIdleTimeMillis() {
@@ -333,17 +342,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   /**
-   * Returns the minimum amount of time an object may sit idle in the pool 
-   * before it is eligible for eviction by the idle object evictor (if any),
-   * with the extra condition that at least "minIdle" amount of object remain in the pool.
-   */
-  public long getSoftMinEvictableIdleTimeMillis() {
-    checkInit();
-    return _connectionPool.getSoftMinEvictableIdleTimeMillis();
-  }
-
-  /**
-   * Returns the number of milliseconds to sleep between runs of the idle object evictor thread.
+   * @return the number of milliseconds to sleep between runs of the idle object evictor thread.
    */
   public long getTimeBetweenEvictionRunsMillis() {
     checkInit();
@@ -352,6 +351,8 @@ public class DatabaseInstance implements Wrapper {
 
   /**
    * When true, objects will be validated before being returned by the borrowObject() method.
+   * 
+   * @return true if objects will be validated before being returned by the #borrowObject() method, else false
    */
   public boolean getTestOnBorrow() {
     checkInit();
@@ -360,6 +361,8 @@ public class DatabaseInstance implements Wrapper {
 
   /**
    * When true, objects will be validated before being returned to the pool within the returnObject(T).
+   * 
+   * @return true if objects will be validated before being returned by the #returnObject(T) method, else false
    */
   public boolean getTestOnReturn() {
     checkInit();
@@ -368,6 +371,8 @@ public class DatabaseInstance implements Wrapper {
 
   /**
    * When true, objects will be validated by the idle object evictor (if any).
+   * 
+   * @return true if objects will be validated by the idle object evictor, else false
    */
   public boolean getTestWhileIdle() {
     return _connectionPool.getTestWhileIdle();

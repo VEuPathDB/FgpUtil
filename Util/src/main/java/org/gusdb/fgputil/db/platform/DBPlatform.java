@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db.platform;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,7 +16,7 @@ import org.gusdb.fgputil.db.SqlUtils;
  * code to make requests of the database without knowing the underlying vendor.
  * 
  * @author Jerric Gao
- * @modified Ryan Doherty
+ * @author Ryan Doherty
  */
 public abstract class DBPlatform {
 
@@ -94,13 +95,26 @@ public abstract class DBPlatform {
     public abstract String getDriverClassName();
     
     public abstract String getValidationQuery();
-    
+
     /**
+     * This method consults the database and checks whether any insert, update, or delete
+     * statements have been executed on this transaction but not yet committed.
+     * 
+     * @param c connection to check
+     * @return true if uncommitted operations have been performed; else false
+     * @throws SQLException if error occurs while attempting determination (also if permission denied)
+     * @throws UnsupportedOperationException if this method is unsupported in the platform implementation
+     */
+    public abstract boolean containsUncommittedActions(Connection c)
+        throws SQLException, UnsupportedOperationException;
+
+    /**
+     * 
+     * 
      * @param dataSource data source to use
-     * @param schema
-     *            the schema cannot be empty. if you are searching in a local
-     *            schema, it has to be the login user name.
-     * @param pattern
+     * @param schema schema name. The schema cannot be empty. If you are searching
+     *        in a local schema, the login user name should be used.
+     * @param pattern pattern to match table names against; this may be platform-specific
      * @return list of table names
      * @throws SQLException if error occurs
      */

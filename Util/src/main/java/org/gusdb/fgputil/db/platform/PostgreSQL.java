@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db.platform;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -165,7 +166,7 @@ public class PostgreSQL extends DBPlatform {
    * Check the existence of a table. If the schema is null or empty, the schema will will be ignored, and will
    * look up the table in the public schema.
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#isTableExisted(java.lang.String)
+   * @see org.gusdb.fgputil.db.platform.DBPlatform#checkTableExists(DataSource, String, String)
    */
   @Override
   public boolean checkTableExists(DataSource dataSource, String schema, String tableName)
@@ -293,5 +294,16 @@ public class PostgreSQL extends DBPlatform {
   @Override
   public String prepareExpressionList(String[] values) {
     return FormatUtil.join(values, ",");
+  }
+
+  /**
+   * Postgres implementation does not yet support this method
+   * TODO: Support this method; information on a possible solution might be found here:
+   * http://stackoverflow.com/questions/1651219/how-to-check-for-pending-operations-in-a-postgresql-transaction
+   */
+  @Override
+  public boolean containsUncommittedActions(Connection c)
+      throws SQLException, UnsupportedOperationException {
+    throw new UnsupportedOperationException("Method not yet supported.");
   }
 }

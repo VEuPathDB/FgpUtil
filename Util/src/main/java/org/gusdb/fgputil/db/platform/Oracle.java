@@ -18,6 +18,9 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 
 /**
  * @author Jerric Gao
@@ -251,7 +254,7 @@ public class Oracle extends DBPlatform {
    * get stale quickly, which may result in bad execution plans. Locking the stats will force Oracle to sample
    * the data in the cache table.
    * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String, java.lang.String)
+   * @see DBPlatform#disableStatistics(DataSource, String, String)
    */
   @Override
   public void disableStatistics(DataSource dataSource, String schema, String tableName) throws SQLException {
@@ -386,6 +389,36 @@ public class Oracle extends DBPlatform {
       if (i > start)
         buffer.append(",");
       buffer.append(values[i]);
+    }
+  }
+
+  private static final String UNCOMMITED_STATEMENT_CHECK_SQL =
+      "SELECT COUNT(*)" +
+      " FROM v$transaction t, v$session s, v$mystat m" +
+      " WHERE t.ses_addr = s.saddr "+
+      " AND s.sid = m.sid" +
+      " AND ROWNUM = 1";
+
+  @Override
+  public boolean containsUncommittedActions(Connection c)
+      throws SQLException, UnsupportedOperationException {
+    final boolean[] result = { false };
+    try {
+      new SQLRunner(c, UNCOMMITED_STATEMENT_CHECK_SQL).executeQuery(new ResultSetHandler() {
+        @Override public void handleResult(ResultSet rs) throws SQLException {
+          if (!rs.next()) {
+            throw new SQLException("Count query returned zero rows."); // should never happen
+          }
+          result[0] = (rs.getInt(1) > 0);
+        }
+      });
+      return result[0];
+    }
+    catch (SQLRunnerException e) {
+      if (e.getCause() instanceof SQLException) {
+        throw (SQLException)e.getCause();
+      }
+      throw e;
     }
   }
 }

@@ -55,6 +55,11 @@ public class SqlScriptRunner {
 
   /**
    * Default constructor
+   * 
+   * @param connection connection on which to run the script
+   * @param autoCommit whether to auto commit the SQL in this script
+   * @param stopOnError whether to stop processing at the first error or
+   * continue executing the SQL in the script
    */
   public SqlScriptRunner(Connection connection, boolean autoCommit,
       boolean stopOnError) {
@@ -91,8 +96,9 @@ public class SqlScriptRunner {
   /**
    * Runs an SQL script (read in using the Reader parameter)
    * 
-   * @param reader
-   *          - the source of the script
+   * @param reader the source of the script
+   * @throws IOException if problem reading script
+   * @throws SQLException if problem writing to DB
    */
   public void runScript(Reader reader) throws IOException, SQLException {
     try {

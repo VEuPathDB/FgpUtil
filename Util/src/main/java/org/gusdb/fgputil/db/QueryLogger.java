@@ -81,6 +81,11 @@ public class QueryLogger {
   /** 
    * Call this version to track and log query time if you are using a ResultSet.  Call it after the execute but before iterating through the resultSet.
    * When done with the result set use one of SqlUtil's close methods that take a ResultSet argument to close it.
+   * 
+   * @param sql SQL statement to log
+   * @param name name of this operation
+   * @param startTime start time (ms) of this operation (to be compared to end time later)
+   * @param resultSet result set being processed
    */
   public static void logStartResultsProcessing(String sql, String name,
         long startTime, ResultSet resultSet) {
@@ -100,6 +105,10 @@ public class QueryLogger {
 
   /** 
    * Call this version to track and log query time if you do not have a resultSet, eg, for an update or insert.  Call it after the execute.
+   * 
+   * @param sql SQL of statement being logged
+   * @param name name of operation
+   * @param startTime start time in ms of operation to be compared to "now" (the end time)
    */
   public static void logEndStatementExecution(String sql, String name, long startTime) {
     checkInit();
