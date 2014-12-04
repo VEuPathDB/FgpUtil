@@ -67,6 +67,9 @@ public class ConnectionWrapper implements Connection {
     }
   }
 
+  /*
+   *  Please see Redmine #18073 for why we do this check and why it is handled the way it is
+   */
   private boolean checkForUncommittedChanges() {
     boolean uncommittedChangesPresent = false;
     try {
