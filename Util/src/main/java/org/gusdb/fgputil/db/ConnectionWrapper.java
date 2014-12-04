@@ -80,7 +80,7 @@ public class ConnectionWrapper implements Connection {
     }
     catch (Exception e) {
       // this feature is not meant to interrupt execution flow unless we can be sure there is a problem
-      LOG.error("Error occurred while trying to determine if uncommitted statements exist on connection", e);
+      LOG.warn("Error occurred while trying to determine if uncommitted statements exist on connection", e);
     }
     return uncommittedChangesPresent;
   }
