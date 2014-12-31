@@ -61,4 +61,12 @@ public class JsonType {
       default:     return null; // should never happen
     }
   }
+
+  public Object getNativeObject() {
+    switch (_nativeType) {
+      case OBJECT: return _jsonObject;
+      case ARRAY:  return _jsonArray;
+      default:     return null; // should never happen
+    }
+  }
 }
