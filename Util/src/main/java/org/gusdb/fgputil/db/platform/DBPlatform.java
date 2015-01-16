@@ -80,6 +80,17 @@ public abstract class DBPlatform {
     public abstract String getClobData(ResultSet rs, String columnName)
             throws SQLException;
 
+    /**
+     * Returns the passed SQL wrapped in a superquery that returns only the
+     * subset of records defined by startIndex and endIndex.  Indexing is
+     * 1-based (i.e. first index is 1) and the query will select the records
+     * inclusively; thus the range is [startIndex, endIndex]
+     * 
+     * @param sql SQL to wrap
+     * @param startIndex 1-based start index (inclusive)
+     * @param endIndex end index (inclusive)
+     * @return wrapped SQL
+     */
     public abstract String getPagedSql(String sql, int startIndex, int endIndex);
 
     public abstract boolean checkTableExists(DataSource dataSource, String schema, String tableName)
