@@ -197,7 +197,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   private static synchronized void removeInstance(DatabaseInstance dbInstance) {
-    INITIALIZED_INSTANCES.remove(dbInstance.getIdentifier());
+    INITIALIZED_INSTANCES.remove(dbInstance._identifier);
   }
 
   public static synchronized Map<String, DatabaseInstance> getAllInstances() {
