@@ -4,10 +4,14 @@ public class Tuples {
 
   public static class TwoTuple<S,T> {
 
-    private final S _first;
-    private final T _second;
+    private S _first;
+    private T _second;
 
     public TwoTuple(S first, T second) {
+      set(first, second);
+    }
+
+    public void set(S first, T second) {
       _first = first;
       _second = second;
     }
@@ -18,10 +22,15 @@ public class Tuples {
 
   public static class ThreeTuple<R,S,T> extends TwoTuple<R,S> {
 
-    private final T _third;
+    private T _third;
 
     public ThreeTuple(R first, S second, T third) {
       super(first, second);
+      _third = third;
+    }
+    
+    public void set(R first, S second, T third) {
+      set(first, second);
       _third = third;
     }
 
