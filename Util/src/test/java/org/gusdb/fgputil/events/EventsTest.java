@@ -74,7 +74,7 @@ public class EventsTest implements EventListener {
       //   triggered (not waited for), the number-received check below sometimes
       //   fails without yielding to the error event processing threads
       // NOTE: this is still a race condition and may fail occasionally!!
-      sleep(1000);
+      sleep(2000);
 
       // make sure the correct number of events have been processed
       assertEquals(12, totalEventsReceived);
