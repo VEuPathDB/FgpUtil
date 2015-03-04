@@ -54,7 +54,7 @@
       <organization>University of Georgia</organization>
     </developer>
   </developers>
-  
+
   <groupId>org.gusdb</groupId>
   <artifactId>base-pom</artifactId>
   <version>1.0.0</version>
@@ -64,7 +64,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>1.7</java.version>
   </properties>
-  
+
   <dependencyManagement>
     <dependencies>
 
@@ -74,14 +74,26 @@
         <artifactId>fgputil-util</artifactId>
         <version>${project.version}</version>
       </dependency>
-      
+
       <!-- JSON Parsing -->
       <dependency>
         <groupId>org.json</groupId>
         <artifactId>json</artifactId>
         <version>20140107</version>
       </dependency>
-      
+      <dependency>
+        <groupId>javax.json</groupId>
+        <artifactId>javax.json-api</artifactId>
+        <version>1.0</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish</groupId>
+        <artifactId>javax.json</artifactId>
+        <version>1.0.4</version>
+        <scope>runtime</scope>
+      </dependency>
+
       <!-- XML Parsing and Validation -->
       <dependency>
         <groupId>commons-digester</groupId>
@@ -103,35 +115,35 @@
         <artifactId>jing</artifactId>
         <version>20091111</version>
       </dependency>
-      
+
       <!-- PDF Support -->
       <dependency>
         <groupId>com.lowagie</groupId>
         <artifactId>itext</artifactId>
         <version>4.2.1</version>
       </dependency>
-      
+
       <!-- Command Line Support -->
       <dependency>
         <groupId>commons-cli</groupId>
         <artifactId>commons-cli</artifactId>
         <version>1.2</version>
       </dependency>
-      
+
       <!-- OpenID Support -->
       <dependency>
         <groupId>org.openid4java</groupId>
         <artifactId>openid4java</artifactId>
         <version>0.9.8</version>
       </dependency>
-      
+
       <!-- Email Support -->
       <dependency>
         <groupId>javax.mail</groupId>
         <artifactId>mail</artifactId>
         <version>1.4.7</version>
       </dependency>
-      
+
       <!-- Database Access Utilities -->
       <dependency>
         <groupId>org.mybatis</groupId>
@@ -143,7 +155,7 @@
         <artifactId>commons-dbcp</artifactId>
         <version>1.4</version>
       </dependency>
-      <!-- Will probably need this in ApiCommon when we convert to maven
+      <!-- Might need this in ApiCommon when we convert to maven
       <dependency>
         <groupId>com.oracle</groupId>
         <artifactId>ojdbc6</artifactId>
@@ -151,7 +163,7 @@
         <scope>provided</scope>
       </dependency>
       -->
-      
+
       <!-- JAX-RS / RESTful Web Services -->
       <dependency>
         <groupId>javax.ws.rs</groupId>
@@ -161,19 +173,46 @@
       <dependency>
         <groupId>org.glassfish.jersey.containers</groupId>
         <artifactId>jersey-container-servlet</artifactId>
-        <version>2.10.1</version>
+        <version>2.14</version>
       </dependency>
       <dependency>
         <groupId>org.glassfish.jersey.core</groupId>
         <artifactId>jersey-client</artifactId>
-        <version>2.10.1</version>
+        <version>2.14</version>
       </dependency>
       <dependency>
         <groupId>org.glassfish.jersey.containers</groupId>
         <artifactId>jersey-container-jetty-http</artifactId>
-        <version>2.10.1</version>
+        <version>2.14</version>
       </dependency>
-      
+      <dependency>
+        <groupId>org.glassfish.jersey.media</groupId>
+        <artifactId>jersey-media-moxy</artifactId>
+        <version>2.14</version>
+      </dependency>
+
+      <!-- OAuth 2 -->
+      <dependency>
+        <groupId>org.apache.oltu.oauth2</groupId>
+        <artifactId>org.apache.oltu.oauth2.common</artifactId>
+        <version>1.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.oltu.oauth2</groupId>
+        <artifactId>org.apache.oltu.oauth2.authzserver</artifactId>
+        <version>1.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.oltu.oauth2</groupId>
+        <artifactId>org.apache.oltu.oauth2.resourceserver</artifactId>
+        <version>1.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.oltu.oauth2</groupId>
+        <artifactId>org.apache.oltu.oauth2.client</artifactId>
+        <version>1.0.0</version>
+      </dependency>
+
       <!-- Spring Framework / IoC -->
       <!--
       <dependency>
@@ -181,7 +220,6 @@
         <artifactId>spring-context</artifactId>
         <version>4.0.6.RELEASE</version>
       </dependency>
-
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-web</artifactId>
@@ -205,7 +243,7 @@
         <artifactId>commons-fileupload</artifactId>
         <version>1.3.1</version>
       </dependency>
-      
+
       <!-- Standard Servlet/JSP APIs -->
       <dependency>
         <groupId>javax.servlet</groupId>
@@ -229,14 +267,26 @@
 
       <!-- Logging -->
       <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.10</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>1.7.10</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
         <groupId>log4j</groupId>
         <artifactId>log4j</artifactId>
         <version>1.2.17</version>
       </dependency>
-      
+
     </dependencies>
   </dependencyManagement>
-  
+
   <build>
     <plugins>
       <plugin>
@@ -247,6 +297,11 @@
           <source>${java.version}</source>
           <target>${java.version}</target>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.6</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -275,7 +330,6 @@
                 <report>cim</report>
                 <report>project-team</report>
                 <report>help</report>
-
                 <!-- TODO: figure out how to invoke these reports
                 <report>changelog</report>
                 <report>checkstyle</report>
@@ -292,6 +346,11 @@
             </plugin>
           </reportPlugins>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.enunciate</groupId>
+        <artifactId>maven-enunciate-plugin</artifactId>
+        <version>1.28</version>
       </plugin>
     </plugins>
   </build>

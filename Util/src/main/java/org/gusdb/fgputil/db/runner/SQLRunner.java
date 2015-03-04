@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.BatchUpdateExecutor;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.PreparedStatementExecutor;
@@ -317,7 +318,13 @@ public class SQLRunner {
     }
   }
 
+  // this method should always be "safe" (i.e. not throw exception)
   private void attemptRollback(Connection conn) {
+    if (conn == null) {
+      LOG.warn("Rollback attempted on null connection.  " +
+          "See stack trace below:\n" + FormatUtil.getCurrentStackTrace());
+      return;
+    }
     // only need to attempt rollback if using internal transaction
     if (_txStrategy.equals(TxStrategy.TRANSACTION)) {
       try { conn.rollback(); } catch (SQLException e2) {

@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.db.pool;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import org.gusdb.fgputil.db.platform.SupportedPlatform;
 
 /**
@@ -98,5 +100,22 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
     @Override
     public boolean getDefaultReadOnly() {
       return false;
+    }
+    
+    @Override
+    public String toString() {
+      return toString(false);
+    }
+    
+    public String toString(boolean showPassword) {
+      return new StringBuilder(super.toString())
+          .append(" {").append(NL)
+          .append("  Platform:    ").append(getPlatformEnum()).append(NL)
+          .append("  Connection:  ").append(getConnectionUrl()).append(NL)
+          .append("  Login:       ").append(getLogin()).append(NL)
+          .append("  Password:    ").append(showPassword ? getPassword() : "<hidden>").append(NL)
+          .append("  MaxPoolSize: ").append(getConnectionPoolSize()).append(NL)
+          .append("}").append(NL)
+          .toString();
     }
 }

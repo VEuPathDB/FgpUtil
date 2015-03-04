@@ -1,6 +1,7 @@
 package org.gusdb.fgputil.db.pool;
 
 import java.lang.ref.WeakReference;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Wrapper;
 import java.util.LinkedHashMap;
@@ -14,6 +15,7 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.DataSourceWrapper;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 
 public class DatabaseInstance implements Wrapper {
@@ -40,27 +42,79 @@ public class DatabaseInstance implements Wrapper {
 
   /**
    * Creates an initialized connection pool with a default identifier. The driver
-   * should have been registered by the platform implementation.
+   * should have been registered by the platform implementation.  This constructor
+   * does not test for a valid connection upon pool creation.
    * 
    * @param dbConfig configuration for this instance
    */
   public DatabaseInstance(ConnectionPoolConfig dbConfig) {
-    this (dbConfig, getNextDbName());
+    this(dbConfig, getNextDbName(), false);
+  }
+
+  /**
+   * Creates an initialized connection pool with a default identifier. The driver
+   * should have been registered by the platform implementation.  If testOnInitialize
+   * is true, a connection is fetched from the pool, which causes the platform's
+   * validation query to be run.
+   * 
+   * @param dbConfig configuration for this instance
+   * @param testOnInitialize if true, a connection is fetched and tested before return
+   */
+  public DatabaseInstance(ConnectionPoolConfig dbConfig, boolean testOnInitialize) {
+    this(dbConfig, getNextDbName(), testOnInitialize);
   }
 
   /**
    * Creates an initialized connection pool with the given identifier. The driver
-   * should have been registered by the platform implementation.
+   * should have been registered by the platform implementation.  This constructor
+   * does not test for a valid connection upon pool creation.
    * 
    * @param dbConfig configuration for this instance
    * @param identifier identifier for this instance
    * @throws IllegalArgumentException if identifier is null, empty, or already taken
    */
   public DatabaseInstance(ConnectionPoolConfig dbConfig, String identifier) {
+    this(dbConfig, identifier, false);
+  }
+
+  /**
+   * Creates an initialized connection pool with the given identifier. The driver
+   * should have been registered by the platform implementation.  If testOnInitialize
+   * is true, a connection is fetched from the pool, which causes the platform's
+   * validation query to be run.
+   * 
+   * @param dbConfig configuration for this instance
+   * @param identifier identifier for this instance
+   * @param testOnInitialize if true, a connection is fetched and tested before return
+   * @throws IllegalArgumentException if identifier is null, empty, or already taken
+   */
+  public DatabaseInstance(ConnectionPoolConfig dbConfig, String identifier, boolean testOnInitialize) {
     _dbConfig = dbConfig;
     _platform = _dbConfig.getPlatformEnum().getPlatformInstance();
     _defaultSchema = _platform.getDefaultSchema(_dbConfig.getLogin());
     reinitialize(identifier);
+    if (testOnInitialize) runValidationQuery();
+  }
+
+  // since testOnBorrow and testOnReturn are set to true, need only fetch a connection to test
+  private void runValidationQuery() {
+    Connection conn = null;
+    try {
+      conn = _dataSource.getConnection();
+    }
+    catch (SQLException e) {
+      // validation failed; shut down pool and rethrow as runtime exception
+      try {
+        close();
+      }
+      catch (Exception e2) {
+        LOG.error("Unable to shut down connection pool resources after failing validation query.", e2);
+      }
+      throw new InitializationException("Trial fetch of connection with validation query execution failed", e);
+    }
+    finally {
+      SqlUtils.closeQuietly(conn);
+    }
   }
 
   private static String getNextDbName() {
@@ -168,7 +222,7 @@ public class DatabaseInstance implements Wrapper {
         // otherwise, try to instantiate user-provided implementation and call
         Class<?> initClass = Class.forName(driverInitClassName);
         if (!DbDriverInitializer.class.isAssignableFrom(initClass)) {
-          throw new DbDriverInitException("Submitted DB Driver Initializer ( " + driverInitClassName + ") " +
+          throw new InitializationException("Submitted DB Driver Initializer ( " + driverInitClassName + ") " +
               "is not an implementation of " + DbDriverInitializer.class.getName());
         }
         // provided class is the correct type; instantiate and call initialize method
@@ -179,7 +233,7 @@ public class DatabaseInstance implements Wrapper {
       }
     }
     catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-      throw new DbDriverInitException("Unable to instantiate custom DB Driver Initializer " +
+      throw new InitializationException("Unable to instantiate custom DB Driver Initializer " +
           "class with name " + driverInitClassName, e);
     }
   }
@@ -197,7 +251,7 @@ public class DatabaseInstance implements Wrapper {
   }
 
   private static synchronized void removeInstance(DatabaseInstance dbInstance) {
-    INITIALIZED_INSTANCES.remove(dbInstance.getIdentifier());
+    INITIALIZED_INSTANCES.remove(dbInstance._identifier);
   }
 
   public static synchronized Map<String, DatabaseInstance> getAllInstances() {
