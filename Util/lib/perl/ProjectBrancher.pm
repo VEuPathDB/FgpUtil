@@ -25,7 +25,8 @@ my @backendProjects = ('GusAppFramework:gus', 'GusSchema:gus', 'ReFlow:gus',
                        'ApiCommonData:apidb', 'ApiCommonWorkflow:apidb',
                        'ApiCommonShared:apidb', 'EuPathDatasets:apidb',
                        'OrthoMCLData:apidb', 'OrthoMCLWorkflow:apidb', 
-                       'OrthoMCLShared:apidb', 'OrthoMCLEngine:apidb');
+                       'OrthoMCLShared:apidb', 'OrthoMCLEngine:apidb',
+                       'OrthoMCLDatasets:apidb');
 
 # Shared website projects
 my @sharedSiteProjects = ('EuPathSiteCommon:apidb', 'EuPathWebSvcCommon:apidb');
