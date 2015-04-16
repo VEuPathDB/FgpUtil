@@ -56,7 +56,7 @@ sub getJavaArgs {
 sub getSystemArgs {
   my @args = @_;
   # the first arg is GUS_HOME
-  my $GUS_HOME = @args[0];
+  my $GUS_HOME = $args[0];
   my $sysargs = "";
   foreach my $arg (@args) {
     if ($arg =~ /\-/) {

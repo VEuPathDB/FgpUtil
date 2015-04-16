@@ -1,29 +1,89 @@
 #!/usr/bin/perl
 
 use lib "$ENV{GUS_HOME}/lib/perl";
-
 use FgpUtil::Util::ProjectBrancher;
 use strict;
 
-my $branch = $ARGV[0];
-my $comment = $ARGV[1];
-my $delete = $ARGV[2];
+sub main {
+    # parse args, get projects, and print usage if anything incorrect
+    my ($group, $branch, $comment, $delete) = @ARGV;
+    usage() if ($delete && $delete ne '-delete');
+    usage() unless ($group && $branch && $comment);
+    my @projects = getProjectGroup($group);
+    usage() if (@projects == undef);
 
-usage() unless ($branch && $comment);
-usage() if ($delete && $delete ne '-delete');
-
-my @projects = ('EuPathPresenters:apidb', 'EuPathSiteCommon:apidb', 'EuPathWebSvcCommon:apidb', 'ApiCommonData:apidb', 'ApiCommonShared:apidb', 'ApiCommonWebService:apidb', 'ApiCommonWebsite:apidb', 'ApiCommonWorkflow:apidb', 'GBrowse:apidb', 'CBIL:gus', 'DJob:gus', 'DoTS:apidb', 'EuPathDatasets:apidb', 'FgpUtil:gus', 'GGTools:apidb', 'GusAppFramework:gus', 'GusSchema:gus', 'install:gus', 'OrthoMCLData:apidb', , 'OrthoMCLDatasets:apidb', 'OrthoMCLEngine:apidb', 'OrthoMCLShared:apidb', 'OrthoMCLWebsite:apidb', , 'OrthoMCLWebService:apidb', , 'OrthoMCLWorkflow:apidb', 'ReFlow:gus', 'WDK:gus', 'WSF:gus', 'WDKTemplateSite:gus', 'WSFTemplate:gus', 'TuningManager:gus');
-
-FgpUtil::Util::ProjectBrancher::branch($branch, $comment, $delete, \@projects);
+    # perform the branch
+    branch($branch, $comment, $delete, @projects);
+}
 
 sub usage {
-  die "
-Branch all of the Fgp software using a single branch name.  The recommended branch name is a numeral.  Operates directly in svn, not your local dirs.
+    my $prog = getCmd();
+    my $groupOptions = getProjectGroupOptions();
+    print STDERR "
+Branch the projects in the passed project group using a single branch name.  Operates directly in svn, not your local dirs.
 
-usage: fgpBranch branch_name comment [-delete]
+usage: $prog $groupOptions <branch_name> <comment> [-delete]
 
 -delete deletes the branch from all projects.
 
-";
+Branches the following projects based on group name:
 
+";
+    printProjectGroupInfo();
+    exit(1);
 }
+
+sub branch {
+    my ($branch, $comment, $delete, @projects) = @_;
+    my $url = getRepoBaseUrl();
+
+    # debug
+    my $deleteStr = ($delete ? $delete : "");
+    print STDERR "branch() called with branch=$branch, comment=$comment, delete=$deleteStr, and projects=\n" . join(',', @projects) . "\n";
+
+    die "Branch and comment arguments required." unless ($branch && $comment);
+
+    if ($delete) {
+        print "\nYou are about to DELETE the $branch branch\nType the name of the branch to confirm: ";
+        my $confirm = <STDIN>;
+        chomp $confirm;
+        die "You did not correctly confirm the branch\n" unless $branch eq $confirm;
+    }
+
+    foreach my $project (@projects) {
+        my ($name, $repository) = split(/:/, $project);
+        my $target = "$url/$repository/$name/branches/$branch";
+        my $exists = doesBranchExist($target);
+        if ($delete) {
+            if (!$exists) {
+                print STDERR "$name does not exist.  Skipping...\n";
+                next;
+            }
+            my $cmd = "svn delete -m \"deleting branch $name: $comment\" $target";
+            print STDERR "deleting $name\n";
+            system($cmd) == 0 || die "Failed deleting '$name'\n";
+        }
+        else {
+            if ($exists) {
+                print STDERR "$name already branched.  Skipping...\n";
+                next;
+            }
+            my $cmd = "svn cp -m \"creating branch $name: $comment\" $url/$repository/$name/trunk $target";
+            print STDERR "Branching $name\n";
+            system($cmd) == 0 || die "Failed branching '$name'\n";
+        }
+    }
+}
+
+sub doesBranchExist {
+    my $target = shift;
+    my $cmd = "svn ls $target 2>&1 > /dev/null";
+    #print STDERR "Checking for branch with: $cmd\n";
+    `$cmd`;
+    my $err = $? >>8;
+    return !$err;
+}
+
+main();
+
+1;

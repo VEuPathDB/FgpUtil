@@ -111,7 +111,7 @@ public class DependencyResolver<T extends DependencyElement<T>> {
 
   private Map<String, T> _elementMap = new HashMap<>();
 
-  public DependencyResolver<T> addElements(@SuppressWarnings("unchecked") T... elements) {
+  public DependencyResolver<T> addElements(T[] elements) {
     for (T element : elements) {
       if (_elementMap.containsKey(element.getKey())) {
         throw new RuntimeException("Cannot add multiple elements " +
