@@ -21,7 +21,7 @@ my @baseProjects = ('install:gus', 'CBIL:gus', 'FgpUtil:gus', 'WSF:gus', 'WDK:gu
 
 # Backend/data projects
 my @backendProjects = ('GusAppFramework:gus', 'GusSchema:gus', 'ReFlow:gus',
-                       'DoTS:apidb', 'GGTools:apidb',
+                       'DoTS:apidb', 'GGTools:apidb','TuningManager:gus',
                        'ApiCommonData:apidb', 'ApiCommonWorkflow:apidb',
                        'ApiCommonShared:apidb', 'EuPathDatasets:apidb',
                        'OrthoMCLData:apidb', 'OrthoMCLWorkflow:apidb', 
