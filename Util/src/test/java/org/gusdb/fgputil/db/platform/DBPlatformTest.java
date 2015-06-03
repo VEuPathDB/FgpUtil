@@ -31,7 +31,7 @@ public class DBPlatformTest {
 
   // Cannot make this a unit test because it would require both Postgres and Oracle drivers to succeed
   //@Test
-  public void testDbPlatform() throws Exception {
+  public void testDbPlatform() {
     ConnectionPoolConfig appConfig = new OracleConfig();
     ConnectionPoolConfig userConfig = new PostgresConfig();
 
