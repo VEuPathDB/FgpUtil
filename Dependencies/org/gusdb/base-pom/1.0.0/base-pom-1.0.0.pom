@@ -147,6 +147,10 @@
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
 
