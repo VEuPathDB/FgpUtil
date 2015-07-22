@@ -38,7 +38,7 @@ my @apiSiteProjects = ('EuPathPresenters:apidb', 'EuPathDatasets:apidb',
 
 # Additional projects for Ortho
 my @orthoSiteProjects = ('OrthoMCLShared:apidb', 'OrthoMCLWebsite:apidb',
-                         'OrthoMCLWebService:apidb');
+                         'OrthoMCLWebService:apidb', 'DJob:gus');
 
 # All other projects not listed above
 my @otherProjects = ('DJob:gus', 'TuningManager:gus', 'OAuth2Server:gus',
