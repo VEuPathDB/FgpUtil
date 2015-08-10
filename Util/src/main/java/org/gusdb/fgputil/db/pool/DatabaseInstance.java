@@ -2,7 +2,9 @@ package org.gusdb.fgputil.db.pool;
 
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Wrapper;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -98,12 +100,19 @@ public class DatabaseInstance implements Wrapper {
 
   // since testOnBorrow and testOnReturn are set to true, need only fetch a connection to test
   private void runValidationQuery() {
+    LOG.info("Testing connection to " + getIdentifier() + "...");
     Connection conn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
     try {
       conn = _dataSource.getConnection();
+      stmt = conn.createStatement();
+      rs = stmt.executeQuery(_platform.getValidationQuery());
+      LOG.info("DB Instance " + getIdentifier() + " validation query successfully executed.");
     }
-    catch (SQLException e) {
+    catch (Throwable e) {
       // validation failed; shut down pool and rethrow as runtime exception
+      LOG.error("Validation query failed during DB instance initialization.  DB instance will  be shut down.", e);
       try {
         close();
       }
@@ -113,7 +122,7 @@ public class DatabaseInstance implements Wrapper {
       throw new InitializationException("Trial fetch of connection with validation query execution failed", e);
     }
     finally {
-      SqlUtils.closeQuietly(conn);
+      SqlUtils.closeQuietly(rs, stmt, conn);
     }
   }
 
