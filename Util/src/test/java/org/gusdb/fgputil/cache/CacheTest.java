@@ -10,9 +10,14 @@ public class CacheTest {
   private static class StringFetcher implements ItemFetcher<Integer,String> {
 
     @Override
-    public String fetchItem(Integer itemId, String previousVersion) throws UnfetchableItemException {
+    public String fetchItem(Integer itemId) throws UnfetchableItemException {
       LOG.info("Fetching item " + itemId);
       return String.valueOf(itemId);
+    }
+
+    @Override
+    public String updateItem(Integer id, String previousVersion) throws UnfetchableItemException {
+      return fetchItem(id);
     }
 
     @Override
