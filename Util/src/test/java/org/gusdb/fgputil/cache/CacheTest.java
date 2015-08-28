@@ -16,6 +16,11 @@ public class CacheTest {
     }
 
     @Override
+    public String updateItem(Integer id, String previousVersion) throws UnfetchableItemException {
+      return fetchItem(id);
+    }
+
+    @Override
     public boolean itemNeedsUpdating(String item) {
       return false;
     }

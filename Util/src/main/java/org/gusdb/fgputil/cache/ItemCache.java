@@ -119,9 +119,14 @@ public class ItemCache<S,T> {
     T result = null;
     try {
       container.lock.lock();
-      if (container.item == null || fetcher.itemNeedsUpdating(container.item)) {
+
+      if (container.item == null) {
         container.item = fetcher.fetchItem(id);
       }
+      else if (fetcher.itemNeedsUpdating(container.item)) {
+        container.item = fetcher.updateItem(id, container.item);
+      }
+
       // push item to the "back" of the linked hash map to
       //   keep least frequently used items in front
       try {
