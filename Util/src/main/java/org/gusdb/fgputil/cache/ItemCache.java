@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
 
 /**
- * Implements an efficient cache of objects mapped by integer ID.  This class is
+ * Implements an efficient cache of objects mapped by ID.  This class is
  * thread-safe and can be used in a static, application-wide way to cache
  * homogeneous objects.
  * 
