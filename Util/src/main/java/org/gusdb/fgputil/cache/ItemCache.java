@@ -120,11 +120,36 @@ public class ItemCache<S,T> {
     try {
       container.lock.lock();
 
+      // if no item exists in the cache for this ID, then fetch it
       if (container.item == null) {
-        container.item = fetcher.fetchItem(id);
+        try {
+          container.item = fetcher.fetchItem(id);
+        }
+        catch (UnfetchableItemException e) {
+          // if the fetch fails, we must remove the container for the next attempt
+          try {
+            _cacheLock.lock();
+            _cache.remove(id);
+          }
+          finally {
+            _cacheLock.unlock();
+          }
+        }
       }
+
+      //
       else if (fetcher.itemNeedsUpdating(container.item)) {
-        container.item = fetcher.updateItem(id, container.item);
+        try {
+          container.item = fetcher.updateItem(id, container.item);
+        }
+        catch (UnfetchableItemException e) {
+          // if update fails, make a note in the log, but leave the old version
+          //   in the cache and throw exception
+          LOG.warn("ItemFetcher of type " + fetcher.getClass().getName() +
+              " failed to update " + container.item.getClass().getName() +
+              " with ID " + id, e.getCause());
+          throw e;
+        }
       }
 
       // push item to the "back" of the linked hash map to
@@ -200,6 +225,15 @@ public class ItemCache<S,T> {
     finally {
       _cacheLock.unlock();
     }
+  }
+
+  /**
+   * Returns the number of items in the cache
+   * 
+   * @return the number of itmes in the cache
+   */
+  public int getSize() {
+    return _cache.size();
   }
 }
 
