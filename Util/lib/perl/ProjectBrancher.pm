@@ -17,7 +17,7 @@ our @EXPORT = qw(getRepoBaseUrl getCmd getProjectGroup getProjectGroupOptions pr
 my $url = 'https://www.cbil.upenn.edu/svn';
 
 # Base projects
-my @baseProjects = ('install:gus', 'CBIL:gus', 'FgpUtil:gus', 'WSF:gus', 'WDK:gus');
+my @baseProjects = ('install:gus', 'CBIL:gus', 'FgpUtil:gus', 'WSF:gus', 'WDK:gus', 'TuningManager:gus');
 
 # Backend/data projects
 my @backendProjects = ('GusAppFramework:gus', 'GusSchema:gus', 'ReFlow:gus',
@@ -38,7 +38,7 @@ my @apiSiteProjects = ('EuPathPresenters:apidb', 'EuPathDatasets:apidb',
 
 # Additional projects for Ortho
 my @orthoSiteProjects = ('OrthoMCLShared:apidb', 'OrthoMCLWebsite:apidb',
-                         'OrthoMCLWebService:apidb');
+                         'OrthoMCLWebService:apidb', 'DJob:gus');
 
 # All other projects not listed above
 my @otherProjects = ('DJob:gus', 'TuningManager:gus', 'OAuth2Server:gus',
