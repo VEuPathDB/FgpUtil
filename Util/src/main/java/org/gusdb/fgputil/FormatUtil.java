@@ -175,4 +175,12 @@ public class FormatUtil {
     return new DecimalFormat("##0.0").format(ratio * 100D) + "%";
   }
 
+  public static String paramsToString(Map<String, String[]> parameters) {
+    StringBuilder str = new StringBuilder("{" + NL);
+    for (Entry<String, String[]> param : parameters.entrySet()) {
+      str.append("   ").append(param.getKey()).append(": ").append(arrayToString(param.getValue())).append(NL);
+    }
+    return str.append("}").append(NL).toString();
+  }
+
 }
