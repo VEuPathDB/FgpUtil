@@ -13,7 +13,11 @@ public class FormatUtil {
   public static final String NL = System.lineSeparator();
   public static final String TAB = "\t";
   public static final String UTF8_ENCODING = "UTF-8";
-  
+
+  public interface MultiLineToString {
+    public String toMultiLineString(String indentation);
+  }
+
   private FormatUtil() {}
 
   @SuppressWarnings("serial")
