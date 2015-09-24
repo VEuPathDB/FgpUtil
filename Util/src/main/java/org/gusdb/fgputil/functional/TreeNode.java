@@ -189,11 +189,30 @@ public class TreeNode<T> implements MultiLineToString {
    * @return result
    */
   public <S> S reduce(Reducer<T,S> reducer) {
-    S current = reducer.reduce(_nodeContents);
-    for (TreeNode<T> node : _childNodes) {
-      current = reducer.reduce(node._nodeContents, current);
+    return reduce(null, reducer, null);
+  }
+
+  /**
+   * Aggregates information in the nodes that pass the predicate into a single
+   * value, with behavior defined by the passed Reducer.
+   * 
+   * @param nodePred predicate to filter nodes that will contribute to the reduction
+   * @param reducer reducer to use to aggregate information
+   * @return result, or null if no nodes match the predicate
+   */
+  public <S> S reduce(Predicate<TreeNode<T>> nodePred, Reducer<T,S> reducer) {
+    return reduce(nodePred, reducer, null);
+  }
+
+  private <S> S reduce(Predicate<TreeNode<T>> nodePred, Reducer<T,S> reducer, S incomingValue) {
+    if (nodePred == null || nodePred.test(this)) {
+      incomingValue = (incomingValue == null ?
+          reducer.reduce(_nodeContents) : reducer.reduce(_nodeContents, incomingValue));
     }
-    return current;
+    for (TreeNode<T> node : _childNodes) {
+      incomingValue = node.reduce(nodePred, reducer, incomingValue);
+    }
+    return incomingValue;
   }
 
   /**
