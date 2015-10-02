@@ -86,6 +86,11 @@ public class PostgreSQL extends DBPlatform {
     return "BYTEA";
   }
 
+  @Override
+  public int getBlobSqlType() {
+    return Types.LONGVARBINARY;
+  }
+
   /*
    * (non-Javadoc)
    * 

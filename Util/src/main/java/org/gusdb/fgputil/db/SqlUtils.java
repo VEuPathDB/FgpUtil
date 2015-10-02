@@ -447,13 +447,24 @@ public final class SqlUtils {
     }
   }
 
-  public static void setBlobData(PreparedStatement ps, int columnIndex, byte[] content) throws SQLException {
+  public static void setBinaryData(PreparedStatement ps, int columnIndex, byte[] content, int binarySqlType) throws SQLException {
+    if (binarySqlType != Types.BLOB && binarySqlType != Types.LONGVARBINARY) {
+      throw new SQLException("BLOB type must be either java.sql.Types.BLOB or java.sql.Types.LONGVARBINARY");
+    }
     if (content == null) {
-      ps.setNull(columnIndex, Types.BLOB);
+      ps.setNull(columnIndex, binarySqlType);
     }
     else {
       ByteArrayInputStream inStream = new ByteArrayInputStream(content);
-      ps.setBinaryStream(columnIndex, inStream, content.length);
+      
+      switch(binarySqlType) {
+        case Types.BLOB:
+          ps.setBlob(columnIndex, inStream, content.length);
+          break;
+        case Types.LONGVARBINARY:
+          ps.setBinaryStream(columnIndex, inStream, content.length);
+          break;
+      }
     }
   }
 
@@ -536,11 +547,13 @@ public final class SqlUtils {
       else if (args[i] == null) {
         stmt.setNull(i + 1, types[i]);
       }
+      // handle clob data
       else if (types[i].intValue() == Types.CLOB) {
         SqlUtils.setClobData(stmt, i + 1, args[i].toString());
       }
-      else if (types[i].intValue() == Types.BLOB) {
-        SqlUtils.setBlobData(stmt, i + 1, (byte[]) args[i]);
+      // handle arbitrary binary data (either blob or long byte array)
+      else if (types[i].intValue() == Types.BLOB || types[i].intValue() == Types.LONGVARBINARY) {
+        SqlUtils.setBinaryData(stmt, i + 1, (byte[]) args[i], types[i].intValue());
       }
       else {
         stmt.setObject(i + 1, args[i], types[i]);

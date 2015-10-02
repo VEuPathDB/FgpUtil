@@ -67,6 +67,8 @@ public abstract class DBPlatform {
     public abstract String getClobDataType();
 
     public abstract String getBlobDataType();
+
+    public abstract int getBlobSqlType();
     
     public abstract String getDateDataType();
 
