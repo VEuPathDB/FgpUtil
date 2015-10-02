@@ -28,6 +28,25 @@ public class TreeNode<T> implements MultiLineToString {
   public final Predicate<TreeNode<T>> NONLEAF_PREDICATE = new Predicate<TreeNode<T>>() {
     @Override public boolean test(TreeNode<T> obj) { return !obj.isLeaf(); } };
 
+  /**
+   * An interface to model the mapping of this tree structure to some other
+   * arbitrary tree structure.
+   * 
+   * @param <T> The type of object stored in this tree
+   * @param <S> The type of a single 'node' each node in this tree will be mapped to
+   */
+  public interface StructureMapper<T, S> {
+    /**
+     * Maps the contents of a node, and its already-mapped children, to the
+     * node type of the new structure.
+     * 
+     * @param obj the contents of an individual node
+     * @param mappedChildren the already-mapped children of this node
+     * @return a mapped object incorporating this node's contents and its children
+     */
+    public S map(T obj, List<S> mappedChildren);
+  }
+
   private T _nodeContents;
   private final boolean _hasMultiLineSupport;
   private List<TreeNode<T>> _childNodes = new ArrayList<>();
@@ -215,6 +234,23 @@ public class TreeNode<T> implements MultiLineToString {
     return incomingValue;
   }
 
+  /**
+   * Enables a mapping of a TreeNode tree structure to an arbitrary tree
+   * structure of a different type.
+   * 
+   * @param mapper maps an individual node and its children to the new type
+   * @return a mapped object
+   */
+  public <S> S mapStructure(StructureMapper<T,S> mapper) {
+    // first create list of mapped child objects
+    List<S> mappedChildren = new ArrayList<>();
+    for (TreeNode<T> child : _childNodes) {
+      mappedChildren.add(child.mapStructure(mapper));
+    }
+    // pass this object plus converted children to mapper
+    return mapper.map(_nodeContents, mappedChildren);
+  }
+  
   /**
    * Removes any subtrees that pass the passed predicate
    * 
