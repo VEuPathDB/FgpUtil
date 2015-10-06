@@ -23,7 +23,7 @@ public class ArrayTest {
   private String[][] S_CASES = new String[][]{ S_EMPTY, S_SINGLE, S_SOME, S_NULLS };
   
   @Test
-  public void testStrAppend() {
+  public void testStrAppend() throws Exception {
     for (String[] array : S_CASES) {
       testStrCase(ArrayUtil.append(array), array, S_EMPTY);
       testStrCase(ArrayUtil.append(array, "a"), array, S_SINGLE);
@@ -33,7 +33,7 @@ public class ArrayTest {
   }
   
   @Test
-  public void testStrConcatenate() {
+  public void testStrConcatenate() throws Exception {
     for (int i = 0; i < S_CASES.length; i++) {
       testStrCase(ArrayUtil.concatenate(S_CASES[i]), S_CASES[i]);
       for (int j = 0; j < S_CASES.length; j++) {
@@ -46,7 +46,7 @@ public class ArrayTest {
   }
   
   @Test
-  public void testStrInsert() {
+  public void testStrInsert() throws Exception {
     for (String[] begin : S_CASES) {
       for (String[] end : S_CASES) {
         testStrCase(ArrayUtil.insert(ArrayUtil.concatenate(begin, end), begin.length), begin, S_EMPTY, end);
@@ -79,7 +79,7 @@ public class ArrayTest {
   private Integer[][] I_CASES = new Integer[][]{ I_EMPTY, I_SINGLE, I_SOME };
   
   @Test
-  public void testIntAppend() {
+  public void testIntAppend() throws Exception {
     for (Integer[] array : I_CASES) {
       testIntCase(ArrayUtil.append(array), array, I_EMPTY);
       testIntCase(ArrayUtil.append(array, 1), array, I_SINGLE);
@@ -88,7 +88,7 @@ public class ArrayTest {
   }
   
   @Test
-  public void testIntConcatenate() {
+  public void testIntConcatenate() throws Exception {
     for (int i = 0; i < I_CASES.length; i++) {
       testIntCase(ArrayUtil.concatenate(I_CASES[i]), I_CASES[i]);
       for (int j = 0; j < I_CASES.length; j++) {
@@ -101,7 +101,7 @@ public class ArrayTest {
   }
   
   @Test
-  public void testIntInsert() {
+  public void testIntInsert() throws Exception {
     for (Integer[] begin : I_CASES) {
       for (Integer[] end : I_CASES) {
         testIntCase(ArrayUtil.insert(ArrayUtil.concatenate(begin, end), begin.length), begin, I_EMPTY, end);
@@ -158,7 +158,7 @@ public class ArrayTest {
   private enum Technique { ListBuilder, Arraycopy, FgpUtil }
   
   @Test
-  public void concatenationSpeedTest() {
+  public void concatenationSpeedTest() throws Exception {
     for (int size: ARRAY_SIZES) {
       final String[] blah1 = new String[size];
       final String[] blah2 = new String[size];

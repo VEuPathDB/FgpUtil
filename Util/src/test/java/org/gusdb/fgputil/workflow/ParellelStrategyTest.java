@@ -6,7 +6,7 @@ import org.junit.Test;
 public class ParellelStrategyTest {
 
   @Test
-  public void testParelleStrategyRetrieval() {
+  public void testParelleStrategyRetrieval() throws Exception {
     Node root = getNodeTree();
     root.run();
   }
@@ -23,7 +23,7 @@ public class ParellelStrategyTest {
   }
   
   @Test(expected = IllegalArgumentException.class)
-  public void testCircularDependencyCheck() {
+  public void testCircularDependencyCheck() throws Exception {
     try {
       Node circDep = new TestNode("X", 1);
       Node root = new TestNode("0", 1)

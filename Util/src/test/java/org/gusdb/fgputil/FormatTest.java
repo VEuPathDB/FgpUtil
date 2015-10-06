@@ -9,13 +9,13 @@ import org.junit.Test;
 public class FormatTest {
 
   @Test
-  public void testArrayToString() {
+  public void testArrayToString() throws Exception {
     String[] sample = { "a", "b", "c", "d" };
     System.out.println(FormatUtil.arrayToString(sample));
   }
   
   @Test
-  public void testPrettyPrint() {
+  public void testPrettyPrint() throws Exception {
     String NL = FormatUtil.NL;
     Map<Integer,String> emptyMap = new HashMap<>();
     Map<Integer,String> fullMap = new MapBuilder<>(1, "One").put(2, "Two")
@@ -29,7 +29,7 @@ public class FormatTest {
   }
     
   @Test
-  public void testPercentFormat() {
+  public void testPercentFormat() throws Exception {
     Integer[][] cases = new Integer[][]{
         { 12, 100 },
         { 56, 127 },
@@ -44,7 +44,7 @@ public class FormatTest {
   }
   
   @Test
-  public void testExceptionToString() {
+  public void testExceptionToString() throws Exception {
     Exception orig = new Exception("Nested Exception");
     Exception e = new Exception("Oh no!", orig);
     String stackTrace = FormatUtil.getStackTrace(e);

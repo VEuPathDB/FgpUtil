@@ -30,7 +30,7 @@ public class EventsTest implements EventListener {
   }
 
   @Test
-  public void testEvents() {
+  public void testEvents() throws Exception {
     try {
       // initialize events framework with default configuration
       Events.init();
