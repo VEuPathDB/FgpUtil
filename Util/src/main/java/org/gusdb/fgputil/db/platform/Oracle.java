@@ -103,6 +103,12 @@ public class Oracle extends DBPlatform {
     return "BLOB";
   }
 
+  @Override
+  public int getBlobSqlType() {
+	  return Types.BLOB;
+  }
+
+  
   /*
    * (non-Javadoc)
    * 
