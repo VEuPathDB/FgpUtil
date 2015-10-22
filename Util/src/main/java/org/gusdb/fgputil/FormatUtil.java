@@ -13,7 +13,11 @@ public class FormatUtil {
   public static final String NL = System.lineSeparator();
   public static final String TAB = "\t";
   public static final String UTF8_ENCODING = "UTF-8";
-  
+
+  public interface MultiLineToString {
+    public String toMultiLineString(String indentation);
+  }
+
   private FormatUtil() {}
 
   @SuppressWarnings("serial")
@@ -173,6 +177,14 @@ public class FormatUtil {
   public static String getPctFromRatio(long numerator, long denominator) {
     Double ratio = (double)numerator / (double)denominator;
     return new DecimalFormat("##0.0").format(ratio * 100D) + "%";
+  }
+
+  public static String paramsToString(Map<String, String[]> parameters) {
+    StringBuilder str = new StringBuilder("{" + NL);
+    for (Entry<String, String[]> param : parameters.entrySet()) {
+      str.append("   ").append(param.getKey()).append(": ").append(arrayToString(param.getValue())).append(NL);
+    }
+    return str.append("}").append(NL).toString();
   }
 
 }
