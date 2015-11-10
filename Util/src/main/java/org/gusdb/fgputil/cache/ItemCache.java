@@ -125,7 +125,7 @@ public class ItemCache<S,T> {
         try {
           container.item = fetcher.fetchItem(id);
         }
-        catch (UnfetchableItemException e) {
+        catch (Exception e) {
           // if the fetch fails, we must remove the container for the next attempt
           try {
             _cacheLock.lock();
@@ -134,21 +134,22 @@ public class ItemCache<S,T> {
           finally {
             _cacheLock.unlock();
           }
+          throw convertException(e);
         }
       }
 
-      //
+      // otherwise check to see if item needs updating before returning
       else if (fetcher.itemNeedsUpdating(container.item)) {
         try {
           container.item = fetcher.updateItem(id, container.item);
         }
-        catch (UnfetchableItemException e) {
+        catch (Exception e) {
           // if update fails, make a note in the log, but leave the old version
           //   in the cache and throw exception
           LOG.warn("ItemFetcher of type " + fetcher.getClass().getName() +
               " failed to update " + container.item.getClass().getName() +
               " with ID " + id, e.getCause());
-          throw e;
+          throw convertException(e);
         }
       }
 
@@ -170,6 +171,11 @@ public class ItemCache<S,T> {
       container.lock.unlock();
     }
     return result;
+  }
+
+  private UnfetchableItemException convertException(Exception e) {
+    return (e instanceof UnfetchableItemException ?
+        (UnfetchableItemException) e : new UnfetchableItemException(e));
   }
 
   // Returns  an empty item container placed in the map at the given ID
