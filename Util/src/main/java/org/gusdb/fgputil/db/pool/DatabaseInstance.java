@@ -112,7 +112,7 @@ public class DatabaseInstance implements Wrapper {
     }
     catch (Throwable e) {
       // validation failed; shut down pool and rethrow as runtime exception
-      LOG.error("Validation query failed during DB instance initialization.  DB instance will  be shut down.", e);
+      LOG.error("Validation query failed during DB instance initialization.  DB instance will be shut down.", e);
       try {
         close();
       }
