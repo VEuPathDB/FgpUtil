@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.fgputil.xml;
 
 import java.io.File;
@@ -27,137 +24,128 @@ import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.xml.sax.ErrorHandlerImpl;
 
 /**
- * @author Jerric
+ * This parser serves as a parent class for any Apache Digester based xml
+ * parser. It provides common functionalities for an xml parser, such as
+ * validating the xml using a provided Relax-NG schema, and using digester to
+ * parse the xml and load an object representation of the xml file.
  * 
+ * @author Jerric
  */
 public abstract class XmlParser {
 
-    protected static final String GUS_HOME = GusHome.getGusHome();
-    
-    protected String schemaPath;
-    protected boolean useGusHome;
-    protected ValidationDriver validator;
-    protected Digester digester;
-    
-    public XmlParser(String schemaPath) {
-	this(schemaPath, true);
-    }
+  protected static final String GUS_HOME = GusHome.getGusHome();
 
-    public XmlParser(String schemaPath, boolean useGusHome) {
-        this.schemaPath = schemaPath;
-	this.useGusHome = useGusHome;
+  protected String schemaPath;
+  protected boolean useGusHome;
+  protected ValidationDriver validator;
+  protected Digester digester;
+
+  public XmlParser(String schemaPath) {
+    this(schemaPath, true);
+  }
+
+  public XmlParser(String schemaPath, boolean useGusHome) {
+    this.schemaPath = schemaPath;
+    this.useGusHome = useGusHome;
+  }
+
+  protected void configure() throws SAXException, IOException {
+    // get model schema file and xml schema file
+    URL schemaURL = (useGusHome ? makeURL(GUS_HOME + "/" + schemaPath) : makeURL(schemaPath));
+
+    // config validator and digester
+    validator = configureValidator(schemaURL);
+    digester = configureDigester();
+  }
+
+  private ValidationDriver configureValidator(URL schemaURL) throws SAXException, IOException {
+    System.setProperty("org.apache.xerces.xni.parser.XMLParserConfiguration",
+        "org.apache.xerces.parsers.XIncludeParserConfiguration");
+
+    ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
+    PropertyMap schemaProperties = SinglePropertyMap.newInstance(ValidateProperty.ERROR_HANDLER, errorHandler);
+    ValidationDriver validator = new ValidationDriver(schemaProperties, PropertyMap.EMPTY, null);
+    validator.loadSchema(ValidationDriver.uriOrFileInputSource(schemaURL.toExternalForm()));
+    return validator;
+  }
+
+  protected URL makeURL(String fullPath) throws MalformedURLException {
+    String url = fullPath;
+    String lower = url.toLowerCase();
+    if (lower.startsWith("file:/") || lower.startsWith("http://") || lower.startsWith("https://") ||
+        lower.startsWith("ftp://") || lower.startsWith("ftps://")) {
+      return new URL(url);
     }
-    
-    protected void configure() throws SAXException, IOException {
-        // get model schema file and xml schema file
-        URL schemaURL = (useGusHome ?
-			 makeURL(GUS_HOME + "/" + schemaPath) :
-			 makeURL(schemaPath) );
-        
-       // config validator and digester
-        validator = configureValidator( schemaURL );
-        digester = configureDigester();
+    else {
+      File file = new File(url);
+      return file.toURI().toURL();
     }
-    
-    private ValidationDriver configureValidator( URL schemaURL )
-            throws SAXException, IOException {
-        System.setProperty(
-                "org.apache.xerces.xni.parser.XMLParserConfiguration",
-                "org.apache.xerces.parsers.XIncludeParserConfiguration" );
-        
-        ErrorHandler errorHandler = new ErrorHandlerImpl( System.err );
-        PropertyMap schemaProperties = SinglePropertyMap.newInstance(
-                ValidateProperty.ERROR_HANDLER, errorHandler );
-        ValidationDriver validator = new ValidationDriver( schemaProperties,
-                PropertyMap.EMPTY, null );
-        validator.loadSchema( ValidationDriver.uriOrFileInputSource( schemaURL.toExternalForm() ) );
-        return validator;
+  }
+
+  protected boolean validate(URL modelXmlURL) throws SAXException, IOException {
+    // System.out.println("Validating model " + modelXmlURL);
+    try {
+      InputSource is = ValidationDriver.uriOrFileInputSource(modelXmlURL.toExternalForm());
+      boolean result = validator.validate(is);
+      if (!result)
+        System.err.println("Validation failed: " + modelXmlURL.toExternalForm());
+      return result;
     }
-    
-    protected URL makeURL(String fullPath)
-            throws MalformedURLException {
-        String url = fullPath;
-        String lower = url.toLowerCase();
-        if ( lower.startsWith( "file:/" ) || lower.startsWith( "http://" )
-                || lower.startsWith( "https://" )
-                || lower.startsWith( "ftp://" ) || lower.startsWith( "ftps://" ) ) {
-            return new URL( url );
-        } else {
-            File file = new File( url );
-            return file.toURI().toURL();
-        }
+    catch (SAXException ex) {
+      System.err.println("Cannot validate: " + modelXmlURL.toExternalForm());
+      throw ex;
     }
-    
-    protected boolean validate( URL modelXmlURL ) throws SAXException,
-            IOException {
-        // System.out.println("Validating model " + modelXmlURL);
-        try {
-            InputSource is = ValidationDriver.uriOrFileInputSource( modelXmlURL.toExternalForm() );
-            boolean result = validator.validate( is );
-            if ( !result )
-                System.err.println( "Validation failed: "
-                        + modelXmlURL.toExternalForm() );
-            return result;
-        } catch ( SAXException ex ) {
-            System.err.println( "Cannot validate: "
-                    + modelXmlURL.toExternalForm() );
-            throw ex;
-        } catch ( IOException ex ) {
-            System.err.println( "Cannot validate: "
-                    + modelXmlURL.toExternalForm() );
-            throw ex;
-        }
+    catch (IOException ex) {
+      System.err.println("Cannot validate: " + modelXmlURL.toExternalForm());
+      throw ex;
     }
-    
-    protected Document buildDocument( URL modelXmlURL ) throws SAXException,
-            IOException, ParserConfigurationException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        // turn off validation here, since we don't use DTD; validation is done
-        // before this point
-        factory.setValidating( false );
-        factory.setNamespaceAware( false );
-        DocumentBuilder builder;
-        builder = factory.newDocumentBuilder();
-        
-        // ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
-        // builder.setErrorHandler(errorHandler);
-        builder.setErrorHandler( new org.xml.sax.ErrorHandler() {
-            
-            // ignore fatal errors (an exception is guaranteed)
-            @Override
-			public void fatalError( SAXParseException exception )
-                    throws SAXException {
-                exception.printStackTrace( System.err );
-            }
-            
-            // treat validation errors as fatal
-            @Override
-			public void error( SAXParseException e ) throws SAXParseException {
-                e.printStackTrace( System.err );
-                throw e;
-            }
-            
-            // dump warnings too
-            @Override
-			public void warning( SAXParseException err )
-                    throws SAXParseException {
-                System.err.println( "** Warning" + ", line "
-                        + err.getLineNumber() + ", uri " + err.getSystemId() );
-                System.err.println( "   " + err.getMessage() );
-            }
-        } );
-        
-        Document doc = builder.parse( modelXmlURL.openStream() );
-        return doc;
-    }
-    
-    protected void configureNode( Digester digester, String path,
-            Class<?> nodeClass, String method ) {
-        digester.addObjectCreate( path, nodeClass );
-        digester.addSetProperties( path );
-        digester.addSetNext( path, method );
-    }
-    
-    protected abstract Digester configureDigester();
+  }
+
+  protected Document buildDocument(URL modelXmlURL) throws SAXException, IOException,
+      ParserConfigurationException {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    // turn off validation here, since we don't use DTD; validation is done
+    // before this point
+    factory.setValidating(false);
+    factory.setNamespaceAware(false);
+    DocumentBuilder builder;
+    builder = factory.newDocumentBuilder();
+
+    // ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
+    // builder.setErrorHandler(errorHandler);
+    builder.setErrorHandler(new org.xml.sax.ErrorHandler() {
+
+      // ignore fatal errors (an exception is guaranteed)
+      @Override
+      public void fatalError(SAXParseException exception) throws SAXException {
+        exception.printStackTrace(System.err);
+      }
+
+      // treat validation errors as fatal
+      @Override
+      public void error(SAXParseException e) throws SAXParseException {
+        e.printStackTrace(System.err);
+        throw e;
+      }
+
+      // dump warnings too
+      @Override
+      public void warning(SAXParseException err) throws SAXParseException {
+        System.err.println("** Warning" + ", line " + err.getLineNumber() + ", uri " + err.getSystemId());
+        System.err.println("   " + err.getMessage());
+      }
+    });
+
+    Document doc = builder.parse(modelXmlURL.openStream());
+    return doc;
+  }
+
+  protected void configureNode(Digester digester, String path, Class<?> nodeClass, String method) {
+    digester.addObjectCreate(path, nodeClass);
+    digester.addSetProperties(path);
+    digester.addSetNext(path, method);
+  }
+
+  protected abstract Digester configureDigester();
 
 }
