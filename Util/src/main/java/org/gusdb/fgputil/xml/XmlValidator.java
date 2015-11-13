@@ -8,8 +8,7 @@ import org.xml.sax.SAXException;
 public class XmlValidator extends XmlParser {
 
   public XmlValidator(String rngFile) throws SAXException, IOException {
-    super(rngFile, false);
-    configure();
+    configureValidator(rngFile);
   }
 
   /**
@@ -34,7 +33,7 @@ public class XmlValidator extends XmlParser {
         }
         System.err.println();
         System.err.println("Validating: " + xmlFile);
-        boolean validXml = parser.validate(parser.makeURL(xmlFile));
+        boolean validXml = parser.validate(makeURL(xmlFile));
 
         if (validXml) {
           System.err.println("Validation passed.");
