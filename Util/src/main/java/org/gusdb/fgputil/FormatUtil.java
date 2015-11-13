@@ -156,11 +156,26 @@ public class FormatUtil {
       recordDelimiter = rd; endDelimiter = ed;
     }
   }
-  
+
+  /**
+   * Returns a "pretty" string representation of the passed map using
+   * <code>Style.SINGLE_LINE</code>.
+   * 
+   * @param map map to print
+   * @return pretty string value of map
+   */
   public static <S,T> String prettyPrint(Map<S,T> map) {
     return prettyPrint(map, Style.SINGLE_LINE);
   }
   
+  /**
+   * Returns a "pretty" string representation of the passed map using
+   * the passed format style.
+   * 
+   * @param map map to print
+   * @param style formatting style
+   * @return pretty string value of map
+   */
   public static <S,T> String prettyPrint(Map<S,T> map, Style style) {
     StringBuilder sb = new StringBuilder("{").append(style.introDelimiter);
     boolean firstRecord = true;
