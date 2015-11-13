@@ -17,11 +17,14 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
- * This class provides utilities to assist any Apache Digester based xml
- * parser. It provides common functionalities for an xml parser,  using digester to
- * parse the xml and load an object representation of the xml file.
+ * This class provides utilities to assist any Apache Digester-based XML
+ * parser that uses alternative validation (e.g. RNG).  All methods are static,
+ * but it may be more convenient to subclass this class.  Callers and subclasses
+ * are fully responsible for creating and using a Digester implementation.  If
+ * validation is required, use <code>org.gusdb.fgputil.xml.XmlValidator</code>.
  * 
  * @author Jerric
+ * @author Ryan
  */
 public class XmlParser {
 
