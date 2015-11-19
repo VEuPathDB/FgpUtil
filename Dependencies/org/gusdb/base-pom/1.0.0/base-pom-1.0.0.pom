@@ -245,6 +245,13 @@
         <version>${oltu.version}</version>
       </dependency>
 
+      <!-- Google APIs -->
+      <dependency>
+        <groupId>com.google.api-client</groupId>
+        <artifactId>google-api-client</artifactId>
+        <version>1.20.0</version>
+      </dependency>
+
       <!-- Spring Framework / IoC -->
       <!--
       <dependency>
