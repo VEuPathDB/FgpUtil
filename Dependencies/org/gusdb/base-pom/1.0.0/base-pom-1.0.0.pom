@@ -96,6 +96,13 @@
         <scope>runtime</scope>
       </dependency>
 
+      <!-- JSON Web Token processing -->
+      <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt</artifactId>
+        <version>0.6.0</version>
+      </dependency>
+
       <!-- XML Parsing and Validation -->
       <dependency>
         <groupId>commons-digester</groupId>
