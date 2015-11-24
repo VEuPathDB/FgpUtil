@@ -96,6 +96,13 @@
         <scope>runtime</scope>
       </dependency>
 
+      <!-- JSON Web Token processing -->
+      <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt</artifactId>
+        <version>0.6.0</version>
+      </dependency>
+
       <!-- XML Parsing and Validation -->
       <dependency>
         <groupId>commons-digester</groupId>
@@ -243,6 +250,13 @@
         <groupId>org.apache.oltu.oauth2</groupId>
         <artifactId>org.apache.oltu.oauth2.client</artifactId>
         <version>${oltu.version}</version>
+      </dependency>
+
+      <!-- Google APIs -->
+      <dependency>
+        <groupId>com.google.api-client</groupId>
+        <artifactId>google-api-client</artifactId>
+        <version>1.20.0</version>
       </dependency>
 
       <!-- Spring Framework / IoC -->
