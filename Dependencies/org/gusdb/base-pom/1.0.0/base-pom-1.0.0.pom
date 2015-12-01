@@ -64,6 +64,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>1.7</java.version>
     <jersey.version>2.13</jersey.version>
+    <jackson.version>2.6.1</jackson.version>
     <oltu.version>1.0.0</oltu.version>
   </properties>
 
@@ -94,6 +95,21 @@
         <artifactId>javax.json</artifactId>
         <version>1.0.4</version>
         <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
 
       <!-- JSON Web Token processing -->
