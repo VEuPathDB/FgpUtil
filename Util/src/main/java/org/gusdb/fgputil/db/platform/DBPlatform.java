@@ -86,11 +86,12 @@ public abstract class DBPlatform {
      * Returns the passed SQL wrapped in a superquery that returns only the
      * subset of records defined by startIndex and endIndex.  Indexing is
      * 1-based (i.e. first index is 1) and the query will select the records
-     * inclusively; thus the range is [startIndex, endIndex]
+     * inclusively; thus the range is [startIndex, endIndex].  If all remaining
+     * records are desired, pass a negative value for endIndex.
      * 
      * @param sql SQL to wrap
      * @param startIndex 1-based start index (inclusive)
-     * @param endIndex end index (inclusive)
+     * @param endIndex end index (inclusive), or a negative value for all records
      * @return wrapped SQL
      */
     public abstract String getPagedSql(String sql, int startIndex, int endIndex);
