@@ -321,7 +321,7 @@ public class SQLRunner {
   // this method should always be "safe" (i.e. not throw exception)
   private void attemptRollback(Connection conn) {
     if (conn == null) {
-      LOG.warn("Rollback attempted on null connection.  " +
+      LOG.warn("Rollback attempted on null connection.  May have failed to retrieve connection.  " +
           "See stack trace below:\n" + FormatUtil.getCurrentStackTrace());
       return;
     }
