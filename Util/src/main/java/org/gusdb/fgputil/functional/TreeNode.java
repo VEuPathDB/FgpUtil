@@ -414,6 +414,11 @@ public class TreeNode<T> implements MultiLineToString {
       node.apply(nodePred, pred, function);
     }
   }
+  
+  public List<List<TreeNode<T>>>findCircularPaths() {
+    // TODO: implement this
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Returns a string representation of this node and its subtree.
