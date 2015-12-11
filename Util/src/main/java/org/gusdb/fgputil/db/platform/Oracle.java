@@ -176,7 +176,10 @@ public class Oracle extends DBPlatform {
     // construct the inner nested query
     buffer.append("SELECT ub.*, rownum AS row_index FROM (");
     buffer.append(sql);
-    buffer.append(") ub WHERE rownum <= ").append(endIndex);
+    buffer.append(") ub");
+    if (endIndex > -1) {
+      buffer.append(" WHERE rownum <= ").append(endIndex);
+    }
     buffer.append(") lb WHERE lb.row_index >= ").append(startIndex);
     return buffer.toString();
   }

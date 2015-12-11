@@ -250,7 +250,28 @@ public class TreeNode<T> implements MultiLineToString {
     // pass this object plus converted children to mapper
     return mapper.map(_nodeContents, mappedChildren);
   }
-  
+
+  /**
+   * Returns a clone of this tree.  This is a "deep" clone in the sense that all
+   * child nodes are also replicated; however the contents of the nodes are not
+   * cloned.  The objects referred to in the clone are the same as those
+   * referred to in the original.  NOTE: this is simply a special case of
+   * <code>mapStructure()</code>.
+   * 
+   * @return clone of this tree
+   */
+  @Override
+  public TreeNode<T> clone() {
+    return mapStructure(new StructureMapper<T,TreeNode<T>>() {
+      @Override
+      public TreeNode<T> map(T obj, List<TreeNode<T>> mappedChildren) {
+        TreeNode<T> copy = new TreeNode<T>(obj);
+        copy._childNodes = mappedChildren;
+        return copy;
+      }
+    });
+  }
+
   /**
    * Removes any subtrees that pass the passed predicate
    * 
@@ -276,7 +297,7 @@ public class TreeNode<T> implements MultiLineToString {
 
   /**
    * Return a copy of this TreeNode, with children pruned to include
-   * only those that satisfy the predicates, recursively.  
+   * only those that satisfy the predicates, recursively.
    * 
    * @param nodePred predicate to test nodes against
    * @param pred predicate to test node contents against
