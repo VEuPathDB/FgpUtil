@@ -301,22 +301,22 @@ public class TreeNode<T> implements MultiLineToString {
    * 
    * @param nodePred predicate to test nodes against
    * @param pred predicate to test node contents against
-   * @param propagateGrandKids set to true if kids of a failed node should be propagated to its parent
+   * @param keepAllValidKids set to true if kids of a failed node should be propagated to its parent
    * @return null if this TreeNode fails the predicates, otherwise, a copy of this TreeNode, with children pruned to include only those that satisfy the predicates
    */
-  public TreeNode<T> filter(Predicate<TreeNode<?>> nodePred, Predicate<T> pred, boolean propagateGrandKids) {
+  public TreeNode<T> filter(Predicate<TreeNode<T>> nodePred, Predicate<T> pred, boolean keepAllValidKids) {
     if ((nodePred == null || nodePred.test(this)) &&
         (pred == null || pred.test(this.getContents()))) {
-     return filterSub(nodePred, pred, propagateGrandKids);
+     return filterSub(nodePred, pred, keepAllValidKids);
     } else return null;
   }
  
-  private TreeNode<T> filterSub(Predicate<TreeNode<?>> nodePred, Predicate<T> pred, boolean propagateGrandKids) {
+  private TreeNode<T> filterSub(Predicate<TreeNode<T>> nodePred, Predicate<T> pred, boolean keepAllValidKids) {
  
     // make a list of copies of my children, each updated with their filtered children
     List<TreeNode<T>> newChildren = new ArrayList<TreeNode<T>>();
     for (TreeNode<T> node : _childNodes) {
-      newChildren.add(node.filter(nodePred, pred, propagateGrandKids));
+      newChildren.add(node.filter(nodePred, pred, keepAllValidKids));
     }
     
     // make a copy of me
@@ -327,7 +327,7 @@ public class TreeNode<T> implements MultiLineToString {
       if ((nodePred == null || nodePred.test(newChild)) &&
           (pred == null || pred.test(newChild.getContents()))) {
         newNode.addChildNode(newChild);
-      } else if (propagateGrandKids) {
+      } else if (keepAllValidKids) {
         for (TreeNode<T> grandKid : newChild.getChildNodes())
         newNode.addChildNode(grandKid);
       }
