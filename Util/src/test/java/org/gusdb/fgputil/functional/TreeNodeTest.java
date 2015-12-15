@@ -1,8 +1,8 @@
 package org.gusdb.fgputil.functional;
 
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
+
+import java.util.List;
 
 import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
 import org.json.JSONArray;
@@ -35,6 +35,15 @@ public class TreeNodeTest {
     JSONObject expected = buildExpectedJson();
     System.out.println("Produced: " + json.toString(2));
     assertEquals(toString(expected), toString(json));
+  }
+
+  @Test
+  public void testClone() {
+    TreeNode<Integer> orig = buildTestTree();
+    TreeNode<Integer> clone = orig.clone();
+    String cloneStr = clone.toMultiLineString("  ");
+    System.out.println("Cloned tree: " + cloneStr);
+    assertEquals(orig.toMultiLineString("  "), cloneStr);
   }
 
   private TreeNode<Integer> buildTestTree() {
