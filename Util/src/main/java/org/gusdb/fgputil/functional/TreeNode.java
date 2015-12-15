@@ -250,7 +250,28 @@ public class TreeNode<T> implements MultiLineToString {
     // pass this object plus converted children to mapper
     return mapper.map(_nodeContents, mappedChildren);
   }
-  
+
+  /**
+   * Returns a clone of this tree.  This is a "deep" clone in the sense that all
+   * child nodes are also replicated; however the contents of the nodes are not
+   * cloned.  The objects referred to in the clone are the same as those
+   * referred to in the original.  NOTE: this is simply a special case of
+   * <code>mapStructure()</code>.
+   * 
+   * @return clone of this tree
+   */
+  @Override
+  public TreeNode<T> clone() {
+    return mapStructure(new StructureMapper<T,TreeNode<T>>() {
+      @Override
+      public TreeNode<T> map(T obj, List<TreeNode<T>> mappedChildren) {
+        TreeNode<T> copy = new TreeNode<T>(obj);
+        copy._childNodes = mappedChildren;
+        return copy;
+      }
+    });
+  }
+
   /**
    * Removes any subtrees that pass the passed predicate
    * 
@@ -271,6 +292,73 @@ public class TreeNode<T> implements MultiLineToString {
     }
     return numRemoved;
   }
+
+  /**
+   * Return a copy of this TreeNode, with children pruned to include
+   * only those that satisfy the predicates, recursively.
+   * 
+   * @param nodePred predicate to test nodes against
+   * @param pred predicate to test node contents against
+   * @param propagateGrandKids set to true if kids of a failed node should be propagated to its parent
+   * @return null if this TreeNode fails the predicates, otherwise, a copy of this TreeNode, with children pruned to include only those that satisfy the predicates
+   */
+  public TreeNode<T> filter(Predicate<TreeNode<?>> nodePred, Predicate<T> pred, boolean propagateGrandKids) {
+    if ((nodePred == null || nodePred.test(this)) &&
+        (pred == null || pred.test(this.getContents()))) {
+     return filterSub(nodePred, pred, propagateGrandKids);
+    } else return null;
+  }
+ 
+  private TreeNode<T> filterSub(Predicate<TreeNode<?>> nodePred, Predicate<T> pred, boolean propagateGrandKids) {
+ 
+    // make a list of copies of my children, each updated with their filtered children
+    List<TreeNode<T>> newChildren = new ArrayList<TreeNode<T>>();
+    for (TreeNode<T> node : _childNodes) {
+      newChildren.add(node.filter(nodePred, pred, propagateGrandKids));
+    }
+    
+    // make a copy of me
+    TreeNode<T> newNode = new TreeNode<T>(_nodeContents);
+    
+    // add to my copy the copies of my children that satisfy the filter
+    for (TreeNode<T> newChild : newChildren) {
+      if ((nodePred == null || nodePred.test(newChild)) &&
+          (pred == null || pred.test(newChild.getContents()))) {
+        newNode.addChildNode(newChild);
+      } else if (propagateGrandKids) {
+        for (TreeNode<T> grandKid : newChild.getChildNodes())
+        newNode.addChildNode(grandKid);
+      }
+    }
+    return newNode;
+  }
+  
+  /*
+  public class TreeNodeFilterResult {
+    TreeNode<T> node;
+    boolean isValid;
+  }
+
+  public TreeNodeFilterResult filter2(Predicate<TreeNode<?>> nodePred, Predicate<T> pred,
+      boolean keepAllValidNodes) {
+
+    TreeNodeFilterResult result = new TreeNodeFilterResult();
+    result.node = new TreeNode<T>(_nodeContents);
+
+    for (TreeNode<T> child : _childNodes) {
+      TreeNodeFilterResult childResult = child.filter2(nodePred, pred, keepAllValidNodes);
+      if (childResult.isValid)
+        result.node.addChildNode(childResult.node);
+      else if (keepAllValidNodes)
+        for (TreeNode<T> grandKid : childResult.node.getChildNodes())
+          result.node.addChildNode(grandKid);
+    }
+
+    result.isValid =  (nodePred == null || nodePred.test(result.node)) &&
+        (pred == null || pred.test(result.node.getContents()));
+    return result;
+  }
+  */
 
   /**
    * Replaces each node's contents with the result of the passed function
