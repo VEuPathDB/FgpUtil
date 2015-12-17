@@ -22,6 +22,7 @@ import org.junit.Test;
  */
 public class OntologyFilterTest {
 
+  // runtime exception to emulate WdkRuntimeException
   private static class WdkRuntimeException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     public WdkRuntimeException(String message) {
@@ -29,10 +30,12 @@ public class OntologyFilterTest {
     }
   }
 
+  // interface for an ontology node; I think we should use this instead of a straight Map
   private static interface OntologyNode extends Map<String,List<String>> {
     public boolean isCategory();
   }
 
+  // implementation of an ontology node that explicitly declares if it is a category vs. individual
   private static class OntologyNodeImpl extends HashMap<String,List<String>> implements OntologyNode {
     private static final long serialVersionUID = 1L;
     @Override
@@ -41,20 +44,31 @@ public class OntologyFilterTest {
     }
   }
 
-  // NOTE: this predicate is not needed if we have an explicit isCategory() method on OntologyNode (which I think we should)
+  // NOTE: this predicate is not needed if we have an explicit isCategory()
+  //       method on OntologyNode (which I think we should)
   @SuppressWarnings("unused")
   private static final Predicate<OntologyNode> IS_CATEGORY_PREDICATE = new Predicate<OntologyNode>() {
     @Override
     public boolean test(OntologyNode obj) {
-      // could be changed to be the logic in the isCategory() method above if we
+      // Logic could be changed to be the logic in the isCategory() method above if we
       //   remove that method and let an ontology node be a simple map
       return obj.isCategory();
     }
   };
 
-  // Ryan's solution
+  /**
+   * This method will, given an ontology tree, do the following:
+   * 
+   * 1. Clone the tree (original tree will not be touched)
+   * 2. Trim any non-category (leaf) nodes based on the passed predicate
+   * 3. Remove category nodes that have only one child and add that child to the removed node's parent
+   * 
+   * @param root root of the tree to be operated on
+   * @param predicate test for whether to retain non-category (leaf) nodes
+   * @return cloned tree with modifications as above
+   */
   public TreeNode<OntologyNode> getFilteredOntology(
-      TreeNode<OntologyNode> root, final Predicate<OntologyNode> nodePred) {
+      TreeNode<OntologyNode> root, final Predicate<OntologyNode> predicate) {
     return root.mapStructure(new StructureMapper<OntologyNode, TreeNode<OntologyNode>>() {
       @Override
       public TreeNode<OntologyNode> map(OntologyNode obj, List<TreeNode<OntologyNode>> mappedChildren) {
@@ -63,7 +77,7 @@ public class OntologyFilterTest {
             // Case 1: if I am not a category but I have children, throw exception
             throw new WdkRuntimeException("Individuals should not have children.");
           }
-          else if (!nodePred.test(obj)) {
+          else if (!predicate.test(obj)) {
             // Case 2: if I am not a category but don't pass the predicate, return null
             return null;
           }
@@ -81,18 +95,18 @@ public class OntologyFilterTest {
           // Case 5: if I have 1 non-null child, replace my contents with theirs and return me
           else if (mappedChildren.size() == 1) {
             TreeNode<OntologyNode> onlyChild = mappedChildren.get(0);
-            return cloneAndApplyChildren(onlyChild.getContents(), onlyChild.getChildNodes());
+            return createNodeAndApplyChildren(onlyChild.getContents(), onlyChild.getChildNodes());
           }
           // Case 6: category node with >1 children; return it as is
           else {
-            return cloneAndApplyChildren(obj, mappedChildren);
+            return createNodeAndApplyChildren(obj, mappedChildren);
           }
         }
       }
     });
   }
 
-  private static TreeNode<OntologyNode> cloneAndApplyChildren(OntologyNode obj,
+  private static TreeNode<OntologyNode> createNodeAndApplyChildren(OntologyNode obj,
       List<TreeNode<OntologyNode>> children) {
     TreeNode<OntologyNode> clone = new TreeNode<OntologyNode>(obj);
     for (TreeNode<OntologyNode> child : children) {
@@ -101,12 +115,12 @@ public class OntologyFilterTest {
     return clone;
   }
 
-   private static void trimNulls(List<?> list) {
-     for (int i = 0; i < list.size(); i++) {
-       if (list.get(i) == null) list.remove(i);
-       i--;
-     }
-   }
+  private static void trimNulls(List<?> list) {
+    for (int i = 0; i < list.size(); i++) {
+      if (list.get(i) == null) list.remove(i);
+      i--;
+    }
+  }
 
   @Test
   public void testOntologyUsage() {
