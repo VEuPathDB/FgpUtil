@@ -57,28 +57,30 @@ public class OntologyFilterTest {
   };
 
   /**
-   * Flattens categories in the passed ontology tree that meet some criteria.
-   * If a category node passes the predicate, then it will be removed, and its
-   * children will be inherited by its parent.  A 'dummy' 
+   * Flattens categories in the passed ontology tree nodes that meet some
+   * criteria.  If a category node passes the predicate, then it will be
+   * removed, and its children will be inherited by its parent.  Thus, some
+   * nodes returned may be in the original list or may be children of nodes
+   * in the original list.
    * 
-   * @param root root of the tree to be operated on
+   * @param roots roots of trees to be operated on
    * @param predicate test for whether to remove category
-   * @return a "dummy" parent node of the resulting tree or set of trees
+   * @return a list of flattened nodes
    */
-  public static TreeNode<OntologyNode> flattenCategories(
-      TreeNode<OntologyNode> root, final Predicate<OntologyNode> predicate) {
+  public static List<TreeNode<OntologyNode>> flattenCategories(
+      List<TreeNode<OntologyNode>> roots, final Predicate<OntologyNode> predicate) {
 
-    // create a dummy parent to inherit the root's children if the root passes the predicate
-    OntologyNode dummyNode = new OntologyNodeImpl();
-    final TreeNode<OntologyNode> wrapper = new TreeNode<>(dummyNode);
-    wrapper.addChildNode(root);
+    // create a dummy parent to contain the roots
+    final OntologyNode dummyNode = new OntologyNodeImpl();
+    TreeNode<OntologyNode> masterRoot = new TreeNode<>(dummyNode);
+    masterRoot.addAllChildNodes(roots);
 
     // create a custom predicate to test categories against; if node passes, it will be removed
     final Predicate<OntologyNode> customPred = new Predicate<OntologyNode>() {
       @Override
       public boolean test(OntologyNode obj) {
-        // don't remove wrapper node
-        if (obj == wrapper) return false;
+        // don't remove master node
+        if (obj == dummyNode) return false;
         // only remove categories
         if (!obj.isCategory()) return false;
         // use the passed predicate
@@ -87,7 +89,7 @@ public class OntologyFilterTest {
     };
 
     // use a structure mapper to flatten the tree; removed nodes' children will be added to their respective parents
-    return root.mapStructure(new StructureMapper<OntologyNode, TreeNode<OntologyNode>>() {
+    return masterRoot.mapStructure(new StructureMapper<OntologyNode, TreeNode<OntologyNode>>() {
       @Override
       public TreeNode<OntologyNode> map(OntologyNode obj, List<TreeNode<OntologyNode>> mappedChildren) {
         // need to test each child to see if it should be removed, then inherit its children if it should
@@ -106,7 +108,7 @@ public class OntologyFilterTest {
         }
         return replacement;
       }
-    });
+    }).getChildNodes();
   }
 
   /**
