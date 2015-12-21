@@ -29,13 +29,29 @@ public class TreeNode<T> implements MultiLineToString {
     @Override public boolean test(TreeNode<T> obj) { return !obj.isLeaf(); } };
 
   /**
+   * Returns a predicate that takes a TreeNode that returns true its contents
+   * pass the the passed predicate, else false.
+   * 
+   * @param predicate predicate to operate on node contents
+   * @return predicate to operate on node
+   */
+  public Predicate<TreeNode<T>> createNodePredicate(final Predicate<T> predicate) {
+    return new Predicate<TreeNode<T>>() {
+      @Override
+      public boolean test(TreeNode<T> obj) {
+        return predicate.test(obj.getContents());
+      }
+    };
+  }
+
+  /**
    * An interface to model the mapping of this tree structure to some other
    * arbitrary tree structure.
    * 
    * @param <T> The type of object stored in this tree
    * @param <S> The type of a single 'node' each node in this tree will be mapped to
    */
-  public interface StructureMapper<T, S> {
+  public static interface StructureMapper<T, S> {
     /**
      * Maps the contents of a node, and its already-mapped children, to the
      * node type of the new structure.
@@ -93,6 +109,31 @@ public class TreeNode<T> implements MultiLineToString {
    */
   public TreeNode<T> addChildNode(TreeNode<T> child) {
     _childNodes.add(child);
+    return this;
+  }
+
+  /**
+   * Appends all the passed nodes to the list of this node's children
+   * 
+   * @param children children to append
+   * @return this node
+   */
+  public TreeNode<T> addAllChildNodes(List<TreeNode<T>> children) {
+    return addChildNodes(children, new FunctionalInterfaces.TruePredicate<TreeNode<T>>());
+  }
+
+  /**
+   * Appends all nodes that pass the given predicate to the list of this node's children
+   * 
+   * @param potentialChildren potential children
+   * @return this node
+   */
+  public TreeNode<T> addChildNodes(List<TreeNode<T>> potentialChildren, Predicate<TreeNode<T>> nodePred) {
+    for (TreeNode<T> potentialChild : potentialChildren) {
+      if (nodePred.test(potentialChild)) {
+        _childNodes.add(potentialChild);
+      }
+    }
     return this;
   }
 
