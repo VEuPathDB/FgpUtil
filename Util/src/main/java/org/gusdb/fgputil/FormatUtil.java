@@ -5,8 +5,11 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.json.JSONArray;
 
 public class FormatUtil {
 
@@ -202,4 +205,11 @@ public class FormatUtil {
     return str.append("}").append(NL).toString();
   }
 
+  public static JSONArray stringCollectionToJsonArray(Collection<String> strings) {
+    JSONArray array = new JSONArray();
+    for (String string : strings) {
+      array.put(string);
+    }
+    return array;
+  }
 }
