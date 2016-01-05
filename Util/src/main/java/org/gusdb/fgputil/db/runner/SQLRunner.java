@@ -286,8 +286,10 @@ public class SQLRunner {
   private void executeSql(PreparedStatementExecutor exec) {
     Connection conn = null;
     PreparedStatement stmt = null;
+    boolean connectionSuccessful = false;
     try {
       conn = getConnection();
+      connectionSuccessful = true;
       // record start
       stmt = conn.prepareStatement(_sql);
       // record prepare
@@ -301,7 +303,10 @@ public class SQLRunner {
       _lastExecutionTime = exec.getLastExecutionTime();
     }
     catch (SQLException e) {
-      attemptRollback(conn);
+      // only attempt rollback if retrieved a connection in the first place
+      if (connectionSuccessful) {
+        attemptRollback(conn);
+      }
       throw new SQLRunnerException("Unable to run query with SQL <" + _sql + "> and args: " + exec.getParamsToString(), e);
     }
     finally {
