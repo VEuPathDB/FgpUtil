@@ -63,9 +63,11 @@ public class TreeNode<T> implements MultiLineToString {
     public S map(T obj, List<S> mappedChildren);
   }
 
-  private T _nodeContents;
+  protected T _nodeContents;
+  protected List<TreeNode<T>> _childNodes = new ArrayList<>();
+
+  // private since determined by type of _nodeContents
   private final boolean _hasMultiLineSupport;
-  private List<TreeNode<T>> _childNodes = new ArrayList<>();
 
   /**
    * Creates a node containing the passed contents
@@ -333,75 +335,6 @@ public class TreeNode<T> implements MultiLineToString {
     }
     return numRemoved;
   }
-  
-  
-
-  /**
-   * Return a copy of this TreeNode, with children pruned to include
-   * only those that satisfy the predicates, recursively.
-   * 
-   * @param nodePred predicate to test nodes against
-   * @param pred predicate to test node contents against
-   * @param keepAllValidKids set to true if kids of a failed node should be propagated to its parent
-   * @return null if this TreeNode fails the predicates, otherwise, a copy of this TreeNode, with children pruned to include only those that satisfy the predicates
-   */
-  public TreeNode<T> filter(Predicate<TreeNode<T>> nodePred, Predicate<T> pred, boolean keepAllValidKids) {
-    if ((nodePred == null || nodePred.test(this)) &&
-        (pred == null || pred.test(this.getContents()))) {
-     return filterSub(nodePred, pred, keepAllValidKids);
-    } else return null;
-  }
- 
-  private TreeNode<T> filterSub(Predicate<TreeNode<T>> nodePred, Predicate<T> pred, boolean keepAllValidKids) {
- 
-    // make a list of copies of my children, each updated with their filtered children
-    List<TreeNode<T>> newChildren = new ArrayList<TreeNode<T>>();
-    for (TreeNode<T> node : _childNodes) {
-      newChildren.add(node.filter(nodePred, pred, keepAllValidKids));
-    }
-    
-    // make a copy of me
-    TreeNode<T> newNode = new TreeNode<T>(_nodeContents);
-    
-    // add to my copy the copies of my children that satisfy the filter
-    for (TreeNode<T> newChild : newChildren) {
-      if ((nodePred == null || nodePred.test(newChild)) &&
-          (pred == null || pred.test(newChild.getContents()))) {
-        newNode.addChildNode(newChild);
-      } else if (keepAllValidKids) {
-        for (TreeNode<T> grandKid : newChild.getChildNodes())
-        newNode.addChildNode(grandKid);
-      }
-    }
-    return newNode;
-  }
-  
-  /*
-  public class TreeNodeFilterResult {
-    TreeNode<T> node;
-    boolean isValid;
-  }
-
-  public TreeNodeFilterResult filter2(Predicate<TreeNode<?>> nodePred, Predicate<T> pred,
-      boolean keepAllValidNodes) {
-
-    TreeNodeFilterResult result = new TreeNodeFilterResult();
-    result.node = new TreeNode<T>(_nodeContents);
-
-    for (TreeNode<T> child : _childNodes) {
-      TreeNodeFilterResult childResult = child.filter2(nodePred, pred, keepAllValidNodes);
-      if (childResult.isValid)
-        result.node.addChildNode(childResult.node);
-      else if (keepAllValidNodes)
-        for (TreeNode<T> grandKid : childResult.node.getChildNodes())
-          result.node.addChildNode(grandKid);
-    }
-
-    result.isValid =  (nodePred == null || nodePred.test(result.node)) &&
-        (pred == null || pred.test(result.node.getContents()));
-    return result;
-  }
-  */
 
   /**
    * Replaces each node's contents with the result of the passed function
@@ -456,7 +389,7 @@ public class TreeNode<T> implements MultiLineToString {
     }
   }
   
-  public List<List<TreeNode<T>>>findCircularPaths() {
+  public List<List<TreeNode<T>>> findCircularPaths() {
     // TODO: implement this
     throw new UnsupportedOperationException();
   }
