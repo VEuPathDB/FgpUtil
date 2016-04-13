@@ -28,10 +28,10 @@ sub copyTo {
     my ($self, $fromDir, $fromFile, $toDir, $gzipFlag) = @_;
           # buildDIr, release/speciesNickname, serverPath
 
-    chdir $fromDir || $self->{mgr}->error("Can't chdir $fromDir\n" . __FILE__ . " line " . __LINE__ . "\n\n");
+    chdir $fromDir || $self->{mgr}->error("Can't chdir to source dir '$fromDir' on local server\n" . __FILE__ . " line " . __LINE__ . "\n\n");
 
     my @arr = glob("$fromFile");
-    $self->{mgr}->error("origin directory $fromDir/$fromFile doesn't exist\n" . __FILE__ . " line " . __LINE__ . "\n\n") unless (@arr >= 1);
+    $self->{mgr}->error("Source directory or file $fromDir/$fromFile doesn't exist\n" . __FILE__ . " line " . __LINE__ . "\n\n") unless (@arr >= 1);
 
     my $user = "$self->{user}\@" if $self->{user};
     my $ssh_to = "$user$self->{server}";
@@ -57,7 +57,7 @@ sub copyFrom {
     my ($self, $fromDir, $fromFile, $toDir, $deleteAfterCopy, $gzipFlag) = @_;
 
     # workaround scp problems
-    chdir $toDir || $self->{mgr}->error("Can't chdir $toDir\n");
+    chdir $toDir || $self->{mgr}->error("Can't chdir to target dir '$toDir' on local server\n");
 
     my $user = "$self->{user}\@" if $self->{user};
     my $ssh_target = "$user$self->{server}";
