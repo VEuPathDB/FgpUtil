@@ -94,7 +94,7 @@ public abstract class DBPlatform {
      * @param endIndex end index (inclusive), or a negative value for all records
      * @return wrapped SQL
      */
-    public abstract String getPagedSql(String sql, int startIndex, int endIndex);
+    public abstract String getPagedSql(String sql, int startIndex, int endIndex, boolean includeRowIndex);
 
     public abstract boolean checkTableExists(DataSource dataSource, String schema, String tableName)
             throws SQLException, DBStateException;

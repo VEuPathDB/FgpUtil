@@ -149,8 +149,9 @@ public class PostgreSQL extends DBPlatform {
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String, int, int)
    */
   @Override
-  public String getPagedSql(String sql, int startIndex, int endIndex) {
-    StringBuffer buffer = new StringBuffer("SELECT f.* FROM ");
+  public String getPagedSql(String sql, int startIndex, int endIndex, boolean includeRowIndex) {
+    String rowIndex = includeRowIndex? ", " + getRowNumberColumn() + " as row_index " : "";
+    StringBuffer buffer = new StringBuffer("SELECT f.*" + rowIndex + " FROM ");
     buffer.append("(").append(sql).append(") f ");
     if (endIndex > -1) {
       buffer.append(" LIMIT ").append(endIndex - startIndex + 1);

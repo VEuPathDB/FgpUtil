@@ -169,10 +169,13 @@ public class Oracle extends DBPlatform {
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String, int, int)
    */
   @Override
-  public String getPagedSql(String sql, int startIndex, int endIndex) {
+  public String getPagedSql(String sql, int startIndex, int endIndex, boolean includeRowIndex) {
+
+    String rowIndex = includeRowIndex? ", " + getRowNumberColumn() + " as row_index " : "";
+
     StringBuffer buffer = new StringBuffer();
     // construct the outer query
-    buffer.append("SELECT lb.* FROM (");
+    buffer.append("SELECT lb.*" + rowIndex + " FROM (");
     // construct the inner nested query
     buffer.append("SELECT ub.*, rownum AS row_index FROM (");
     buffer.append(sql);
