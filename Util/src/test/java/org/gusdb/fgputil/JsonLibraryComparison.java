@@ -14,6 +14,8 @@ import org.junit.Test;
 
 public class JsonLibraryComparison {
 
+  private static final boolean SHOW_JSON_OUTPUT = false;
+
   private static final String NL = System.lineSeparator();
 
   private static JSONObject parseOrgJson(String json) {
@@ -67,12 +69,12 @@ public class JsonLibraryComparison {
         .append("===== org.json =====").append(NL)
         .append("Parse: ").append(printOrg - startOrg).append("ms").append(NL)
         .append("Print: ").append(startJavax - printOrg).append("ms").append(NL)
-        //.append("Result: ").append(resultOrg).append(NL)
+        .append("Result: ").append(SHOW_JSON_OUTPUT ? resultOrg : "").append(NL)
         .append(NL)
         .append("===== javax.json =====").append(NL)
         .append("Parse: ").append(printJavax - startJavax).append("ms").append(NL)
         .append("Print: ").append(end - printJavax).append("ms").append(NL)
-        //.append("Result: ").append(resultJavax).append(NL)
+        .append("Result: ").append(SHOW_JSON_OUTPUT ? resultJavax : "").append(NL)
         .append(NL)
         .toString();
 
