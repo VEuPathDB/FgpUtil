@@ -36,12 +36,12 @@ public class ThreadId {
   }
 
   /**
-   * Unassigns the current ID if one is assigned.  Subsequent calls to get()
+   * Removes the current ID if one is assigned.  Subsequent calls to get()
    * will return null until assign() is called again.
    *
    * @return previous ID of this thread or null if none had been assigned
    */
-  public static Integer unassign() {
+  public static Integer remove() {
     int previousValue = threadId.get();
     threadId.remove();
     return previousValue;
