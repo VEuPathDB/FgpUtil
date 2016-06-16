@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.log4j.Logger;
 
 public class QueryLogger {
@@ -152,8 +151,8 @@ public class QueryLogger {
 
     double lastPageSeconds = (System.currentTimeMillis() - startTime) / 1000D;
     double firstPageSeconds = firstPageTime < 0? lastPageSeconds : (firstPageTime - startTime) / 1000D;
- 
-    String details = " [" + name + "] execute: " + firstPageSeconds + " last page: " + lastPageSeconds + " seconds" + (isLeak? " LEAK " : "");
+    String details = String.format(" first: %8.3f last: %8.3f [%s] %s", firstPageSeconds, lastPageSeconds, name, (isLeak? " LEAK " : ""));
+
     if (lastPageSeconds < 0 || firstPageSeconds < 0) {
       logger.error("code error, negative exec time:" + details);
       new Exception().printStackTrace();
@@ -167,7 +166,7 @@ public class QueryLogger {
     // log time for baseline query, and only sql for the first time. goes to
     // info log
     else if (lastPageSeconds >= _config.getBaseline() && !_config.isIgnoredBaseline(sql)) {
-      SlowQueryLog.getLogger().warn("QUERY LOG" + details);
+      SlowQueryLog.getLogger().warn("     QUERY LOG" + details);
 
       synchronized (_queryNames) {
         if (!_queryNames.contains(name)) {
