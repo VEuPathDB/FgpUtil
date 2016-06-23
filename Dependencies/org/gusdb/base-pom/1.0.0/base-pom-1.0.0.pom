@@ -30,6 +30,12 @@
       <organization>University of Pennsylvania</organization>
     </developer>
     <developer>
+      <name>Cristina Aurrecoechea</name>
+      <email>aurreco@uga.edu</email>
+      <roles><role>Senior Software Developer</role></roles>
+      <organization>University of Georgia</organization>
+    </developer>
+    <developer>
       <name>Jerric Gao</name>
       <email>xingao@upenn.edu</email>
       <roles><role>Senior Software Developer</role></roles>
@@ -42,16 +48,16 @@
       <organization>University of Pennsylvania</organization>
     </developer>
     <developer>
-      <name>Dave Faulk</name>
-      <email>dfaulk@uga.edu</email>
+      <name>Dave Falke</name>
+      <email>dfalke@uga.edu</email>
       <roles><role>Senior Software Developer</role></roles>
       <organization>University of Georgia</organization>
     </developer>
     <developer>
-      <name>Cristina Aurrecoechea</name>
-      <email>aurreco@uga.edu</email>
+      <name>Cris Lawrence</name>
+      <email>crisl@upenn.edu</email>
       <roles><role>Senior Software Developer</role></roles>
-      <organization>University of Georgia</organization>
+      <organization>University of Pennsylvania</organization>
     </developer>
   </developers>
 
@@ -304,6 +310,10 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -314,7 +324,7 @@
       <dependency>
         <groupId>commons-fileupload</groupId>
         <artifactId>commons-fileupload</artifactId>
-        <version>1.3.1</version>
+        <version>1.3.2</version>
       </dependency>
 
       <!-- Standard Servlet API -->
@@ -488,17 +498,11 @@
       <plugin>
         <groupId>com.webcohesion.enunciate</groupId>
         <artifactId>enunciate-maven-plugin</artifactId>
-        <version>2.0.0-M.2</version>
-        <executions>
-          <execution>
-            <id>assemble</id>
-            <goals>
-              <goal>assemble</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      -->
+        <version>2.5.0</version>
+        <goals>
+          <goal>assemble</goal>
+        </goals>
+      </plugin>-->
     </plugins>
   </build>
 
