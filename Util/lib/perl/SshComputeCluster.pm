@@ -34,20 +34,21 @@ sub copyTo {
     $self->{mgr}->error("Source directory or file $fromDir/$fromFile doesn't exist\n" . __FILE__ . " line " . __LINE__ . "\n\n") unless (@arr >= 1);
 
     my $user = "$self->{user}\@" if $self->{user};
-    my $ssh_to = "$user$self->{server}";
+    my $ssh_target = "$user$self->{server}";
 
     my $gzip = $gzipFlag? 'gzip -c |' : '';
     my $gunzip = $gzipFlag? 'gunzip -c |' : '';
 
-    # workaround scp problems
-    $self->{mgr}->runCmd(0, "tar cfh - $fromFile | $gzip ssh -2 $ssh_to 'cd $toDir; $gunzip tar xf -'");
+    # run copy cmd, saving a check sum on each side
+    my $localCmd = "/bin/bash -c 'tar cfh - $fromFile | $gzip tee >(md5sum > sum)'";
+    my $remoteCmd = "cd $toDir; tee >(md5sum > sum) | $gunzip tar xf -";
+    $self->{mgr}->runCmd(0, "$localCmd | ssh -2 $ssh_target '$remoteCmd'");
 
-    # ensure it got there
-    my $cmd = qq{ssh -2 $ssh_to '/bin/bash -login -c "ls $toDir"'};
-    my $ls = $self->{mgr}->runCmd(0, $cmd);
-    my @ls2 = split(/\s/, $ls);
-    $self->{mgr}->error("$ls\nFailed copying '$fromDir/$fromFile' to '$toDir' oncluster") unless grep(/$fromFile/, @ls2);
-
+    # get cluster sum and local sum, and compare them
+    my $checksumOnCluster = $self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $toDir; cat sum'");
+    my $checksumLocal = $self->{mgr}->runCmd(0, "cat sum");
+    $self->{mgr}->runCmd(0, "rm sum");
+    $self->{mgr}->error("It appears the copy to cluster of file '$fromDir/$fromFile' failed. Checksum on cluster '$checksumOnCluster' and local checksum '$checksumLocal' do not match.") unless $checksumOnCluster eq $checksumLocal;
 
 }
 
@@ -65,16 +66,17 @@ sub copyFrom {
     my $gzip = $gzipFlag? 'gzip -c |' : '';
     my $gunzip = $gzipFlag? 'gunzip -c |' : '';
 
-
+    # run copy cmd, saving a check sum on each side
     my $remoteCmd = "cd $fromDir; tar cf - $fromFile | $gzip tee >(md5sum > sum)";
-    $self->{mgr}->runCmd(0, "ssh -2 $ssh_target '$remoteCmd' | /bin/bash -c 'tee >(md5sum > sum) | $gunzip tar xf -'");
+    my $localCmd = "/bin/bash -c 'tee >(md5sum > sum) | $gunzip tar xf -'";
+    $self->{mgr}->runCmd(0, "ssh -2 $ssh_target '$remoteCmd' | $localCmd");
+
+    # get cluster sum and local sum, and compare them
     my $checksumOnCluster = $self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $fromDir; cat sum'");
     my $checksumLocal = $self->{mgr}->runCmd(0, "cat sum");
-
     $self->{mgr}->runCmd(0, "rm sum");
-
     $self->{mgr}->error("It appears the copy from cluster of file '$fromDir/$fromFile' failed. Checksum on cluster '$checksumOnCluster' and local checksum '$checksumLocal' do not match.") unless $checksumOnCluster eq $checksumLocal;
-    
+
     if ($deleteAfterCopy) {
 	$self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $fromDir; rm -rf $fromFile'");
     }
