@@ -39,22 +39,25 @@ public final class SqlUtils {
    * @param resultSet
    *          result set to close
    */
-  public static void closeResultSetAndStatement(ResultSet resultSet) {
+  public static void closeResultSetAndStatement(ResultSet resultSet, Statement stmt) {
     try {
       if (resultSet != null) {
         // close the statement in any way
-        Statement stmt = null;
+        Statement stmtLocal = null;
         try {
           try {
-            stmt = resultSet.getStatement();
+            stmtLocal = resultSet.getStatement();
           }
           finally {
             closeResultSetOnly(resultSet);
           }
         }
         finally {
-          closeStatement(stmt);
+          closeStatement(stmtLocal);
         }
+      }
+      if (resultSet == null || (stmt != null && !stmt.isClosed())) {
+        closeStatement(stmt);
       }
     }
     catch (SQLException ex) {
@@ -339,11 +342,12 @@ public final class SqlUtils {
    */
   public static ResultSet executeQuery(DataSource dataSource, String sql, String name, int fetchSize,
       boolean useDBLink) throws SQLException {
-    Connection connection = ConnectionMapping.getConnection(dataSource);
+    Connection connection = null;
     logger.trace("running sql: " + name + "\n" + sql);
     Statement stmt = null;
     ResultSet resultSet = null;
     try {
+      connection = ConnectionMapping.getConnection(dataSource);
       long start = System.currentTimeMillis();
       stmt = connection.createStatement();
       stmt.setFetchSize(fetchSize);
@@ -353,10 +357,12 @@ public final class SqlUtils {
     }
     catch (SQLException ex) {
       logger.error("Failed to run query:\n" + sql);
+      throw ex;
+    }
+    finally {
       if (resultSet == null && connection != null)
         SqlUtils.closeQuietly(connection);
-      closeResultSetAndStatement(resultSet);
-      throw ex;
+      closeResultSetAndStatement(resultSet, stmt);
     }
   }
 
@@ -372,7 +378,7 @@ public final class SqlUtils {
     }
     catch (SQLException ex) {
       logger.error("Failed to run query:\n" + sql);
-      closeResultSetAndStatement(resultSet);
+      closeResultSetAndStatement(resultSet, stmt);
       throw ex;
     }
   }
@@ -403,7 +409,7 @@ public final class SqlUtils {
       return resultSet.getObject(1);
     }
     finally {
-      closeResultSetAndStatement(resultSet);
+      closeResultSetAndStatement(resultSet, null);
     }
   }
 
