@@ -187,6 +187,16 @@
         <groupId>org.openid4java</groupId>
         <artifactId>openid4java</artifactId>
         <version>0.9.8</version>
+        <exclusions>
+          <exclusion>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <!-- Email Support -->
