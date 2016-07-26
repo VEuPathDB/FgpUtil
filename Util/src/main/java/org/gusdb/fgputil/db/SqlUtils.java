@@ -342,8 +342,8 @@ public final class SqlUtils {
    */
   public static ResultSet executeQuery(DataSource dataSource, String sql, String name, int fetchSize,
       boolean useDBLink) throws SQLException {
-    Connection connection = null;
     logger.trace("running sql: " + name + "\n" + sql);
+    Connection connection = null;
     Statement stmt = null;
     ResultSet resultSet = null;
     try {
@@ -357,12 +357,13 @@ public final class SqlUtils {
     }
     catch (SQLException ex) {
       logger.error("Failed to run query:\n" + sql);
-      throw ex;
-    }
-    finally {
-      if (resultSet == null && connection != null)
+      if (stmt == null)
+        // may or may not have a connection, but don't have stmt or rs
         SqlUtils.closeQuietly(connection);
-      closeResultSetAndStatement(resultSet, stmt);
+      else
+        // have at least a statement; close everything we can
+        closeResultSetAndStatement(resultSet, stmt);
+      throw ex;
     }
   }
 
