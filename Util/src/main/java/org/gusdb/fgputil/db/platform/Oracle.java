@@ -330,7 +330,7 @@ public class Oracle extends DBPlatform {
       return array;
     }
     finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet, null);
     }
   }
 
