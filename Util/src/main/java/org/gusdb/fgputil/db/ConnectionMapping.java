@@ -10,7 +10,10 @@ import javax.sql.DataSource;
 
 public class ConnectionMapping {
 
-  private static final Map<Connection, Connection> CONNECTION_MAP = new ConcurrentHashMap<>();
+  // Contains a mapping from native JDBC Connection to ConnectionWrapper; this
+  // allows us to close a ConnectionWrapper even when we want to do so by
+  // getting the connection directly from a JDBC Statement.
+  private static final Map<Connection, ConnectionWrapper> CONNECTION_MAP = new ConcurrentHashMap<>();
 
   /**
    * Returns a connection from the given data source.  If the connection is

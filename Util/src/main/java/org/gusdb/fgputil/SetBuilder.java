@@ -31,6 +31,11 @@ public class SetBuilder<T> {
     return this;
   }
 
+  public SetBuilder<T> addIf(boolean add, T obj) {
+    if (add) _set.add(obj);
+    return this;
+  }
+
   public SetBuilder<T> addAll(Set<T> set) {
     _set.addAll(set);
     return this;

@@ -63,9 +63,11 @@ public class TreeNode<T> implements MultiLineToString {
     public S map(T obj, List<S> mappedChildren);
   }
 
-  private T _nodeContents;
+  protected T _nodeContents;
+  protected List<TreeNode<T>> _childNodes = new ArrayList<>();
+
+  // private since determined by type of _nodeContents
   private final boolean _hasMultiLineSupport;
-  private List<TreeNode<T>> _childNodes = new ArrayList<>();
 
   /**
    * Creates a node containing the passed contents
@@ -385,6 +387,11 @@ public class TreeNode<T> implements MultiLineToString {
     for (TreeNode<T> node : _childNodes) {
       node.apply(nodePred, pred, function);
     }
+  }
+  
+  public List<List<TreeNode<T>>> findCircularPaths() {
+    // TODO: implement this
+    throw new UnsupportedOperationException();
   }
 
   /**
