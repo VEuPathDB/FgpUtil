@@ -9,6 +9,7 @@ my $projectHomeDir = getcwd();
 my @dirs = map {chomp; $_} `ls`;
 
 foreach my $dir (@dirs) {
+  next unless -d "$projectHomeDir/$dir"; # skip files that are not a dir
   my $svnName = $dir;
   $svnName = "GusAppFramework" if $dir eq "GUS";
 
