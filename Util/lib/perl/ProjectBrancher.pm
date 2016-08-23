@@ -26,7 +26,7 @@ my @backendProjects = ('GusAppFramework:gus', 'GusSchema:gus', 'ReFlow:gus',
                        'ApiCommonShared:apidb', 'EuPathDatasets:apidb',
                        'OrthoMCLData:apidb', 'OrthoMCLWorkflow:apidb', 
                        'OrthoMCLShared:apidb', 'OrthoMCLEngine:apidb',
-                       'OrthoMCLDatasets:apidb');
+                       'OrthoMCLDatasets:apidb', 'EuPathMetadataRepository:apidb');
 
 # Shared website projects
 my @sharedSiteProjects = ('EuPathSiteCommon:apidb', 'EuPathWebSvcCommon:apidb');
@@ -42,7 +42,8 @@ my @orthoSiteProjects = ('OrthoMCLShared:apidb', 'OrthoMCLWebsite:apidb',
 
 # All other projects not listed above
 my @otherProjects = ('DJob:gus', 'TuningManager:gus', 'OAuth2Server:gus',
-                     'WDKTemplateSite:gus', 'WSFTemplate:gus');
+                     'WDKTemplateSite:gus', 'WSFTemplate:gus', 'EuPathGalaxy:apidb',
+                     'EuPathTemplateSite:apidb');
 
 # Keys for selecting project groups
 sub uniq { my %seen; grep !$seen{$_}++, @_; }
