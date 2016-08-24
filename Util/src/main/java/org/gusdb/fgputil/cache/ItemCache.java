@@ -14,8 +14,8 @@ import org.apache.log4j.Logger;
  * thread-safe and can be used in a static, application-wide way to cache
  * homogeneous objects.
  * 
- * @param S unique keys of items cached
- * @param T item cached
+ * @param S type of unique keys of items cached
+ * @param T type of items cached
  * 
  * @author rdoherty
  */
