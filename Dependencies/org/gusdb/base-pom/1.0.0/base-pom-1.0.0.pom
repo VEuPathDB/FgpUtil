@@ -79,13 +79,8 @@
       <id>dice.repository</id>
       <name>dice.repository</name>
       <url>https://raw.github.com/DICE-UNC/DICE-Maven/master/releases</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
       <snapshots>
         <enabled>false</enabled>
-        <updatePolicy>always</updatePolicy>
-        <checksumPolicy>warn</checksumPolicy>
       </snapshots>
     </repository>
   </repositories>
@@ -220,23 +215,6 @@
         <version>1.8</version>
       </dependency>
 
-      <!-- OpenID Support -->
-      <dependency>
-        <groupId>org.openid4java</groupId>
-        <artifactId>openid4java</artifactId>
-        <version>0.9.8</version>
-        <exclusions>
-          <exclusion>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
       <!-- Email Support -->
       <dependency>
         <groupId>javax.mail</groupId>
@@ -345,6 +323,13 @@
         <groupId>com.google.api-client</groupId>
         <artifactId>google-api-client</artifactId>
         <version>1.20.0</version>
+        <exclusions>
+          <!-- Unexclude if we ever decide to use Google to log in (OAuth) -->
+          <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <!-- Spring Framework / IoC -->
