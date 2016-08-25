@@ -187,6 +187,12 @@
         <artifactId>pellet-owlapiv3</artifactId>
         <version>1.0.0</version>
       </dependency>
+      
+      <dependency>
+        <groupId>net.sourceforge.owlapi</groupId>
+        <artifactId>owlapi-distribution</artifactId>
+        <version>3.5.0</version>
+      </dependency>
 
       <!-- Command Line Support -->
       <dependency>
