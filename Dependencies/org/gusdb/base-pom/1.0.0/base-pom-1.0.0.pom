@@ -181,6 +181,12 @@
         <artifactId>factplusplus-P4.3</artifactId>
         <version>1.6.3</version>
       </dependency>
+      
+      <dependency>
+        <groupId>com.github.ansell.pellet</groupId>
+        <artifactId>pellet-owlapiv3</artifactId>
+        <version>1.0.0</version>
+      </dependency>
 
       <!-- Command Line Support -->
       <dependency>
