@@ -141,4 +141,31 @@ public class Functions {
     }
   }
 
+  /**
+   * Converts an iterator of one type to an iterator of another, given a conversion function
+   *
+   * @param <T> type of original iterator
+   * @param <S> type of new iterator
+   * @param iterator original iterator
+   * @param transformer function to apply to each element before returning in new iterator
+   */
+  public static <T,S> Iterator<S> transform(final Iterator<T> iterator, final Function<T,S> transformer) {
+    return new Iterator<S>() {
+
+      @Override
+      public boolean hasNext() {
+        return iterator.hasNext();
+      }
+
+      @Override
+      public S next() {
+        return transformer.apply(iterator.next());
+      }
+
+      @Override
+      public void remove() {
+        iterator.remove();
+      }
+    };
+  }
 }
