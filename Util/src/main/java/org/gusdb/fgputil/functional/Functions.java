@@ -168,4 +168,18 @@ public class Functions {
       }
     };
   }
+
+  /**
+   * Returns a function that takes a key and returns the value in the passed map for that key
+   * 
+   * @param map any map
+   * @return functional facade over the map's get method
+   */
+  public static <S,T> Function<S,T> toMapFunction(final Map<S,T> map) {
+    return new Function<S,T>() {
+      @Override public T apply(S key) {
+        return map.get(key);
+      }
+    };
+  }
 }
