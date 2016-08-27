@@ -83,4 +83,34 @@ public class FunctionalInterfaces {
   public static class FalsePredicate<T> implements Predicate<T> {
     @Override public boolean test(T obj) { return false; }
   }
+
+  /**
+   * Returns a predicate that tests whether an object is equal to
+   * the passed object using the object's equal() method.
+   * 
+   * @param obj object
+   * @return predicate to test equality to passed object
+   */
+  public static <T> Predicate<T> equalTo(final T obj) {
+    return new Predicate<T>() {
+      @Override public boolean test(T candidate) {
+        return obj.equals(candidate);
+      }
+    };
+  }
+
+  /**
+   * Returns a predicate that tests whether an object is not equal to
+   * the passed object using the object's equal() method.
+   * 
+   * @param obj object
+   * @return predicate to test inequality to passed object
+   */
+  public static <T> Predicate<T> notEqualTo(final T obj) {
+    return new Predicate<T>() {
+      @Override public boolean test(T candidate) {
+        return !obj.equals(candidate);
+      }
+    };
+  }
 }
