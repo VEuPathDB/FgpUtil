@@ -2,6 +2,8 @@ package org.gusdb.fgputil;
 
 public class Tuples {
 
+  private Tuples() {}
+
   public static class TwoTuple<S,T> {
 
     private S _first;
