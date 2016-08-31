@@ -48,7 +48,14 @@ public abstract class PropFileReader {
     }
   }
 
-  protected void doExtraValidation(Properties props) { /* nothing by default */}
+  /**
+   * Do any extra validation on props
+   * 
+   * @param props properties read by this reader
+   */
+  protected void doExtraValidation(Properties props) {
+    /* nothing by default */
+  }
 
   protected String getStringValue(String propertyName) {
     return _props.getProperty(propertyName).trim();

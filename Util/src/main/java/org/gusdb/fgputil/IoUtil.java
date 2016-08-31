@@ -117,7 +117,7 @@ public class IoUtil {
    */
   public static void closeQuietly(Closeable... closeable) {
     for (Closeable each : closeable) {
-      try { if (closeable != null) each.close(); } catch (Exception ex) { /* do nothing */ }
+      try { if (each != null) each.close(); } catch (Exception ex) { /* do nothing */ }
     }
   }
   
