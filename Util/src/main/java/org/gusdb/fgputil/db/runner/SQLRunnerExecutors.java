@@ -40,7 +40,7 @@ class SQLRunnerExecutors {
    */
   static abstract class PreparedStatementExecutor {
     
-    private Object[] _args;
+    protected Object[] _args;
     private Integer[] _types;
     protected long _lastExecutionTime = 0L;
 
@@ -149,7 +149,7 @@ class SQLRunnerExecutors {
 
     private ArgumentBatch _argBatch;
     private int _numUpdates;
-    
+
     public BatchUpdateExecutor(ArgumentBatch argBatch) {
       super(new Object[]{ }, null);
       _argBatch = argBatch;
@@ -174,6 +174,7 @@ class SQLRunnerExecutors {
       int numBatches = 0;
       int numUnexecuted = 0;
       for (Object[] args : _argBatch) {
+        _args = args;
         SqlUtils.bindParamValues(stmt, _argBatch.getParameterTypes(), args);
         stmt.addBatch();
         numUnexecuted++;
@@ -206,11 +207,6 @@ class SQLRunnerExecutors {
 
     public int getNumUpdates() {
       return _numUpdates;
-    }
-
-    @Override
-    public String getParamsToString() {
-      return "Batch of arguments.";
     }
   }
 

@@ -307,7 +307,7 @@ public class SQLRunner {
       if (connectionSuccessful) {
         attemptRollback(conn);
       }
-      throw new SQLRunnerException("Unable to run query with SQL <" + _sql + "> and args: " + exec.getParamsToString(), e);
+      throw new SQLRunnerException("Unable to run SQL <" + _sql + "> with args " + exec.getParamsToString(), e);
     }
     finally {
       exec.closeQuietly();
