@@ -31,6 +31,20 @@ public class JsonType {
     }
   }
 
+  public JsonType(Object object) {
+    if (object instanceof JSONObject) {
+      _jsonObject = (JSONObject)object;
+      _nativeType = NativeType.OBJECT;
+    }
+    else if (object instanceof JSONArray) {
+      _jsonArray = (JSONArray)object;
+      _nativeType = NativeType.ARRAY;
+    }
+    else {
+      throw new IllegalArgumentException("Passed object must be either JSONObject or JSONArray");
+    }
+  }
+
   public JsonType(JSONObject jsonObject) {
     _jsonObject = jsonObject;
     _nativeType = NativeType.OBJECT;
