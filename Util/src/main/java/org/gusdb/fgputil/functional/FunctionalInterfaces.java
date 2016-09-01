@@ -76,15 +76,6 @@ public class FunctionalInterfaces {
   }
 
   /**
-   * Typed predicate that always returns false.
-   *
-   * @param <T> type of object being evaluated
-   */
-  public static class FalsePredicate<T> implements Predicate<T> {
-    @Override public boolean test(T obj) { return false; }
-  }
-
-  /**
    * Returns a predicate that tests whether an object is equal to
    * the passed object using the object's equal() method.
    * 
@@ -100,16 +91,17 @@ public class FunctionalInterfaces {
   }
 
   /**
-   * Returns a predicate that tests whether an object is not equal to
-   * the passed object using the object's equal() method.
+   * Returns a predicate that negates the result of the passed predicate
+   * for each input (i.e. if the passed predicate's test method returns
+   * true, the returned predicate returns false, and vice versa).
    * 
-   * @param obj object
-   * @return predicate to test inequality to passed object
+   * @param predicate any predicate
+   * @return predicate that negates results of the passed predicate
    */
-  public static <T> Predicate<T> notEqualTo(final T obj) {
+  public static <T> Predicate<T> negate(final Predicate<T> predicate) {
     return new Predicate<T>() {
       @Override public boolean test(T candidate) {
-        return !obj.equals(candidate);
+        return !predicate.test(candidate);
       }
     };
   }
