@@ -24,11 +24,11 @@ public class JsonTypeTest {
   @Test
   public void booleanTest() throws Exception {
     String value = "true";
-    JsonType json = new JsonType(value);
+    JsonType json = JsonType.parse(value);
     assertEquals(ValueType.BOOLEAN, json.getType());
     assertEquals(true, json.getBoolean());
     value = "false";
-    json = new JsonType(value);
+    json = JsonType.parse(value);
     assertEquals(ValueType.BOOLEAN, json.getType());
     assertEquals(false, json.getBoolean());
   }
@@ -36,7 +36,7 @@ public class JsonTypeTest {
   @Test
   public void doubleTest() throws Exception {
     String value = "123.123";
-    JsonType json = new JsonType(value);
+    JsonType json = JsonType.parse(value);
     assertEquals(ValueType.NUMBER, json.getType());
     assertEquals(Double.valueOf(123.123), json.getDouble());
   }
@@ -44,7 +44,7 @@ public class JsonTypeTest {
   @Test
   public void stringTest() throws Exception {
     String value = "\"123.123\"";
-    JsonType json = new JsonType(value);
+    JsonType json = JsonType.parse(value);
     assertEquals(ValueType.STRING, json.getType());
     assertEquals("123.123", json.getString());
   }
@@ -52,7 +52,7 @@ public class JsonTypeTest {
   @Test
   public void arrayTest() throws Exception {
     String value = "[ \"123.123\", true, null ]";
-    JsonType json = new JsonType(value);
+    JsonType json = JsonType.parse(value);
     assertEquals(ValueType.ARRAY, json.getType());
     assertEquals(3, json.getJSONArray().length());
   }
@@ -60,7 +60,7 @@ public class JsonTypeTest {
   @Test
   public void objectTest() throws Exception {
     String value = "{ \"item1\": \"123.123\", \"item2\": true, \"item3\": null }";
-    JsonType json = new JsonType(value);
+    JsonType json = JsonType.parse(value);
     assertEquals(ValueType.OBJECT, json.getType());
     assertEquals(3, json.getJSONObject().length());
   }
@@ -70,14 +70,14 @@ public class JsonTypeTest {
   @Test
   public void failureTest() throws Exception {
     String value = "abc";
-    JsonType json = new JsonType(value);
+    JsonType json = JsonType.parse(value);
     assertEquals(ValueType.STRING, json.getType());
     value = "[ abc, def ]";
-    json = new JsonType(value);
+    json = JsonType.parse(value);
     assertEquals(ValueType.ARRAY, json.getType());
     assertEquals(2, json.getJSONArray().length());
     value = "[ abc def ]";
-    json = new JsonType(value);
+    json = JsonType.parse(value);
     assertEquals(ValueType.ARRAY, json.getType());
     assertEquals(1, json.getJSONArray().length());
     JSONArray array = new JSONArray(value);
