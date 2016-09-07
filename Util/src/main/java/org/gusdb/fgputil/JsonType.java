@@ -6,81 +6,138 @@ import org.json.JSONObject;
 
 public class JsonType {
 
-  public static enum NativeType {
-    OBJECT, ARRAY
+  public static enum ValueType {
+    OBJECT, ARRAY, STRING, NUMBER, BOOLEAN, NULL;
   }
 
-  private NativeType _nativeType;
-  private JSONObject _jsonObject;
-  private JSONArray _jsonArray;
-  
+  private static final String PARSE_ERROR_MSG = "Passed string is not parsable into a JSON value: ";
+
+  private ValueType _nativeType;
+  private Object _object = null;
+
   public JsonType(String jsonStr) throws JSONException {
-    try {
-      _jsonObject = new JSONObject(jsonStr);
-      _nativeType = NativeType.OBJECT;
+    // handle simple cases
+    if ("null".equals(jsonStr)) {
+      _nativeType = ValueType.NULL;
     }
-    catch (JSONException e1) {
+    else if ("true".equals(jsonStr)) {
+      _nativeType = ValueType.BOOLEAN;
+      _object = Boolean.TRUE;
+    }
+    else if ("false".equals(jsonStr)) {
+      _nativeType = ValueType.BOOLEAN;
+      _object = Boolean.FALSE;
+    }
+
+    // try for object and array, then parse for string and number
+    else {
       try {
-        _jsonArray = new JSONArray(jsonStr);
-        _nativeType = NativeType.ARRAY;
+        // try to convert the passed string to a JSONObject
+        _object = new JSONObject(jsonStr);
+        _nativeType = ValueType.OBJECT;
       }
-      catch (JSONException e2) {
-        // more likely trying to parse JSON object
-        throw e1;
+      catch (JSONException e1) {
+        // failed to create JSON object, try array
+        try {
+          _object = new JSONArray(jsonStr);
+          _nativeType = ValueType.ARRAY;
+        }
+        catch (JSONException e2) {
+          // neither object nor array, try number and string by wrapping in brackets
+          try {
+            System.out.println("jsonStr is " + jsonStr);
+            JSONArray array = new JSONArray("[ " + jsonStr + " ]");
+            setObject(array.get(0));
+          }
+          catch (JSONException e3) {
+            throw new IllegalArgumentException(PARSE_ERROR_MSG + jsonStr);
+          }
+        }
       }
     }
   }
 
   public JsonType(Object object) {
-    if (object instanceof JSONObject) {
-      _jsonObject = (JSONObject)object;
-      _nativeType = NativeType.OBJECT;
+    setObject(object);
+  }
+
+  private void setObject(Object object) {
+    System.out.println("object is " + object);
+    if (object == null || object.equals(JSONObject.NULL)) {
+      _nativeType = ValueType.NULL;
+      object = JSONObject.NULL;
+    }
+    else if (object instanceof Boolean) {
+      _nativeType = ValueType.BOOLEAN;
+    }
+    else if (object instanceof String) {
+      _nativeType = ValueType.STRING;
+    }
+    else if (object instanceof Integer) {
+      _nativeType = ValueType.NUMBER;
+      object = ((Integer)object).doubleValue();
+    }
+    else if (object instanceof Long) {
+      _nativeType = ValueType.NUMBER;
+      object = ((Long)object).doubleValue();
+    }
+    else if (object instanceof Double) {
+      _nativeType = ValueType.NUMBER;
+    }
+    else if (object instanceof JSONObject) {
+      _nativeType = ValueType.OBJECT;
     }
     else if (object instanceof JSONArray) {
-      _jsonArray = (JSONArray)object;
-      _nativeType = NativeType.ARRAY;
+      _nativeType = ValueType.ARRAY;
     }
     else {
-      throw new IllegalArgumentException("Passed object must be either JSONObject or JSONArray");
+      throw new IllegalArgumentException(PARSE_ERROR_MSG + object);
     }
+    _object = object;
   }
 
-  public JsonType(JSONObject jsonObject) {
-    _jsonObject = jsonObject;
-    _nativeType = NativeType.OBJECT;
-  }
-
-  public JsonType(JSONArray jsonArray) {
-    _jsonArray = jsonArray;
-    _nativeType = NativeType.ARRAY;
-  }
-
-  public NativeType getNativeType() {
+  public ValueType getType() {
     return _nativeType;
   }
 
-  public JSONObject getObject() {
-    return _jsonObject;
+  public JSONObject getJSONObject() {
+    checkType(ValueType.OBJECT, "getJSONObject");
+    return (JSONObject)_object;
   }
 
-  public JSONArray getArray() {
-    return _jsonArray;
+  public JSONArray getJSONArray() {
+    checkType(ValueType.ARRAY, "getJSONArray");
+    return (JSONArray)_object;
+  }
+
+  public String getString() {
+    checkType(ValueType.STRING, "getString");
+    return (String)_object;
+  }
+
+  public Double getDouble() {
+    checkType(ValueType.NUMBER, "getDouble");
+    return (Double)_object;
+  }
+
+  public Boolean getBoolean() {
+    checkType(ValueType.BOOLEAN, "getBoolean");
+    return (Boolean)_object;
+  }
+
+  private void checkType(ValueType type, String call) {
+    if (!type.equals(_nativeType)) {
+      throw new UnsupportedOperationException("Cannot call " +
+          call + "() unless type is " + type.name());
+    }
   }
 
   @Override
   public String toString() {
-    switch (_nativeType) {
-      case OBJECT: return _jsonObject.toString();
-      case ARRAY:  return _jsonArray.toString();
-      default:     return null; // should never happen
-    }
+    return _object.toString();
   }
 
-  public Object getNativeObject() {
-    switch (_nativeType) {
-      case OBJECT: return _jsonObject;
-      case ARRAY:  return _jsonArray;
-      default:     return null; // should never happen
-    }
+  public Object get() {
+    return _object;
   }
 }
