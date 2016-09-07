@@ -8,7 +8,17 @@ import org.json.JSONObject;
 
 public class JsonIterators {
 
-  public static class JsonArrayIterable implements Iterable<JsonType> {
+  private JsonIterators() {}
+
+  public static Iterable<JsonType> arrayIterable(JSONArray array) {
+    return new JsonArrayIterable(array);
+  }
+
+  public static Iterable<Entry<String, JsonType>> objectIterable(JSONObject obj) {
+    return new JsonObjectIterable(obj);
+  }
+
+  private static class JsonArrayIterable implements Iterable<JsonType> {
 
     private final JSONArray _array;
     private int _currentIndex = 0;
@@ -42,7 +52,7 @@ public class JsonIterators {
     }
   }
 
-  public static class JsonObjectIterable implements Iterable<Entry<String, JsonType>> {
+  private static class JsonObjectIterable implements Iterable<Entry<String, JsonType>> {
 
     private final JSONObject _object;
     private Iterator<String> _iterator;

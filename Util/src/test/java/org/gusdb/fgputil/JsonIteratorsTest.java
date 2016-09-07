@@ -8,8 +8,6 @@ import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.gusdb.fgputil.JsonIterators.JsonArrayIterable;
-import org.gusdb.fgputil.JsonIterators.JsonObjectIterable;
 import org.junit.Test;
 
 public class JsonIteratorsTest {
@@ -25,7 +23,7 @@ public class JsonIteratorsTest {
   private void testCount(JSONArray array, int expected) {
     int count = 0;
     List<String> vals = new ArrayList<>();
-    for (JsonType value : new JsonArrayIterable(array)) {
+    for (JsonType value : JsonIterators.arrayIterable(array)) {
       count++;
       vals.add(value.toString());
     }
@@ -46,7 +44,7 @@ public class JsonIteratorsTest {
     List<String> keys = new ArrayList<>();
     List<String> vals = new ArrayList<>();
     List<String> types = new ArrayList<>();
-    for (Entry<String, JsonType> entry : new JsonObjectIterable(obj)) {
+    for (Entry<String, JsonType> entry : JsonIterators.objectIterable(obj)) {
       count++;
       keys.add(entry.getKey());
       vals.add(entry.getValue().toString());
