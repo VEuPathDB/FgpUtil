@@ -26,6 +26,13 @@ public class Timer {
     return System.currentTimeMillis() - _startTime;
   }
 
+  public long getElapsedAndRestart() {
+    long now = System.currentTimeMillis();
+    long previousInterval = now - _startTime;
+    _startTime = now;
+    return previousInterval;
+  }
+
   public String getElapsedAsString() {
     return getDurationAsString(getElapsed());
   }
