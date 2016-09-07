@@ -45,7 +45,6 @@ public class JsonType {
         catch (JSONException e2) {
           // neither object nor array, try number and string by wrapping in brackets
           try {
-            System.out.println("jsonStr is " + jsonStr);
             JSONArray array = new JSONArray("[ " + jsonStr + " ]");
             setObject(array.get(0));
           }
@@ -62,7 +61,6 @@ public class JsonType {
   }
 
   private void setObject(Object object) {
-    System.out.println("object is " + object);
     if (object == null || object.equals(JSONObject.NULL)) {
       _nativeType = ValueType.NULL;
       object = JSONObject.NULL;
