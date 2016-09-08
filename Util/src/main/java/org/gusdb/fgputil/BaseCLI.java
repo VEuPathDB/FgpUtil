@@ -49,6 +49,7 @@ public abstract class BaseCLI {
     }
     catch (ParseException ex) {
       printUsage();
+      System.exit(1);
     }
     catch (Exception ex) {
       ex.printStackTrace();
