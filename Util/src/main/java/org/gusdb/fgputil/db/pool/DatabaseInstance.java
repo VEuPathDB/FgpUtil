@@ -150,7 +150,8 @@ public class DatabaseInstance implements Wrapper {
         _identifier = identifier;
 
         try {
-          LOG.info("DB Connection [" + _identifier + "]: " + _dbConfig.getConnectionUrl());
+          LOG.info("DB Connection Pool [" + _identifier + "]: " +
+              _dbConfig.getLogin() + "@" + _dbConfig.getConnectionUrl());
 
           _connectionPool = createConnectionPool(_dbConfig, _platform);
 
