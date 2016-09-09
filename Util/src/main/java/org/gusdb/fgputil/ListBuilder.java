@@ -12,6 +12,15 @@ import java.util.List;
  */
 public class ListBuilder<T> {
 
+  @SafeVarargs
+  public static <T> List<T> asList(T... objs) {
+    List<T> list = new ArrayList<>();
+    for (T obj : objs) {
+      list.add(obj);
+    }
+    return list;
+  }
+
   private List<T> _list;
 
   public ListBuilder() {
