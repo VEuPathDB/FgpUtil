@@ -12,12 +12,20 @@ import java.util.List;
  */
 public class ListBuilder<T> {
 
-  @SafeVarargs
-  public static <T> List<T> asList(T... objs) {
+  /**
+   * Creates a typed list from a single object.  A slightly more efficient and convenient
+   * function than calling:
+   * 
+   * new ListBuilder<T>().add(obj).toList();
+   * 
+   * Note that the returned list is a mutable ArrayList.
+   * 
+   * @param obj object to place in list
+   * @return list containing passed object
+   */
+  public static <T> List<T> asList(T obj) {
     List<T> list = new ArrayList<>();
-    for (T obj : objs) {
-      list.add(obj);
-    }
+    list.add(obj);
     return list;
   }
 
