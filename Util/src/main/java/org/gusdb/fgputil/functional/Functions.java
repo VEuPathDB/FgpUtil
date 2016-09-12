@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
 
 public class Functions {
 
@@ -237,5 +238,22 @@ public class Functions {
         return map.get(key);
       }
     };
+  }
+
+  /**
+   * Performs a reduce operation on the passed collection using the passed reducer
+   * 
+   * @param collection collection to operate on
+   * @param reducer reducer function
+   * @param initialValue initial value passed to the reducer's reduce method along with the first element
+   * @return reduction of the collection
+   */
+  public static <S,T> T reduce(Collection<S> collection, Reducer<S,T> reducer, T initialValue) {
+    if (collection.isEmpty())
+      return initialValue;
+    for (S obj : collection) {
+      initialValue = reducer.reduce(obj, initialValue);
+    }
+    return initialValue;
   }
 }

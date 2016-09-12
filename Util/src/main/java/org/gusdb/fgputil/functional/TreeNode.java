@@ -260,21 +260,17 @@ public class TreeNode<T> implements MultiLineToString {
    * 
    * @param nodePred predicate to filter nodes that will contribute to the reduction
    * @param reducer reducer to use to aggregate information
-   * @return result, or null if no nodes match the predicate
+   * @param initialValue initial value passed to the first call to the reducer's reduce method
+   * @return result, or initialValue if no nodes match the predicate
    */
-  public <S> S reduce(Predicate<TreeNode<T>> nodePred, Reducer<T,S> reducer) {
-    return reduce(nodePred, reducer, null);
-  }
-
-  private <S> S reduce(Predicate<TreeNode<T>> nodePred, Reducer<T,S> reducer, S incomingValue) {
+  public <S> S reduce(Predicate<TreeNode<T>> nodePred, Reducer<T,S> reducer, S initialValue) {
     if (nodePred == null || nodePred.test(this)) {
-      incomingValue = (incomingValue == null ?
-          reducer.reduce(_nodeContents) : reducer.reduce(_nodeContents, incomingValue));
+      initialValue = reducer.reduce(_nodeContents, initialValue);
     }
     for (TreeNode<T> node : _childNodes) {
-      incomingValue = node.reduce(nodePred, reducer, incomingValue);
+      initialValue = node.reduce(nodePred, reducer, initialValue);
     }
-    return incomingValue;
+    return initialValue;
   }
 
   /**
