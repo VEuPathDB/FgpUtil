@@ -243,16 +243,14 @@ public class Functions {
   /**
    * Performs a reduce operation on the passed collection using the passed reducer
    * 
-   * @param collection collection to operate on
+   * @param iterator iterator over items to operate on
    * @param reducer reducer function
    * @param initialValue initial value passed to the reducer's reduce method along with the first element
    * @return reduction of the collection
    */
-  public static <S,T> T reduce(Collection<S> collection, Reducer<S,T> reducer, T initialValue) {
-    if (collection.isEmpty())
-      return initialValue;
-    for (S obj : collection) {
-      initialValue = reducer.reduce(obj, initialValue);
+  public static <S,T> T reduce(Iterator<S> iterator, Reducer<S,T> reducer, T initialValue) {
+    while (iterator.hasNext()) {
+      initialValue = reducer.reduce(iterator.next(), initialValue);
     }
     return initialValue;
   }
