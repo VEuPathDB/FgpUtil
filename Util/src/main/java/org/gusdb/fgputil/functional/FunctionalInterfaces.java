@@ -49,13 +49,6 @@ public class FunctionalInterfaces {
    */
   public interface Reducer<T, S> {
     /**
-     * Returns an initial result based on the passed input value
-     * 
-     * @param obj object to evaluate
-     * @return initial result
-     */
-    //public S reduce(T obj);
-    /**
      * Returns an aggregate result by combining the incoming value with that
      * produced by evaluating the passed object
      * 
