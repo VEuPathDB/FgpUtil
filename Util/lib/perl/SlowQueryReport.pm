@@ -120,9 +120,9 @@ sub makeReport {
 
   # name total_secs count avg_secs total_secs_over count_over  worst_secs
   if ($brief) {
-    print sprintf("%3s %75s%8s%12s%10s%7s%8s%12s%25s\n", @header);
+    print sprintf("%3s %90s%8s%12s%10s%7s%8s%12s%25s\n", @header);
   } else {
-    print sprintf("%3s %75s%8s%12s%10s%7s%8s%12s%25s%80s\n", @header);
+    print sprintf("%3s %90s%8s%12s%10s%7s%8s%12s%25s%80s\n", @header);
   }
 
   print TABFILE join("\t", @header) . "\n" if $tabfile;
@@ -132,9 +132,9 @@ sub makeReport {
     my $avg = $a->[1] / $a->[2];
     my @row = (++$rownum,$a->[0],$a->[2],$a->[1],$avg,$a->[5],$a->[4],$a->[3],$a->[6],$a->[7]);
     if ($brief) {
-      print sprintf("%3d %75s%8d%12.2f%10.2f%7.2f%8d%12.2f%25s\n", @row);
+      print sprintf("%3d %90s%8d%12.2f%10.2f%7.2f%8d%12.2f%25s\n", @row);
     } else {
-      print sprintf("%3d %75s%8d%12.2f%10.2f%7.2f%8d%12.2f%25s%80s\n", @row);
+      print sprintf("%3d %90s%8d%12.2f%10.2f%7.2f%8d%12.2f%25s%80s\n", @row);
     }
     print TABFILE sprintf("\%d\t\%s\t\%d\t\%.2f\t\%.2f\t\%.2f\t\%d\t\%.2f\t\%s\t\%s\n", @row);
   }
