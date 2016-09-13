@@ -42,9 +42,9 @@ sub copyTo {
     my $sumFile = "$fromFile.sum";
 
     # run copy cmd, saving a check sum on each side
-    my $localCmd = "/bin/bash -c \"set -e -o pipefail; tar cfh - $fromFile | $gzip tee >(md5sum > $sumFile)\"";
-    my $remoteCmd = "/bin/bash -c \"set -e -o pipefail; cd $toDir; tee >(md5sum > $sumFile) | $gunzip tar xf -\"";
-    $self->{mgr}->runCmd(0, "$localCmd | ssh -2 $ssh_target '$remoteCmd'");
+    my $localCmd = "tar cfh - $fromFile | $gzip tee >(md5sum > $sumFile)";
+    my $remoteCmd = qq(/bin/bash -c \\"set -e -o pipefail; cd $toDir; tee >(md5sum > $sumFile) | $gunzip tar xf -\\");
+    $self->{mgr}->runCmd(0, "/bin/bash -c \"set -e -o pipefail; $localCmd | ssh -2 $ssh_target '$remoteCmd'\"");
 
     # get cluster sum and local sum, and compare them
     my $checksumOnCluster = $self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $toDir; cat $sumFile'");
@@ -70,9 +70,9 @@ sub copyFrom {
 
     my $sumFile = "$fromFile.sum";
     # run copy cmd, saving a check sum on each side
-    my $remoteCmd = "/bin/bash -c \"set -e -o pipefail; cd $fromDir; tar cf - $fromFile | $gzip tee >(md5sum > $sumFile)\"";
-    my $localCmd = "/bin/bash -c \"set -e -o pipefail;tee >(md5sum > $sumFile) | $gunzip tar xf -\"";
-    $self->{mgr}->runCmd(0, "ssh -2 $ssh_target '$remoteCmd' | $localCmd");
+    my $remoteCmd = qq(/bin/bash -c \\"set -e -o pipefail; cd $fromDir; tar cf - $fromFile | $gzip tee >(md5sum > $sumFile)\\");
+    my $localCmd = "tee >(md5sum > $sumFile) | $gunzip tar xf -";
+    $self->{mgr}->runCmd(0, "/bin/bash -c \"set -e -o pipefail; ssh -2 $ssh_target '$remoteCmd' | $localCmd\"");
 
     # get cluster sum and local sum, and compare them
     my $checksumOnCluster = $self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $fromDir; cat $sumFile'");
