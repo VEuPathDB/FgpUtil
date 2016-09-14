@@ -287,7 +287,7 @@ public class Events {
     try {
       _eventTypeMapLock.writeLock().lock();
       checkNotShutDown();
-      List<EventListener> listeners = _eventTypeMap.get(eventType);
+      List<EventListener> listeners = _eventTypeMap.get(eventType.getName());
       if (listeners == null) {
         listeners = new ArrayList<>();
         _eventTypeMap.put(eventType.getName(), listeners);
