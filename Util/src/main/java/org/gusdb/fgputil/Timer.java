@@ -33,11 +33,15 @@ public class Timer {
     return previousInterval;
   }
 
-  public String getElapsedAsString() {
-    return getDurationAsString(getElapsed());
+  public String getElapsedString() {
+    return getDurationString(getElapsed());
   }
 
-  public static String getDurationAsString(long totalMillis) {
+  public String getElapsedStringAndRestart() {
+    return getDurationString(getElapsedAndRestart());
+  }
+
+  public static String getDurationString(long totalMillis) {
     long millis = totalMillis % 1000;
     long totalSeconds = totalMillis / 1000;
     if (totalSeconds == 0) return  millis + "ms";
@@ -57,6 +61,6 @@ public class Timer {
 
   @Override
   public String toString() {
-    return getElapsedAsString();
+    return getElapsedString();
   }
 }
