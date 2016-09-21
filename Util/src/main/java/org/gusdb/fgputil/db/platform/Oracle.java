@@ -144,7 +144,7 @@ public class Oracle extends DBPlatform {
   public String getNextIdSqlExpression(String schema, String table) {
     schema = normalizeSchema(schema);
 
-    StringBuffer sql = new StringBuffer("");
+    StringBuilder sql = new StringBuilder("");
     sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
     sql.append(".nextval");
     return sql.toString();
