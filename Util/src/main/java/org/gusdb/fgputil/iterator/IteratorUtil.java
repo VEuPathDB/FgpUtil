@@ -91,6 +91,14 @@ public class IteratorUtil {
     };
   }
 
+  /**
+   * Transforms a Cursor to an Iterator.  This requires caching the "next" object in memory, so be advised
+   * these should probably not be too big.  The object behind the cursor is not closed in any way; the
+   * caller is responsible for closing any underlying open resources.
+   * 
+   * @param cursor cursor object
+   * @return a read-only iterator facade over the passed cursor
+   */
   public static <T> ReadOnlyIterator<T> toIterator(final Cursor<T> cursor) {
     final Wrapper<Boolean> storedItemPresent = new Wrapper<Boolean>().set(cursor.next());
     final Wrapper<T> storedItem = new Wrapper<T>().set(storedItemPresent.get() ? cursor.get() : null);
@@ -112,6 +120,14 @@ public class IteratorUtil {
     };
   }
 
+  /**
+   * Transforms an Iterator to a Cursor.  This requires caching the "next" object in memory, so be advised
+   * these should probably not be too big.  The object behind the cursor is not closed in any way; the
+   * caller is responsible for closing any underlying open resources.
+   * 
+   * @param iterator iterator object
+   * @return a cursor facade over the passed iterator
+   */
   public static <T> Cursor<T> toCursor(final Iterator<T> iterator) {
     final Wrapper<T> currentItem = new Wrapper<>();
     final Wrapper<Boolean> hasCurrentItem = new Wrapper<Boolean>().set(false);
@@ -133,6 +149,23 @@ public class IteratorUtil {
           throw new NoSuchElementException("Cursor is not currently pointing to any element.");
         }
         return currentItem.get();
+      }
+    };
+  }
+
+  /**
+   * Returns an Iterable wrapper around the passed iterator.  Can be used as a convenience when you have
+   * an iterator in hand and want to pass over it with a for-each loop, or if you have a utility that takes
+   * an Iterable.
+   * 
+   * @param iterator iterator object
+   * @return an iterable that returns the passed iterator from its iterator() method
+   */
+  public static <T> Iterable<T> toIterable(final Iterator<T> iterator) {
+    return new Iterable<T>() {
+      @Override
+      public Iterator<T> iterator() {
+        return iterator;
       }
     };
   }
