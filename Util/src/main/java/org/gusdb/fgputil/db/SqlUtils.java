@@ -18,6 +18,8 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.iterator.Cursor;
 
 /**
  * @author Jerric Gao
@@ -566,5 +568,31 @@ public final class SqlUtils {
         stmt.setObject(i + 1, args[i], types[i]);
       }
     }
+  }
+
+  /**
+   * Transforms a ResultSet into a Cursor over a stream of typed objects, each created by a row in the
+   * ResultSet by the passed object creator
+   * 
+   * @param rs ResultSet to iterate over
+   * @param objCreator function that takes a ResultSet set to a row and creates an object from it
+   * @return cursor over the produced objects
+   */
+  public static <T> Cursor<T> toCursor(final ResultSet rs, final Function<ResultSet,T> objCreator) {
+    return new Cursor<T>(){
+      @Override
+      public boolean next() {
+        try {
+          return rs.next();
+        }
+        catch (SQLException e) {
+          throw new SqlRuntimeException(e);
+        }
+      }
+      @Override
+      public T get() {
+        return objCreator.apply(rs);
+      }
+    };
   }
 }

@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.functional;
+package org.gusdb.fgputil.iterator;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -29,7 +30,7 @@ public class IterablesTest {
 
   @Test
   public void test() throws Exception {
-    Iterator<Integer> result = Functions.flatten(TEST_CASE_1.iterator());
+    Iterator<Integer> result = IteratorUtil.flatten(TEST_CASE_1.iterator());
     int index = 0;
     while (result.hasNext()) {
       int nextItem = result.next();

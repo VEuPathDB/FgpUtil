@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.functional;
+package org.gusdb.fgputil;
 
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -18,15 +18,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class Wrapper<T> {
 
-  private T _obj;
+  private T _obj = null;
   private ReadWriteLock _lock = new ReentrantReadWriteLock();
 
   public Wrapper() { }
 
-  public void set(T obj) {
+  public Wrapper<T> set(T obj) {
     try {
       _lock.writeLock().lock();
       _obj = obj;
+      return this;
     }
     finally {
       _lock.writeLock().unlock();
