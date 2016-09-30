@@ -5,6 +5,13 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
+/**
+ * Provides an implementation of List for AutoCloseables that is AutoCloseable itself and
+ * closes all its members on close.  It can be used as a normal list (ArrayList implementation)
+ * or you can construct as needed from any existing Collection<AutoCloseable>.
+ * 
+ * @author rdoherty
+ */
 public class AutoCloseableList<T extends AutoCloseable> extends ArrayList<T> implements AutoCloseable {
 
   private static final long serialVersionUID = 1L;
@@ -17,9 +24,7 @@ public class AutoCloseableList<T extends AutoCloseable> extends ArrayList<T> imp
 
   public AutoCloseableList(Collection<T> source) {
     super();
-    for (T obj : source) {
-      add(obj);
-    }
+    addAll(source);
   }
 
   @Override
