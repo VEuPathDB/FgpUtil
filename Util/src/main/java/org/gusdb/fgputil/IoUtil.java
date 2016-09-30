@@ -221,7 +221,7 @@ public class IoUtil {
    * @return list of readers that can be closed together
    * @throws FileNotFoundException if unable to open any of the files for read
    */
-  public AutoCloseableList<BufferedReader> openFiles(List<Path> files) throws FileNotFoundException {
+  public static AutoCloseableList<BufferedReader> openFiles(List<Path> files) throws FileNotFoundException {
     AutoCloseableList<BufferedReader> list = new AutoCloseableList<>();
     try {
       for (Path p : files) {
