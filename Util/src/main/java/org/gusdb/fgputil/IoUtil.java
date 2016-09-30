@@ -1,9 +1,12 @@
 package org.gusdb.fgputil;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -17,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 
 public class IoUtil {
   
@@ -206,5 +210,28 @@ public class IoUtil {
     ByteArrayOutputStream byteCollector = new ByteArrayOutputStream();
     transferStream(byteCollector, inputStream);
     return byteCollector.toByteArray();
+  }
+
+  /**
+   * Opens a series of files and places readers of them into an AutoCloseableList.  If
+   * any of the files are unopenable for read, any already opened readers are closed and
+   * an exception is thrown.
+   * 
+   * @param files list of paths of files to be opened for reading
+   * @return list of readers that can be closed together
+   * @throws FileNotFoundException if unable to open any of the files for read
+   */
+  public AutoCloseableList<BufferedReader> openFiles(List<Path> files) throws FileNotFoundException {
+    AutoCloseableList<BufferedReader> list = new AutoCloseableList<>();
+    try {
+      for (Path p : files) {
+        list.add(new BufferedReader(new FileReader(p.toFile())));
+      }
+      return list;
+    }
+    catch (FileNotFoundException e) {
+      list.close();
+      throw e;
+    }
   }
 }
