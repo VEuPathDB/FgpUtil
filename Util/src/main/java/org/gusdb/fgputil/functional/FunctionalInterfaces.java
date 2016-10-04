@@ -12,17 +12,35 @@ public class FunctionalInterfaces {
   /**
    * Defines a single-argument function
    * 
-   * @param <T> type of function input
-   * @param <S> type of function output
+   * @param <S> type of function input
+   * @param <T> type of function output
    */
-  public interface Function<T,S> {
+  public interface Function<S,T> {
     /**
      * Applies the function to the given input and returns output
      * 
      * @param obj input to function
      * @return result of function
      */
-    public S apply(T obj);
+    public T apply(S obj);
+  }
+
+  /**
+   * Defines a single-argument function
+   * 
+   * @param <R> type of first function input
+   * @param <S> type of second function input
+   * @param <T> type of function output
+   */
+  public interface BinaryFunction<R,S,T> {
+    /**
+     * Applies the function to the given input and returns output
+     * 
+     * @param obj1 input to function
+     * @param obj2 input to function
+     * @return result of function
+     */
+    public T apply(R obj1, S obj2);
   }
 
   /**

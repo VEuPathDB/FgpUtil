@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunction;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
@@ -104,6 +105,24 @@ public class Functions {
     List<T> result = new ArrayList<>();
     for (S obj : inputs) {
       result.add(function.apply(obj));
+    }
+    return result;
+  }
+
+  /**
+   * Maps the given iterable elements to a List containing mapped elements.  The passed
+   * function is executed on each input element and its iteration index; its outputs are
+   * placed in a new list and returned.
+   * 
+   * @param inputs an iterable of input elements
+   * @param function a function to be performed on each element
+   * @return List of function outputs
+   */
+  public static <S,T> List<T> mapToListWithIndex(Iterable<S> inputs, BinaryFunction<S, Integer,T> function) {
+    List<T> result = new ArrayList<>();
+    int i = 0;
+    for (S obj : inputs) {
+      result.add(function.apply(obj, i++));
     }
     return result;
   }
