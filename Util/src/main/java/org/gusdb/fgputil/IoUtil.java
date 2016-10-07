@@ -1,12 +1,14 @@
 package org.gusdb.fgputil;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -221,7 +223,7 @@ public class IoUtil {
    * @return list of readers that can be closed together
    * @throws FileNotFoundException if unable to open any of the files for read
    */
-  public static AutoCloseableList<BufferedReader> openFiles(List<Path> files) throws FileNotFoundException {
+  public static AutoCloseableList<BufferedReader> openFilesForRead(List<Path> files) throws FileNotFoundException {
     AutoCloseableList<BufferedReader> list = new AutoCloseableList<>();
     try {
       for (Path p : files) {
@@ -234,4 +236,28 @@ public class IoUtil {
       throw e;
     }
   }
+
+  /**
+   * Opens a series of files and places writers to them into an AutoCloseableList.  If
+   * any of the files are unopenable for write, any already opened writers are closed and
+   * an exception is thrown.
+   * 
+   * @param files list of paths of files to be opened for write
+   * @return list of writers that can be closed together
+   * @throws IOException if unable to open any of the files for write
+   */
+  public static AutoCloseableList<BufferedWriter> openFilesForWrite(List<Path> files) throws IOException {
+    AutoCloseableList<BufferedWriter> list = new AutoCloseableList<>();
+    try {
+      for (Path p : files) {
+        list.add(new BufferedWriter(new FileWriter(p.toFile())));
+      }
+      return list;
+    }
+    catch (IOException e) {
+      list.close();
+      throw e;
+    }
+  }
+
 }
