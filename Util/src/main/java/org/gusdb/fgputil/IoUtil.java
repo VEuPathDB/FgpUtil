@@ -22,12 +22,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 public class IoUtil {
-  
+
+  private static final Logger LOG = Logger.getLogger(IoUtil.class);
+
   public static final int DEFAULT_ERROR_EXIT_CODE = 2;
-  
+
   /**
    * Converts binary data into an input stream.  This can be used if the result
    * type is a stream, and the content to be returned already exists in memory
@@ -40,7 +47,7 @@ public class IoUtil {
   public static InputStream getStreamFromBytes(byte[] data) {
     return new ByteArrayInputStream(data);
   }
-  
+
   /**
    * Converts a string into an open input stream.  This can be used if the
    * result type is a stream, and the content to be returned already exists in
@@ -95,7 +102,6 @@ public class IoUtil {
       System.exit(DEFAULT_ERROR_EXIT_CODE);
     }
     return f;
-
   }
 
   /**
@@ -114,7 +120,7 @@ public class IoUtil {
     }
     return f;
   }
-  
+
   /**
    * Tries to close each of the passed Closeables, but does not throw error if
    * the close does not succeed.  Also ignores nulls.
@@ -126,7 +132,7 @@ public class IoUtil {
       try { if (each != null) each.close(); } catch (Exception ex) { /* do nothing */ }
     }
   }
-  
+
   /**
    * Transfers data from input stream to the output stream until no more data
    * is available, then closes input stream (but not output stream).
@@ -149,7 +155,7 @@ public class IoUtil {
       inputStream.close();
     }
   }
-  
+
   /**
    * Serializes a serializable object into a byte array and returns it
    * 
@@ -164,7 +170,7 @@ public class IoUtil {
       return byteStream.toByteArray();
     }
   }
-  
+
   /**
    * Deserializes a byte array into a Java object.
    * 
@@ -260,4 +266,22 @@ public class IoUtil {
     }
   }
 
+  /**
+   * Create a directory at the given path and open rwx perms to all
+   * 
+   * @param directory path to directory
+   * @throws IOException if unable to create directory or apply permissions
+   */
+  public static void createOpenPermsDirectory(Path directory) throws IOException {
+    Files.createDirectory(directory);
+    // apply file permissions after the fact in case umask restrictions prevent it during creation
+    Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxrwxrwx");
+    try {
+      Files.setPosixFilePermissions(directory, perms);
+    }
+    catch (UnsupportedOperationException ex) {
+      // ignore it since it's not supported on Windows
+      LOG.warn("Cannot set permissions to " + directory);
+    }
+  }
 }
