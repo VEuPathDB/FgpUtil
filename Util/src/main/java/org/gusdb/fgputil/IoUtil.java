@@ -267,33 +267,56 @@ public class IoUtil {
   }
 
   /**
-   * Create a directory at the given path and open rwx perms to all
+   * Create a directory at the given path and open rwx perms to all.
    * 
    * @param directory path to directory
    * @throws IOException if unable to create directory or apply permissions
    */
   public static void createOpenPermsDirectory(Path directory) throws IOException {
-    Files.createDirectory(directory);
+    openPosixPermissions(Files.createDirectory(directory));
+  }
+
+  /**
+   * Generate an empty, open-permissions temporary directory in the default tmp location.
+   * 
+   * @param dirPrefix prefix applied to generated directory name
+   * @return path to generated directory
+   * @throws IOException if unable to create directory or apply open permissions
+   */
+  public static Path createOpenPermsTempDir(String dirPrefix) throws IOException {
+    return openPosixPermissions(Files.createTempDirectory(dirPrefix));
+  }
+
+  /**
+   * Generate an empty, open-permissions temporary directory under the passed path.
+   * 
+   * @param parentDir parent directory in which new directory will be located
+   * @param dirPrefix prefix applied to generated directory name
+   * @return path to generated directory
+   * @throws IOException if unable to create directory or apply open permissions
+   */
+  public static Path createOpenPermsTempDir(Path parentDir, String dirPrefix) throws IOException {
+    return openPosixPermissions(Files.createTempDirectory(parentDir, dirPrefix));
+  }
+
+  /**
+   * Opens all POSIX permission (i.e. rwxrwxrwx) for the passed path, ignoring UnsupportedOperationException
+   * in case this method is called from a non-POSIX-like OS.
+   * 
+   * @param path path to apply permissions to
+   * @return the passed path
+   * @throws IOException if I/O error occurs
+   */
+  public static Path openPosixPermissions(Path path) throws IOException {
     // apply file permissions after the fact in case umask restrictions prevent it during creation
     Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxrwxrwx");
     try {
-      Files.setPosixFilePermissions(directory, perms);
+      Files.setPosixFilePermissions(path, perms);
     }
     catch (UnsupportedOperationException ex) {
-      // ignore it since it's not supported on Windows
-      LOG.warn("Cannot set permissions to " + directory);
+      // log but ignore it since it's not supported on Windows
+      LOG.warn("Cannot set permissions to " + path);
     }
-  }
-
-  public static Path createOpenPermsTempDir(String dirPrefix) throws IOException {
-    Path resultingPath = Files.createTempDirectory(dirPrefix);
-    Files.setPosixFilePermissions(resultingPath, PosixFilePermissions.fromString("rwxrwxrwx"));
-    return resultingPath;
-  }
-
-  public static Path createOpenPermsTempDir(Path parentDir, String dirPrefix) throws IOException {
-    Path resultingPath = Files.createTempDirectory(parentDir, dirPrefix);
-    Files.setPosixFilePermissions(resultingPath, PosixFilePermissions.fromString("rwxrwxrwx"));
-    return resultingPath;
+    return path;
   }
 }
