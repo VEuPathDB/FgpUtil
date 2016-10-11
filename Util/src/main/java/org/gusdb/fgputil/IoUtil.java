@@ -286,10 +286,12 @@ public class IoUtil {
   }
 
   public static Path createOpenPermsTempDir(String dirPrefix) throws IOException {
-    return createOpenPermsTempDir(dirPrefix, null);
+    Path resultingPath = Files.createTempDirectory(dirPrefix);
+    Files.setPosixFilePermissions(resultingPath, PosixFilePermissions.fromString("rwxrwxrwx"));
+    return resultingPath;
   }
 
-  public static Path createOpenPermsTempDir(String dirPrefix, Path parentDir) throws IOException {
+  public static Path createOpenPermsTempDir(Path parentDir, String dirPrefix) throws IOException {
     Path resultingPath = Files.createTempDirectory(parentDir, dirPrefix);
     Files.setPosixFilePermissions(resultingPath, PosixFilePermissions.fromString("rwxrwxrwx"));
     return resultingPath;
