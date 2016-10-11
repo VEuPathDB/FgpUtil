@@ -284,4 +284,14 @@ public class IoUtil {
       LOG.warn("Cannot set permissions to " + directory);
     }
   }
+
+  public static Path createOpenPermsTempDir(String dirPrefix) throws IOException {
+    return createOpenPermsTempDir(dirPrefix, null);
+  }
+
+  public static Path createOpenPermsTempDir(String dirPrefix, Path parentDir) throws IOException {
+    Path resultingPath = Files.createTempDirectory(parentDir, dirPrefix);
+    Files.setPosixFilePermissions(resultingPath, PosixFilePermissions.fromString("rwxrwxrwx"));
+    return resultingPath;
+  }
 }
