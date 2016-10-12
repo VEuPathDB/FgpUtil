@@ -1,4 +1,4 @@
-package org.gusdb.fgputil;
+package org.gusdb.fgputil.script;
 
 import java.util.List;
 
@@ -6,7 +6,8 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
-import org.gusdb.fgputil.Scripting.Language;
+import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.script.Scripting.Language;
 
 /**
  * Utility class that allows developers to write functions in JavaScript,

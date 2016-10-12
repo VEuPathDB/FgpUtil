@@ -1,13 +1,13 @@
-package org.gusdb.fgputil;
+package org.gusdb.fgputil.script;
 
 import static org.junit.Assert.assertEquals;
 
 import javax.script.ScriptException;
 
-import org.gusdb.fgputil.JavaScript;
-import org.gusdb.fgputil.Scripting;
-import org.gusdb.fgputil.Scripting.Evaluator;
-import org.gusdb.fgputil.Scripting.Language;
+import org.gusdb.fgputil.script.JavaScript;
+import org.gusdb.fgputil.script.Scripting;
+import org.gusdb.fgputil.script.Scripting.Evaluator;
+import org.gusdb.fgputil.script.Scripting.Language;
 import org.junit.Test;
 
 public class ScriptTest {

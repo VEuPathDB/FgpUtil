@@ -1,4 +1,4 @@
-package org.gusdb.fgputil;
+package org.gusdb.fgputil.json;
 
 import org.json.JSONArray;
 import org.json.JSONException;

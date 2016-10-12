@@ -1,4 +1,4 @@
-package org.gusdb.fgputil;
+package org.gusdb.fgputil.json;
 
 import java.io.StringReader;
 import java.io.StringWriter;

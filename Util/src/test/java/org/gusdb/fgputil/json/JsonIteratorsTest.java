@@ -1,4 +1,4 @@
-package org.gusdb.fgputil;
+package org.gusdb.fgputil.json;
 
 import static org.junit.Assert.assertEquals;
 
@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.json.JsonIterators;
+import org.gusdb.fgputil.json.JsonType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package org.gusdb.fgputil;
+package org.gusdb.fgputil.script;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;

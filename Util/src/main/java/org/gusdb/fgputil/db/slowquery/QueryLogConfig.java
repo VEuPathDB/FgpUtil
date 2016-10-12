@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.db;
+package org.gusdb.fgputil.db.slowquery;
 
 public interface QueryLogConfig {
 

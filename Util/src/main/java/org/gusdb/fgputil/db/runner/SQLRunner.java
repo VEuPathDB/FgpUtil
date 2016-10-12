@@ -15,6 +15,8 @@ import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.PreparedStatementExecutor;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.QueryExecutor;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.StatementExecutor;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.UpdateExecutor;
+import org.gusdb.fgputil.db.slowquery.SqlTimer;
+import org.gusdb.fgputil.db.slowquery.SqlTimer.SqlTimerLogger;
 
 /**
  * Provides API to easily run SQL statements and queries against a database.
@@ -55,7 +57,7 @@ public class SQLRunner {
      * @return how many instructions should be added before executing a batch
      */
     public int getBatchSize();
-    
+
     /**
      * Tells SQLRunner what type of data is being submitted for each parameter.
      * Please use values from java.sql.Types.  A value of null for a given
@@ -88,14 +90,20 @@ public class SQLRunner {
     // used.
     INHERIT;
   }
-  
+
+  private static final SqlTimerLogger NULL_LOGGER = new SqlTimerLogger() {
+    @Override public void submitTimer(SqlTimer timer) { /* do nothing */ }
+  };
+
+  private static SqlTimerLogger _sqlLogger;
+
   private DataSource _ds;
   private Connection _conn;
   private String _sql;
   private TxStrategy _txStrategy;
   private boolean _responsibleForConnection;
   private long _lastExecutionTime = 0L;
-  
+
   /**
    * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
    * new connection from the DataSource and will run each call in a transaction,
@@ -107,7 +115,7 @@ public class SQLRunner {
   public SQLRunner(DataSource ds, String sql) {
     this(ds, sql, true);
   }
-  
+
   /**
    * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
    * new connection from the DataSource, running in a transaction if specified.
@@ -140,7 +148,7 @@ public class SQLRunner {
     _txStrategy = TxStrategy.INHERIT;
     _responsibleForConnection = false;
   }
-  
+
   /**
    * Executes this runner's SQL and assumes no SQL parameters
    * 
@@ -149,7 +157,7 @@ public class SQLRunner {
   public void executeStatement() {
     executeStatement(new Object[]{ }, null);
   }
-  
+
   /**
    * Executes this runner's SQL using the passed parameter array
    * 
@@ -159,7 +167,7 @@ public class SQLRunner {
   public void executeStatement(Object[] args) {
     executeStatement(args, null);
   }
-  
+
   /**
    * Executes this runner's SQL using the passed parameter array and parameter
    * types.  Use java.sql.Types to as type values.
@@ -171,7 +179,7 @@ public class SQLRunner {
   public void executeStatement(Object[] args, Integer[] types) {
     executeSql(new StatementExecutor(args, types));
   }
-  
+
   /**
    * Executes a batch statement operation using sets of SQL parameters retrieved
    * from the passed argument batch.  Uses the batch's getBatchSize() method
@@ -196,7 +204,7 @@ public class SQLRunner {
   public int executeUpdate() {
     return executeUpdate(new Object[]{ }, null);
   }
-  
+
   /**
    * Executes this runner's SQL using the passed parameter array.  When doing so,
    * captures the resulting number of updates.  This method should be called
@@ -210,7 +218,7 @@ public class SQLRunner {
   public int executeUpdate(Object[] args) {
     return executeUpdate(args, null);
   }
-  
+
   /**
    * Executes this runner's SQL using the passed parameter array and types.
    * When doing so, captures the resulting number of updates.  This method
@@ -228,7 +236,7 @@ public class SQLRunner {
     executeSql(runner);
     return runner.getNumUpdates();
   }
-  
+
   /**
    * Executes a batch update operation using sets of SQL parameters retrieved
    * from the passed argument batch.  Uses the batch's getBatchSize() method
@@ -255,7 +263,7 @@ public class SQLRunner {
   public void executeQuery(ResultSetHandler handler) {
     executeQuery(new Object[]{ }, null, handler);
   }
-  
+
   /**
    * 
    * Executes an SQL query using the passed parameter array, passing results to
@@ -268,7 +276,7 @@ public class SQLRunner {
   public void executeQuery(Object[] args, ResultSetHandler handler) {
     executeQuery(args, null, handler);
   }
-  
+
   /**
    * 
    * Executes an SQL query using the passed parameter array, passing results to
@@ -282,25 +290,39 @@ public class SQLRunner {
   public void executeQuery(Object[] args, Integer[] types, ResultSetHandler handler) {
     executeSql(new QueryExecutor(handler, args, types));
   }
-  
+
   private void executeSql(PreparedStatementExecutor exec) {
     Connection conn = null;
     PreparedStatement stmt = null;
     boolean connectionSuccessful = false;
+    SqlTimer timer = new SqlTimer(_sql);
     try {
       conn = getConnection();
       connectionSuccessful = true;
-      // record start
+      timer.restart();
+
+      // prepare statement
       stmt = conn.prepareStatement(_sql);
-      // record prepare
+      timer.statementPrepared();
+
+      // assign params
       exec.setParams(stmt);
-      // record params set
+      timer.paramsAssigned();
+
+      // run SQL
       exec.runWithTimer(stmt);
-      // record execute
+      timer.sqlExecuted();
+
+      // handle result of SQL
       exec.handleResult();
-      // record handling and write results
+      timer.resultsHandled();
+
+      // complete execution
       commit(conn);
       _lastExecutionTime = exec.getLastExecutionTime();
+      timer.complete();
+      getSqlLogger().submitTimer(timer);
+
     }
     catch (SQLException e) {
       // only attempt rollback if retrieved a connection in the first place
@@ -347,7 +369,7 @@ public class SQLRunner {
     }
     return _conn;
   }
-  
+
   private void closeConnection() {
     if (_responsibleForConnection) {
       SqlUtils.closeQuietly(_conn);
@@ -356,5 +378,17 @@ public class SQLRunner {
 
   public long getLastExecutionTime() {
     return _lastExecutionTime;
+  }
+
+  public static void setSqlLogger(SqlTimerLogger sqlLogger) {
+    _sqlLogger = sqlLogger;
+  }
+
+  private static SqlTimerLogger getSqlLogger() {
+    SqlTimerLogger tmp = _sqlLogger;
+    if (tmp == null) {
+      return NULL_LOGGER;
+    }
+    return tmp;
   }
 }

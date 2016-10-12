@@ -5,15 +5,23 @@ import java.security.NoSuchAlgorithmException;
 
 public class EncryptionUtil {
 
-  public static String encrypt(String data) throws Exception, NoSuchAlgorithmException {
-    // cannot encrypt null value
-    if (data == null || data.length() == 0)
-      throw new Exception("Cannot encrypt an empty/null string");
+  private static MessageDigest newMd5Digester() {
+    try {
+      return MessageDigest.getInstance("MD5");
+    }
+    catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException("This JVM no longer supports the MD5 encryption algorithm.", e);
+    }
+  }
 
-    MessageDigest digest = MessageDigest.getInstance("MD5");
-    byte[] byteBuffer = digest.digest(data.toString().getBytes());
+  public static String encrypt(String data) {
+    // cannot encrypt null or empty value
+    if (data == null || data.isEmpty()) {
+      throw new IllegalArgumentException("Cannot encrypt an empty/null string");
+    }
+    byte[] byteBuffer = newMd5Digester().digest(data.getBytes());
     // convert each byte into hex format
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     for (int i = 0; i < byteBuffer.length; i++) {
       int code = (byteBuffer[i] & 0xFF);
       if (code < 0x10)
@@ -21,14 +29,5 @@ public class EncryptionUtil {
       buffer.append(Integer.toHexString(code));
     }
     return buffer.toString();
-  }
-
-  public static String encryptNoCatch(String data) {
-    try {
-      return encrypt(data);
-    }
-    catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 }

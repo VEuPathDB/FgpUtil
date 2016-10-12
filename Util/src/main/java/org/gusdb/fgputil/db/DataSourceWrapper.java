@@ -47,7 +47,7 @@ public class DataSourceWrapper implements DataSource {
       _dbName = dbName;
       _timeOpened = new Date();
       _stackTrace = FormatUtil.getCurrentStackTrace();
-      _stackTraceHash = EncryptionUtil.encryptNoCatch(_stackTrace);
+      _stackTraceHash = EncryptionUtil.encrypt(_stackTrace);
       // only add stack trace to global map if specified
       if (globalStacktraceMap != null) {
         globalStacktraceMap.put(_stackTraceHash, _stackTrace);
