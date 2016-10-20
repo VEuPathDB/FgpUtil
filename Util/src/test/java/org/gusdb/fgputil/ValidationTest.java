@@ -17,38 +17,38 @@ import org.junit.Test;
  */
 public class ValidationTest {
 
-  private static final String[] requiredProps = { "a", "b", "c" };
-  private static final String[] optionalProps = { "d" };
+  private static final String[] REQUIRED_PROPS = { "a", "b", "c" };
+  private static final String[] OPTIONAL_PROPS = { "d" };
 
-  private static final String[] testSet1 = { "a", "b", "c" };
-  private static final String[] testSet2 = { "a", "b", "c", "d" };
-  private static final String[] testSet3 = { "a", "c", "d", "e" };
+  private static final String[] TEST_SET_1 = { "a", "b", "c" };
+  private static final String[] TEST_SET_2 = { "a", "b", "c", "d" };
+  private static final String[] TEST_SET_3 = { "a", "c", "d", "e" };
 
   private static final String[] NONE = { };
 
   @Test
   public void doTestSet1() {
-    runTests(1, testSet1, new Integer[]{ 0, 3, 0, 3, 0, 0, 0, 0 });
+    runTests(1, TEST_SET_1, new Integer[]{ 0, 3, 0, 3, 0, 0, 0, 0 });
   }
 
   @Test
   public void doTestSet2() {
-    runTests(2, testSet2, new Integer[]{ 0, 3, 1, 4, 0, 0, 0, 0 });
+    runTests(2, TEST_SET_2, new Integer[]{ 0, 3, 1, 4, 0, 0, 0, 0 });
   }
 
   @Test
   public void doTestSet3() {
-    runTests(3, testSet3, new Integer[]{ 2, 3, 3, 4, 1, 0, 1, 0 });
+    runTests(3, TEST_SET_3, new Integer[]{ 2, 3, 3, 4, 1, 0, 1, 0 });
   }
 
   private void runTests(int testSetNum, String[] testSet, Integer[] expectedResults) {
-    doTest(testSetNum + "a", testSet, requiredProps, optionalProps, false, expectedResults[0]);
-    doTest(testSetNum + "b", testSet, NONE, optionalProps, false, expectedResults[1]);
-    doTest(testSetNum + "c", testSet, requiredProps, NONE, false, expectedResults[2]);
+    doTest(testSetNum + "a", testSet, REQUIRED_PROPS, OPTIONAL_PROPS, false, expectedResults[0]);
+    doTest(testSetNum + "b", testSet, NONE, OPTIONAL_PROPS, false, expectedResults[1]);
+    doTest(testSetNum + "c", testSet, REQUIRED_PROPS, NONE, false, expectedResults[2]);
     doTest(testSetNum + "d", testSet, NONE, NONE, false, expectedResults[3]);
-    doTest(testSetNum + "e", testSet, requiredProps, optionalProps, true, expectedResults[4]);
-    doTest(testSetNum + "f", testSet, NONE, optionalProps, true, expectedResults[5]);
-    doTest(testSetNum + "g", testSet, requiredProps, NONE, true, expectedResults[6]);
+    doTest(testSetNum + "e", testSet, REQUIRED_PROPS, OPTIONAL_PROPS, true, expectedResults[4]);
+    doTest(testSetNum + "f", testSet, NONE, OPTIONAL_PROPS, true, expectedResults[5]);
+    doTest(testSetNum + "g", testSet, REQUIRED_PROPS, NONE, true, expectedResults[6]);
     doTest(testSetNum + "h", testSet, NONE, NONE, true, expectedResults[7]);
   }
 
@@ -65,10 +65,10 @@ public class ValidationTest {
   @Test
   public void testJson() {
     JSONObject json = new JSONObject();
-    for (String s : testSet3) {
+    for (String s : TEST_SET_3) {
       json.put(s, true);
     }
-    List<String> messages = ValidationUtil.validateProperties(json, toSet(requiredProps), toSet(optionalProps));
+    List<String> messages = ValidationUtil.validateProperties(json, toSet(REQUIRED_PROPS), toSet(OPTIONAL_PROPS));
     assertEquals(2, messages.size());
   }
 

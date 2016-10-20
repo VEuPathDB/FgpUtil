@@ -16,7 +16,7 @@ public class TreeNodeTest {
   @Test
   public void testStructureMap() {
     TreeNode<Integer> root = buildTestTree();
-    JSONObject json = root.mapStructure(new StructureMapper<Integer, JSONObject>(){
+    JSONObject result = root.mapStructure(new StructureMapper<Integer, JSONObject>(){
       @Override
       public JSONObject map(Integer obj, List<JSONObject> mappedChildren) {
         JSONObject json = new JSONObject();
@@ -33,8 +33,8 @@ public class TreeNodeTest {
     });
     // since JSON toString() may produce hash values in an inconsistent order, need to build string ourselves
     JSONObject expected = buildExpectedJson();
-    System.out.println("Produced: " + json.toString(2));
-    assertEquals(toString(expected), toString(json));
+    System.out.println("Produced: " + result.toString(2));
+    assertEquals(toString(expected), toString(result));
   }
 
   @Test
