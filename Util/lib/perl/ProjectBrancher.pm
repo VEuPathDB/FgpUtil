@@ -40,6 +40,10 @@ my @apiSiteProjects = ('EuPathPresenters:apidb', 'EuPathDatasets:apidb',
 my @orthoSiteProjects = ('OrthoMCLShared:apidb', 'OrthoMCLWebsite:apidb',
                          'OrthoMCLWebService:apidb', 'DJob:gus');
 
+# Additional projects for MicrobiomeDBWebsite
+my @microbiomeSiteProjects = ('MicrobiomeDBPresenters:apidb', 'MicrobiomeDBDatasets:apidb',
+                              'MicrobiomeDBWebsite:apidb');
+
 # All other projects not listed above
 my @otherProjects = ('DJob:gus', 'TuningManager:gus', 'OAuth2Server:gus',
                      'WDKTemplateSite:gus', 'WSFTemplate:gus', 'EuPathGalaxy:apidb',
@@ -51,8 +55,9 @@ my %groupsMap = (
     'backend' => [uniq((@baseProjects, @backendProjects))],
     'apisite' => [uniq((@baseProjects, @sharedSiteProjects, @apiSiteProjects))],
     'orthosite' => [uniq((@baseProjects, @sharedSiteProjects, @orthoSiteProjects))],
-    'allsite' => [uniq((@baseProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects))],
-    'all' => [uniq((@baseProjects, @backendProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects, @otherProjects))]
+    'microbiomesite' => [uniq((@baseProjects, @sharedSiteProjects, @microbiomeSiteProjects))],
+    'allsite' => [uniq((@baseProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects, @microbiomeSiteProjects))],
+    'all' => [uniq((@baseProjects, @backendProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects, @microbiomeSiteProjects, @otherProjects))]
 );
 
 sub getRepoBaseUrl {
