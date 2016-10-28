@@ -64,7 +64,7 @@ public class IoUtil {
    * Recursively removes the passed directory
    * 
    * @param directory directory to remove
-   * @throws IOException if unable to delete directory tree
+   * @throws IOException if unable to delete entire directory tree (deletion will stop after first error)
    */
   public static void deleteDirectoryTree(Path directory) throws IOException {
     Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {

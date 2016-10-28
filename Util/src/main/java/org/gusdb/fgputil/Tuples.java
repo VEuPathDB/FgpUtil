@@ -1,10 +1,12 @@
 package org.gusdb.fgputil;
 
+import java.util.Map.Entry;
+
 public class Tuples {
 
   private Tuples() {}
 
-  public static class TwoTuple<S,T> {
+  public static class TwoTuple<S,T> implements Entry<S,T> {
 
     private S _first;
     private T _second;
@@ -20,6 +22,11 @@ public class Tuples {
 
     public S getFirst() { return _first; }
     public T getSecond() { return _second; }
+
+    // methods required by Entry
+    @Override public S getKey() { return _first; }
+    @Override public T getValue() { return _second; }
+    @Override public T setValue(T value) { _second = value; return _second; }
   }
 
   public static class ThreeTuple<R,S,T> extends TwoTuple<R,S> {
