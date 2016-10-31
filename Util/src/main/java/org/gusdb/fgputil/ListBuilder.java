@@ -1,6 +1,7 @@
 package org.gusdb.fgputil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -39,6 +40,10 @@ public class ListBuilder<T> {
     _list = list;
   }
 
+  public ListBuilder(T[] list) {
+    _list = new ArrayList<T>(Arrays.asList(list));
+  }
+
   public ListBuilder(T obj) {
     this();
     _list.add(obj);
@@ -56,6 +61,11 @@ public class ListBuilder<T> {
 
   public ListBuilder<T> addAll(List<T> list) {
     _list.addAll(list);
+    return this;
+  }
+
+  public ListBuilder<T> addAll(T[] array) {
+    _list.addAll(Arrays.asList(array));
     return this;
   }
 
