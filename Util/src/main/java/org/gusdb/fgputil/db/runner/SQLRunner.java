@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.BatchUpdateExecutor;
@@ -100,9 +101,22 @@ public class SQLRunner {
   private DataSource _ds;
   private Connection _conn;
   private String _sql;
+  private String _sqlName;
   private TxStrategy _txStrategy;
   private boolean _responsibleForConnection;
   private long _lastExecutionTime = 0L;
+
+  /**
+   * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
+   * new connection from the DataSource and will run each call in a transaction,
+   * committing at the end of the call.  SQL name will be auto-generated from SQL.
+   * 
+   * @param ds data source on which to operate
+   * @param sql SQL to execute via a PreparedStatement
+   */
+  public SQLRunner(DataSource ds, String sql) {
+    this(ds, sql, true, EncryptionUtil.encrypt(sql));
+  }
 
   /**
    * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
@@ -111,9 +125,25 @@ public class SQLRunner {
    * 
    * @param ds data source on which to operate
    * @param sql SQL to execute via a PreparedStatement
+   * @param sqlName name of SQL query/statement for logging
    */
-  public SQLRunner(DataSource ds, String sql) {
-    this(ds, sql, true);
+  public SQLRunner(DataSource ds, String sql, String sqlName) {
+    this(ds, sql, true, sqlName);
+  }
+
+  /**
+   * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
+   * new connection from the DataSource, running in a transaction if specified.
+   * SQL name will be auto-generated from SQL.
+   * 
+   * @param ds data source on which to operate
+   * @param sql SQL to execute via a PreparedStatement
+   * @param runInTransaction if true, will wrap all batch calls in a transaction;
+   * else will use auto-commit
+   * @throws IllegalArgumentException if called with NO_COMMITS or INHERIT TX strategy
+   */
+  public SQLRunner(DataSource ds, String sql, boolean runInTransaction) {
+    this(ds, sql, runInTransaction, EncryptionUtil.encrypt(sql));
   }
 
   /**
@@ -124,13 +154,29 @@ public class SQLRunner {
    * @param sql SQL to execute via a PreparedStatement
    * @param runInTransaction if true, will wrap all batch calls in a transaction;
    * else will use auto-commit
+   * @param sqlName name of SQL query/statement for logging
    * @throws IllegalArgumentException if called with NO_COMMITS or INHERIT TX strategy
    */
-  public SQLRunner(DataSource ds, String sql, boolean runInTransaction) {
+  public SQLRunner(DataSource ds, String sql, boolean runInTransaction, String sqlName) {
     _ds = ds;
     _sql = sql;
     _txStrategy = (runInTransaction ? TxStrategy.TRANSACTION : TxStrategy.AUTO_COMMIT);
     _responsibleForConnection = true;
+    _sqlName = sqlName;
+  }
+
+  /**
+   * Constructor with Connection.  Note that callers of this constructor are
+   * responsible for closing the connection they pass in.  To delegate that
+   * responsibility to this class, use the constructor that takes a DataSource
+   * parameter.  Will use the auto-commit setting of the passed Connection.
+   * SQL name will be auto-generated from SQL.
+   * 
+   * @param conn connection on which to operate
+   * @param sql SQL to execute via a PreparedStatement
+   */
+  public SQLRunner(Connection conn, String sql) {
+    this(conn, sql, EncryptionUtil.encrypt(sql));
   }
 
   /**
@@ -141,12 +187,14 @@ public class SQLRunner {
    * 
    * @param conn connection on which to operate
    * @param sql SQL to execute via a PreparedStatement
+   * @param sqlName name of SQL query/statement for logging
    */
-  public SQLRunner(Connection conn, String sql) {
+  public SQLRunner(Connection conn, String sql, String sqlName) {
     _conn = conn;
     _sql = sql;
     _txStrategy = TxStrategy.INHERIT;
     _responsibleForConnection = false;
+    _sqlName = sqlName;
   }
 
   /**
@@ -295,7 +343,7 @@ public class SQLRunner {
     Connection conn = null;
     PreparedStatement stmt = null;
     boolean connectionSuccessful = false;
-    SqlTimer timer = new SqlTimer(_sql);
+    SqlTimer timer = new SqlTimer(_sql, _sqlName);
     try {
       conn = getConnection();
       connectionSuccessful = true;

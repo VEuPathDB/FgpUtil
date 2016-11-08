@@ -23,10 +23,12 @@ public class SqlTimer extends Timer {
   }
 
   private String _sql;
+  private String _sqlName;
   private Long[] _times = new Long[SqlTimerEvents.values().length];
 
-  public SqlTimer(String sql) {
+  public SqlTimer(String sql, String sqlName) {
     _sql = sql;
+    _sqlName = sqlName;
   }
 
   @Override
@@ -57,6 +59,10 @@ public class SqlTimer extends Timer {
 
   public String getSql() {
     return _sql;
+  }
+
+  public String getSqlName() {
+    return _sqlName;
   }
 
   public Long[] getTimes() {

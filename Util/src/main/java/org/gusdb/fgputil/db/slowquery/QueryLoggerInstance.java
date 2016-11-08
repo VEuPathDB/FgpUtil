@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.db.slowquery.QueryLogger.ExampleQueryLog;
 import org.gusdb.fgputil.db.slowquery.QueryLogger.SlowQueryLog;
 import org.gusdb.fgputil.db.slowquery.SqlTimer.SqlTimerEvents;
@@ -85,9 +84,8 @@ public class QueryLoggerInstance implements SqlTimerLogger {
 
   @Override
   public void submitTimer(SqlTimer timer) {
-    String queryName = EncryptionUtil.encrypt(timer.getSql());
     Long[] times = timer.getTimes();
-    logQueryTime(timer.getSql(), queryName, 0,
+    logQueryTime(timer.getSql(), timer.getSqlName(), 0,
         times[SqlTimerEvents.SQL_EXECUTED.ordinal()],
         times[SqlTimerEvents.COMPLETE.ordinal()], false);
   }
