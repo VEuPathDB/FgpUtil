@@ -101,9 +101,9 @@ public class Functions {
    * @param function a function to be performed on each element
    * @return List of function outputs
    */
-  public static <S,T> List<T> mapToList(Iterable<S> inputs, Function<S,T> function) {
+  public static <S,T,R extends S, Q extends T> List<T> mapToList(Iterable<R> inputs, Function<S,Q> function) {
     List<T> result = new ArrayList<>();
-    for (S obj : inputs) {
+    for (R obj : inputs) {
       result.add(function.apply(obj));
     }
     return result;
