@@ -47,8 +47,7 @@ public class Functions {
   }
 
   /**
-   * Returns a copy (a new HashMap) of the input map with entries t
-   * rimmed out whose values do not pass the
+   * Returns a copy (a new HashMap) of the input map with entries trimmed out whose values do not pass the
    * passed predicate
    * 
    * @param inputMap a map
@@ -118,10 +117,10 @@ public class Functions {
    * @param function a function to be performed on each element
    * @return List of function outputs
    */
-  public static <S,T> List<T> mapToListWithIndex(Iterable<S> inputs, BinaryFunction<S, Integer,T> function) {
+  public static <S,T,R extends S, Q extends T> List<T> mapToListWithIndex(Iterable<R> inputs, BinaryFunction<S, Integer,Q> function) {
     List<T> result = new ArrayList<>();
     int i = 0;
-    for (S obj : inputs) {
+    for (R obj : inputs) {
       result.add(function.apply(obj, i++));
     }
     return result;
