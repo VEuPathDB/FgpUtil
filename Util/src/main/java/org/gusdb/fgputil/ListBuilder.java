@@ -2,6 +2,7 @@ package org.gusdb.fgputil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -59,7 +60,7 @@ public class ListBuilder<T> {
     return this;
   }
 
-  public ListBuilder<T> addAll(List<T> list) {
+  public ListBuilder<T> addAll(Collection<? extends T> list) {
     _list.addAll(list);
     return this;
   }
