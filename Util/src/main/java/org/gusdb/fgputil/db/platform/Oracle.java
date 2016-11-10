@@ -415,7 +415,7 @@ public class Oracle extends DBPlatform {
       throws SQLException, UnsupportedOperationException {
     final boolean[] result = { false };
     try {
-      new SQLRunner(c, UNCOMMITED_STATEMENT_CHECK_SQL).executeQuery(new ResultSetHandler() {
+      new SQLRunner(c, UNCOMMITED_STATEMENT_CHECK_SQL, "check-uncommitted-statements").executeQuery(new ResultSetHandler() {
         @Override public void handleResult(ResultSet rs) throws SQLException {
           if (!rs.next()) {
             throw new SQLException("Count query returned zero rows."); // should never happen
