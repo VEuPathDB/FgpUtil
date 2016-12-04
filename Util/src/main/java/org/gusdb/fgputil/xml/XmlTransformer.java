@@ -27,7 +27,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * @author Jerric
- * @created Oct 20, 2005
  */
 public class XmlTransformer {
 
