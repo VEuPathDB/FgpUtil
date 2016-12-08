@@ -54,4 +54,12 @@ public class JsonUtil {
     }
     return json;
   }
+
+  public static JSONArray toJsonStringArray(String[] strings) {
+    JSONArray json = new JSONArray();
+    for (String s : strings) {
+      json.put(s);
+    }
+    return json;
+  }
 }
