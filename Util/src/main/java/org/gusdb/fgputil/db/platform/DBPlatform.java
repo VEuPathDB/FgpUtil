@@ -154,4 +154,9 @@ public abstract class DBPlatform {
       SqlUtils.setClobData(ps, columnIndex, content);
       return (commit ? ps.executeUpdate() : 0);
     }
+
+    public Boolean getBooleanValue(ResultSet rs, String columnName, Boolean nullValue) throws SQLException {
+      Boolean value = rs.getBoolean(columnName);
+      return (rs.wasNull() ? nullValue : value);
+    }
 }
