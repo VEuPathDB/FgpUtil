@@ -565,6 +565,10 @@
             <artifactId>apiviz</artifactId>
             <version>1.3.2.GA</version>
           </docletArtifact>
+          <!-- Override default destination to avoid overwrite by enunciate -->
+          <outputDirectory>${project.build.directory}/site/javadocs</outputDirectory>
+          <reportOutputDirectory>${project.build.directory}/site/javadocs</reportOutputDirectory>
+          <destDir>javadocs</destDir>
         </configuration>
       </plugin>
       <plugin>
@@ -573,12 +577,14 @@
         <version>2.7.0</version>
         <executions>
           <execution>
-            <phase>deploy</phase>
+            <!-- Tell enunciate plugin not to attach to any normal build phase -->
+            <!-- The plugin will be run explicitly using the enunciate:docs target -->
+            <phase>none</phase>
             <goals>
               <goal>docs</goal>
             </goals>
             <configuration>
-              <!-- the directory to put the docs -->
+              <!-- the directory to put the docs (unfortunately this does not work!)-->
               <docsDir>${project.build.directory}/site/wsdocs</docsDir>
             </configuration>
           </execution>
