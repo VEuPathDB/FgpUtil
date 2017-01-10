@@ -20,7 +20,7 @@ import org.gusdb.fgputil.db.DataSourceWrapper;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 
-public class DatabaseInstance implements Wrapper {
+public class DatabaseInstance implements Wrapper, AutoCloseable {
 
   private static final Logger LOG = Logger.getLogger(DatabaseInstance.class);
 
