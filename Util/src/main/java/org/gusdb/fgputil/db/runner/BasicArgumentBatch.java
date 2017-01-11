@@ -18,7 +18,7 @@ public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentB
   private static final String NL = System.getProperty("line.separator");
 
   public static final int DEFAULT_BATCH_SIZE = 100;
-  
+
   private int _batchSize = DEFAULT_BATCH_SIZE;
   private Integer[] _types;
 
@@ -26,6 +26,7 @@ public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentB
   public int getBatchSize() {
     return _batchSize;
   }
+
   public void setBatchSize(int batchSize) {
     _batchSize = batchSize;
   }
@@ -37,6 +38,7 @@ public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentB
     }
     return new Integer[size()];
   }
+
   public void setParameterTypes(Integer[] types) {
     _types = types;
   }
