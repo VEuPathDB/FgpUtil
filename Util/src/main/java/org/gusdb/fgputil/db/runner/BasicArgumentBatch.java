@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.db.runner;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.ArrayList;
 
 import org.gusdb.fgputil.FormatUtil;
@@ -14,8 +16,6 @@ import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
 public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentBatch {
 
   private static final long serialVersionUID = 1L;
-
-  private static final String NL = System.getProperty("line.separator");
 
   public static final int DEFAULT_BATCH_SIZE = 100;
 
@@ -33,10 +33,7 @@ public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentB
 
   @Override
   public Integer[] getParameterTypes() {
-    if (_types != null) {
-      return _types;
-    }
-    return new Integer[size()];
+    return _types;
   }
 
   public void setParameterTypes(Integer[] types) {

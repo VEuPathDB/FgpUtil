@@ -6,7 +6,10 @@ import java.sql.SQLException;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 
 /**
- * Handler that extracts the first value of the first row of a ResultSet and treats as Long value.
+ * Handler that extracts the first value of the first row of a ResultSet and treats as Long value.  This
+ * is particularly handy for count queries, but can be used for any query that returns a single numeric
+ * result.  Status of the last ResultSet read is accessible at any time.  This class can be reused to read
+ * multiple query results.  The previous value and status will be overwritten.
  * 
  * @author rdoherty
  */
