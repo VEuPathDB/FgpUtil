@@ -35,6 +35,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.gusdb.fgputil.FormatUtil;
+
 /**
  * Tool to run database scripts
  */
@@ -141,7 +143,7 @@ public class SqlScriptRunner {
         }
         String trimmedLine = line.trim();
         if (trimmedLine.startsWith("--")) {
-          println(trimmedLine);
+          printlnError("Skipping line: " + trimmedLine);
         } else if (trimmedLine.length() < 1 || trimmedLine.startsWith("//")) {
           // Do nothing
         } else if (trimmedLine.length() < 1 || trimmedLine.startsWith("--")) {
@@ -152,7 +154,7 @@ public class SqlScriptRunner {
           command.append(" ");
           Statement statement = conn.createStatement();
 
-          println(command);
+          printlnError(command);
 
           boolean hasResults = false;
           if (stopOnError) {
@@ -176,13 +178,13 @@ public class SqlScriptRunner {
             ResultSetMetaData md = rs.getMetaData();
             int cols = md.getColumnCount();
             for (int i = 0; i < cols; i++) {
-              String name = md.getColumnLabel(i);
+              String name = md.getColumnLabel(i+1);
               print(name + "\t");
             }
             println("");
             while (rs.next()) {
               for (int i = 0; i < cols; i++) {
-                String value = rs.getString(i);
+                String value = rs.getString(i+1);
                 print(value + "\t");
               }
               println("");
@@ -192,11 +194,13 @@ public class SqlScriptRunner {
           command = null;
           try {
             statement.close();
-          } catch (Exception e) {
+          }
+          catch (Exception e) {
             // Ignore to workaround a bug in Jakarta DBCP
           }
           Thread.yield();
-        } else {
+        }
+        else {
           command.append(line);
           command.append(" ");
         }
@@ -204,17 +208,18 @@ public class SqlScriptRunner {
       if (!autoCommit) {
         conn.commit();
       }
-    } catch (SQLException e) {
-      e.fillInStackTrace();
+    }
+    catch (SQLException e) {
       printlnError("Error executing: " + command);
-      printlnError(e);
+      printlnError(FormatUtil.getStackTrace(e));
       throw e;
-    } catch (IOException e) {
-      e.fillInStackTrace();
+    }
+    catch (IOException e) {
       printlnError("Error executing: " + command);
-      printlnError(e);
+      printlnError(FormatUtil.getStackTrace(e));
       throw e;
-    } finally {
+    }
+    finally {
       conn.rollback();
       flush();
     }
@@ -226,7 +231,7 @@ public class SqlScriptRunner {
 
   private void print(Object o) {
     if (logWriter != null) {
-      System.out.print(o);
+      logWriter.print(o);
     }
   }
 
