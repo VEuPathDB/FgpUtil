@@ -25,7 +25,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 class SQLRunnerExecutors {
 
   private static final Logger LOG = Logger.getLogger(SQLRunnerExecutors.class);
-    
+
   /**
    * Abstract parent of all other SQL executors.  The methods in each
    * implementation should be executed in the following order:
@@ -39,7 +39,7 @@ class SQLRunnerExecutors {
    * @author rdoherty
    */
   static abstract class PreparedStatementExecutor {
-    
+
     protected Object[] _args;
     private Integer[] _types;
     protected long _lastExecutionTime = 0L;
@@ -78,7 +78,7 @@ class SQLRunnerExecutors {
     public void setParams(PreparedStatement stmt) throws SQLException {
       SqlUtils.bindParamValues(stmt, _types, _args);
     }
-    
+
     /**
      * Handles the result of the executed SQL
      * 
@@ -90,7 +90,7 @@ class SQLRunnerExecutors {
      * Closes any resources this executor opened
      */
     public void closeQuietly() { }
-    
+
     /**
      * Returns any SQL parameters as a log-friendly string
      * 
@@ -115,7 +115,7 @@ class SQLRunnerExecutors {
       _lastExecutionTime = System.currentTimeMillis() - startTime;
     }
   }
-  
+
   /**
    * Executor for simple SQL statements for which no results are expected.
    * 
@@ -166,7 +166,7 @@ class SQLRunnerExecutors {
       // this class's run() method takes care of recording cumulative execution time
       run(stmt);
     }
-    
+
     @Override
     public void run(PreparedStatement stmt) throws SQLException {
       _numUpdates = 0;
@@ -174,7 +174,6 @@ class SQLRunnerExecutors {
       int numBatches = 0;
       int numUnexecuted = 0;
       for (Object[] args : _argBatch) {
-        _args = args;
         SqlUtils.bindParamValues(stmt, _argBatch.getParameterTypes(), args);
         stmt.addBatch();
         numUnexecuted++;
@@ -189,7 +188,7 @@ class SQLRunnerExecutors {
         executeBatch(stmt, numBatches, numUnexecuted);
       }
     }
-    
+
     private void executeBatch(PreparedStatement stmt, int batchNumber, int batchSize)
         throws SQLException {
       long startTime = System.currentTimeMillis();
@@ -208,6 +207,11 @@ class SQLRunnerExecutors {
     public int getNumUpdates() {
       return _numUpdates;
     }
+
+    @Override
+    public String getParamsToString() {
+      return "{ batch of argument sets }";
+    }
   }
 
   /**
@@ -217,25 +221,25 @@ class SQLRunnerExecutors {
    * @author rdoherty
    */
   static class QueryExecutor extends PreparedStatementExecutor {
-    
+
     private ResultSetHandler _handler;
     private ResultSet _results;
-    
+
     public QueryExecutor(ResultSetHandler handler, Object[] args, Integer[] types) {
       super(args, types);
       _handler = handler;
     }
-    
+
     @Override
     public void run(PreparedStatement stmt) throws SQLException {
       _results = stmt.executeQuery();
     }
-    
+
     @Override
     public void handleResult() throws SQLException {
       _handler.handleResult(_results);
     }
-    
+
     @Override
     public void closeQuietly() {
       SqlUtils.closeQuietly(_results);
