@@ -36,6 +36,16 @@ public class FormatUtil {
     return str.toString();
   }
 
+  public static byte[] getUtf8EncodedBytes(String s) {
+    try {
+      return s.getBytes(UTF8_ENCODING);
+    }
+    catch (UnsupportedEncodingException e) {
+      // this should never happen; if it does, wrap in RuntimeException
+      throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
+    }
+  }
+
   public static String getUtf8EncodedString(String s) {
     try {
       return URLEncoder.encode(s, UTF8_ENCODING);
@@ -45,7 +55,7 @@ public class FormatUtil {
       throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
     }
   }
-  
+
   public static String splitCamelCase(String s) {
     return s.replaceAll(
             String.format("%s|%s|%s",
