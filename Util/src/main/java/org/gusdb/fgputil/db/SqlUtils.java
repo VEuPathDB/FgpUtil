@@ -132,12 +132,11 @@ public final class SqlUtils {
       return ps;
     }
     catch (SQLException ex) {
-      logger.error("Failed to prepare query: \n" + sql, ex);
       closeStatement(ps);
 
       if (ps == null && connection != null)
         SqlUtils.closeQuietly(connection);
-      throw ex;
+      throw new SQLException("Failed to prepare query: \n" + sql, ex);
     }
   }
 
@@ -163,8 +162,7 @@ public final class SqlUtils {
       return result;
     }
     catch (SQLException ex) {
-      logger.error("Failed to execute statement: \n" + sql);
-      throw ex;
+      throw new SQLException("Failed to execute statement: \n" + sql, ex);
     }
   }
 
@@ -191,8 +189,7 @@ public final class SqlUtils {
       return numUpdates;
     }
     catch (SQLException ex) {
-      logger.error("Failed to execute statement batch: \n" + sql);
-      throw ex;
+      throw new SQLException("Failed to execute statement batch: \n" + sql, ex);
     }
   }
 
@@ -244,8 +241,7 @@ public final class SqlUtils {
       return result;
     }
     catch (SQLException ex) {
-      logger.error("Failed to run nonQuery:\n" + sql);
-      throw ex;
+      throw new SQLException("Failed to run SQL:\n" + sql, ex);
     }
     finally {
       SqlUtils.closeQuietly(stmt, connection);
@@ -277,8 +273,7 @@ public final class SqlUtils {
       return result;
     }
     catch (SQLException ex) {
-      logger.error("Failed to run nonQuery:\n" + sql);
-      throw ex;
+      throw new SQLException("Failed to run SQL:\n" + sql, ex);
     }
     finally {
       if (stmt != null)
@@ -359,14 +354,13 @@ public final class SqlUtils {
       return resultSet;
     }
     catch (SQLException ex) {
-      logger.error("Failed to run query:\n" + sql);
       if (stmt == null)
         // may or may not have a connection, but don't have stmt or rs
         SqlUtils.closeQuietly(connection);
       else
         // have at least a statement; close everything we can
         closeResultSetAndStatement(resultSet, stmt);
-      throw ex;
+      throw new SQLException("Failed to run query:\n" + sql, ex);
     }
   }
 
@@ -381,9 +375,8 @@ public final class SqlUtils {
       return resultSet;
     }
     catch (SQLException ex) {
-      logger.error("Failed to run query:\n" + sql);
       closeResultSetAndStatement(resultSet, stmt);
-      throw ex;
+      throw new SQLException("Failed to run query:\n" + sql, ex);
     }
   }
 
