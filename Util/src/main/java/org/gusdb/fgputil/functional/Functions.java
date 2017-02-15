@@ -15,6 +15,8 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
 
 public class Functions {
 
+  private Functions() {}
+
   /**
    * Returns a copy (a new HashMap) of the input map with entries trimmed out whose keys do not pass the
    * passed predicate
