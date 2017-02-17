@@ -499,19 +499,19 @@ public final class SqlUtils {
             ((DatabaseResultStream) wrap).close();
           }
           if (wrap instanceof ResultSet) {
-            ((ResultSet) wrap).close();
+            if (!((ResultSet) wrap).isClosed()) ((ResultSet) wrap).close();
           }
           if (wrap instanceof CallableStatement) {
-            ((CallableStatement) wrap).close();
+            if (!((CallableStatement) wrap).isClosed()) ((CallableStatement) wrap).close();
           }
           if (wrap instanceof PreparedStatement) {
-            ((PreparedStatement) wrap).close();
+            if (!((PreparedStatement) wrap).isClosed()) ((PreparedStatement) wrap).close();
           }
           if (wrap instanceof Statement) {
-            ((Statement) wrap).close();
+            if (!((Statement) wrap).isClosed()) ((Statement) wrap).close();
           }
           if (wrap instanceof Connection) {
-            ((Connection) wrap).close();
+            if (!((Connection) wrap).isClosed()) ((Connection) wrap).close();
           }
         }
         catch (UncommittedChangesException e) {
