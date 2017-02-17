@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil.Style;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class FormatTest {
@@ -49,5 +50,24 @@ public class FormatTest {
     Exception e = new Exception("Oh no!", orig);
     String stackTrace = FormatUtil.getStackTrace(e);
     System.out.println(stackTrace);
+  }
+
+  private static String[][] UNDERSCORE_TEST_CASES = {
+    { "name", "name" },
+    { "displayName", "display_name" },
+    { "whoIsInThere", "who_is_in_there" },
+    { "myDSLLanguage", "my_dsl_language" },
+    { "XMLGoodies", "xml_goodies" },
+    { "WhatEverMan", "what_ever_man" },
+    { "big_boy", "big_boy" },
+    { "Under_Score_mE", "under_score_m_e" },
+    { "blah_bl_AH", "blah_bl_ah" }
+  };
+
+  @Test
+  public void testUnderscoreFormatter() throws Exception {
+    for (String[] testCase : UNDERSCORE_TEST_CASES) {
+      Assert.assertEquals(testCase[1], FormatUtil.toUnderscoreFormat(testCase[0]));
+    }
   }
 }
