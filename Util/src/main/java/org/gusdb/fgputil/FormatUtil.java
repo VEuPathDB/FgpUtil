@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -222,4 +223,45 @@ public class FormatUtil {
     }
     return array;
   }
+
+ /* Algorithm for the method below
+  * 
+  * if lower or underscore
+  *   print this
+  * else (upper)
+  *   if prev underscore, print lc(this)
+  *   else if prev lower or (not end and (next lower or underscore)), print _ + lc(this)
+  *   else print lc(this)
+  */
+
+  private static List<Character> UPPER_CASE_LETTERS = ArrayUtil.asList("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+  private static boolean isUnderscore(char c) { return c == '_'; }
+  private static boolean isLower(char c) { return !isUnderscore(c) && !UPPER_CASE_LETTERS.contains(c); }
+
+  // FIXME: Yes, this is slow.  Someone with more time should rewrite with regexes or at least ASCII nums
+  public static String toUnderscoreFormat(String camelCaseName) {
+    StringBuilder builder = new StringBuilder(camelCaseName.substring(0,1).toLowerCase());
+    for (int i = 1; i < camelCaseName.length(); i++) {
+      String thisCharStr = camelCaseName.substring(i,i+1);
+      char thisChar = thisCharStr.charAt(0);
+      char previousChar = camelCaseName.charAt(i-1);
+      if (isUnderscore(thisChar) || isLower(thisChar)) {
+        builder.append(thisChar);
+      }
+      else { // upper-case letter
+        if (isUnderscore(previousChar)) {
+          builder.append(thisCharStr.toLowerCase());
+        }
+        else if (isLower(previousChar) || (i + 1 != camelCaseName.length() &&
+            (isUnderscore(camelCaseName.charAt(i+1)) || isLower(camelCaseName.charAt(i+1))))) {
+          builder.append('_').append(thisCharStr.toLowerCase());
+        }
+        else {
+          builder.append(thisCharStr.toLowerCase());
+        }
+      }
+    }
+    return builder.toString();
+  }
+
 }

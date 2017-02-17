@@ -1,6 +1,8 @@
 package org.gusdb.fgputil;
 
+import java.util.AbstractList;
 import java.util.Arrays;
+import java.util.List;
 
 public class ArrayUtil {
 
@@ -61,4 +63,16 @@ public class ArrayUtil {
     return concatenate(begin, values, end);
   }
 
+  /**
+   * Converts a string into an immutable list of characters.
+   * 
+   * @param string
+   * @return list of characters in the string
+   */
+  public static List<Character> asList(final String string) {
+    return new AbstractList<Character>() {
+       @Override public int size() { return string.length(); }
+       @Override public Character get(int index) { return string.charAt(index); }
+    };
+  }
 }
