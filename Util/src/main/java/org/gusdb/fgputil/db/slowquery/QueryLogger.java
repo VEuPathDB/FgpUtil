@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.db.slowquery;
 
+import static org.gusdb.fgputil.FormatUtil.getInnerClassLog4jName;
+
 import java.sql.ResultSet;
 
 import org.apache.log4j.Logger;
@@ -85,18 +87,5 @@ public class QueryLogger {
     private static final Logger _logger = Logger.getLogger(getInnerClassLog4jName(ExampleQueryLog.class));
     private ExampleQueryLog() {}
     public static Logger getLogger() { return _logger; }
-  }
-
-  /**
-   * Log4j only accepts logger names using dot delimiters, but Class.getName()
-   * returns "package.InnerClass$OuterClass", which is not referenceable by
-   * the name attribute of a logger tag in log4j.xml.  This function gives a
-   * name usable by both.
-   * 
-   * @param clazz inner class name
-   * @return the "code-style" inner class name
-   */
-  private static String getInnerClassLog4jName(Class<?> clazz) {
-    return clazz.getName().replace("$", ".");
   }
 }

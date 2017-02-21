@@ -264,4 +264,17 @@ public class FormatUtil {
     return builder.toString();
   }
 
+
+  /**
+   * Log4j only accepts logger names using dot delimiters, but Class.getName()
+   * returns "package.InnerClass$OuterClass", which is not referenceable by
+   * the name attribute of a logger tag in log4j.xml.  This function gives a
+   * name usable by both.
+   * 
+   * @param clazz inner class name
+   * @return the "code-style" inner class name
+   */
+  public static String getInnerClassLog4jName(Class<?> clazz) {
+    return clazz.getName().replace("$", ".");
+  }
 }
