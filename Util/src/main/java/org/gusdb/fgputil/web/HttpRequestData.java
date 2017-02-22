@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.web;
 
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.net.InetAddress;
@@ -8,104 +9,119 @@ import java.net.UnknownHostException;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Facade over HttpServletRequest that simplifies some common calls to and manipulations of HttpServletRequest.
+ * Facade over HttpServletRequest that simplifies some common calls to and manipulations of
+ * HttpServletRequest.  The values are stored in memory in this class (not fetched from the
+ * underlying servlet container.  Thus, this is a POJO that can be used successfully after
+ * the lifecycle of the actual HTTP request.
  * 
  * @author rdoherty
  */
 public class HttpRequestData implements RequestData {
 
-  private HttpServletRequest _request;
+  private final String _webAppBaseUrl;
+  private final String _noContextUrl;
+  private final String _requestUri;
+  private final String _requestUrl;
+  private final String _queryString;
+  private final String _userAgent;
+  private final String _referrer;
+  private final String _ipAddress;
+  private final String _remoteHost;
+  private final String _serverName;
+  private final HttpMethod _httpMethod;
+  private final Map<String, String[]> _parameters;
+  private final Map<String, Object> _attributes;
 
   public HttpRequestData(HttpServletRequest request) {
-    _request = request;
-  }
-
-  public HttpServletRequest getUnderlyingRequest() {
-    return _request;
+    _noContextUrl = new StringBuilder()
+        .append(request.getScheme())
+        .append("://")
+        .append(request.getServerName())
+        .append(request.getServerPort() == 80 ||
+                request.getServerPort() == 443 ?
+                "" : ":" + request.getServerPort())
+        .toString();
+    _webAppBaseUrl = new StringBuilder()
+        .append(_noContextUrl)
+        .append(request.getContextPath())
+        .toString();
+    _requestUri = request.getRequestURI();
+    _requestUrl = request.getRequestURL().toString();
+    _queryString = request.getQueryString();
+    _userAgent = request.getHeader("User-Agent");
+    _referrer = request.getHeader("Referer");
+    _ipAddress = request.getRemoteAddr();
+    _remoteHost = request.getRemoteHost();
+    _serverName = request.getServerName();
+    _httpMethod = HttpMethod.getValueOf(request.getMethod());
+    _parameters = new HashMap<String, String[]>(request.getParameterMap());
+    _attributes = new HashMap<>();
+    Enumeration<String> attributeNames = request.getAttributeNames();
+    while (attributeNames.hasMoreElements()) {
+      _attributes.get(request.getAttribute(attributeNames.nextElement()));
+    }
   }
 
   @Override
   public String getWebAppBaseUrl() {
-    return new StringBuilder()
-      .append(getNoContextUrl())
-      .append(_request.getContextPath())
-      .toString();
+    return _webAppBaseUrl;
   }
 
   @Override
   public String getNoContextUrl() {
-    return new StringBuilder()
-      .append(_request.getScheme())
-      .append("://")
-      .append(_request.getServerName())
-      .append(_request.getServerPort() == 80 ||
-              _request.getServerPort() == 443 ?
-              "" : ":" + _request.getServerPort())
-      .toString();
+    return _noContextUrl;
   }
 
   @Override
   public String getRequestUri() {
-    return _request.getRequestURI();
+    return _requestUri;
   }
 
   @Override
   public String getRequestUrl() {
-    return _request.getRequestURL().toString();
+    return _requestUrl;
   }
 
   @Override
   public String getQueryString() {
-    return _request.getQueryString();
+    return _queryString;
   }
 
   @Override
   public String getFullRequestUrl() {
-    StringBuffer buf = _request.getRequestURL();
-    String qString = _request.getQueryString();
-    return (buf == null ? new StringBuffer() : buf)
-      .append(qString == null ? "" : "?" + qString)
-      .toString();
-  }
-
-  @Override
-  public String getBrowser() {
-    return _request.getHeader("User-Agent");
-  }
-
-  @Override
-  public String getReferrer() {
-    return _request.getHeader("Referer");
+    return new StringBuilder(_requestUrl)
+        .append(_queryString == null ? "" : "?" + _queryString)
+        .toString();
   }
 
   @Override
   public String getUserAgent() {
-    return _request.getHeader("user-agent");
+    return _userAgent;
+  }
+
+  @Override
+  public String getReferrer() {
+    return _referrer;
   }
 
   @Override
   public String getIpAddress() {
-    return _request.getRemoteAddr();
+    return _ipAddress;
   }
 
   @Override
   public Object getRequestAttribute(String key) {
-    return _request.getAttribute(key);
-  }
-
-  @Override
-  public String getRequestHeader(String key) {
-    return _request.getHeader(key);
+    return _attributes.get(key);
   }
 
   @Override
   public String getRemoteHost() {
-    return _request.getRemoteHost();
+    return _remoteHost;
   }
 
   @Override
   public String getServerName() {
-    return _request.getServerName();
+    return _serverName;
   }
 
   /**
@@ -135,17 +151,12 @@ public class HttpRequestData implements RequestData {
   }
 
   @Override
-  @SuppressWarnings("rawtypes")
   public Map<String, String[]> getTypedParamMap() {
-    Map parameterMap = _request.getParameterMap();
-    @SuppressWarnings({ "unchecked", "cast" })
-    Map<String, String[]> parameters = (Map<String, String[]>) (parameterMap == null ?
-        new HashMap<>() : new HashMap<>((Map<String, String[]>)parameterMap));
-    return parameters;
+    return _parameters;
   }
 
   @Override
   public HttpMethod getMethod() {
-    return HttpMethod.getValueOf(_request.getMethod());
+    return _httpMethod;
   }
 }
