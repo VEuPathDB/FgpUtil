@@ -333,6 +333,27 @@ public class TreeNode<T> implements MultiLineToString {
   }
 
   /**
+   * Removes any subtrees that pass the passed predicate
+   * 
+   * @param pred predicate to test node contents against
+   * @return number of subtrees removed
+   */
+  public int removeAllNodes(Predicate<TreeNode<T>> pred) {
+    int numRemoved = 0;
+    for (int i = 0; i < _childNodes.size(); i++) {
+      if (pred.test(_childNodes.get(i))) {
+        _childNodes.remove(i);
+        numRemoved++;
+        i--; // reuse the current index, now pointing to the next node
+      }
+      else {
+        numRemoved += _childNodes.get(i).removeAllNodes(pred);
+      }
+    }
+    return numRemoved;
+  }
+
+  /**
    * Replaces each node's contents with the result of the passed function
    * 
    * @param function function to apply to each node
