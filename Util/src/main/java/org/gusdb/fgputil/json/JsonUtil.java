@@ -20,7 +20,7 @@ public class JsonUtil {
     return (obj.has(key) ? obj.getString(key) : defaultValue);
   }
 
-  public static Integer getIntegerOrDefault(JSONObject obj, String key, Integer defaultValue) {
+  public static int getIntegerOrDefault(JSONObject obj, String key, int defaultValue) {
     return (obj.has(key) ? obj.getInt(key) : defaultValue);
   }
 
