@@ -18,6 +18,17 @@ public class Functions {
   private Functions() {}
 
   /**
+   * Returns a function that takes a parameter of the given type and returns a string
+   * @param <T> type to convert to string
+   */
+  public static class ToStringFunction<T> implements Function<T,String> {
+    @Override
+    public String apply(T obj) {
+      return obj.toString();
+    }
+  }
+
+  /**
    * Returns a copy (a new HashMap) of the input map with entries trimmed out whose keys do not pass the
    * passed predicate
    * 

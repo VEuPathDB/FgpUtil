@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.functional.Functions;
 import org.json.JSONArray;
 
 public class FormatUtil {
@@ -181,22 +183,34 @@ public class FormatUtil {
   public static <S,T> String prettyPrint(Map<S,T> map) {
     return prettyPrint(map, Style.SINGLE_LINE);
   }
-  
+
+  /**
+   * Returns a "pretty" string representation of the passed map using
+   * the passed format style and the value's toString() method.
+   * 
+   * @param map map to print
+   * @return pretty string value of map
+   */
+  public static <S,T> String prettyPrint(Map<S,T> map, Style style) {
+    return prettyPrint(map, style, new Functions.ToStringFunction<T>());
+  }
+
   /**
    * Returns a "pretty" string representation of the passed map using
    * the passed format style.
    * 
    * @param map map to print
    * @param style formatting style
+   * @param toString function to convert the map values to strings
    * @return pretty string value of map
    */
-  public static <S,T> String prettyPrint(Map<S,T> map, Style style) {
+  public static <S,T> String prettyPrint(Map<S,T> map, Style style, Function<T,String> toString) {
     StringBuilder sb = new StringBuilder("{").append(style.introDelimiter);
     boolean firstRecord = true;
     for (Entry<S,T> entry : map.entrySet()) {
       sb.append(firstRecord ? "" : style.recordDelimiter).append(style.recordIndent)
         .append(entry.getKey().toString()).append(style.mapArrow)
-        .append(entry.getValue() == null ? null : entry.getValue().toString());
+        .append(entry.getValue() == null ? null : toString.apply(entry.getValue()));
       firstRecord = false;
     }
     return sb.append(style.endDelimiter).append("}")
