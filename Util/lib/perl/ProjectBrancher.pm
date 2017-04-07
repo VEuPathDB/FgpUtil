@@ -23,21 +23,21 @@ my @baseProjects = ('install:gus', 'CBIL:gus', 'FgpUtil:gus', 'WSF:gus', 'WDK:gu
 my @backendProjects = ('GusAppFramework:gus', 'GusSchema:gus', 'ReFlow:gus',
                        'DoTS:apidb', 'GGTools:apidb','TuningManager:gus',
                        'ApiCommonData:apidb', 'ApiCommonWorkflow:apidb',
-                       'ApiCommonShared:apidb', 'EuPathDatasets:apidb',
+                       'ApiCommonModel:apidb', 'ApiCommonDatasets:apidb',
                        'OrthoMCLData:apidb', 'OrthoMCLWorkflow:apidb', 
-                       'OrthoMCLShared:apidb', 'OrthoMCLEngine:apidb',
-                       'OrthoMCLDatasets:apidb', 'EuPathMetadataRepository:apidb');
+                       'OrthoMCLModel:apidb', 'OrthoMCLEngine:apidb',
+                       'OrthoMCLDatasets:apidb', 'ApiCommonMetadataRepository:apidb');
 
 # Shared website projects
-my @sharedSiteProjects = ('EuPathSiteCommon:apidb', 'EuPathWebSvcCommon:apidb');
+my @sharedSiteProjects = ('EbrcWebsiteCommon:apidb', 'EbrcWebSvcCommon:apidb');
 
 # Additional projects for Api sites
-my @apiSiteProjects = ('EuPathPresenters:apidb', 'EuPathDatasets:apidb',
-                       'ReFlow:gus', 'ApiCommonShared:apidb','GBrowse:apidb',
+my @apiSiteProjects = ('ApiCommonPresenters:apidb', 'ApiCommonDatasets:apidb',
+                       'ReFlow:gus', 'ApiCommonModel:apidb','GBrowse:apidb',
                        'ApiCommonWebsite:apidb', 'ApiCommonWebService:apidb');
 
 # Additional projects for Ortho
-my @orthoSiteProjects = ('OrthoMCLShared:apidb', 'OrthoMCLWebsite:apidb',
+my @orthoSiteProjects = ('OrthoMCLModel:apidb', 'OrthoMCLWebsite:apidb',
                          'OrthoMCLWebService:apidb', 'DJob:gus');
 
 # All other projects not listed above
