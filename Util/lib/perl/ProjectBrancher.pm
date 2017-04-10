@@ -29,7 +29,7 @@ my @backendProjects = ('GusAppFramework:gus', 'GusSchema:gus', 'ReFlow:gus',
                        'OrthoMCLDatasets:apidb', 'ApiCommonMetadataRepository:apidb');
 
 # Shared website projects
-my @sharedSiteProjects = ('EbrcWebsiteCommon:apidb', 'EbrcWebSvcCommon:apidb');
+my @sharedSiteProjects = ('EbrcModelCommon:apidb', 'EbrcWebsiteCommon:apidb', 'EbrcWebSvcCommon:apidb');
 
 # Additional projects for Api sites
 my @apiSiteProjects = ('ApiCommonPresenters:apidb', 'ApiCommonDatasets:apidb',
@@ -39,6 +39,14 @@ my @apiSiteProjects = ('ApiCommonPresenters:apidb', 'ApiCommonDatasets:apidb',
 # Additional projects for Ortho
 my @orthoSiteProjects = ('OrthoMCLModel:apidb', 'OrthoMCLWebsite:apidb',
                          'OrthoMCLWebService:apidb', 'DJob:gus');
+
+# Additional projects for ClinEpi
+my @clinEpiSiteProjects = ('ClinEpiPresenters:apidb', 'ClinEpiDatasets:apidb',
+                           'ClinEpiModel:apidb', 'ClinEpiWebsite:apidb');
+
+# Additional projects for Microbiome
+my @microbiomeSiteProjects = ('MicrobiomePresenters:apidb', 'MicrobiomeDatasets:apidb',
+                           'MicrobiomeModel:apidb', 'MicrobiomeWebsite:apidb');
 
 # All other projects not listed above
 my @otherProjects = ('DJob:gus', 'TuningManager:gus', 'OAuth2Server:gus',
@@ -51,6 +59,8 @@ my %groupsMap = (
     'backend' => [uniq((@baseProjects, @backendProjects))],
     'apisite' => [uniq((@baseProjects, @sharedSiteProjects, @apiSiteProjects))],
     'orthosite' => [uniq((@baseProjects, @sharedSiteProjects, @orthoSiteProjects))],
+    'clinepisite' => [uniq((@baseProjects, @sharedSiteProjects, @clinEpiSiteProjects))],
+    'mbiosite' => [uniq((@baseProjects, @sharedSiteProjects, @microbiomeSiteProjects))],
     'allsite' => [uniq((@baseProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects))],
     'all' => [uniq((@baseProjects, @backendProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects, @otherProjects))]
 );
