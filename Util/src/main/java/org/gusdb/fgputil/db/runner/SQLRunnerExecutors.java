@@ -82,9 +82,10 @@ class SQLRunnerExecutors {
     /**
      * Handles the result of the executed SQL
      * 
-     * @throws SQLException if error occurs while handling result
+     * @throws SQLException if SQL-specific error occurs while handling result
+     * @throws SQLRunnerException if another error occurs
      */
-    public void handleResult() throws SQLException { }
+    public void handleResult() throws SQLException, SQLRunnerException { }
 
     /**
      * Closes any resources this executor opened
@@ -236,7 +237,7 @@ class SQLRunnerExecutors {
     }
 
     @Override
-    public void handleResult() throws SQLException {
+    public void handleResult() throws SQLException, SQLRunnerException {
       _handler.handleResult(_results);
     }
 

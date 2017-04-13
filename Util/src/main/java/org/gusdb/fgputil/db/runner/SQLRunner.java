@@ -372,12 +372,14 @@ public class SQLRunner {
       getSqlLogger().submitTimer(timer);
 
     }
-    catch (SQLException e) {
+    catch (Exception e) {
       // only attempt rollback if retrieved a connection in the first place
       if (connectionSuccessful) {
         attemptRollback(conn);
       }
-      throw new SQLRunnerException("Unable to run SQL <" + _sql + "> with args " + exec.getParamsToString(), e);
+      // if SQLRunnerException is thrown, propogate it; otherwise wrap in new SQLRunnerException
+      throw (e instanceof SQLRunnerException ? (SQLRunnerException)e :
+        new SQLRunnerException("Unable to run SQL <" + _sql + "> with args " + exec.getParamsToString(), e));
     }
     finally {
       exec.closeQuietly();
