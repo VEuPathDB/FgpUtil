@@ -34,7 +34,9 @@ my @sharedSiteProjects = ('EuPathSiteCommon:apidb', 'EuPathWebSvcCommon:apidb');
 # Additional projects for Api sites
 my @apiSiteProjects = ('EuPathPresenters:apidb', 'EuPathDatasets:apidb',
                        'ReFlow:gus', 'ApiCommonShared:apidb','GBrowse:apidb',
-                       'ApiCommonWebsite:apidb', 'ApiCommonWebService:apidb');
+                       'ApiCommonWebsite:apidb', 'ApiCommonWebService:apidb',
+                       'MicrobiomeDBDatasets:apidb', 'MicrobiomeDBPresenters:apidb',
+                       'MicrobiomeDBWebsite:apidb');
 
 # Additional projects for Ortho
 my @orthoSiteProjects = ('OrthoMCLShared:apidb', 'OrthoMCLWebsite:apidb',
