@@ -29,6 +29,15 @@ public class QueryLogger {
     }
   }
 
+  public static synchronized void setInactive() {
+    initialize(new QueryLogConfig() {
+      @Override public double getBaseline() { return 5; }
+      @Override public double getSlow() { return 5; }
+      @Override public boolean isIgnoredSlow(String sql) { return true; }
+      @Override public boolean isIgnoredBaseline(String sql) { return true; }
+    });
+  }
+
   /** 
    * Call this version to track and log query time if you do not have a resultSet, eg, for an update or insert.  Call it after the execute.
    * 
@@ -67,7 +76,7 @@ public class QueryLogger {
 
   private static void checkInstance() {
     if (_instance == null) {
-      throw new IllegalStateException("The init() method must be called on this class before any other method is called.");
+      throw new IllegalStateException("The initialize() method must be called on this class before any other method is called.");
     }
   }
 
