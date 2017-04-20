@@ -280,6 +280,7 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
    * 
    * @throws Exception if problem while shutting down DB instance
    */
+  @Override
   public void close() throws Exception {
     synchronized(this) {
       removeInstance(this);
