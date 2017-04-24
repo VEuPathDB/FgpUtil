@@ -58,7 +58,8 @@ public class HttpRequestData implements RequestData {
     _attributes = new HashMap<>();
     Enumeration<String> attributeNames = request.getAttributeNames();
     while (attributeNames.hasMoreElements()) {
-      _attributes.get(request.getAttribute(attributeNames.nextElement()));
+      String key = attributeNames.nextElement();
+      _attributes.put(key, request.getAttribute(key));
     }
   }
 
