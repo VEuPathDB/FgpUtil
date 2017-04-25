@@ -23,24 +23,32 @@ my @baseProjects = ('install:gus', 'CBIL:gus', 'FgpUtil:gus', 'WSF:gus', 'WDK:gu
 my @backendProjects = ('GusAppFramework:gus', 'GusSchema:gus', 'ReFlow:gus',
                        'DoTS:apidb', 'GGTools:apidb','TuningManager:gus',
                        'ApiCommonData:apidb', 'ApiCommonWorkflow:apidb',
-                       'ApiCommonShared:apidb', 'EuPathDatasets:apidb',
+                       'ApiCommonModel:apidb', 'ApiCommonDatasets:apidb',
                        'OrthoMCLData:apidb', 'OrthoMCLWorkflow:apidb', 
-                       'OrthoMCLShared:apidb', 'OrthoMCLEngine:apidb',
-                       'OrthoMCLDatasets:apidb', 'EuPathMetadataRepository:apidb');
+                       'OrthoMCLModel:apidb', 'OrthoMCLEngine:apidb',
+                       'OrthoMCLDatasets:apidb', 'ApiCommonMetadataRepository:apidb');
 
 # Shared website projects
-my @sharedSiteProjects = ('EuPathSiteCommon:apidb', 'EuPathWebSvcCommon:apidb');
+my @sharedSiteProjects = ('EbrcModelCommon:apidb', 'EbrcWebsiteCommon:apidb', 'EbrcWebSvcCommon:apidb');
 
 # Additional projects for Api sites
-my @apiSiteProjects = ('EuPathPresenters:apidb', 'EuPathDatasets:apidb',
-                       'ReFlow:gus', 'ApiCommonShared:apidb','GBrowse:apidb',
+my @apiSiteProjects = ('ApiCommonPresenters:apidb', 'ApiCommonDatasets:apidb',
+                       'ReFlow:gus', 'ApiCommonModel:apidb','GBrowse:apidb',
                        'ApiCommonWebsite:apidb', 'ApiCommonWebService:apidb',
                        'MicrobiomeDBDatasets:apidb', 'MicrobiomeDBPresenters:apidb',
                        'MicrobiomeDBWebsite:apidb');
 
 # Additional projects for Ortho
-my @orthoSiteProjects = ('OrthoMCLShared:apidb', 'OrthoMCLWebsite:apidb',
+my @orthoSiteProjects = ('OrthoMCLModel:apidb', 'OrthoMCLWebsite:apidb',
                          'OrthoMCLWebService:apidb', 'DJob:gus');
+
+# Additional projects for ClinEpi
+my @clinEpiSiteProjects = ('ClinEpiPresenters:apidb', 'ClinEpiDatasets:apidb',
+                           'ClinEpiModel:apidb', 'ClinEpiWebsite:apidb');
+
+# Additional projects for Microbiome
+my @microbiomeSiteProjects = ('MicrobiomePresenters:apidb', 'MicrobiomeDatasets:apidb',
+                           'MicrobiomeModel:apidb', 'MicrobiomeWebsite:apidb');
 
 # All other projects not listed above
 my @otherProjects = ('DJob:gus', 'TuningManager:gus', 'OAuth2Server:gus',
@@ -53,6 +61,8 @@ my %groupsMap = (
     'backend' => [uniq((@baseProjects, @backendProjects))],
     'apisite' => [uniq((@baseProjects, @sharedSiteProjects, @apiSiteProjects))],
     'orthosite' => [uniq((@baseProjects, @sharedSiteProjects, @orthoSiteProjects))],
+    'clinepisite' => [uniq((@baseProjects, @sharedSiteProjects, @clinEpiSiteProjects))],
+    'mbiosite' => [uniq((@baseProjects, @sharedSiteProjects, @microbiomeSiteProjects))],
     'allsite' => [uniq((@baseProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects))],
     'all' => [uniq((@baseProjects, @backendProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects, @otherProjects))]
 );
