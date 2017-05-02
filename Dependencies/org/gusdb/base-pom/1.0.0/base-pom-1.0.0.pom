@@ -18,7 +18,7 @@
   <distributionManagement>
     <site>
       <id>eupath-trunk-dependencies</id>
-      <url>https://www.cbil.upenn.edu/svn/gus/FgpUtil/trunk/Dependencies</url>
+      <url>https://cbilsvn.pmacs.upenn.edu/svn/gus/FgpUtil/trunk/Dependencies</url>
     </site>
   </distributionManagement>
 
