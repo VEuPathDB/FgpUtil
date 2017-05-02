@@ -14,7 +14,7 @@ use warnings;
 our @EXPORT = qw(getRepoBaseUrl getCmd getProjectGroup getProjectGroupOptions printProjectGroupInfo);
 
 # Base URL for EuPathDB Subversion repositories
-my $url = 'https://www.cbil.upenn.edu/svn';
+my $url = 'https://cbilsvn.pmacs.upenn.edu/svn';
 
 # Base projects
 my @baseProjects = ('install:gus', 'CBIL:gus', 'FgpUtil:gus', 'WSF:gus', 'WDK:gus', 'TuningManager:gus');

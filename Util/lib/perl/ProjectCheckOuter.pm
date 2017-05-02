@@ -9,7 +9,7 @@ sub checkOut {
 
   usage($projects, $name) unless $branch;
 
-  my $url = 'https://www.cbil.upenn.edu/svn';
+  my $url = 'https://cbilsvn.pmacs.upenn.edu/svn';
   foreach my $project (@$projects) {
     my ($name, $repository) = split(/:/, $project);
     my $subTarget = $branch eq 'trunk'? "trunk" : "branches/$branch";
