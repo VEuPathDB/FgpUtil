@@ -70,7 +70,8 @@ sub branch {
             }
             my $cmd = "svn cp -m \"creating branch $name: $comment\" $url/$repository/$name/trunk $target";
             print STDERR "Branching $name\n";
-            system($cmd) == 0 || die "Failed branching '$name'\n";
+            print STDERR "$cmd\n";
+            system($cmd) == 0 || print STDERR "Failed branching '$name'\n";
         }
     }
 }

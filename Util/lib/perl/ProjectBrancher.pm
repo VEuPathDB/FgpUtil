@@ -34,9 +34,7 @@ my @sharedSiteProjects = ('EbrcModelCommon:apidb', 'EbrcWebsiteCommon:apidb', 'E
 # Additional projects for Api sites
 my @apiSiteProjects = ('ApiCommonPresenters:apidb', 'ApiCommonDatasets:apidb',
                        'ReFlow:gus', 'ApiCommonModel:apidb','GBrowse:apidb',
-                       'ApiCommonWebsite:apidb', 'ApiCommonWebService:apidb',
-                       'MicrobiomeDBDatasets:apidb', 'MicrobiomeDBPresenters:apidb',
-                       'MicrobiomeDBWebsite:apidb');
+                       'ApiCommonWebsite:apidb', 'ApiCommonWebService:apidb');
 
 # Additional projects for Ortho
 my @orthoSiteProjects = ('OrthoMCLModel:apidb', 'OrthoMCLWebsite:apidb',
@@ -48,7 +46,7 @@ my @clinEpiSiteProjects = ('ClinEpiPresenters:apidb', 'ClinEpiDatasets:apidb',
 
 # Additional projects for Microbiome
 my @microbiomeSiteProjects = ('MicrobiomePresenters:apidb', 'MicrobiomeDatasets:apidb',
-                           'MicrobiomeModel:apidb', 'MicrobiomeWebsite:apidb');
+                              'MicrobiomeModel:apidb', 'MicrobiomeWebsite:apidb');
 
 # All other projects not listed above
 my @otherProjects = ('DJob:gus', 'TuningManager:gus', 'OAuth2Server:gus',
@@ -63,8 +61,10 @@ my %groupsMap = (
     'orthosite' => [uniq((@baseProjects, @sharedSiteProjects, @orthoSiteProjects))],
     'clinepisite' => [uniq((@baseProjects, @sharedSiteProjects, @clinEpiSiteProjects))],
     'mbiosite' => [uniq((@baseProjects, @sharedSiteProjects, @microbiomeSiteProjects))],
-    'allsite' => [uniq((@baseProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects))],
-    'all' => [uniq((@baseProjects, @backendProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects, @otherProjects))]
+    'allsite' => [uniq((@baseProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects,
+                        @clinEpiSiteProjects, @microbiomeSiteProjects))],
+    'all' => [uniq((@baseProjects, @sharedSiteProjects, @apiSiteProjects, @orthoSiteProjects,
+                    @clinEpiSiteProjects, @microbiomeSiteProjects, @backendProjects, @otherProjects))]
 );
 
 sub getRepoBaseUrl {
