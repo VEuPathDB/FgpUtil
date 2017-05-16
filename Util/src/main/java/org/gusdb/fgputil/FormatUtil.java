@@ -3,6 +3,7 @@ package org.gusdb.fgputil;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -49,9 +50,19 @@ public class FormatUtil {
     }
   }
 
-  public static String getUtf8EncodedString(String s) {
+  public static String urlEncodeUtf8(String s) {
     try {
       return URLEncoder.encode(s, UTF8_ENCODING);
+    }
+    catch (UnsupportedEncodingException e) {
+      // this should never happen; if it does, wrap in RuntimeException
+      throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
+    }
+  }
+
+  public static String urlDecodeUtf8(String s) {
+    try {
+      return URLDecoder.decode(s, UTF8_ENCODING);
     }
     catch (UnsupportedEncodingException e) {
       // this should never happen; if it does, wrap in RuntimeException

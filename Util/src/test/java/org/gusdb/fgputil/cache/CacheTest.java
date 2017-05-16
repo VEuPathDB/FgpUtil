@@ -17,7 +17,7 @@ public class CacheTest {
   private static final Logger LOG = Logger.getLogger(CacheTest.class);
   private static final boolean LOG_ON = false;
 
-  private static class StringFetcher implements ItemFetcher<Integer,String> {
+  private static class StringFetcher extends NoUpdateItemFetcher<Integer,String> {
 
     private final List<String> _opOrder;
 
@@ -30,16 +30,6 @@ public class CacheTest {
       if (LOG_ON) LOG.info("Fetching item " + itemId);
       _opOrder.add("b" + itemId);
       return String.valueOf(itemId);
-    }
-
-    @Override
-    public String updateItem(Integer id, String previousVersion) throws UnfetchableItemException {
-      return fetchItem(id);
-    }
-
-    @Override
-    public boolean itemNeedsUpdating(String item) {
-      return false;
     }
   }
 

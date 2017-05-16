@@ -103,6 +103,11 @@
         <artifactId>fgputil-util</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-accountdb</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 
       <!-- JSON Parsing -->
       <dependency>

@@ -51,7 +51,7 @@ public abstract class DBPlatform {
     // platform-dependent abstract methods
     //#########################################################################
 
-    public abstract int getNextId(DataSource dataSource, String schema,
+    public abstract long getNextId(DataSource dataSource, String schema,
         String table) throws SQLException, DBStateException;
 
     public abstract String getNextIdSqlExpression(String schema, String table);
