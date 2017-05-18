@@ -112,7 +112,7 @@ public class AccountManager {
   private static final Integer[] UPDATE_LAST_LOGIN_PARAM_TYPES = { Types.TIMESTAMP, Types.BIGINT };
 
   private static final String UPDATE_EMAIL_SQL =
-      "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set "+ COL_EMAIL + " = ?, where " + COL_USER_ID + " = ?";
+      "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set "+ COL_EMAIL + " = ? where " + COL_USER_ID + " = ?";
   private static final Integer[] UPDATE_EMAIL_PARAM_TYPES = { Types.VARCHAR, Types.BIGINT };
 
   private final DatabaseInstance _accountDb;
