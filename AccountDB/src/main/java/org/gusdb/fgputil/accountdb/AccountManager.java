@@ -35,7 +35,6 @@ import org.gusdb.fgputil.iterator.IteratorUtil;
 
 public class AccountManager {
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(AccountManager.class);
 
   public static final String TABLE_ACCOUNTS = "accounts";
@@ -172,6 +171,7 @@ public class AccountManager {
   private UserProfile getSingleUserProfile(final String condition, final Object[] params, final Integer[] types) {
     String sql = new StringBuilder(_selectSql).append(condition).toString();
     final Wrapper<UserProfile> profileWrapper = new Wrapper<>();
+    LOG.debug("Running the following SQL: " + sql);
     new SQLRunner(_accountDb.getDataSource(), sql).executeQuery(params, types, new ResultSetHandler() {
       @Override public void handleResult(ResultSet rs) throws SQLException {
         if (rs.next()) {
@@ -200,6 +200,7 @@ public class AccountManager {
       }
     }
     profile.setProperties(properties);
+    LOG.debug("Loaded profile: " + profile);
     return profile;
   }
 
@@ -273,7 +274,7 @@ public class AccountManager {
       public Iterator<Object[]> iterator() {
         return IteratorUtil.transform(trimmedProps.entrySet().iterator(), new Function<Entry<String,String>,Object[]>() {
           @Override public Object[] apply(Entry<String, String> property) {
-            return new Object[] { userId, property.getKey(), property.getValue() };
+            return new Object[] { userId, _propertyNames.get(property.getKey()).getDbKey(), property.getValue() };
           }
         });
       }

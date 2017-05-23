@@ -1,7 +1,10 @@
 package org.gusdb.fgputil.accountdb;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.Date;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class UserProfile {
 
@@ -64,5 +67,22 @@ public class UserProfile {
   }
   public void setProperties(Map<String, String> properties) {
     _properties = properties;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("User {").append(NL)
+        .append("  userId:        ").append(_userId).append(NL)
+        .append("  email:         ").append(_email).append(NL)
+        .append("  isGuest:       ").append(_isGuest).append(NL)
+        .append("  signature:     ").append(_signature).append(NL)
+        .append("  stableId:      ").append(_stableId).append(NL)
+        .append("  registerTime:  ").append(_registerTime).append(NL)
+        .append("  lastLoginTime: ").append(_lastLoginTime).append(NL)
+        .append("  properties: {").append(NL);
+    for (Entry<String,String> prop : _properties.entrySet()) {
+      sb.append("    ").append(prop.getKey()).append(": ").append(prop.getValue()).append(NL);
+    }
+    return sb.append("  }").append(NL).append("}").append(NL).toString();
   }
 }
