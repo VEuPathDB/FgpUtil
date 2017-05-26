@@ -316,6 +316,7 @@ public class AccountManager {
     profile.setSignature(encryptPassword(stableId));
     profile.setRegisterTime(now);
     profile.setLastLoginTime(now);
+    profile.setProperties(Collections.EMPTY_MAP);
     return profile;
   }
 
