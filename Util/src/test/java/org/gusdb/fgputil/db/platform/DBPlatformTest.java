@@ -35,16 +35,17 @@ public class DBPlatformTest {
     ConnectionPoolConfig appConfig = new OracleConfig();
     ConnectionPoolConfig userConfig = new PostgresConfig();
 
-    DatabaseInstance appDb = new DatabaseInstance(appConfig, "APP");
-    DatabaseInstance userDb = new DatabaseInstance(userConfig, "USER");
+    try (DatabaseInstance appDb = new DatabaseInstance(appConfig, "APP");
+         DatabaseInstance userDb = new DatabaseInstance(userConfig, "USER")) {
 
-    // later, in actions, etc...
-    DataSource appDs = appDb.getDataSource();
-    DataSource userDs = userDb.getDataSource();
+      // later, in actions, etc...
+      DataSource appDs = appDb.getDataSource();
+      DataSource userDs = userDb.getDataSource();
 
-    SQLRunner runner = new SQLRunner(appDs, appDb.getPlatform().getValidationQuery());
-    runner.executeStatement();
-    runner = new SQLRunner(userDs, userDb.getPlatform().getValidationQuery());
-    runner.executeStatement();
+      SQLRunner runner = new SQLRunner(appDs, appDb.getPlatform().getValidationQuery());
+      runner.executeStatement();
+      runner = new SQLRunner(userDs, userDb.getPlatform().getValidationQuery());
+      runner.executeStatement();
+    }
   }
 }
