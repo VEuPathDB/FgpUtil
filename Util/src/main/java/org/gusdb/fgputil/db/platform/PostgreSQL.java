@@ -107,10 +107,8 @@ public class PostgreSQL extends DBPlatform {
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String, java.lang.String)
    */
   @Override
-  public long getNextId(DataSource dataSource, String schema, String table) throws SQLException,
-      DBStateException {
+  public long getNextId(DataSource dataSource, String schema, String table) throws SQLException {
     schema = normalizeSchema(schema);
-
     StringBuffer sql = new StringBuffer("SELECT nextval('");
     sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
     sql.append("')");
