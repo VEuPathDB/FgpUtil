@@ -26,7 +26,6 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;
@@ -172,14 +171,13 @@ public class AccountManager {
     String sql = new StringBuilder(_selectSql).append(condition).toString();
     final Wrapper<UserProfile> profileWrapper = new Wrapper<>();
     LOG.debug("Running the following SQL: " + sql);
-    new SQLRunner(_accountDb.getDataSource(), sql).executeQuery(params, types, new ResultSetHandler() {
-      @Override public void handleResult(ResultSet rs) throws SQLException {
+    new SQLRunner(_accountDb.getDataSource(), sql).executeQuery(params, types, rs -> {
+      if (rs.next()) {
+        profileWrapper.set(loadUserProfile(rs, _propertyNames.values()));
         if (rs.next()) {
-          profileWrapper.set(loadUserProfile(rs, _propertyNames.values()));
-          if (rs.next()) {
-            throw new IllegalStateException("More than one user found under condition '" +
-                condition + "' with values: " + FormatUtil.join(params, ", "));
-          }}}});
+          throw new IllegalStateException("More than one user found under condition '" +
+              condition + "' with values: " + FormatUtil.join(params, ", "));
+        }}});
     return profileWrapper.get();
   }
 
@@ -297,13 +295,28 @@ public class AccountManager {
     return email.substring(0, atSignIndex).toLowerCase() + "." + userId;
   }
 
-  public UserProfile createGuestAccount(String emailPrefix) throws Exception {
+  /**
+   * Creates a temporary user profile for a guest user.  Guest users are not persisted
+   * in the AccountDB, but this mechanism ensures user IDs are not duplicated or
+   * conflicting across various sites that use AccountDB.
+   * 
+   * @param emailPrefix string indicating type of temporary user (e.g. true guest or system user)
+   * @return user profile for the guest
+   * @throws SQLException if unable to allocate a new ID for this user
+   */
+  public UserProfile createGuestAccount(String emailPrefix) throws SQLException {
+    Date now = new Date();
     long userId = getNextUserId();
     String stableId = emailPrefix + userId;
-    String email = stableId;
-    String signature = encryptPassword(userId + "_" + email);
-    persistNewAccount(userId, email, "", signature, stableId, null, true);
-    return getUserProfile(userId);
+    UserProfile profile = new UserProfile();
+    profile.setUserId(userId);
+    profile.setGuest(true);
+    profile.setEmail(stableId);
+    profile.setStableId(stableId);
+    profile.setSignature(encryptPassword(stableId));
+    profile.setRegisterTime(now);
+    profile.setLastLoginTime(now);
+    return profile;
   }
 
   private void updateColumn(String rawSql, Integer[] argTypes, String queryName, long userId, Object newValue) {
