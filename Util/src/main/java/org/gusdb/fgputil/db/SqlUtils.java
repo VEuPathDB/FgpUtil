@@ -103,6 +103,7 @@ public final class SqlUtils {
     if (stmt != null) {
       Connection connection = null;
       try {
+        if (stmt.isClosed()) return; // required because getConnection throws exception if already closed
         try {
           connection = ConnectionMapping.getConnection(stmt);
         }
