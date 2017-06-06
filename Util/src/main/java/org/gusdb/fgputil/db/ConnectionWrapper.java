@@ -21,6 +21,8 @@ import java.util.concurrent.Executor;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
+import org.gusdb.fgputil.db.pool.DbDriverInitializer;
 
 public class ConnectionWrapper implements Connection {
 
@@ -29,16 +31,13 @@ public class ConnectionWrapper implements Connection {
   private final Connection _underlyingConnection;
   private final DataSourceWrapper _parentDataSource;
   private final DBPlatform _underlyingPlatform;
-  private final boolean _autoCommitResetValue;
-  private final boolean _readOnlyResetValue;
+  private final ConnectionPoolConfig _dbConfig;
 
-  public ConnectionWrapper(Connection underlyingConnection, DataSourceWrapper parentDataSource,
-      DBPlatform underlyingPlatform, boolean autoCommitResetValue, boolean readOnlyResetValue) {
+  public ConnectionWrapper(Connection underlyingConnection, DataSourceWrapper parentDataSource, DBPlatform underlyingPlatform) {
     _underlyingConnection = underlyingConnection;
     _parentDataSource = parentDataSource;
     _underlyingPlatform = underlyingPlatform;
-    _autoCommitResetValue = autoCommitResetValue;
-    _readOnlyResetValue = readOnlyResetValue;
+    _dbConfig = parentDataSource.getDbConfig();
   }
 
   public Connection getUnderlyingConnection() {
@@ -53,15 +52,19 @@ public class ConnectionWrapper implements Connection {
     boolean uncommittedChangesPresent = checkForUncommittedChanges();
 
     // roll back any changes before returning connection to pool
-    if (uncommittedChangesPresent)
+    if (uncommittedChangesPresent) {
       SqlUtils.attemptRollback(_underlyingConnection);
+    }
 
     // reset connection-specific values back to default in case client code changed them
-    _underlyingConnection.setAutoCommit(_autoCommitResetValue);
-    _underlyingConnection.setReadOnly(_readOnlyResetValue);
+    _underlyingConnection.setAutoCommit(_dbConfig.getDefaultAutoCommit());
+    _underlyingConnection.setReadOnly(_dbConfig.getDefaultReadOnly());
 
-    _underlyingConnection.close();
-    
+    // close the underlying connection using possibly custom logic
+    ConnectionPoolConfig dbConfig = _parentDataSource.getDbConfig();
+    DbDriverInitializer dbManager = DbDriverInitializer.getInstance(dbConfig.getDriverInitClass());
+    dbManager.closeConnection(_underlyingConnection, dbConfig);
+
     if (uncommittedChangesPresent) {
       throw new UncommittedChangesException("Connection returned to pool with active transaction and uncommitted changes.");
     }
