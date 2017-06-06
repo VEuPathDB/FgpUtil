@@ -56,6 +56,9 @@ public class ConnectionWrapper implements Connection {
       SqlUtils.attemptRollback(_underlyingConnection);
     }
 
+    // committing will cause op completion on the DB side (e.g. of in-use DB links)
+    _underlyingConnection.commit();
+
     // reset connection-specific values back to default in case client code changed them
     _underlyingConnection.setAutoCommit(_dbConfig.getDefaultAutoCommit());
     _underlyingConnection.setReadOnly(_dbConfig.getDefaultReadOnly());
