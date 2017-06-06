@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.db.pool;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -18,4 +20,13 @@ public class DefaultDbDriverInitializer implements DbDriverInitializer {
     Class.forName(driverClassName);
     return connectionUrl;
   }
+
+  /**
+   * This method simply closes the connection and returns.
+   */
+  @Override
+  public void closeConnection(Connection connection, ConnectionPoolConfig dbConfig) throws SQLException {
+    connection.close();
+  }
+
 }

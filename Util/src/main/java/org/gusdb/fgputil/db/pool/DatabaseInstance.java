@@ -155,8 +155,7 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
 
           _connectionPool = createConnectionPool(_dbConfig, _platform);
 
-          _dataSource = new DataSourceWrapper(_identifier, _connectionPool, _platform,
-              _dbConfig.getDefaultAutoCommit(), _dbConfig.getDefaultReadOnly());
+          _dataSource = new DataSourceWrapper(_identifier, _connectionPool, _platform, _dbConfig);
 
           // start the connection monitor if needed
           if (_dbConfig.isShowConnections()) {
@@ -220,31 +219,12 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
   private static String initializeDbDriver(String driverClassName, String driverInitClassName,
       Properties props, String connectionUrl) {
     try {
-      // check to see if user provided custom driver initializer
-      if (driverInitClassName == null || driverInitClassName.isEmpty() ||
-          driverInitClassName.equals(DefaultDbDriverInitializer.class.getName())) {
-        // if none provided (or default), use the default driver initializer
-        DbDriverInitializer initClassInstance = new DefaultDbDriverInitializer();
-        LOG.debug("Initializing driver " + driverClassName + " using default initializer.");
-        return initClassInstance.initializeDriver(driverClassName, connectionUrl, props);
-      }
-      else {
-        // otherwise, try to instantiate user-provided implementation and call
-        Class<?> initClass = Class.forName(driverInitClassName);
-        if (!DbDriverInitializer.class.isAssignableFrom(initClass)) {
-          throw new InitializationException("Submitted DB Driver Initializer ( " + driverInitClassName + ") " +
-              "is not an implementation of " + DbDriverInitializer.class.getName());
-        }
-        // provided class is the correct type; instantiate and call initialize method
-        @SuppressWarnings("unchecked") // checked above
-        DbDriverInitializer initClassInstance = ((Class<? extends DbDriverInitializer>)initClass).newInstance();
-        LOG.debug("Initializing driver " + driverClassName + " using custom initializer: " + driverInitClassName);
-        return initClassInstance.initializeDriver(driverClassName, connectionUrl, props);
-      }
+      DbDriverInitializer initClassInstance = DbDriverInitializer.getInstance(driverInitClassName);
+      LOG.debug("Initializing driver " + driverClassName + " using initializer: " + initClassInstance.getClass().getName());
+      return initClassInstance.initializeDriver(driverClassName, connectionUrl, props);
     }
-    catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-      throw new InitializationException("Unable to instantiate custom DB Driver Initializer " +
-          "class with name " + driverInitClassName, e);
+    catch (ClassNotFoundException e) {
+      throw new InitializationException("Unable to instantiate configured DB driver class.");
     }
   }
 

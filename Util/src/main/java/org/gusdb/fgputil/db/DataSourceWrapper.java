@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
 
 public class DataSourceWrapper implements DataSource {
 
@@ -92,22 +93,21 @@ public class DataSourceWrapper implements DataSource {
   private final AtomicInteger _numConnectionsOpened = new AtomicInteger(0);
   private final AtomicInteger _numConnectionsClosed = new AtomicInteger(0);
   private final boolean _recordAllStacktraces;
-  private final boolean _autoCommitResetValue;
-  private final boolean _readOnlyResetValue;
+  private final ConnectionPoolConfig _dbConfig;
 
-  public DataSourceWrapper(String dbName, DataSource underlyingDataSource, DBPlatform underlyingPlatform,
-      boolean autoCommitResetValue, boolean readOnlyResetValue) {
-    this(dbName, underlyingDataSource, underlyingPlatform, autoCommitResetValue, readOnlyResetValue, false);
+  public DataSourceWrapper(String dbName, DataSource underlyingDataSource,
+      DBPlatform underlyingPlatform, ConnectionPoolConfig dbConfig) {
+    this(dbName, underlyingDataSource, underlyingPlatform, dbConfig, false);
   }
 
   public DataSourceWrapper(String dbName, DataSource underlyingDataSource, DBPlatform underlyingPlatform,
-      boolean autoCommitResetValue, boolean readOnlyResetValue, boolean recordAllStacktraces) {
+      ConnectionPoolConfig dbConfig, boolean recordAllStacktraces) {
     _dbName = dbName;
     _underlyingDataSource = underlyingDataSource;
     _underlyingPlatform = underlyingPlatform;
-    _autoCommitResetValue = autoCommitResetValue;
-    _readOnlyResetValue = readOnlyResetValue;
+    _dbConfig = dbConfig;
     _recordAllStacktraces = recordAllStacktraces;
+    
   }
 
   @Override
@@ -120,6 +120,10 @@ public class DataSourceWrapper implements DataSource {
     return wrapConnection(_underlyingDataSource.getConnection(username, password));
   }
 
+  public ConnectionPoolConfig getDbConfig() {
+    return _dbConfig;
+  }
+
   private Connection wrapConnection(Connection conn) {
     UnclosedConnectionInfo info = (_recordAllStacktraces ?
       new UnclosedConnectionInfo(_dbName, _globalStacktraceMap) :
@@ -129,8 +133,7 @@ public class DataSourceWrapper implements DataSource {
       LOG.debug("Opening connection associated with stacktrace hash " +
           info.getStackTraceHash() + " : " + info.getBasicInfo());
     }
-    ConnectionWrapper wrapper = new ConnectionWrapper(conn, this,
-        _underlyingPlatform, _autoCommitResetValue, _readOnlyResetValue);
+    ConnectionWrapper wrapper = new ConnectionWrapper(conn, this, _underlyingPlatform);
     _unclosedConnectionMap.put(conn, info);
     _numConnectionsOpened.incrementAndGet();
     return wrapper;
