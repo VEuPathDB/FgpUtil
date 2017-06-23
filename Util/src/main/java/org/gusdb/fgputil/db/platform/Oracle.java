@@ -185,11 +185,6 @@ public class Oracle extends DBPlatform {
     return buffer.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#isTableExist(java.lang.String)
-   */
   @Override
   public boolean checkTableExists(DataSource dataSource, String schema, String tableName)
       throws SQLException, DBStateException {

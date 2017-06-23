@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 
 /**
@@ -95,8 +94,17 @@ public abstract class DBPlatform {
      */
     public abstract String getPagedSql(String sql, int startIndex, int endIndex, boolean includeRowIndex);
 
+    /**
+     * Returns whether the given table exists
+     * 
+     * @param dataSource data source to query
+     * @param schema schema to check
+     * @param tableName name of table to check
+     * @return true if table exists; else false
+     * @throws SQLException if unable to confirm existence of table
+     */
     public abstract boolean checkTableExists(DataSource dataSource, String schema, String tableName)
-            throws SQLException, DBStateException;
+            throws SQLException;
 
     public abstract String convertBoolean(boolean value);
 
