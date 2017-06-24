@@ -305,8 +305,19 @@ public class AccountManager {
    * @throws SQLException if unable to allocate a new ID for this user
    */
   public UserProfile createGuestAccount(String emailPrefix) throws SQLException {
-    Date now = new Date();
     long userId = getNextUserId();
+    return createGuestProfile(emailPrefix, userId, new Date());
+  }
+
+  /**
+   * Creates a complete user profile from an email prefix, user ID, and timestamp.
+   * 
+   * @param emailPrefix
+   * @param userId
+   * @param timestamp
+   * @return 
+   */
+  public static UserProfile createGuestProfile(String emailPrefix, long userId, Date timestamp) {
     String stableId = emailPrefix + userId;
     UserProfile profile = new UserProfile();
     profile.setUserId(userId);
@@ -314,8 +325,8 @@ public class AccountManager {
     profile.setEmail(stableId);
     profile.setStableId(stableId);
     profile.setSignature(encryptPassword(stableId));
-    profile.setRegisterTime(now);
-    profile.setLastLoginTime(now);
+    profile.setRegisterTime(timestamp);
+    profile.setLastLoginTime(timestamp);
     profile.setProperties(Collections.EMPTY_MAP);
     return profile;
   }
