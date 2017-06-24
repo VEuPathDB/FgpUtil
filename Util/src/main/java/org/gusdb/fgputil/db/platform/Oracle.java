@@ -188,7 +188,7 @@ public class Oracle extends DBPlatform {
   @Override
   public boolean checkTableExists(DataSource dataSource, String schema, String tableName)
       throws SQLException, DBStateException {
-    StringBuffer sql = new StringBuffer("SELECT count(*) FROM ALL_TABLES ");
+    StringBuilder sql = new StringBuilder("SELECT count(*) FROM ALL_TABLES ");
     sql.append("WHERE table_name = '");
     sql.append(tableName.toUpperCase()).append("'");
     if (schema.charAt(schema.length() - 1) == '.')
