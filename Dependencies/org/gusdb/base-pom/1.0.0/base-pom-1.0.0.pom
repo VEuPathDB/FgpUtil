@@ -77,14 +77,6 @@
 
   <repositories>
     <repository>
-      <id>scala</id>
-      <name>Scala Tools</name>
-      <url>http://scala-tools.org/repo-releases/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
       <id>dice.repository</id>
       <name>dice.repository</name>
       <url>https://raw.github.com/DICE-UNC/DICE-Maven/master/releases</url>
