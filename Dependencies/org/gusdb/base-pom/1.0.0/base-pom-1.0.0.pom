@@ -540,6 +540,7 @@
     </dependencies>
   </dependencyManagement>
 
+  <!--
   <pluginRepositories>
     <pluginRepository>
       <id>scala</id>
@@ -550,6 +551,7 @@
       </snapshots>
     </pluginRepository>
   </pluginRepositories>
+  -->
 
   <build>
     <plugins>
