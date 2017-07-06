@@ -38,9 +38,8 @@ foreach my $dir (@needIt) {
     my $svnName = $dir eq "GUS" ? "GusAppFramework" : $dir;
     my $target = $branch eq "trunk" ? "trunk" : "branches/$branch";    
     my $dryrun = $operation eq "-test" ? "--dry-run" : "";
-    my $reintegrate = $target eq "trunk" ? "" : "--reintegrate"; # assume reintegrate if target is a branch
     chdir("$projectHomeDir/$dir") || die "Error: Can't chdir into '$projectHomeDir/$dir'\n";
-    system("svn merge $reintegrate $dryrun ^/$svnName/$target");
+    system("svn merge $dryrun ^/$svnName/$target");
     if ($operation eq "-commit") {
       system("svn commit -m \"merge from $target\"");
     }
