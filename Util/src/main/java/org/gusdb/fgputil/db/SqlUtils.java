@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;
 import org.gusdb.fgputil.iterator.Cursor;
 
 /**
@@ -589,5 +590,38 @@ public final class SqlUtils {
         return objCreator.apply(rs);
       }
     };
+  }
+
+  public static void performInTransaction(Connection conn, Procedure... procedures) throws Exception {
+    try {
+      conn.setAutoCommit(false);
+      for (Procedure proc : procedures) {
+        proc.perform();
+      }
+      // commit the transaction
+      conn.commit();
+    }
+    catch (Exception e) {
+      logger.error("Error attempting procedures in a transaction", e);
+      try {
+        conn.rollback();
+      }
+      catch (Exception e2) {
+        logger.error("Error rolling back transaction", e2);
+      }
+      throw e;
+    }
+    finally {
+      boolean successfullyResetAutoCommit = false;
+      try {
+        conn.setAutoCommit(true);
+        successfullyResetAutoCommit = true;
+        conn.close();
+      }
+      catch (Exception e) {
+        logger.error(successfullyResetAutoCommit ?
+            "Error closing connection" : "Error resetting auto-commit = true", e);
+      }
+    }
   }
 }

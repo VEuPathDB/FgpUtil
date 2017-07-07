@@ -42,6 +42,11 @@ public class BasicResultSetHandler implements ResultSetHandler {
       Map<String, Object> row = new LinkedHashMap<>();
       for (int i = 1; i <= getNumCols(); i++) {
         row.put(_columnNames.get(i-1), rs.getObject(i));
+        if (rs.wasNull()) {
+          // add null if DB column empty for this row; caller can determine if column name
+          //  is legitimate by checking column names in this result handler
+          row.put(_columnNames.get(i-1), null);
+        }
       }
       _results.add(row);
     }

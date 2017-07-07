@@ -8,7 +8,7 @@
     <version>1.0.0</version>
   </parent>
 
-  <name>Functional Genomics Platform Utilities</name>
+  <name>Functional Genomics Platform - Utilities</name>
   <artifactId>fgputil-util</artifactId>
   <packaging>jar</packaging>
 

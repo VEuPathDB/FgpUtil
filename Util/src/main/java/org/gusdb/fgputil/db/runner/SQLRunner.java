@@ -306,10 +306,11 @@ public class SQLRunner {
    * assumes no SQL parameters in this runner's SQL.
    * 
    * @param handler handler implementation to process results
+   * @return the passed handler
    * @throws SQLRunnerException if error occurs during processing
    */
-  public void executeQuery(ResultSetHandler handler) {
-    executeQuery(new Object[]{ }, null, handler);
+  public <T extends ResultSetHandler> T executeQuery(T handler) {
+    return executeQuery(new Object[]{ }, null, handler);
   }
 
   /**
@@ -319,10 +320,11 @@ public class SQLRunner {
    * 
    * @param handler handler implementation to process results
    * @param args SQL parameters
+   * @return the passed handler
    * @throws SQLRunnerException if error occurs during processing
    */
-  public void executeQuery(Object[] args, ResultSetHandler handler) {
-    executeQuery(args, null, handler);
+  public <T extends ResultSetHandler> T executeQuery(Object[] args, T handler) {
+    return executeQuery(args, null, handler);
   }
 
   /**
@@ -333,10 +335,12 @@ public class SQLRunner {
    * @param handler handler implementation to process results
    * @param args SQL parameters
    * @param types SQL types of parameters
+   * @return the passed handler
    * @throws SQLRunnerException if error occurs during processing
    */
-  public void executeQuery(Object[] args, Integer[] types, ResultSetHandler handler) {
+  public <T extends ResultSetHandler> T executeQuery(Object[] args, Integer[] types, T handler) {
     executeSql(new QueryExecutor(handler, args, types));
+    return handler;
   }
 
   private void executeSql(PreparedStatementExecutor exec) {

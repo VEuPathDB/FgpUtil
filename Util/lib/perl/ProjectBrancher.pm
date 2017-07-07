@@ -42,11 +42,11 @@ my @orthoSiteProjects = ('OrthoMCLModel:apidb', 'OrthoMCLWebsite:apidb',
 
 # Additional projects for ClinEpi
 my @clinEpiSiteProjects = ('ClinEpiPresenters:apidb', 'ClinEpiDatasets:apidb',
-                           'ClinEpiModel:apidb', 'ClinEpiWebsite:apidb');
+                           'ClinEpiModel:apidb', 'ClinEpiWebsite:apidb', 'ReFlow:gus');
 
 # Additional projects for Microbiome
 my @microbiomeSiteProjects = ('MicrobiomePresenters:apidb', 'MicrobiomeDatasets:apidb',
-                              'MicrobiomeModel:apidb', 'MicrobiomeWebsite:apidb');
+                              'MicrobiomeModel:apidb', 'MicrobiomeWebsite:apidb', 'ReFlow:gus');
 
 # All other projects not listed above
 my @otherProjects = ('DJob:gus', 'TuningManager:gus', 'OAuth2Server:gus',

@@ -78,6 +78,13 @@ public class FunctionalInterfaces {
   }
 
   /**
+   * Performs a procedure that has no output and does not need parameters
+   */
+  public interface Procedure {
+    public void perform();
+  }
+
+  /**
    * Typed predicate that always returns true.
    *
    * @param <T> type of object being evaluated

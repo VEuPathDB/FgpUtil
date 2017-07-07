@@ -270,6 +270,8 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
         }
         _connectionPool.close();
         _initialized = false;
+        LOG.info("DB Connection Pool CLOSED [" + _identifier + "]: " +
+            _dbConfig.getLogin() + "@" + _dbConfig.getConnectionUrl());
       }
     }
   }

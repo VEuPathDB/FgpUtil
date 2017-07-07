@@ -23,7 +23,8 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="FgpUtil-Installation" depends="FgpUtil-MavenInstallation,
-                                               FgpUtil/Util-Installation">
+                                               FgpUtil/Util-Installation,
+                                               FgpUtil/AccountDB-Installation">
     <ant target="defaultProjectInstall">
       <property name="project" value="FgpUtil"/>
     </ant>
@@ -49,7 +50,6 @@
 
   </target>
 
-
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
 
   <target name="FgpUtil/Util-Installation">
@@ -68,6 +68,13 @@
 
   <target name="copyLog4jConfig" unless="log4j.config.exist">
     <copy file="${targetDir}/config/log4j.properties.sample" toFile="${targetDir}/config/log4j.properties"/>
+  </target>
+
+  <target name="FgpUtil/AccountDB-Installation">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="FgpUtil"/>
+      <property name="component" value="AccountDB"/>
+    </ant>
   </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->

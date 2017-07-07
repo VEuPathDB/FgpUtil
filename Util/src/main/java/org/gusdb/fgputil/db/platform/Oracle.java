@@ -124,15 +124,13 @@ public class Oracle extends DBPlatform {
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String, java.lang.String)
    */
   @Override
-  public int getNextId(DataSource dataSource, String schema, String table) throws SQLException,
-      DBStateException {
+  public long getNextId(DataSource dataSource, String schema, String table) throws SQLException {
     schema = normalizeSchema(schema);
-
     StringBuffer sql = new StringBuffer("SELECT ");
     sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
     sql.append(".nextval FROM dual");
-    BigDecimal id = (BigDecimal) SqlUtils.executeScalar(dataSource, sql.toString(), "wdk-select-next-id");
-    return id.intValue();
+    BigDecimal id = (BigDecimal) SqlUtils.executeScalar(dataSource, sql.toString(), "select-next-id");
+    return id.longValue();
   }
 
   /*
@@ -187,15 +185,10 @@ public class Oracle extends DBPlatform {
     return buffer.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#isTableExist(java.lang.String)
-   */
   @Override
   public boolean checkTableExists(DataSource dataSource, String schema, String tableName)
       throws SQLException, DBStateException {
-    StringBuffer sql = new StringBuffer("SELECT count(*) FROM ALL_TABLES ");
+    StringBuilder sql = new StringBuilder("SELECT count(*) FROM ALL_TABLES ");
     sql.append("WHERE table_name = '");
     sql.append(tableName.toUpperCase()).append("'");
     if (schema.charAt(schema.length() - 1) == '.')
