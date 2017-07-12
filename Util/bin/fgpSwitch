@@ -10,6 +10,7 @@ my @dirs = map {chomp; $_} `ls`;
 
 foreach my $dir (@dirs) {
   next unless -d "$projectHomeDir/$dir"; # skip files that are not a dir
+  next unless -d "$projectHomeDir/$dir/.svn"; # skip dirs that are not a svn working dir
   my $svnName = $dir;
   $svnName = "GusAppFramework" if $dir eq "GUS";
 
