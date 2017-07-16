@@ -592,6 +592,16 @@ public final class SqlUtils {
     };
   }
 
+  /**
+   * Performs all the passed procedures in a single transaction on the passed connection.  If any of the
+   * passed procedures throw exception, the connection will be rolled back; otherwise all updates will be
+   * committed together.  There is no guarantee of rollback of any other connections that may appear in
+   * the passed procedures.
+   * 
+   * @param conn connection on which to perform operations
+   * @param procedures set of procedures containing operations (presumably against the passed connection)
+   * @throws Exception if any of the procedures fails
+   */
   public static void performInTransaction(Connection conn, Procedure... procedures) throws Exception {
     try {
       conn.setAutoCommit(false);
