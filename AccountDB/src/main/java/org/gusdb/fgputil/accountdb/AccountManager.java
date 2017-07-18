@@ -102,16 +102,17 @@ public class AccountManager {
   private static final String PROPERTY_COLUMN_SELECTION_SQL =
       ", max(case when key = '" + DEFINED_PROPERTY_NAME_MACRO + "' then value end) as " + DEFINED_PROPERTY_NAME_MACRO;
 
-  private static final String UPDATE_PASSWORD_SQL =
-      "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set " + COL_PASSWORD + " = ? where " + COL_USER_ID + " = ?";
+  private static String getUpdateColumnSql(String colName) {
+    return "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set " + colName + " = ? where " + COL_USER_ID + " = ?";
+  }
+
+  private static final String UPDATE_PASSWORD_SQL = getUpdateColumnSql(COL_PASSWORD);
   private static final Integer[] UPDATE_PASSWORD_PARAM_TYPES = { Types.VARCHAR, Types.BIGINT };
 
-  private static final String UPDATE_LAST_LOGIN_SQL =
-      "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set "+ COL_LAST_LOGIN + " = ? where " + COL_USER_ID + " = ?";
+  private static final String UPDATE_LAST_LOGIN_SQL = getUpdateColumnSql(COL_LAST_LOGIN);
   private static final Integer[] UPDATE_LAST_LOGIN_PARAM_TYPES = { Types.TIMESTAMP, Types.BIGINT };
 
-  private static final String UPDATE_EMAIL_SQL =
-      "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set "+ COL_EMAIL + " = ? where " + COL_USER_ID + " = ?";
+  private static final String UPDATE_EMAIL_SQL = getUpdateColumnSql(COL_EMAIL);
   private static final Integer[] UPDATE_EMAIL_PARAM_TYPES = { Types.VARCHAR, Types.BIGINT };
 
   private final DatabaseInstance _accountDb;
