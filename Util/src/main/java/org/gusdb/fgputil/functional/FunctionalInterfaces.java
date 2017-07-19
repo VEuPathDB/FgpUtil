@@ -26,6 +26,23 @@ public class FunctionalInterfaces {
   }
 
   /**
+   * Defines a single-argument function that may throw an exception
+   * 
+   * @param <S> type of function input
+   * @param <T> type of function output
+   */
+  public interface FunctionWithException<S,T> {
+    /**
+     * Applies the function to the given input and returns output
+     * 
+     * @param obj input to function
+     * @return result of function
+     * @throws Exception as needed
+     */
+    public T apply(S obj) throws Exception;
+  }
+
+  /**
    * Defines a single-argument function
    * 
    * @param <R> type of first function input
