@@ -289,10 +289,13 @@ public class SQLRunner {
    * Executes a batch update operation using sets of SQL parameters retrieved
    * from the passed argument batch.  Uses the batch's getBatchSize() method
    * to determine how many operations to group into each batch.  Also captures
-   * the resulting number of updates.
+   * the resulting number of updates, if supported by the underlying JDBC
+   * driver.  Note the constants that may be returned instead from
+   * <code>PreparedStatement.executeBatch()</code>.  This method simply sums
+   * up the values returned from executeBatch().
    * 
    * @param batch set of SQL parameter sets containing
-   * @return number of rows updated
+   * @return number of rows updated, if supported by the underlying driver
    * @throws SQLRunnerException if error occurs during processing
    */
   public int executeUpdateBatch(ArgumentBatch batch) {
