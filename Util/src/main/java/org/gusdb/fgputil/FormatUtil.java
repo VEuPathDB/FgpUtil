@@ -100,6 +100,17 @@ public class FormatUtil {
     return newS;
   }
 
+  public static <T> String join(Iterable<T> iterable, String delim) {
+    StringBuilder sb = new StringBuilder();
+    boolean first = true;
+    for (T item : iterable) {
+      if (!first) sb.append(delim);
+      sb.append(item);
+      first = false;
+    }
+    return sb.toString();
+  }
+
   public static String join(Object[] array, String delim) {
     if (array == null || array.length == 0) return "";
     StringBuilder sb = new StringBuilder();
