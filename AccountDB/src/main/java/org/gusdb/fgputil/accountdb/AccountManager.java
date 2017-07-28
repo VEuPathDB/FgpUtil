@@ -1,6 +1,9 @@
 package org.gusdb.fgputil.accountdb;
 
 import static org.gusdb.fgputil.EncryptionUtil.encryptPassword;
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+import static org.gusdb.fgputil.functional.Functions.pickKeys;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,7 +18,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -26,10 +28,6 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 
 public class AccountManager {
@@ -82,6 +80,10 @@ public class AccountManager {
       "delete from " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNT_PROPS + " where " + COL_USER_ID + " = ?";
   private static final Integer[] REMOVE_PROPERTIES_PARAM_TYPES = { Types.BIGINT };
 
+  private static final String SELECT_FLAT_USER_PROPS_SQL =
+      "    select " + COL_USER_ID + DEFINED_PROPERTY_SELECTION_MACRO +
+      "    from " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNT_PROPS;
+
   private static final String SELECT_FLAT_USER_SQL =
       "select u." + COL_USER_ID +
       "    , " + COL_EMAIL +
@@ -92,8 +94,7 @@ public class AccountManager {
       "    , " + COL_LAST_LOGIN + DEFINED_PROPERTY_NAMES_MACRO +
       "  from " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " u " +
       "  left join (" +
-      "    select " + COL_USER_ID + DEFINED_PROPERTY_SELECTION_MACRO +
-      "    from " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNT_PROPS +
+      "    " + SELECT_FLAT_USER_PROPS_SQL +
       "    group by " + COL_USER_ID +
       "  ) p" +
       "  on u." + COL_USER_ID + " = p." + COL_USER_ID;
@@ -101,16 +102,17 @@ public class AccountManager {
   private static final String PROPERTY_COLUMN_SELECTION_SQL =
       ", max(case when key = '" + DEFINED_PROPERTY_NAME_MACRO + "' then value end) as " + DEFINED_PROPERTY_NAME_MACRO;
 
-  private static final String UPDATE_PASSWORD_SQL =
-      "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set " + COL_PASSWORD + " = ? where " + COL_USER_ID + " = ?";
+  private static String getUpdateColumnSql(String colName) {
+    return "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set " + colName + " = ? where " + COL_USER_ID + " = ?";
+  }
+
+  private static final String UPDATE_PASSWORD_SQL = getUpdateColumnSql(COL_PASSWORD);
   private static final Integer[] UPDATE_PASSWORD_PARAM_TYPES = { Types.VARCHAR, Types.BIGINT };
 
-  private static final String UPDATE_LAST_LOGIN_SQL =
-      "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set "+ COL_LAST_LOGIN + " = ? where " + COL_USER_ID + " = ?";
+  private static final String UPDATE_LAST_LOGIN_SQL = getUpdateColumnSql(COL_LAST_LOGIN);
   private static final Integer[] UPDATE_LAST_LOGIN_PARAM_TYPES = { Types.TIMESTAMP, Types.BIGINT };
 
-  private static final String UPDATE_EMAIL_SQL =
-      "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set "+ COL_EMAIL + " = ? where " + COL_USER_ID + " = ?";
+  private static final String UPDATE_EMAIL_SQL = getUpdateColumnSql(COL_EMAIL);
   private static final Integer[] UPDATE_EMAIL_PARAM_TYPES = { Types.VARCHAR, Types.BIGINT };
 
   private final DatabaseInstance _accountDb;
@@ -130,16 +132,15 @@ public class AccountManager {
   private static String getSelectSql(String schema, List<UserPropertyName> propertyNames) {
     return SELECT_FLAT_USER_SQL
         .replace(ACCOUNT_SCHEMA_MACRO, schema)
-        .replace(DEFINED_PROPERTY_NAMES_MACRO, FormatUtil.join(
-            Functions.mapToList(propertyNames, new Function<UserPropertyName, String>() {
-              @Override public String apply(UserPropertyName prop) {
-                return ", " + prop.getDbKey();
-              }}).toArray(), ""))
-        .replace(DEFINED_PROPERTY_SELECTION_MACRO, FormatUtil.join(
-            Functions.mapToList(propertyNames, new Function<UserPropertyName, String>() {
-              @Override public String apply(UserPropertyName prop) {
-                return PROPERTY_COLUMN_SELECTION_SQL.replace(DEFINED_PROPERTY_NAME_MACRO, prop.getDbKey());
-              }}).toArray(), ""));
+        .replace(DEFINED_PROPERTY_NAMES_MACRO, join(mapToList(propertyNames,
+            prop -> ", " + prop.getDbKey()).toArray(), ""))
+        .replace(DEFINED_PROPERTY_SELECTION_MACRO, getPropSelectionSql(propertyNames));
+  }
+
+  private static String getPropSelectionSql(List<UserPropertyName> propertyNames) {
+    return join(mapToList(propertyNames, prop ->
+      PROPERTY_COLUMN_SELECTION_SQL.replace(DEFINED_PROPERTY_NAME_MACRO, prop.getDbKey()
+    )).toArray(), "");
   }
 
   public UserProfile getUserProfile(Long userId) {
@@ -238,13 +239,11 @@ public class AccountManager {
     // perform all inserts in a transaction
     final Connection conn = _accountDb.getDataSource().getConnection();
     try {
-      SqlUtils.performInTransaction(conn, new Procedure() {
-        @Override public void perform() {
-          // perform user row insert
-          new SQLRunner(conn, insertUserSql, "insert-user-row").executeStatement(params, INSERT_USER_PARAM_TYPES);
-          // perform property rows insert
-          new SQLRunner(conn, insertPropSql, "insert-user-prop-rows").executeStatementBatch(propertyBatch);
-        }
+      SqlUtils.performInTransaction(conn, () -> {
+        // perform user row insert
+        new SQLRunner(conn, insertUserSql, "insert-user-row").executeStatement(params, INSERT_USER_PARAM_TYPES);
+        // perform property rows insert
+        new SQLRunner(conn, insertPropSql, "insert-user-prop-rows").executeStatementBatch(propertyBatch);
       });
     }
     finally {
@@ -261,20 +260,13 @@ public class AccountManager {
     if (profileProperties == null) profileProperties = Collections.EMPTY_MAP;
     // first trim props to those allowed by the configuration of this account manager
     final Set<String> propKeys = _propertyNames.keySet();
-    final Map<String,String> trimmedProps = Functions.pickKeys(profileProperties, new Predicate<String>(){
-      @Override public boolean test(String propKey) {
-        return propKeys.contains(propKey);
-      }
-    });
+    final Map<String,String> trimmedProps = pickKeys(profileProperties, propKey -> propKeys.contains(propKey));
     return new ArgumentBatch() {
 
       @Override
       public Iterator<Object[]> iterator() {
-        return IteratorUtil.transform(trimmedProps.entrySet().iterator(), new Function<Entry<String,String>,Object[]>() {
-          @Override public Object[] apply(Entry<String, String> property) {
-            return new Object[] { userId, _propertyNames.get(property.getKey()).getDbKey(), property.getValue() };
-          }
-        });
+        return IteratorUtil.transform(trimmedProps.entrySet().iterator(), property ->
+            new Object[] { userId, _propertyNames.get(property.getKey()).getDbKey(), property.getValue() });
       }
 
       @Override
@@ -362,13 +354,11 @@ public class AccountManager {
     // perform all property-related operations in a transaction
     final Connection conn = _accountDb.getDataSource().getConnection();
     try {
-      SqlUtils.performInTransaction(conn, new Procedure() {
-        @Override public void perform() {
-          // perform property rows delete
-          new SQLRunner(conn, removePropsSql, "remove-user-prop-rows").executeStatement(removePropsParams, REMOVE_PROPERTIES_PARAM_TYPES);
-          // perform property rows insert
-          new SQLRunner(conn, insertPropSql, "insert-user-prop-rows").executeStatementBatch(propertyBatch);
-        }
+      SqlUtils.performInTransaction(conn, () -> {
+        // perform property rows delete
+        new SQLRunner(conn, removePropsSql, "remove-user-prop-rows").executeStatement(removePropsParams, REMOVE_PROPERTIES_PARAM_TYPES);
+        // perform property rows insert
+        new SQLRunner(conn, insertPropSql, "insert-user-prop-rows").executeStatementBatch(propertyBatch);
       });
     }
     finally {
@@ -376,4 +366,9 @@ public class AccountManager {
     }
   }
 
+  public static String getFlatPropertySql(List<UserPropertyName> propertyNames, String accountSchema, String accountDbLink) {
+    return (SELECT_FLAT_USER_PROPS_SQL + accountDbLink)
+        .replace(ACCOUNT_SCHEMA_MACRO, accountSchema)
+        .replace(DEFINED_PROPERTY_SELECTION_MACRO, getPropSelectionSql(propertyNames));
+  }
 }

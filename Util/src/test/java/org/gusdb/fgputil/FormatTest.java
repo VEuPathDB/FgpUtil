@@ -1,6 +1,8 @@
 package org.gusdb.fgputil;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil.Style;
@@ -8,6 +10,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class FormatTest {
+
+  @Test
+  public void testIterableJoin() throws Exception {
+    List<String> list = Arrays.asList(new String[]{ "a", "b", "c" });
+    String joined = FormatUtil.join(list, "|");
+    Assert.assertEquals("a|b|c", joined);
+  }
 
   @Test
   public void testArrayToString() throws Exception {
