@@ -1,0 +1,13 @@
+# Templated by Gestalt using
+# {{ template_path }}
+# 
+# Cohort: {{ cohort }}
+# Project: {{ project }}
+# Environment: {{ env|default() }}
+# site_vars file: {{ site_vars }}
+
+{% if modelprop is defined -%}
+{% for prop, value in modelprop|dictsort() %}
+{{ prop }}={{ value }}
+{% endfor %}
+{% endif -%}

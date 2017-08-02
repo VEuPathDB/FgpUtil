@@ -1,0 +1,22 @@
+# Parse the var file hierarchy and generate a seed YAML file containing variables
+# that remain undefined. This YAML file can be used as the basis for
+# creating a minimal gestalt_site_vars.yml file
+---
+
+- include: load_template_mappings.yml
+  tags:
+    - load_template_mappings
+    - mk_site_vars
+
+- include: load_values.yml
+  tags:
+    - load_values
+    - mk_site_vars
+
+- template_with_vars:
+    src: Gestalt/gestalt_site_vars_seed.yml.j2
+    dest: '{{ gestalt_site_vars_seed_dest }}'
+    vars:
+      site_vars: "{{ vars.gestalt|gst_pluck('=g=') }}"
+  tags:
+    - mk_site_vars
