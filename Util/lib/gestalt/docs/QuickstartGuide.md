@@ -42,12 +42,11 @@ fill in.
 This generates a `gestalt_site_vars.seed.yml` in your website's `etc`
 directory. Follow the instructions returned by the seed command to copy
 that file to `gestalt_site_vars.yml` and assign appropriate values to
-the enclosed variables. The format of the file is YAML. Jinja2
-templating of variables is allowed. The generated seed file has only the
-settings that have not been pre-defined, that is the minimal set of
-required values you need to supply. You can also override any of the
-pre-defined settings in your `gestalt_site_vars.yml` file if you desire.
-See the UsersGuide for more information.
+the enclosed variables. The format of the file is YAML. The generated
+seed file has only the settings that have not been pre-defined - the
+minimal set of required values you must supply. You can also override
+any of the pre-defined settings in your `gestalt_site_vars.yml` file if
+you desire. See the UsersGuide for more information.
 
 ### Configure
 
