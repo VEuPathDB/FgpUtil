@@ -1,6 +1,6 @@
 <img style="float: right;" src="gestalt_logo_sm.png">
 
-# Gestalt
+# Gestalt Developer Manual
 
 Gestalt is a configuration framework for websites built on the GUS WDK
 platform.
@@ -10,52 +10,7 @@ populate configuration templates. The hierarchy allows you to define
 default values at a high level and then optionally override them a
 lower, more specific level.
 
----
-
-# Quick Start Guide
-
-This quick start guide uses examples that depend on EBRC file and
-directory naming conventions that are use to derive gestalt command line
-arguments based on the hostname of the website being configured. If you
-do not use EBRC naming conventions then you will need to supply all the
-required gestalt command line arguments manually.
-
-### Install
-
-Gestalt must be installed in to your `gus_home`. Gestalt is installed
-from source as part of the WDK build but you can short circuit that long
-process and install gestalt singularly.
-
-    gestalt install integrate.toxodb.org
-
-### Seed    
-
-Your organization will have defined default values for most settings
-needed to configure a website. Some settings can not be pre-defined and
-will need to be set by you in a site-specific file. The `seed`
-subcommand will generate a file of site-specific variables for you to
-fill in.
-
-    gestalt seed integrate.toxodb.org
-
-This generates a `gestalt_site_vars.seed.yml` in your website's `etc`
-directory. Follow the instructions returned by the seed command to copy
-that file to `gestalt_site_vars.yml` and assign appropriate values to
-the enclosed variables. The format of the file is YAML. Jinja2
-templating of variables is allowed.
-
-### Configure
-
-Once you have gestalt installed and a site-specific variable file
-prepared you can configure your site.
-
-    gestalt configure integrate.toxodb.org
-
-----
-
-# Gestalt Developer Manual
-
-## Gestalt Stands on the Shoulders of Giants
+### Gestalt Stands on the Shoulders of Giants
 
 The Gestalt system is built using the Ansible framework which provides
 the core 'engine' driving the variable and template management. You do
@@ -67,115 +22,6 @@ playbook. It uses [Jinja2](http://jinja.pocoo.org/) as the templating
 language. Ansible and Jinja2 are highly extensible and Gestalt leverages
 that with custom plugins and filters.
 
-
-## Configuration Hierarchy Overview
-
-Conceptually the hierarchical layers for defining variables are based on
-common application provisioning levels for an organization.
-
-- Organization (EuPathDB BRC)
-- Cohort (ApiCommon, ClinEpi, Microbiome, OrthoMCL, ...)
-- Project (AmoebaDB, ToxoDB, ClinEpiDB, MicrobiomeDB, ...)
-- Environment (production, savm, ...)
-- User (me, myself, I)
-
-## Precedence of Vars Files
-
-Gestalt collects variable assignments from a hierarchy. The hierarchy is
-defined in an ordered list of YAML definition files. Variables defined
-in a file earlier in the hierarchy can be overridden by a file later in
-the hierarchy.
-
-The specific files in the hierarchical layers for defining variables are
-as follows, listed in increasing precedence.
-
-  - `vars/gestalt_site_vars.yml`
-  - `vars/default.yml`
-  - `vars/{{ cohort }}/default.yml`
-  - `vars/{{ cohort }}/{{ project }}.yml`
-  - `vars/{{ cohort }}/{{ env }}/default.yml`
-  - `vars/{{ cohort }}/{{ env }}/{{ project }}.yml`
-  - `vars/gestalt_site_vars.yml`
-  - `--extra-vars`  (`-e`) passed on the command line
-    - `gestalt -e "{'gestalt':{'modelconfig_webAppUrl':'http://a.b.com/'}}" `
-
-It is ok for some files to not exist. Only `gestalt_site_vars.yml` is
-required.
-
-### Site Vars
-
-The `gestalt_site_vars.yml` file contains site-specific values and
-secrets and is not included with the source code. You can use the
-`gestalt seed` command to generate a starter file for you to copy and
-edit. The other files are included with source code and are installed
-into `$GUS_HOME/config/gestalt`. Because the files provided with source
-code are typically managed in a public SCM repository, do not include
-secrets in them. Place secrets only in `gestalt_site_vars.yml` or use a
-lookup function to retrieve values from a secure source.
-
-Note that `gestalt_site_vars.yml` is processed twice - first and last.
-This allows the user to define vars that affect subsequent processing.
-The primary use case is to define a `env` value so you don't have to
-remember to set it on the command line.
-
-For websites using EBRC naming conventions, you should keep the
-`gestalt_site_vars.yml` file in the site's `etc` directory where gestalt
-knows to look for it. If you must use a different location you can use
-the `--site_vars` option. In all cases the file is copied to
-`vars/gestalt_site_vars.yml` by `gestalt` before processing so it is in
-the same directory as the other var files.
-
-
-### Environment
-
-It is commonly desirable to configure applications for different runtime
-environments, such as an increased database connection pool size in the
-production runtime environment.
-
-Create a subdirectory of the cohort vars directory having the name of the environment.
-
-    vars/
-         ApiCommon/
-                   production/
-
-By default gestalt sets no `env`. It might be tempting to create a
-`development` environment and expect that be the `gestalt` default but
-in practice that is unnecessarily increases the proliferation of `vars`
-files. Just put your development defaults in the cohort vars. Most
-importantly, the absence of a env default in `gestalt` allows you to set
-the `env` value in the `users_vars.yml` file so you don't have to
-routine specify it on the command line.
-
-Additional project-specific vars can be defined for specific environment
-by placing the vars in a yaml file named after the project.
-
-    vars/
-         ApiCommon/
-                   production/
-                              ProjectDB.yml
-
-### Example Environment Vars
-
-The usual `authenticationMethod` for EBRC is `oauth2` but on standalone
-virtual machines, which have no access to the central OAuth server, we
-want to use the `user_db` method. So, in `savm/default.yml` we set
-
-    authenticationMethod: user_db
-
-You can also have project specific settings at the environment level.
-Example use case, PlasmoDB is a high-use site so we want to have a high
-`maxActive` database connection value, but only in production. We can
-set that in `production/PlasmoDB.yml`
-
-    modelconfig_appDb_maxActive: 50
-
-
-## System gestalt
-
-Optional. A wrapper script named `gestalt` may be installed in the system path.
-This script locates and runs the site-specific gestalt. This saves you
-from having to manage including `$GUS_HOME/bin` in your shell's `$PATH`
-for each website installation you have to support.
 
 ## The Unbearable Flatness of Being
 
@@ -411,21 +257,6 @@ them if you want the literal strings used when parsing templates.
 
     key: 'yes'
 
-## Testing
-
-The testing environment generates a Python script from a template and
-runs it. The script asserts that variables are correctly defined and
-therefore were correctly overridden in the variable-file hierarchy.
-
-    ./gestalt \
-      -e env='development' \
-      -e cohort=TestCohort \
-      -e project=TestProject \
-      -e gus_home=$PWD  \
-      -e templates_config='TestCohort/templates.yml' \
-      -e site_vars=test_site_vars.yml \
-      -e gestalt_cli_key=CliSpecified
-
 
 ### gst_pluck filter
 
@@ -503,4 +334,33 @@ that returns a simple, unrelated facts dictionary such as
 
     result['ansible_facts'] = {'a':'b'}
     return result
+
+
+### Backtracking from working files to source
+
+All of Gestalt working files are in `$GUS_HOME/lib/gestalt` but
+persistent changes need to be made in source files in `$PROJECT_HOME`.
+The source files will be scattered within multiple subversion working
+directories and so can be frustrating to associate an installed file
+with its origin. As an aid to backtrack from the installed files to the
+source we leverage Subversion keywords to print the origin file path as
+a comment at the top of the file. We use a custom svn keyword (svn >=
+1.8) to get the desired result.
+
+Add a comment in the file with desired keyword(s).
+
+    # $SourceFileURL$
+
+Then set the custom keyword property on the file.
+
+    svn propset svn:keywords "SourceFileURL=%P" default.yml
+    svn commit -m 'set svn:keywords'
+
+The file will then include the source path. Note the path includes the
+svn branch/trunk so it is not an exact match for the filesystem path;
+this is a limitation of Subversion's custom keywords.
+
+    # $SourceFileURL: EbrcWebsiteCommon/branches/gestalt/Model/lib/gestalt/roles/gestalt/vars/default.yml $
+
+Refer to `svn help ps` for more information on custom keywords.
 
