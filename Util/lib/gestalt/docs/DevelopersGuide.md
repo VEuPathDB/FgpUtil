@@ -10,18 +10,87 @@ populate configuration templates. The hierarchy allows you to define
 default values at a high level and then optionally override them a
 lower, more specific level.
 
-### Gestalt Stands on the Shoulders of Giants
+### Gestalt stands on the shoulders of giants
 
 The Gestalt system is built using the Ansible framework which provides
 the core 'engine' driving the variable and template management. You do
 not need to be an Ansible expert but being familiar with its basic
 tenets will be helpful in understanding and troubleshooting Gestalt.
 
-In this context, Ansible executes a series of tasks defined in a
-playbook. It uses [Jinja2](http://jinja.pocoo.org/) as the templating
-language. Ansible and Jinja2 are highly extensible and Gestalt leverages
-that with custom plugins and filters.
+Very briefly, Ansible executes a series of tasks defined in a playbook
+and uses [Jinja2](http://jinja.pocoo.org/) as the templating language.
+Tasks and template outputs are influenced by variable values input to
+the system.
 
+Ansible and Jinja2 are highly extensible and Gestalt leverages that with
+custom plugins and filters. See Ansible and Jinja2 documentation for
+details and Gestalt subdirectories `action_plugins`, `filter_plugins`,
+`library`  and `lookup_plugins` for use cases.
+
+### Meet the files
+
+Gestalt is installed to `$GUS_HOME/lib/gestalt` and has a directory
+structure something like the following example based on one of EBRC's
+websites.
+
+    $GUS_HOME/lib/gestalt/
+                          gestalt.cfg
+                          playbook.yml
+                          roles/
+                                gestalt/
+                                        filter_plugins/
+                                        action_plugins/
+                                        lookup_plugins/
+                                        vars/
+                                             ApiCommon/
+                                             ApiCommon/savm/
+                                             ApiCommon/production/
+                                        templates/
+                                                  ApiCommonWebsite/
+                                                  ApiCommonWebService/
+                                                  FgpUtil/
+                                                  EbrcWebsiteCommon/
+                                                  Gestalt/
+                                                  EbrcWebSvcCommon/
+                                        library/
+                                        tasks/
+                          docs/
+
+
+
+_Most of the action takes place in the `roles/gestalt` subdirectory.
+Unless otherwise indicated, paths shown in this guide are relative to
+this, i.e. `$GUS_HOME/lib/gestalt/roles/gestalt`._
+
+Key players
+
+- `gestalt.cfg` - the configuration for the Ansible engine.
+
+- `playbook.yml` - the main Ansible playbook that invokes the `gestalt`
+role. A 'role' is an Ansible construct defining a unit of work -
+configuring a website in this case.
+
+- `action_plugins`, `filter_plugins`, `library`, `lookup_plugins` -
+custom extensions to the Ansible engine. See [Ansible Plugin
+documentation](http://docs.ansible.com/ansible/latest/dev_guide/
+developing_plugins.html) for more information.
+
+- `tasks` - Ansible task files for the Gestalt role that direct the
+consumption of variables and deposition of website configuration files
+from templates.
+
+- `templates` - a collection of Jinja2-based template files that will be
+interpolated into working configuration files for a website. They are
+namespaced in subdirectories reflecting their origin from the website's
+source code. _Cf.
+the use of source code name here with the use of cohort name in
+`vars`._
+
+- `vars` They are
+namespaced in subdirectories reflecting the website's cohort name. _Cf.
+the use of cohort name here with the use of source code name in
+`templates`._
+  - `/vars/templates.yml`
 
 ## The Unbearable Flatness of Being
 

@@ -1,6 +1,6 @@
 <img style="float: right;" src="gestalt_logo_sm.png">
 
-# Gestalt
+# Gestalt Quick Start Guide
 
 Gestalt is a configuration framework for websites built on the GUS WDK
 platform.
@@ -10,9 +10,6 @@ populate configuration templates. The hierarchy allows you to define
 default values at a high level and then optionally override them a
 lower, more specific level.
 
----
-
-# Quick Start Guide
 
 This quick start guide uses examples that depend on EBRC file and
 directory naming conventions which are use to derive gestalt command line
