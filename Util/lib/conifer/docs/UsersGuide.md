@@ -1,8 +1,8 @@
-<img style="float: right;" src="gestalt_logo_sm.png">
+<img style="float: right;" src="conifer_logo_sm.png">
 
-# Gestalt Users Manual
+# Conifer Users Manual
 
-Gestalt is a configuration framework for websites built on the GUS WDK
+Conifer is a configuration framework for websites built on the GUS WDK
 platform.
 
 It uses variables defined in hierarchical layers of YAML files to
@@ -24,7 +24,7 @@ common application provisioning levels for an organization.
 
 ## Precedence of Vars Files
 
-Gestalt collects variable assignments from a hierarchy. The hierarchy is
+Conifer collects variable assignments from a hierarchy. The hierarchy is
 defined in an ordered list of YAML definition files. Variables defined
 in a file earlier in the hierarchy can be overridden by a file later in
 the hierarchy.
@@ -32,40 +32,40 @@ the hierarchy.
 The specific files in the hierarchical layers for defining variables are
 as follows, listed in increasing precedence.
 
-  - `vars/gestalt_site_vars.yml`
+  - `vars/conifer_site_vars.yml`
   - `vars/default.yml`
   - `vars/{{ cohort }}/default.yml`
   - `vars/{{ cohort }}/{{ project }}.yml`
   - `vars/{{ cohort }}/{{ env }}/default.yml`
   - `vars/{{ cohort }}/{{ env }}/{{ project }}.yml`
-  - `vars/gestalt_site_vars.yml`
+  - `vars/conifer_site_vars.yml`
   - `--extra-vars`  (`-e`) passed on the command line
-    - `gestalt -e "{'gestalt':{'modelconfig_webAppUrl':'http://a.b.com/'}}" `
+    - `conifer -e "{'conifer':{'modelconfig_webAppUrl':'http://a.b.com/'}}" `
 
-It is ok for some files to not exist. Only `gestalt_site_vars.yml` is
+It is ok for some files to not exist. Only `conifer_site_vars.yml` is
 required.
 
 ### Site Vars
 
-The `gestalt_site_vars.yml` file contains site-specific values and
+The `conifer_site_vars.yml` file contains site-specific values and
 secrets and is not included with the source code. You can use the
-`gestalt seed` command to generate a starter file for you to copy and
+`conifer seed` command to generate a starter file for you to copy and
 edit. The other files are included with source code and are installed
-into `$GUS_HOME/config/gestalt`. Because the files provided with source
+into `$GUS_HOME/config/conifer`. Because the files provided with source
 code are typically managed in a public SCM repository, do not include
-secrets in them. Place secrets only in `gestalt_site_vars.yml` or use a
+secrets in them. Place secrets only in `conifer_site_vars.yml` or use a
 lookup function to retrieve values from a secure source.
 
-Note that `gestalt_site_vars.yml` is processed twice - first and last.
+Note that `conifer_site_vars.yml` is processed twice - first and last.
 This allows the user to define vars that affect subsequent processing.
 The primary use case is to define a `env` value so you don't have to
 remember to set it on the command line.
 
 For websites using EBRC naming conventions, you should keep the
-`gestalt_site_vars.yml` file in the site's `etc` directory where gestalt
+`conifer_site_vars.yml` file in the site's `etc` directory where conifer
 knows to look for it. If you must use a different location you can use
 the `--site_vars` option. In all cases the file is copied to
-`vars/gestalt_site_vars.yml` by `gestalt` before processing so it is in
+`vars/conifer_site_vars.yml` by `conifer` before processing so it is in
 the same directory as the other var files.
 
 
@@ -81,11 +81,11 @@ Create a subdirectory of the cohort vars directory having the name of the enviro
          ApiCommon/
                    production/
 
-By default gestalt sets no `env`. It might be tempting to create a
-`development` environment and expect that be the `gestalt` default but
+By default conifer sets no `env`. It might be tempting to create a
+`development` environment and expect that be the `conifer` default but
 in practice that is unnecessarily increases the proliferation of `vars`
 files. Just put your development defaults in the cohort vars. Most
-importantly, the absence of a env default in `gestalt` allows you to set
+importantly, the absence of a env default in `conifer` allows you to set
 the `env` value in the `users_vars.yml` file so you don't have to
 routine specify it on the command line.
 
@@ -118,9 +118,9 @@ set that in `production/PlasmoDB.yml`
 Do not commit secrets to source control. Use lookups from system files or Vault (TBD).
 
 
-## System gestalt
+## System conifer
 
-Optional. A wrapper script named `gestalt` may be installed in the system path.
-This script locates and runs the site-specific gestalt. This saves you
+Optional. A wrapper script named `conifer` may be installed in the system path.
+This script locates and runs the site-specific conifer. This saves you
 from having to manage including `$GUS_HOME/bin` in your shell's `$PATH`
 for each website installation you have to support.

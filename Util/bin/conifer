@@ -37,15 +37,15 @@ class WebhostPathResolver:
 
 display = Display()
 
-class GestaltCLI(object):
+class ConiferCLI(object):
   def __init__(self):
     parser = argparse.ArgumentParser(
       description='EBRC Website Configuration Manager',
       usage='''
-gestalt <command> [<args>]
+conifer <command> [<args>]
 
 Available commands:
-  install   Install Gestalt into GUS_HOME.
+  install   Install Conifer into GUS_HOME.
 
   seed   Generate a seed file that can be used as
   the basis for a minimal user-specific vars file.
@@ -59,20 +59,20 @@ Available commands:
     self.webapp_ctx = None
     self.project_home = None
     self.gus_home = None
-    self.gestalt_home = None
+    self.conifer_home = None
     self.cohort = None
     self.project = None
     self.env = None
     self.site_vars = None
-    self.gestalt_site_vars_seed_dest = None
+    self.conifer_site_vars_seed_dest = None
     self.user_conf_dest = None
     self.verbose = False
     self.debug = False
 
-    self.default_site_vars = 'gestalt_site_vars.yml'
-    self.user_conf_src_fname = 'gestalt_site_vars.yml'
-    self.gestalt_site_vars_seed_fname = 'gestalt_site_vars.seed.yml'
-    self.user_conf_dest_fname = 'gestalt_site_vars.yml'
+    self.default_site_vars = 'conifer_site_vars.yml'
+    self.user_conf_src_fname = 'conifer_site_vars.yml'
+    self.conifer_site_vars_seed_fname = 'conifer_site_vars.seed.yml'
+    self.user_conf_dest_fname = 'conifer_site_vars.yml'
     self.www_path = '/var/www'
 
     self.status = {}
@@ -109,10 +109,10 @@ Available commands:
         '-e', 'hostname=' + self.hostname,
         '-e', 'webapp_ctx=' + self.webapp_ctx,
       ])
-    if os.path.isfile(self.gestalt_home + '/' + self.cohort + '_playbook.yml'):
-      playbook = self.gestalt_home + '/' + self.cohort + '_playbook.yml'
+    if os.path.isfile(self.conifer_home + '/' + self.cohort + '_playbook.yml'):
+      playbook = self.conifer_home + '/' + self.cohort + '_playbook.yml'
     else:
-      playbook = self.gestalt_home + '/playbook.yml'
+      playbook = self.conifer_home + '/playbook.yml'
     if self.verbose: display.display('Using playbook ' + playbook, color=C.COLOR_VERBOSE)
     rslt = self._run_playbook(extra_vars, playbook)
     if rslt == 0:
@@ -122,14 +122,14 @@ Available commands:
 
   def seed(self):
     self._parse_args()
-    if self.gestalt_site_vars_seed_dest is None:
-      self.gestalt_site_vars_seed_dest = os.path.expanduser('~') + '/' + self.gestalt_site_vars_seed_fname
+    if self.conifer_site_vars_seed_dest is None:
+      self.conifer_site_vars_seed_dest = os.path.expanduser('~') + '/' + self.conifer_site_vars_seed_fname
     extra_vars = [
       '-e', 'gus_home=' + self.gus_home,
       '-e', 'cohort=' + self.cohort,
       '-e', 'project=' + self.project,
       '-e', 'templates_config=' + self.cohort + '/templates.yml',
-      '-e', 'gestalt_site_vars_seed_dest=' + self.gestalt_site_vars_seed_dest
+      '-e', 'conifer_site_vars_seed_dest=' + self.conifer_site_vars_seed_dest
     ]
     if self.env is not None:
       extra_vars.extend([ '-e', 'env=' + self.env ])
@@ -138,12 +138,12 @@ Available commands:
         '-e', 'hostname=' + self.hostname,
         '-e', 'webapp_ctx=' + self.webapp_ctx,
       ])
-    playbook = self.gestalt_home + '/mk_site_vars.playbook.yml'
+    playbook = self.conifer_home + '/mk_site_vars.playbook.yml'
     rslt = self._run_playbook(extra_vars, playbook)
     if rslt == 0:
-      msg = "A configuration seed file was created at {}.".format(self.gestalt_site_vars_seed_dest)
+      msg = "A configuration seed file was created at {}.".format(self.conifer_site_vars_seed_dest)
       msg += " Rename this file to {} and edit to supply the missing values.".format( self.user_conf_dest)
-      msg += " Then run 'gestalt configure {}' to complete the configuration process.".format(' '.join(sys.argv[2:]).strip())
+      msg += " Then run 'conifer configure {}' to complete the configuration process.".format(' '.join(sys.argv[2:]).strip())
       wrapped = textwrap.fill((msg), display.columns, replace_whitespace=False, drop_whitespace=True)
       self.status = { 'msg': wrapped, 'color': C.COLOR_CHANGED}
     else:
@@ -158,17 +158,17 @@ Available commands:
       if not os.path.isdir(dir):
         print("mkdir {}".format(dir))
         os.makedirs(dir)
-    cmd = ['find', self.project_home, '-path', '*/lib/gestalt',
-      '-type', 'd', '-name', 'gestalt', '-exec', 'rsync', '-a', '{}', 
+    cmd = ['find', self.project_home, '-path', '*/lib/conifer',
+      '-type', 'd', '-name', 'conifer', '-exec', 'rsync', '-a', '{}', 
       self.gus_home + '/lib/',  ';' ]
     if self.verbose: print(' '.join(cmd))
-    print('Installing Gestalt into ' + self.gus_home)
+    print('Installing Conifer into ' + self.gus_home)
     cpcore = call(cmd)
-    cmd = ['rsync', '-a', self.project_home + '/FgpUtil/Util/bin/gestalt',
+    cmd = ['rsync', '-a', self.project_home + '/FgpUtil/Util/bin/conifer',
       self.gus_home + '/bin/' ]
     if self.verbose: print(' '.join(cmd))
     cpbin = call(cmd)
-    cmd = ['chmod', '0755', self.gus_home + '/bin/gestalt']
+    cmd = ['chmod', '0755', self.gus_home + '/bin/conifer']
     chmodbin = call(cmd)
     if cpcore == 0 and cpbin == 0 and chmodbin == 0:
       self.status = { 'msg': 'Installation complete.', 'color': C.COLOR_OK }
@@ -188,7 +188,7 @@ Available commands:
     parser.add_argument("--verbose", action='store_true', help="Show some process details.")
     parser.add_argument("--debug", action='store_true', help="Show stack traces and other processing details.")
     # now that we're inside a subcommand, ignore the first
-    # two argvs, ie the command (gestalt) and the subcommand (configure)
+    # two argvs, ie the command (conifer) and the subcommand (configure)
     args = parser.parse_args(sys.argv[2:])
     self.args = args
     self.__dict__.update(copy(args.__dict__))
@@ -200,11 +200,11 @@ Available commands:
      for arg in ['gus_home','cohort', 'project', 'env', 'site_vars']:
        if eval('self.' + arg) is None:
          parser.error('--' + arg + ' is required')
-    self.gestalt_home = self.gus_home + '/lib/gestalt'
+    self.conifer_home = self.gus_home + '/lib/conifer'
 
   def _run_playbook(self, extra_vars, playbook):
     shell_env = os.environ.copy()
-    shell_env["ANSIBLE_CONFIG"] = self.gestalt_home + '/gestalt.cfg'
+    shell_env["ANSIBLE_CONFIG"] = self.conifer_home + '/conifer.cfg'
     cmd = ['ansible-playbook', '-i', 'localhost,']
     cmd.extend(extra_vars)
     cmd.extend([playbook])
@@ -246,13 +246,13 @@ Available commands:
     self.webapp_ctx = wpr.context
     if self.site_vars is None:
       self.site_vars = self.www_path + '/' + self.hostname + '/etc/' + self.user_conf_src_fname
-    self.gestalt_site_vars_seed_dest = self.www_path + '/' + hostname + '/etc/' + self.gestalt_site_vars_seed_fname
+    self.conifer_site_vars_seed_dest = self.www_path + '/' + hostname + '/etc/' + self.conifer_site_vars_seed_fname
     self.user_conf_dest = self.www_path + '/' + hostname + '/etc/' + self.user_conf_dest_fname
 
   def _copy_site_vars(self):
     '''
       copy the site_vars file provided by the user into the
-      Gestalt vars directory so it's in the same place as all
+      Conifer vars directory so it's in the same place as all
       the other vars files and is given a pre-determined name.
     '''
     if os.path.isfile(self.site_vars):
@@ -260,15 +260,15 @@ Available commands:
     else:
       raise Exception("Can not find site_vars file: '{}'".format(self.site_vars))
 
-    dest = self.gestalt_home + '/roles/gestalt/vars/'
+    dest = self.conifer_home + '/roles/conifer/vars/'
     print("copying {0} to {1}".format(src, dest))
     shutil.copy2(src, dest)
 
 if __name__ == '__main__':
   try:
-    g = GestaltCLI()
-    banner_args = { 'msg': 'GESTALT {} RESULTS'.format(g.command.upper()), 'color': 'bright blue' }
-    display.banner('GESTALT {}'.format(g.command.upper()), color='bright blue')
+    g = ConiferCLI()
+    banner_args = { 'msg': 'CONIFER {} RESULTS'.format(g.command.upper()), 'color': 'bright blue' }
+    display.banner('CONIFER {}'.format(g.command.upper()), color='bright blue')
     g.run()
     display.banner(**banner_args)
     if 'msg' in g.status:

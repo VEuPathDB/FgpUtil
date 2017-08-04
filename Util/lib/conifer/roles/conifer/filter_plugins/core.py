@@ -81,7 +81,7 @@ class Varbilize:
     return od
 
 
-class GstPluck:
+class ConiferPluck:
 
   def get_unset_yaml(self, src_dict = {}, term = r".*"):
     term_regex = re.compile('({0})'.format(term))
@@ -207,11 +207,11 @@ class DbUtils:
     raise AnsibleFilterError("Unable to determine short name for jdbc string '{}'.".format(jdbc))
 
 
-def gst_pluck(a, term = '.*'):
+def conifer_pluck(a, term = '.*'):
   vb = Varbilize(term)
   return vb.pluck(a)
 
-def gst_scrub(a, term = '.*'):
+def conifer_scrub(a, term = '.*'):
   vb = Varbilize(term)
   return vb.scrub(a)
 
@@ -267,8 +267,8 @@ class FilterModule(object):
 
   def filters(self):
     return {
-      'gst_scrub': gst_scrub,
-      'gst_pluck': gst_pluck,
+      'conifer_scrub': conifer_scrub,
+      'conifer_pluck': conifer_pluck,
       'jdbc2Dbi': jdbc2Dbi,
       'jdbc2shortName': jdbc2shortName,
       'swap_sld': swap_sld,

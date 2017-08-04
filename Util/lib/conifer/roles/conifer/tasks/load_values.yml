@@ -1,10 +1,10 @@
 #
-# Parse YAML files for variables and place them into the `gestalt`
+# Parse YAML files for variables and place them into the `conifer`
 # namespace.
 #
 - name: load user values
   include_vars:
-    name: gestalt
+    name: conifer
     dir: 'vars'
     depth: 1
     files_matching: '{{ item }}'
@@ -14,7 +14,7 @@
   
 - name: load default values
   include_vars:
-    name: gestalt
+    name: conifer
     dir: 'vars'
     depth: 1
     files_matching: '^{{ item }}$'
@@ -23,7 +23,7 @@
 
 - name: load cohort values
   include_vars:
-    name: gestalt
+    name: conifer
     dir: 'vars/{{ cohort }}'
     depth: 1
     files_matching: '^{{ item }}$'
@@ -33,7 +33,7 @@
 
 - name: load environment values
   include_vars:
-    name: gestalt
+    name: conifer
     dir: 'vars/{{ cohort }}/{{ env }}'
     depth: 1
     files_matching: '{{ item }}'
@@ -44,7 +44,7 @@
 
 - name: load user values
   include_vars:
-    name: gestalt
+    name: conifer
     dir: 'vars'
     depth: 1
     files_matching: '{{ item }}'
@@ -52,12 +52,12 @@
     - '{{ site_vars }}'
   when: site_vars is defined
 
-# Only the gestalt dict is passed to templates,
+# Only the conifer dict is passed to templates,
 # so need to copy in some top-level variables.
 # The ansible_* are needed by lookup(), etc.
-- name: copy global vars into gestalt namespace
+- name: copy global vars into conifer namespace
   set_fact:
-    gestalt:
+    conifer:
       cohort: '{{ cohort|default }}'
       project: '{{ project|default }}'
       env: '{{ env|default }}'

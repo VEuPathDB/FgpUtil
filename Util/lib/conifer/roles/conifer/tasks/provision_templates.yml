@@ -2,6 +2,6 @@
   template_with_vars:
     src: "{{ templates[project][item]['src'] }}"
     dest: "{{ templates[project][item]['dest'] }}"
-    vars: "{{ vars.gestalt|gst_scrub('=g=') }}"
+    vars: "{{ vars.conifer|conifer_scrub('=g=') }}"
   with_items: 
     - "{{ templates[project].keys() }}"
