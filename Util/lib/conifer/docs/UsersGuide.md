@@ -6,9 +6,12 @@ Conifer is a configuration framework for websites built on the GUS WDK
 platform.
 
 It uses variables defined in hierarchical layers of YAML files to
-populate configuration templates. The hierarchy allows you to define
-default values at a high level and then optionally override them a
-lower, more specific level.
+generate working application configurations from templates. The
+hierarchy allows you to define default values at a high level and then
+optionally override them a lower, more specific level. The templating
+leverates lookup and other functions to reduce human error, minimize
+human input and even outsource managing settings to a centralize
+datastore.
 
 ### Introduction
 
