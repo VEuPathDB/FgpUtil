@@ -3,48 +3,11 @@
 # Conifer Developer Manual
 
 Conifer is a configuration framework for websites built on the GUS WDK
-platform.
-
-It uses variables defined in hierarchical layers of YAML files to
-populate configuration templates. The hierarchy allows you to define
-default values at a high level and then optionally override them a
-lower, more specific level.
+platform. This manual is for developers wishing to debug or extend
+Conifer.
 
 
-## The Unbearable Flatness of Being
-
-The definitions in the vars files generally have a flat structure,
-
-    modelconfig_appDb_connectionUrl: 'jdbc:...'
-
-rather than a dictionary structure,
-
-    modelconfig:
-      appDb:
-        connectionUrl: 'jdbc:...'
-
-Both are valid but the flat design was chosen to avoid recursive
-overflows from interpolations referencing a variable in the same
-dictionary. In this example, `{{ modelconfig.oauthUrl }}` is an illegal
-reference because it requires interpolating the `oauthUrl` value from
-the same dictionary that is still being defined.
-
-      modelconfig:
-        oauthUrl: http://oauth.org
-        profileUrl: '{{ modelconfig.oauthUrl }}'/user/profile
-
-See https://github.com/ansible/ansible/issues/8603 for discussions on this topic.
-
-We can get around this by flattening the assignments,
-
-    modelconfig_oauthUrl: http://oauth.org
-    modelconfig_profileUrl: '{{ modelconfig.oauthUrl }}'/user/profile
-
-To be clear, a dictionary structure is allowed and we do use it in some
-cases (`modelprop` is a primary example) but a flat structure has fewer
-pitfalls.
-
-## Adding A New Cohort
+## Adding A New Cohort or Project
 
 Using WDKTemplateSite as example. WDK project name `TemplateDB`, cohort
 `WDKTemplate`.
@@ -106,6 +69,43 @@ post configuration tasks, create a playbook with the cohort name as a
 prefix.
 
     WDKTemplateSite/Model/config/conifer/WDKTemplate_playbook.yml
+
+
+## Coding Policies
+
+### The Unbearable Flatness of Being
+
+The definitions in the vars files generally have a flat structure,
+
+    modelconfig_appDb_connectionUrl: 'jdbc:...'
+
+rather than a dictionary structure,
+
+    modelconfig:
+      appDb:
+        connectionUrl: 'jdbc:...'
+
+Both are valid but the flat design was chosen to avoid recursive
+overflows from interpolations referencing a variable in the same
+dictionary. In this example, `{{ modelconfig.oauthUrl }}` is an illegal
+reference because it requires interpolating the `oauthUrl` value from
+the same dictionary that is still being defined.
+
+      modelconfig:
+        oauthUrl: http://oauth.org
+        profileUrl: '{{ modelconfig.oauthUrl }}'/user/profile
+
+See https://github.com/ansible/ansible/issues/8603 for discussions on this topic.
+
+We can get around this by flattening the assignments,
+
+    modelconfig_oauthUrl: http://oauth.org
+    modelconfig_profileUrl: '{{ modelconfig.oauthUrl }}'/user/profile
+
+To be clear, a dictionary structure is allowed and we do use it in some
+cases (`modelprop` is a primary example) but a flat structure has fewer
+pitfalls.
+
 
 # Developer Guide
 

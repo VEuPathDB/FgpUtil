@@ -1,6 +1,6 @@
 <img style="float: right;" src="conifer_logo_sm.png">
 
-# Conifer Users Manual
+# Conifer User Manual
 
 Conifer is a configuration framework for websites built on the GUS WDK
 platform.
