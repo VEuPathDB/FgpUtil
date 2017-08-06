@@ -50,7 +50,7 @@ requirements._
 Default values for templating variables are defined here, some/all of
 which can be overridden as desired by other vars yaml files downstream
 in the hierarchy. To make `conifer seed` usable, you should list *all*
-variables here and use the `=g=` comment marker for those that have no
+variables here and use the `=c=` comment marker for those that have no
 default value and must be defined elsewhere in the hierarchy.
 Unfortunately there is not a good way to know what variables are
 required other than to manually get the variables from the configuration
@@ -121,7 +121,7 @@ At the top level the variables may not have a value assigned
 
 or may have a conifer comment
 
-    connectionString: =g= This is the connection string
+    connectionString: =c= This is the connection string
 
 In both cases the `connectString` is considered defined - with Python
 `None` in the first example - so the templating engine will use those
@@ -145,22 +145,22 @@ organization (these can be overridden by later in the vars hiearchy).
 Second it delimits the **required** variables for your organization. If
 a required variable does not have a default value (say, a password)
 still include it here and set the YAML value to a Conifer comment marker
-`=g=`.
+`=c=`.
 
-      password: =g=
+      password: =c=
 
 Any commented variables like this that are not overridden by later vars
 files will be used by the conifer `seed` subcommand to generate a
 site-specific vars starter file.
 
 Required settings for your organization should be defined with a value
-or a `=g=` marker in the `defaults.yml` file. Do not include optional
-settings with a `=g=` marker because the conifer `seed` subcommand will
+or a `=c=` marker in the `defaults.yml` file. Do not include optional
+settings with a `=c=` marker because the conifer `seed` subcommand will
 report in the site-specific vars starter file, implying to the end user
 that a value is needed. Well, on the other hand, you could indicate to
 the end user that the setting is optional, something like
 
-      showConnections: =g= This is optional but encouraged...
+      showConnections: =c= This is optional but encouraged...
 
 ## Variable Naming Convention
 

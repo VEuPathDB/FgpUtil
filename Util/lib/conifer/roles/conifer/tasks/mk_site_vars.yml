@@ -17,6 +17,6 @@
     src: Conifer/conifer_site_vars_seed.yml.j2
     dest: '{{ conifer_site_vars_seed_dest }}'
     vars:
-      site_vars: "{{ vars.conifer|conifer_pluck('=g=') }}"
+      site_vars: "{{ vars.conifer|conifer_pluck('=c=') }}"
   tags:
     - mk_site_vars
