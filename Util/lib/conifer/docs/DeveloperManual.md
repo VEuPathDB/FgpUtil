@@ -14,13 +14,23 @@ Using WDKTemplateSite as example. WDK project name `TemplateDB`, cohort
 
 ### Add template mapping file
 
+The core GUS source code includes minimal templates for the WDK configuration.
+
+    FgpUtil/Util/lib/conifer/roles/conifer/templates/FgpUtil/
+
+If your website only uses the WDK and has no other applications that
+need configuring, then perhaps the provided templates are all you need.
+
 Your new web site will have a directory of source code for your WDK
-model and website UI, e.g. `WDKTemplateSite`.
+model and website UI, e.g. `WDKTemplateSite`. There is where you will
+put templates and vars files.
 
-    WDKTemplateSite/Model/config/conifer/roles/conifer/templates
+    WDKTemplateSite/Model/lib/conifer/roles/conifer/templates
     
-    WDKTemplateSite/Model/config/conifer/roles/conifer/vars/WDKTemplate/templates.yml
+    WDKTemplateSite/Model/lib/conifer/roles/conifer/vars/WDKTemplate/templates.yml
 
+The WDKTemplateSite only needs the templates provided by FgpUtil so this
+directory is empty. You could even omit the empty directory entirely.
 
 The `templates.yml` is a dictionary with the project name(s) as the
 parent key(s). Each configuration file is listed with a `src` source for
@@ -45,13 +55,13 @@ requirements._
 
 ### Add default configuration values
 
-    WDKTemplateSite/Model/config/conifer/roles/conifer/vars/WDKTemplate/default.yml
+    WDKTemplateSite/Model/lib/conifer/roles/conifer/vars/WDKTemplate/default.yml
 
 Default values for templating variables are defined here, some/all of
 which can be overridden as desired by other vars yaml files downstream
 in the hierarchy. To make `conifer seed` usable, you should list *all*
-variables here and use the `=c=` comment marker for those that have no
-default value and must be defined elsewhere in the hierarchy.
+required variables here and use the `=c=` comment marker for those that
+have no default value and must be defined elsewhere in the hierarchy.
 Unfortunately there is not a good way to know what variables are
 required other than to manually get the variables from the configuration
 templates. As a starting point, you can grep the variables out of all
@@ -68,7 +78,7 @@ if you need a cohort specific playbook, say you would like to run some
 post configuration tasks, create a playbook with the cohort name as a
 prefix.
 
-    WDKTemplateSite/Model/config/conifer/WDKTemplate_playbook.yml
+    WDKTemplateSite/Model/lib/conifer/WDKTemplate_playbook.yml
 
 
 ## Coding Policies
@@ -107,12 +117,13 @@ cases (`modelprop` is a primary example) but a flat structure has fewer
 pitfalls.
 
 
-# Developer Guide
+# Internal variable handling
 
 The variables taken from the vars files are stored in the `conifer`
 namespace by the `load_values.yml` tasks. Note that this is a branch of
 the `vars` dictionary, e.g. 
-`'{{ vars.conifer.modelconfig_appDb_connectionUrl }}'`.
+
+    '{{ vars.conifer.modelconfig_appDb_connectionUrl }}'
 
 The vars files include all the variables needed to populate templates.
 At the top level the variables may not have a value assigned
@@ -162,7 +173,7 @@ the end user that the setting is optional, something like
 
       showConnections: =c= This is optional but encouraged...
 
-## Variable Naming Convention
+### Variable naming convention
 
 `filename_property`
 
@@ -176,13 +187,12 @@ the same as in Python 2.x: the uppercase and lowercase letters A through
 Z, the underscore _ and, except for the first character, the digits 0
 through 9._
 
-
+For example,
 
     <modelConfig>
       <appDb
-        connectionUrl = ...
-            
-`modelconfig_appDb_connectionUrl`
+        connectionUrl = {{ modelconfig_appDb_connectionUrl }}
+
 
 This is to help the user mentally map the yaml to the configuration
 file. To keep variable names from growing to absurd lengths, you can
@@ -193,7 +203,9 @@ reasonable to use the template variable `modelconfig_modelName` instead
 of `modelconfig_modelConfig_modelName`. There are multiple
 `connectionUrl` values so those need to be namespaced:
 
-`modelconfig_accountdb_connectionUrl`, `modelconfig_appDb_connectionUrl`, `modelconfig_userdb_connectionUrl`
+    modelconfig_accountdb_connectionUrl
+    modelconfig_appDb_connectionUrl
+    modelconfig_userdb_connectionUrl
 
 Variable names not directly associated with a specific configuration
 file, i.e. 'globals' that are interpolated into other variables, are prefixed with and underscore.
@@ -246,16 +258,6 @@ them if you want the literal strings used when parsing templates.
     key: 'yes'
 
 
-### conifer_pluck filter
-
-    ansible-playbook -ilocalhost, test_conifer_pluck.playbook.yml  
-
-### template_with_vars module
-
-    cd roles/conifer
-    ansible-playbook -ilocalhost, test_template_with_vars_playbook.yml   
-
-
 ## Advantages
 
   - standard jinja2 templating framework
@@ -278,50 +280,6 @@ them if you want the literal strings used when parsing templates.
 
 - only portal gets values in `projects.xml` (`fungURL`, etc). I think
 this is ok based on comment in `masterConfig.yaml`.
-
-
-## Questions
-
-
-## Development Log
-
-The templates receive variables from the `conifer` namespace that are
-jinja2-filtered with `conifer_scrub` and the `conifer_site_vars.tmpl.yml` file uses
-variables filtered with `conifer_pluck`. I made an earlier attempt to
-generate scrubbed and plucked variables namespaces using an action
-plugin (a somewhat cleaner design). The plugin processed the raw
-variables from the `include_vars` actions and returned them as
-`result['ansible_facts']`.
-
-Unfortunately doing that screwed up nested variable expansion in the
-templates for reasons I was not able to discover. For example, for yaml
-settings
-
-    userDb.connectionUrl: 'jdbc:oracle:oci:@{{ userdb_shortname }}'
-    userdb_shortname: apicomm
-    oauthClientSecret: abcd
-
-and template with
-
-    connectionUrl="{{ userDb.connectionUrl }}"
-    oauthClientSecret="{{ oauthClientSecret }}"
-
-The expanded result is
-
-    connectionUrl="jdbc:oracle:oci:@{{ userdb_shortname }}"
-    oauthClientSecret="abcd"
-
-Note direct variable expansion works (`oauthClientSecret`) but nested
-does not (expanding `userDb.connectionUrl` depends on expanding
-`userdb_shortname`). I suspect there's some string quoting getting
-changed as Ansible/python passes dictionaries around.
-
-This 'bug' seems to be unrelated to how the action plugin was processing
-the raw variables. This bug is demonstrated with a minimal action plug
-that returns a simple, unrelated facts dictionary such as
-
-    result['ansible_facts'] = {'a':'b'}
-    return result
 
 
 ### Backtracking from working files to source
@@ -351,4 +309,3 @@ this is a limitation of Subversion's custom keywords.
     # $SourceFileURL: EbrcWebsiteCommon/branches/conifer/Model/lib/conifer/roles/conifer/vars/default.yml $
 
 Refer to `svn help ps` for more information on custom keywords.
-
