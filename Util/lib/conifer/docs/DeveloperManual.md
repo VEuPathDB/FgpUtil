@@ -9,8 +9,8 @@ Conifer.
 
 ## Adding A New Cohort or Project
 
-Using WDKTemplateSite as example. WDK project name `TemplateDB`, cohort
-`WDKTemplate`.
+Using WDKTemplateSite as example, with its WDK project name as
+`TemplateDB` and cohort name as `WDKTemplate`.
 
 ### Add template mapping file
 
