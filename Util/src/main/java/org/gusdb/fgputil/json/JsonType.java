@@ -16,7 +16,6 @@ public class JsonType {
   }
 
   public static enum NumberSubtype {
-    INTEGER,
     LONG,
     DOUBLE;
   }
@@ -87,17 +86,28 @@ public class JsonType {
     else if (object instanceof String) {
       _type = ValueType.STRING;
     }
-    else if (object instanceof Integer) {
-      _type = ValueType.NUMBER;
-      _numberSubtype = NumberSubtype.INTEGER;
-    }
-    else if (object instanceof Long) {
-      _type = ValueType.NUMBER;
-      _numberSubtype = NumberSubtype.LONG;
-    }
-    else if (object instanceof Double) {
-      _type = ValueType.NUMBER;
-      _numberSubtype = NumberSubtype.DOUBLE;
+    else if (object instanceof Number) {
+      if (object instanceof Integer) {
+        _type = ValueType.NUMBER;
+        _numberSubtype = NumberSubtype.LONG;
+        object = ((Integer)object).longValue();
+      }
+      else if (object instanceof Long) {
+        _type = ValueType.NUMBER;
+        _numberSubtype = NumberSubtype.LONG;
+      }
+      else if (object instanceof Float) {
+        _type = ValueType.NUMBER;
+        _numberSubtype = NumberSubtype.DOUBLE;
+        object = ((Float)object).doubleValue();
+      }
+      else if (object instanceof Double) {
+        _type = ValueType.NUMBER;
+        _numberSubtype = NumberSubtype.DOUBLE;
+      }
+      else {
+        throw new UnsupportedOperationException("Only Integer, Long, Float, and Double number types are supported.");
+      }
     }
     else if (object instanceof JSONObject) {
       _type = ValueType.OBJECT;
@@ -133,27 +143,33 @@ public class JsonType {
   public Double getDouble() {
     checkType(ValueType.NUMBER, "getDouble");
     switch (_numberSubtype) {
-      case INTEGER: return ((Integer)_object).doubleValue();
       case LONG: return ((Long)_object).doubleValue();
       case DOUBLE: // pass through
       default: return (Double)_object;
     }
-    
   }
 
   public Long getLong() {
-    checkType(ValueType.NUMBER, "getLong");
+    checkType(ValueType.NUMBER, NumberSubtype.LONG, "getLong");
     return (Long)_object;
   }
 
   public Integer getInteger() {
-    checkType(ValueType.NUMBER, "getInteger");
-    return (Integer)_object;
+    checkType(ValueType.NUMBER, NumberSubtype.LONG, "getInteger");
+    return ((Long)_object).intValue();
   }
 
   public Boolean getBoolean() {
     checkType(ValueType.BOOLEAN, "getBoolean");
     return (Boolean)_object;
+  }
+
+  private void checkType(ValueType type, NumberSubtype subtype, String call) {
+    checkType(type, call);
+    if (!subtype.equals(_numberSubtype)) {
+      throw new UnsupportedOperationException("Cannot call " +
+          call + "() unless subtype is " + subtype.name());
+    }
   }
 
   private void checkType(ValueType type, String call) {
