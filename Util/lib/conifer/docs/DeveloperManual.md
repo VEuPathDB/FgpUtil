@@ -16,7 +16,8 @@ Using WDKTemplateSite as example, with its WDK project name as
 
 The core GUS source code includes minimal templates for the WDK configuration.
 
-    FgpUtil/Util/lib/conifer/roles/conifer/templates/FgpUtil/
+    FgpUtil/Util/lib/conifer/roles/conifer/templates/FgpUtil/model-config.xml.j2
+    FgpUtil/Util/lib/conifer/roles/conifer/templates/FgpUtil/model.prop.j2
 
 If your website only uses the WDK and has no other applications that
 need configuring, then perhaps the provided templates are all you need.
@@ -25,7 +26,7 @@ Your new web site will have a directory of source code for your WDK
 model and website UI, e.g. `WDKTemplateSite`. There is where you will
 put templates and vars files.
 
-    WDKTemplateSite/Model/lib/conifer/roles/conifer/templates
+    WDKTemplateSite/Model/lib/conifer/roles/conifer/templates/[optional.conf.j2]
     
     WDKTemplateSite/Model/lib/conifer/roles/conifer/vars/WDKTemplate/templates.yml
 
@@ -63,14 +64,14 @@ Default values for templating variables are defined here, some/all of
 which can be overridden as desired by other vars yaml files downstream
 in the hierarchy. To make `conifer seed` usable, you should list *all*
 required variables here and use the `=c=` comment marker for those that
-have no default value and must be defined elsewhere in the hierarchy.
-Unfortunately there is not a good way to know what variables are
-required other than to manually get the variables from the configuration
-templates. As a starting point, you can grep the variables out of all
-the templates; just be careful to note that some variables are internal
-to conifer (used in comments) or may come from test templates. Also some
-variables might not fit the regex used here (e.g. `modelprop` in
-`model.prop.j2`).
+have no default value and therefore must be defined later in the
+hierarchy. Unfortunately there is not a good way to know what variables
+are required other than to manually get the variables from the
+configuration templates. As a starting point, you can grep the variables
+out of all the templates; just be careful to note that some variables
+are internal to conifer (used in comments) or may come from test
+templates. Also some variables might not fit the regex used here (e.g.
+`modelprop` in `model.prop.j2`).
 
     find .  -name '*.j2' | xargs grep '{{' | sed  's/[^{]*{{ *\([^ |]*\).*/\1/'
 
@@ -99,9 +100,9 @@ rather than a dictionary structure,
 
 Both are valid but the flat design was chosen to avoid recursive
 overflows from interpolations referencing a variable in the same
-dictionary. In this example, `{{ modelconfig.oauthUrl }}` is an illegal
-reference because it requires interpolating the `oauthUrl` value from
-the same dictionary that is still being defined.
+dictionary. In the following example, `{{ modelconfig.oauthUrl }}` is an
+illegal reference because it requires interpolating the `oauthUrl` value
+from the same dictionary that is still being defined.
 
       modelconfig:
         oauthUrl: http://oauth.org
@@ -119,7 +120,7 @@ cases (`modelprop` is a primary example) but a flat structure has fewer
 pitfalls.
 
 
-# Internal variable handling
+## Conifer's special variable handling
 
 The variables taken from the vars files are stored in the `conifer`
 namespace by the `load_values.yml` tasks. Note that this is a branch of
@@ -128,7 +129,8 @@ the `vars` dictionary, e.g.
     '{{ vars.conifer.modelconfig_appDb_connectionUrl }}'
 
 The vars files include all the variables needed to populate templates.
-At the top level the variables may not have a value assigned
+At the upper levels of the hierarchy the variables may not have a value
+assigned
 
     connectionString:
 
@@ -136,46 +138,50 @@ or may have a conifer comment
 
     connectionString: =c= This is the connection string
 
-In both cases the `connectString` is considered defined - with Python
-`None` in the first example - so the templating engine will use those
-values, resulting in configuration files generated without error but
-with unusable values. For example,
+In both cases the `connectString` is considered defined when slurped up
+by the YAML parser - having the Python value `None` in the first example
+- and the templating engine will happily use those values, resulting in
+configuration files generated without error but with unusable values,
+such as
 
-    connectionString: None
+        <modelConfig
+          connectionString= None />
 
 We don't want that so we delete these variables from the dictionary used
-for templating. The `conifer_scrubbed` namespace of the data dictionary
-is a copy of `conifer_raw` with unset variables removed. Now unset
-variables are truly undefined and the templating engine will error when
-they are encountered. The `varbilize`plugin creates this dictionary.
+for templating. We use the `conifer_scrub()` Jinja2 filter to do this in
+the `provision_templates.yml` task file. The `conifer_scrub` filter is
+defined in `filter_plugins/core.py`.
 
-The `conifer_unset` namespace has variables that are defined as `None`
-or as a conifer comment. The `varbilize`plugin creates this dictionary.
+Now variables not given values in the vars files are truly undefined and
+the templating engine will error when they are encountered.
 
-The uppermost `defaults.yml` servers two primary purposes. It first
+## Conifer seed
+
+The uppermost `defaults.yml` serves two primary purposes. It first
 provides default values that you wish to provision across your
 organization (these can be overridden by later in the vars hiearchy).
 Second it delimits the **required** variables for your organization. If
-a required variable does not have a default value (say, a password)
-still include it here and set the YAML value to a Conifer comment marker
-`=c=`.
+a required variable does not have a default value (say, a password) you
+should still include it here and set the YAML value to a Conifer comment
+marker `=c=`.
 
-      password: =c=
+      password: =c= Your secret login credential
 
 Any commented variables like this that are not overridden by later vars
 files will be used by the conifer `seed` subcommand to generate a
 site-specific vars starter file.
 
-Required settings for your organization should be defined with a value
-or a `=c=` marker in the `defaults.yml` file. Do not include optional
-settings with a `=c=` marker because the conifer `seed` subcommand will
-report in the site-specific vars starter file, implying to the end user
-that a value is needed. Well, on the other hand, you could indicate to
-the end user that the setting is optional, something like
+The `mk_site_vars.yml` task file uses the `conifer_pluck()` Jinja2
+filter to collect these unset variables. The `conifer_pluck` filter is
+defined in `filter_plugins/core.py`.
 
-      showConnections: =c= This is optional but encouraged...
+Only required settings for your organization should be included in the
+`defaults.yml` file. Do not include optional settings, either undefined
+or with a `=c=` marker because the conifer `seed` subcommand will report
+in the site-specific vars starter file, implying to the end user that a
+value is needed.
 
-### Variable naming convention
+### Variable naming conventions
 
 `filename_property`
 
@@ -214,8 +220,8 @@ file, i.e. 'globals' that are interpolated into other variables, are prefixed wi
 
     _topleveldomain: net
 
-As with any coding best practices, the overall goal is to aid human parsers. There's no strict enforcement
-of these rules in the code.
+As with any coding best practices, the overall goal is to aid human
+readers. There's no strict enforcement of these rules in the code.
 
 ### Secrets
 
@@ -247,42 +253,18 @@ and in the template file for `profilesSimilarity-config.xml` we use
 
 This way, both configuration files get the same values by default
 because they're defined the same in the vars files. In the hypothetical
-case where they need to have different values, a given site can override
+case where you want to have different values, a given site can override
 the default `profilesimilarityconfig_connectionUrl` value in the local
 `conifer_site_vars.yml` file.
 
 ## YAML tips
 
-The values `true`, `false`, `yes`, `no` are treated as booleans. Quote
-them if you want the literal strings used when parsing templates.
-[improve this section with template input/output examples]
+The values `true`, `false`, `yes`, `no` are treated as booleans by the
+YAML parser. Quote them if you want the literal strings used when
+parsing templates. [improve this section with template input/output
+examples]
 
     key: 'yes'
-
-
-## Advantages
-
-  - standard jinja2 templating framework
-    - well documented
-    - filters
-      - lowercase
-      - strip trailing / from myURL
-      - value lookup()
-        - source of data self-documented in `conifer_site_vars.yml`
-        - no secondary script needed to do lookups and generate static user configuration
-          - e.g. `configula` + `Configula.pm`
-
-  - integration with rebuilder
-    - everyone's `conifer_site_vars.yml` is in the same location (websitesite's `etc/conifer_site_vars.yml`)
-
-## Abatements
-
-- removed `toxocommentschema`, can not find reference to it or
-`toxocomm` in any templates or generated config files
-
-- only portal gets values in `projects.xml` (`fungURL`, etc). I think
-this is ok based on comment in `masterConfig.yaml`.
-
 
 ### Backtracking from working files to source
 
