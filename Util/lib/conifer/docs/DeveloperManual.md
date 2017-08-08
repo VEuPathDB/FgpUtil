@@ -37,7 +37,9 @@ parent key(s). Each configuration file is listed with a `src` source for
 the Jinja2 template and a `dest` destination for the rendered
 configuration file. The actual key value (e.g. `model-config.xml:`) for
 each entry can be anything but must be unique within the dictionary and
-preferably the same as the configuration file name for readability.
+preferably the same as the configuration file name. This value is
+included in conifer's runtime stdout so that will be more readable if
+you match with the filename.
 
     TemplateDB:
       model-config.xml:
