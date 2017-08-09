@@ -15,7 +15,9 @@ except ImportError:
 
 class LookupModule(LookupBase):
   '''
-  Look up values from $HOME/.euparc
+  Look up values from $HOME/.euparc for given XPath and Attribute.
+  Throws exception if not found or returns 'default' value if that
+  is defined.
   '''
   def run(self, terms, variables=None, **kwargs):
     ret = []
@@ -32,6 +34,7 @@ class LookupModule(LookupBase):
       paramvals = {
         "xpath": None,
         "attr": None,
+        "default": None,
       }
       params = term.split()
 
@@ -45,6 +48,7 @@ class LookupModule(LookupBase):
 
       xpath = paramvals['xpath']
       attr = paramvals['attr']
+      default_val = paramvals['default']
 
       display.vvvv("euparc lookup attr '{0}' at xpath '{1}' in '{2}'".format(attr, xpath, euparc))
 
@@ -55,8 +59,12 @@ class LookupModule(LookupBase):
         display.vvvv("euparc lookup found attr value '{}'".format(attr_value))
         if attr_value is not None:
           ret.append(attr_value)
+        elif default_val is not None:
+          ret.append(default_val)
         else:
           raise AnsibleError("Attribute '{0}' not found at xpath '{1}' in '{2}'.".format(attr, xpath, euparc))
+      elif default_val is not None:
+        ret.append(default_val)
       else:
         raise AnsibleError("xpath '{0}' not found in file {1}".format(paramvals['xpath'], euparc))
 
