@@ -16,8 +16,8 @@ Using WDKTemplateSite as example, with its WDK project name as
 
 The core GUS source code includes minimal templates for the WDK configuration.
 
-    FgpUtil/Util/lib/conifer/roles/conifer/templates/FgpUtil/model-config.xml.j2
-    FgpUtil/Util/lib/conifer/roles/conifer/templates/FgpUtil/model.prop.j2
+    WDK/Model/lib/conifer/roles/conifer/templates/WDK/model-config.xml.j2
+    WDK/Model/lib/conifer/roles/conifer/templates/WDK/model.prop.j2
 
 If your website only uses the WDK and has no other applications that
 need configuring, then perhaps the provided templates are all you need.
@@ -44,10 +44,10 @@ you match with the filename.
 
     TemplateDB:
       model-config.xml:
-        src: 'FgpUtil/model-config.xml.j2'
+        src: 'WDK/model-config.xml.j2'
         dest: '{{ gus_home }}/config/{{ project }}/model-config.xml'
       model.prop:
-        src: 'FgpUtil/model.prop.j2'
+        src: 'WDK/model.prop.j2'
         dest: '{{ gus_home }}/config/{{ project }}/model.prop'
 
 _The use of the project name as the parent key allows you to define
