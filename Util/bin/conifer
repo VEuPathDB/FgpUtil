@@ -242,8 +242,10 @@ Available commands:
     if self.cohort is None:
       raise Exception('Was unable to determine the cohort to use.')
     if self.verbose: print("Selecting cohort: {}".format(self.cohort))
-    self.project = wpr.product
-    self.webapp_ctx = wpr.context
+    if self.project is None:
+      self.project = wpr.product
+    if self.webapp_ctx is None:
+      self.webapp_ctx = wpr.context
     if self.site_vars is None:
       self.site_vars = self.www_path + '/' + self.hostname + '/etc/' + self.user_conf_src_fname
     self.conifer_site_vars_seed_dest = self.www_path + '/' + hostname + '/etc/' + self.conifer_site_vars_seed_fname
