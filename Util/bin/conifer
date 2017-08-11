@@ -107,6 +107,9 @@ Available commands:
     if self.hostname is not None:
       extra_vars.extend([
         '-e', 'hostname=' + self.hostname,
+      ])
+    if self.webapp_ctx is not None:
+      extra_vars.extend([
         '-e', 'webapp_ctx=' + self.webapp_ctx,
       ])
     if os.path.isfile(self.conifer_home + '/' + self.cohort + '_playbook.yml'):
@@ -136,6 +139,9 @@ Available commands:
     if self.hostname is not None:
       extra_vars.extend([
         '-e', 'hostname=' + self.hostname,
+      ])
+    if self.webapp_ctx is not None:
+      extra_vars.extend([
         '-e', 'webapp_ctx=' + self.webapp_ctx,
       ])
     playbook = self.conifer_home + '/mk_site_vars.playbook.yml'
@@ -183,6 +189,7 @@ Available commands:
     parser.add_argument("--gus_home", help="")
     parser.add_argument("--cohort", help="")
     parser.add_argument("--project", help="")
+    parser.add_argument("--webapp_ctx", help="")
     parser.add_argument("--env", help="configuration environment; typically 'development' or 'production'")
     parser.add_argument("--site_vars", help="")
     parser.add_argument("--verbose", action='store_true', help="Show some process details.")
@@ -197,7 +204,7 @@ Available commands:
      if self.verbose: print('will attempt to derive args from EBRC-style file conventions')
      self._derive_env(self.hostname)
     else:
-     for arg in ['gus_home','cohort', 'project', 'env', 'site_vars']:
+     for arg in ['gus_home','cohort', 'project', 'site_vars']:
        if eval('self.' + arg) is None:
          parser.error('--' + arg + ' is required')
     self.conifer_home = self.gus_home + '/lib/conifer'
