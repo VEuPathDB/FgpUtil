@@ -52,3 +52,15 @@ prepared you can configure your site.
 
     conifer configure integrate.toxodb.org
 
+
+### Using Commandline Args
+
+If you are not using EBRC file naming conventions for your website or if
+you are not configuring a website, you can use commandline arguments to
+set required values. Here's an example for configuring EuPathDBIrods,
+which is not a website so has no file conventions.
+
+    conifer configure --project_home $PROJECT_HOME \
+    --gus_home $GUS_HOME --project PlasmoDB --cohort EuPathDBIrods \
+    --site_vars /path/to/multi_site_vars.yml --webapp_ctx non
+
