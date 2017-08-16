@@ -293,3 +293,110 @@ this is a limitation of Subversion's custom keywords.
     # $SourceFileURL: EbrcWebsiteCommon/branches/conifer/Model/lib/conifer/roles/conifer/vars/default.yml $
 
 Refer to `svn help ps` for more information on custom keywords.
+
+### An example of backtracking from working files to source
+
+A working Conifer installation in `GUS_HOME` is generated from source
+files scattered about in `PROJECT_HOME`, a reflection of the design of
+treating configuration as source code. This can make it a little
+frustrating when detecting a bad runtime configuration and wanting to
+patch the source file. As noted above, there are some hints included in
+the files to help you backtrack from runtime to source. Here is an
+example.
+
+
+*The Problem:*
+
+On my OrthoMCL site I noticed that the runtime configuration for
+`WEBAPP_BASE_URL` in `model.prop` was not quite right.
+
+    [13:38 20170816 mheiges@luffa /var/www/OrthoMCL/orthomcl.msh/gus_home/config/OrthoMCL]
+    $ ack 'WEBAPP_BASE_URL'
+    model.prop
+    12:LEGACY_WEBAPP_BASE_URL=http://mheiges.orthomcl.org/orthomcl.msh///
+    18:WEBAPP_BASE_URL=http://mheiges.orthomcl.org/orthomcl.msh////app
+
+That's too many slashes in the url! Let's fix that.
+
+*The Backtracking:*
+
+The runtime configuration file includes metadata at the top about its
+origin. Viewing that with the `head` command,
+
+    $ head -n7 model.prop 
+    # Templated by Conifer using
+    # /var/www/OrthoMCL/orthomcl.msh/gus_home/lib/conifer/roles/conifer/templates/WDK/model.prop.j2
+    # with vars from 
+    # Cohort: OrthoMCL
+    # Project: OrthoMCL
+    # Environment: 
+    # site_vars file: conifer_site_vars.yml
+
+we see that the runtime configuration file came from
+`$GUS_HOME/lib/conifer/roles/conifer/templates/WDK/model.prop.j2`
+
+If we inspect `model.prop.j2` we'll see that the template loops over a
+`modelprop` dictionary and prints out `{{ prop }}={{ value }}` pairs. So we need to find where
+this website is getting its `modelprop` value, and specifically the `WEBAPP_BASE_URL` property.
+
+Those values will be defined in a vars file so let's look in the
+installed `var` directory in `GUS_HOME`,
+
+    $ cd $GUS_HOME/lib/conifer/roles/conifer/vars/
+
+and search for `WEBAPP_BASE_URL`.
+
+    [13:58 20170816 mheiges@luffa /var/www/OrthoMCL/orthomcl.msh/gus_home/lib/conifer/roles/conifer/vars]
+    $ ack 'WEBAPP_BASE_URL'
+    OrthoMCL/default.yml
+    21:  LEGACY_WEBAPP_BASE_URL: '{{ modelconfig_webAppUrl }}'
+    27:  WEBAPP_BASE_URL: '{{ modelconfig_webAppUrl }}/app'
+
+    default.yml
+    122:  LEGACY_WEBAPP_BASE_URL: "{{ modelconfig_webAppUrl|regex_replace('/+$', '') }}"
+    123:  WEBAPP_BASE_URL: "{{ modelconfig_webAppUrl|regex_replace('/+$', '') }}/app"
+
+We see these values are set in the organizational `default.yml` and then
+overridden in the cohort `OrthoMCL/default.yml` file. The cohort
+override doesn't strip trailing slashes as it should, so let's fix that.
+Note that we've identified the problem in the installed files but we
+need to fix this in the source code. The origin of this file can be
+discovered from the metadata at the top of the YAML file.
+
+    [13:40 20170816 mheiges@luffa /var/www/OrthoMCL/orthomcl.msh/gus_home/lib/conifer/roles/conifer/vars]
+    $ head -n1 OrthoMCL/default.yml 
+    # $SourceFileURL: OrthoMCLWebsite/trunk/Model/lib/conifer/roles/conifer/vars/OrthoMCL/default.yml $
+
+_Note that the path includes the Subversion branch name which needs to
+be removed before changing to that directory in project home. This is a
+limitation of Subversion keywords being used. Also be aware that SVNKit
+used by Jenkins for code checkout does not expand svn keywords so you
+won't see this information on sites managed by Jenkins._
+
+Now, we can navigate to the SCM directory
+
+    $ cd $PROJECT_HOME/OrthoMCLWebsite/Model/lib/conifer/roles/conifer/vars/OrthoMCL/
+
+and edit `default.yml` to include the `regex()` filter to strip trailing
+slashes.
+
+    $ svn diff default.yml 
+    -  LEGACY_WEBAPP_BASE_URL: '{{ modelconfig_webAppUrl }}'
+    +  LEGACY_WEBAPP_BASE_URL: "{{ modelconfig_webAppUrl|regex_replace('/+$', '') }}"
+    -  WEBAPP_BASE_URL: '{{ modelconfig_webAppUrl }}/app'
+    +  WEBAPP_BASE_URL: "{{ modelconfig_webAppUrl|regex_replace('/+$', '') }}/app"
+
+To be sure, install the fixes and run configure again.
+
+    $ conifer install mheiges.orthomcl.org
+    $ conifer configure mheiges.orthomcl.org 
+
+The model.prop is now correct. w00t!
+
+    $ ack 'WEBAPP_BASE_URL' $GUS_HOME/config/OrthoMCL/model.prop
+    LEGACY_WEBAPP_BASE_URL=http://mheiges.orthomcl.org/orthomcl.msh
+    WEBAPP_BASE_URL=http://mheiges.orthomcl.org/orthomcl.msh/app
+
+Commit your changes.
+
+    $ svn commit -m 'strip trailing slashes from WEBAPP_BASE_URL in model.prop'
