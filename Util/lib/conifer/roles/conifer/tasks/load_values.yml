@@ -1,0 +1,68 @@
+#
+# Parse YAML files for variables and place them into the `conifer`
+# namespace.
+#
+- name: load user values
+  include_vars:
+    name: conifer
+    dir: 'vars'
+    depth: 1
+    files_matching: '{{ item }}'
+  with_items:
+    - '{{ site_vars }}'
+  when: site_vars is defined
+  
+- name: load default values
+  include_vars:
+    name: conifer
+    dir: 'vars'
+    depth: 1
+    files_matching: '^{{ item }}$'
+  with_items:
+    - default.yml
+
+- name: load cohort values
+  include_vars:
+    name: conifer
+    dir: 'vars/{{ cohort }}'
+    depth: 1
+    files_matching: '^{{ item }}$'
+  with_items:
+    - default.yml
+    - '{{ project }}.yml'
+
+- name: load environment values
+  include_vars:
+    name: conifer
+    dir: 'vars/{{ cohort }}/{{ env }}'
+    depth: 1
+    files_matching: '{{ item }}'
+  with_items:
+    - default.yml
+    - '{{ project }}.yml'
+  when: env is defined
+
+- name: load user values
+  include_vars:
+    name: conifer
+    dir: 'vars'
+    depth: 1
+    files_matching: '{{ item }}'
+  with_items:
+    - '{{ site_vars }}'
+  when: site_vars is defined
+
+# Only the conifer dict is passed to templates,
+# so need to copy in some top-level variables.
+# The ansible_* are needed by lookup(), etc.
+- name: copy global vars into conifer namespace
+  set_fact:
+    conifer:
+      cohort: '{{ cohort|default }}'
+      project: '{{ project|default }}'
+      env: '{{ env|default }}'
+      site_vars: '{{ site_vars|default }}'
+      gus_home: '{{ gus_home|default }}'
+      hostname: '{{ hostname|default }}'
+      webapp_ctx: '{{ webapp_ctx }}'
+      ansible_search_path: '{{ ansible_search_path }}'
