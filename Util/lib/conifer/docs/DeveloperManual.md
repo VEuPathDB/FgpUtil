@@ -266,6 +266,18 @@ examples]
 
     key: 'yes'
 
+## Merge behavior
+
+The Ansible configuration file used with Conifer, `conifer.cfg`, sets
+`hash_behaviour=merge`. This is required for several reasons, including:
+
+- The `set_fact` to `copy global vars into conifer namespace` in the
+`load_values.yml` task merges new vars into the `conifer` dictionary.
+
+- The `include_vars` in `load_values.yml` puts values under the
+`conifer` dictionary. The multiple calls to `include_vars` requires
+merging the `conifer` dictionary.
+
 ### Backtracking from working files to source
 
 All of Conifer working files are in `$GUS_HOME/lib/conifer` but
