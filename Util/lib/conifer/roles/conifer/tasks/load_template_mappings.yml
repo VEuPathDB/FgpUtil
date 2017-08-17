@@ -1,0 +1,18 @@
+# Load a mapping of configuration templates source paths and the
+# destination for their interpolated counterparts.
+#
+# The mapping must be keyed off the project name.
+#
+#     TemplateDB:
+#       model-config.xml:
+#         src: 'WDK/model-config.xml.j2'
+#         dest: '{{ gus_home }}/config/{{ project }}/model-config.xml'
+#       model.prop:
+#         src: 'WDK/model.prop.j2'
+#         dest: '{{ gus_home }}/config/{{ project }}/model.prop'
+#
+- name: load template mappings
+  include_vars:
+    name: templates
+    file: '{{ templates_config }}'
+  when: templates is not defined

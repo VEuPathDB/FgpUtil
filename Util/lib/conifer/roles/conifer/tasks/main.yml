@@ -1,0 +1,22 @@
+---
+
+- include: load_template_mappings.yml
+  tags:
+    - load_template_mappings
+    - generate_configs
+
+- include: load_values.yml
+  tags:
+    - load_values
+    - generate_configs
+
+- include: mkdirs.yml
+  tags:
+    - mkdirs
+    - generate_configs
+
+- include: provision_templates.yml
+  tags:
+    - provision_templates
+    - generate_configs
+
