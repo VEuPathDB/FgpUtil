@@ -177,7 +177,7 @@ increasing precedence.
   - `vars/{{ cohort }}/{{ env }}/{{ project }}.yml`
   - `vars/conifer_site_vars.yml`
   - `--extra-vars`  (`-e`) passed on the command line
-    - `conifer -e "{'conifer':{'modelconfig_webAppUrl':'http://a.b.com/'}}" `
+    - `conifer -e modelconfig_accountDb_login=janedoe `
 
 It is ok for some files to not exist. Only `conifer_site_vars.yml` is
 strictly required. Yes, `conifer_site_vars.yml` is listed twice; we'll
@@ -284,7 +284,7 @@ remember to set it on the command line.
 For websites using EBRC naming conventions, you should keep the
 `conifer_site_vars.yml` file in the site's `etc` directory where conifer
 knows to look for it. If you must use a different location you can use
-the `--site_vars` option to specify the file path. In all cases the file
+the `--site-vars` option to specify the file path. In all cases the file
 is copied to `vars/conifer_site_vars.yml` by `conifer` before processing
 so it is in the same directory as the other var files.
 

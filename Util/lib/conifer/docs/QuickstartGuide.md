@@ -52,6 +52,13 @@ prepared you can configure your site.
 
     conifer configure integrate.toxodb.org
 
+You can optionally pass vars on the commandline. These have precedence
+over the same vars defined in YAML files.
+
+    conifer configure integrate.toxodb.org \
+      -e modelconfig_accountDb_login=janedoe \
+      -e modelconfig_accountDb_password=sekr3t
+
 
 ### Using Commandline Args
 
@@ -60,7 +67,7 @@ you are not configuring a website, you can use commandline arguments to
 set required values. Here's an example for configuring EuPathDBIrods,
 which is not a website so has no file conventions.
 
-    conifer configure --project_home $PROJECT_HOME \
-    --gus_home $GUS_HOME --project PlasmoDB --cohort EuPathDBIrods \
-    --site_vars /path/to/multi_site_vars.yml --webapp_ctx non
+    conifer configure --project-home $PROJECT_HOME \
+    --gus-home $GUS_HOME --project PlasmoDB --cohort EuPathDBIrods \
+    --site-vars /path/to/multi_site_vars.yml --webapp-ctx non
 
