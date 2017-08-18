@@ -54,6 +54,13 @@ custom plugins and filters. See Ansible and Jinja2 documentation for
 details and Conifer subdirectories `action_plugins`, `filter_plugins`,
 `library`  and `lookup_plugins` for use cases.
 
+### Requirements
+
+The following software packages must be installed and in the user's `$PATH`.
+
+- Ansible 2.3.x
+- Rsync
+
 ### Meet the files
 
 Conifer is installed to `$GUS_HOME/lib/conifer` and has a directory
@@ -170,7 +177,7 @@ increasing precedence.
   - `vars/{{ cohort }}/{{ env }}/{{ project }}.yml`
   - `vars/conifer_site_vars.yml`
   - `--extra-vars`  (`-e`) passed on the command line
-    - `conifer -e "{'conifer':{'modelconfig_webAppUrl':'http://a.b.com/'}}" `
+    - `conifer -e modelconfig_accountDb_login=janedoe `
 
 It is ok for some files to not exist. Only `conifer_site_vars.yml` is
 strictly required. Yes, `conifer_site_vars.yml` is listed twice; we'll
@@ -277,7 +284,7 @@ remember to set it on the command line.
 For websites using EBRC naming conventions, you should keep the
 `conifer_site_vars.yml` file in the site's `etc` directory where conifer
 knows to look for it. If you must use a different location you can use
-the `--site_vars` option to specify the file path. In all cases the file
+the `--site-vars` option to specify the file path. In all cases the file
 is copied to `vars/conifer_site_vars.yml` by `conifer` before processing
 so it is in the same directory as the other var files.
 
@@ -301,6 +308,36 @@ plugins can be added to `lookup_plugins`.  See [Ansible Plugin
 documentation](http://docs.ansible.com/ansible/latest/dev_guide/
 developing_plugins.html) for more information.
 
+## Useful Jinja2 filters and functions
+
+The following are some Jinja2 filters and functions included with Conifer.
+
+### swap_hostname()
+
+Some websites are served through a reverse proxy, e.g. Nginx, such that
+the public-facing hostname, say, alpha.plasmodb.org is different from
+the upstream server's hostname, say, a1.plasmodb.org. Now consider that
+some configuration values include the hostname of the webserver. The
+`webAppUrl` in `model-config.xml` is a good example. For a non-proxied
+site the hostname in the URL is usually obvious - there's only one.
+However a proxied site is accessible at a1.plasmodb.org and
+alpha.plasmodb.org and as it so happens the `webAppUrl` needs to use the
+public-facing hostname, alpha.plasmodb.org, because the value is used
+for browser redirections and we don't want users referred from alpha to
+a1. This is where the `swap_hostname()` filter comes into play. You
+filter the hostname for the site being configured, a1.plasmodb.org, to
+generate the correct public-facing name.
+
+    hostname: a1.plasmodb.org
+    modelconfig_webAppUrl: 'http://{{ hostname|swap_hostname(_host_frontends) }}/{{ webapp_ctx }}///'
+
+The filter takes a mapping of backend hostnames to public facing names.
+
+    _host_frontends:
+      a1: alpha
+      w1: ''
+
+In this example, a1.plasmodb.org is transformed in to alpha.plasmodb.org.
 
 ## System conifer
 

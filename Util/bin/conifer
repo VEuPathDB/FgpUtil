@@ -89,13 +89,20 @@ Available commands:
       exit(1)
 
   def run(self):
-    # use dispatch pattern to invoke method with same name
+    '''
+    Run a Conifer subcommand using dispatch pattern to invoke method
+    with same name
+    '''
     getattr(self, self.command)()
 
   def configure(self):
+    '''
+    Run an Ansible playbook to generate GUS configuration files
+    from templates.
+    '''
     self._parse_args()
     self._copy_site_vars()
-    extra_vars = [
+    ansible_extra_vars = [
       '-e', 'gus_home=' + self.gus_home,
       '-e', 'cohort=' + self.cohort,
       '-e', 'project=' + self.project,
@@ -103,31 +110,40 @@ Available commands:
       '-e', 'templates_config=' + self.cohort + '/templates.yml',
     ]
     if self.env is not None:
-      extra_vars.extend([ '-e', 'env=' + self.env ])
+      ansible_extra_vars.extend([ '-e', 'env=' + self.env ])
     if self.hostname is not None:
-      extra_vars.extend([
+      ansible_extra_vars.extend([
         '-e', 'hostname=' + self.hostname,
       ])
     if self.webapp_ctx is not None:
-      extra_vars.extend([
+      ansible_extra_vars.extend([
         '-e', 'webapp_ctx=' + self.webapp_ctx,
       ])
+    if self.extra_vars is not None:
+      for extra_var in self.extra_vars:
+        ansible_extra_vars.extend([
+          '-e', extra_var
+        ])
     if os.path.isfile(self.conifer_home + '/' + self.cohort + '_playbook.yml'):
       playbook = self.conifer_home + '/' + self.cohort + '_playbook.yml'
     else:
       playbook = self.conifer_home + '/playbook.yml'
     if self.verbose: display.display('Using playbook ' + playbook, color=C.COLOR_VERBOSE)
-    rslt = self._run_playbook(extra_vars, playbook)
+    rslt = self._run_playbook(ansible_extra_vars, playbook)
     if rslt == 0:
       self.status = { 'msg': 'Configuration complete.', 'color': C.COLOR_OK }
     else:
       raise Exception('Was unable to complete the configuration.')
 
   def seed(self):
+    '''
+    Generate a sample site-specific vars file that can be edited and
+    used with the `configure` subcommand.
+    '''
     self._parse_args()
     if self.conifer_site_vars_seed_dest is None:
       self.conifer_site_vars_seed_dest = os.path.expanduser('~') + '/' + self.conifer_site_vars_seed_fname
-    extra_vars = [
+    ansible_extra_vars = [
       '-e', 'gus_home=' + self.gus_home,
       '-e', 'cohort=' + self.cohort,
       '-e', 'project=' + self.project,
@@ -135,17 +151,22 @@ Available commands:
       '-e', 'conifer_site_vars_seed_dest=' + self.conifer_site_vars_seed_dest
     ]
     if self.env is not None:
-      extra_vars.extend([ '-e', 'env=' + self.env ])
+      ansible_extra_vars.extend([ '-e', 'env=' + self.env ])
     if self.hostname is not None:
-      extra_vars.extend([
+      ansible_extra_vars.extend([
         '-e', 'hostname=' + self.hostname,
       ])
     if self.webapp_ctx is not None:
-      extra_vars.extend([
+      ansible_extra_vars.extend([
         '-e', 'webapp_ctx=' + self.webapp_ctx,
       ])
+    if self.extra_vars is not None:
+      for extra_var in self.extra_vars:
+        ansible_extra_vars.extend([
+          '-e', extra_var
+        ])
     playbook = self.conifer_home + '/mk_site_vars.playbook.yml'
-    rslt = self._run_playbook(extra_vars, playbook)
+    rslt = self._run_playbook(ansible_extra_vars, playbook)
     if rslt == 0:
       msg = "A configuration seed file was created at {}.".format(self.conifer_site_vars_seed_dest)
       msg += " Rename this file to {} and edit to supply the missing values.".format( self.user_conf_dest)
@@ -157,13 +178,21 @@ Available commands:
 
 
   def install(self):
+    '''
+    Delete any existing installed Conifer directory, recreate by 
+    rsyncing files from project_home to gus_home.
+    This is not driven by Ansible.
+    '''
     self._parse_args()
+    conifer_home = self.gus_home + '/lib/conifer'
     if not os.path.isdir(self.project_home):
       raise Exception("Can not install because project_home, '" + self.project_home + "', not found.")
     for dir in [ self.gus_home + '/lib', self.gus_home + '/bin' ]:
       if not os.path.isdir(dir):
         print("mkdir {}".format(dir))
         os.makedirs(dir)
+    if os.path.isdir(conifer_home):
+      shutil.rmtree(conifer_home)
     cmd = ['find', self.project_home, '-path', '*/lib/conifer',
       '-type', 'd', '-name', 'conifer', '-exec', 'rsync', '-a', '{}', 
       self.gus_home + '/lib/',  ';' ]
@@ -185,15 +214,24 @@ Available commands:
     parser = argparse.ArgumentParser(
       description='Deploy configurations')
     parser.add_argument("hostname", nargs='?', help="hostname for the website to configure")
-    parser.add_argument("--project_home", help="path to GUS source code")
-    parser.add_argument("--gus_home", help="")
+    parser.add_argument('--extra-vars', '-e', action='append', help="extra-vars to pass to Ansible")
+    parser.add_argument("--project-home", help="path to GUS source code")
+    parser.add_argument("--gus-home", help="")
     parser.add_argument("--cohort", help="")
     parser.add_argument("--project", help="")
-    parser.add_argument("--webapp_ctx", help="")
+    parser.add_argument("--webapp-ctx", help="")
     parser.add_argument("--env", help="configuration environment; typically 'development' or 'production'")
-    parser.add_argument("--site_vars", help="")
+    parser.add_argument("--site-vars", help="")
     parser.add_argument("--verbose", action='store_true', help="Show some process details.")
     parser.add_argument("--debug", action='store_true', help="Show stack traces and other processing details.")
+
+    ######### These arg names with underscore are deprecated
+    parser.add_argument("--project_home", help="path to GUS source code")
+    parser.add_argument("--gus_home", help="")
+    parser.add_argument("--webapp_ctx", help="")
+    parser.add_argument("--site_vars", help="")
+    ######## End deprecated
+
     # now that we're inside a subcommand, ignore the first
     # two argvs, ie the command (conifer) and the subcommand (configure)
     args = parser.parse_args(sys.argv[2:])
@@ -209,11 +247,11 @@ Available commands:
          parser.error('--' + arg + ' is required')
     self.conifer_home = self.gus_home + '/lib/conifer'
 
-  def _run_playbook(self, extra_vars, playbook):
+  def _run_playbook(self, ansible_extra_vars, playbook):
     shell_env = os.environ.copy()
     shell_env["ANSIBLE_CONFIG"] = self.conifer_home + '/conifer.cfg'
     cmd = ['ansible-playbook', '-i', 'localhost,']
-    cmd.extend(extra_vars)
+    cmd.extend(ansible_extra_vars)
     cmd.extend([playbook])
     if self.verbose: cmd.extend(['-vvvvv'])
     print("ANSIBLE_CONFIG={} {}".format(
@@ -222,10 +260,10 @@ Available commands:
     return call(cmd, env=shell_env)
 
   def _derive_env(self, hostname):
-    """
-      Use EuPathDB BRC file/path naming conventions to derive
-      parameter values, unless explicitly set on CLI.
-    """
+    '''
+    Use EuPathDB BRC file/path naming conventions to derive
+    parameter values, unless explicitly set on CLI.
+    '''
     wpr = WebhostPathResolver(self.www_path + '/' + hostname)
     if (self.gus_home is None):
       self.gus_home = self.www_path + '/' + hostname + '/gus_home'
@@ -260,9 +298,9 @@ Available commands:
 
   def _copy_site_vars(self):
     '''
-      copy the site_vars file provided by the user into the
-      Conifer vars directory so it's in the same place as all
-      the other vars files and is given a pre-determined name.
+    copy the site_vars file provided by the user into the
+    Conifer vars directory so it's in the same place as all
+    the other vars files and is given a pre-determined name.
     '''
     if os.path.isfile(self.site_vars):
       src = self.site_vars
