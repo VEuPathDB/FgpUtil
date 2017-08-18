@@ -54,6 +54,13 @@ custom plugins and filters. See Ansible and Jinja2 documentation for
 details and Conifer subdirectories `action_plugins`, `filter_plugins`,
 `library`  and `lookup_plugins` for use cases.
 
+### Requirements
+
+The following software packages must be installed and in the user's `$PATH`.
+
+- Ansible 2.3.x
+- Rsync
+
 ### Meet the files
 
 Conifer is installed to `$GUS_HOME/lib/conifer` and has a directory
