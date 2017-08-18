@@ -24,7 +24,9 @@ from source as part of the WDK build but you can short circuit that long
 process and install conifer singularly. This step is useful if you want
 to do website configuration before you build the source code.
 
-    conifer install integrate.toxodb.org
+```shell
+$ conifer install integrate.toxodb.org
+```
 
 ### Seed    
 
@@ -34,7 +36,9 @@ will need to be set by you in a site-specific file. The `seed`
 subcommand will generate a file of site-specific variables for you to
 fill in.
 
-    conifer seed integrate.toxodb.org
+```shell
+$ conifer seed integrate.toxodb.org
+```
 
 This generates a `conifer_site_vars.seed.yml` in your website's `etc`
 directory. Follow the instructions returned by the seed command to copy
@@ -50,15 +54,18 @@ you desire. See the UsersGuide for more information.
 Once you have conifer installed and a site-specific variable file
 prepared you can configure your site.
 
-    conifer configure integrate.toxodb.org
+```shell
+$ conifer configure integrate.toxodb.org
+```
 
 You can optionally pass vars on the commandline. These have precedence
 over the same vars defined in YAML files.
 
-    conifer configure integrate.toxodb.org \
-      -e modelconfig_accountDb_login=janedoe \
-      -e modelconfig_accountDb_password=sekr3t
-
+```shell
+$ conifer configure integrate.toxodb.org \
+  -e modelconfig_accountDb_login=janedoe \
+  -e modelconfig_accountDb_password=sekr3t
+```
 
 ### Using Commandline Args
 
@@ -67,7 +74,8 @@ you are not configuring a website, you can use commandline arguments to
 set required values. Here's an example for configuring EuPathDBIrods,
 which is not a website so has no file conventions.
 
-    conifer configure --project-home $PROJECT_HOME \
-    --gus-home $GUS_HOME --project PlasmoDB --cohort EuPathDBIrods \
-    --site-vars /path/to/multi_site_vars.yml --webapp-ctx non
-
+```shell
+$ conifer configure --project-home $PROJECT_HOME \
+  --gus-home $GUS_HOME --project PlasmoDB --cohort EuPathDBIrods \
+  --site-vars /path/to/multi_site_vars.yml --webapp-ctx non
+```
