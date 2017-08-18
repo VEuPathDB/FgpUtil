@@ -1,6 +1,8 @@
 #
 # Parse YAML files for variables and place them into the `conifer`
-# namespace.
+# namespace. Afterwards, the `copy_extra_vars` callback plugin collects
+# any `--extra-vars` passed to the playbook and adds them to the
+# `conifer` dictionary, overriding any earlier assignments..
 #
 - name: load user values
   include_vars:
@@ -31,16 +33,20 @@
     - default.yml
     - '{{ project }}.yml'
 
+# The env value, if set, might be in Ansible's top-level dictionary (if
+# passed in as an --extra-vars commandline arg) or in the conifer
+# dictionary (if read from the site_vars or other file by the
+# include_vars tasks). The commandline arg takes precedent.
 - name: load environment values
   include_vars:
     name: conifer
-    dir: 'vars/{{ cohort }}/{{ env }}'
+    dir: 'vars/{{ cohort }}/{{ (env is defined)|ternary(env, vars.conifer.env) }}'
     depth: 1
     files_matching: '{{ item }}'
   with_items:
     - default.yml
     - '{{ project }}.yml'
-  when: env is defined
+  when: env is defined or vars.conifer.env is defined
 
 - name: load user values
   include_vars:
@@ -52,17 +58,7 @@
     - '{{ site_vars }}'
   when: site_vars is defined
 
-# Only the conifer dict is passed to templates,
-# so need to copy in some top-level variables.
-# The ansible_* are needed by lookup(), etc.
-- name: copy global vars into conifer namespace
-  set_fact:
-    conifer:
-      cohort: '{{ cohort|default }}'
-      project: '{{ project|default }}'
-      env: '{{ env|default }}'
-      site_vars: '{{ site_vars|default }}'
-      gus_home: '{{ gus_home|default }}'
-      hostname: '{{ hostname|default }}'
-      webapp_ctx: '{{ webapp_ctx }}'
-      ansible_search_path: '{{ ansible_search_path }}'
+# Be aware that the `copy_extra_vars` callback plugin collects any
+# `--extra-vars` passed to the playbook and adds them to the `conifer`
+# dictionary after all the `include_vars` have run, overriding any
+# earlier assignments.
