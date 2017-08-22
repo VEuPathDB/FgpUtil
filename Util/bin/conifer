@@ -100,7 +100,7 @@ Available commands:
     Run an Ansible playbook to generate GUS configuration files
     from templates.
     '''
-    self._parse_args()
+    self._parse_args(required=['project-home', 'gus-home', 'cohort', 'project', 'site-vars'])
     self._copy_site_vars()
     ansible_extra_vars = [
       '-e', 'gus_home=' + self.gus_home,
@@ -140,7 +140,7 @@ Available commands:
     Generate a sample site-specific vars file that can be edited and
     used with the `configure` subcommand.
     '''
-    self._parse_args()
+    self._parse_args(required=['project-home', 'gus-home', 'cohort', 'project'])
     if self.conifer_site_vars_seed_dest is None:
       self.conifer_site_vars_seed_dest = os.path.expanduser('~') + '/' + self.conifer_site_vars_seed_fname
     ansible_extra_vars = [
@@ -183,7 +183,7 @@ Available commands:
     rsyncing files from project_home to gus_home.
     This is not driven by Ansible.
     '''
-    self._parse_args()
+    self._parse_args(required=['project-home', 'gus-home'])
     conifer_home = self.gus_home + '/lib/conifer'
     if not os.path.isdir(self.project_home):
       raise Exception("Can not install because project_home, '" + self.project_home + "', not found.")
@@ -210,7 +210,9 @@ Available commands:
     else:
       raise Exception('Was unable to complete installation.')
 
-  def _parse_args(self):
+  def _parse_args(self, required=None):
+    if required is None:
+      required = ['project-home', 'gus-home', 'cohort', 'project', 'site-vars']
     parser = argparse.ArgumentParser(
       description='Deploy configurations')
     parser.add_argument("hostname", nargs='?', help="hostname for the website to configure")
@@ -242,9 +244,10 @@ Available commands:
      if self.verbose: print('will attempt to derive args from EBRC-style file conventions')
      self._derive_env(self.hostname)
     else:
-     for arg in ['gus_home','cohort', 'project', 'site_vars']:
-       if eval('self.' + arg) is None:
-         parser.error('--' + arg + ' is required')
+     for cli_arg in required:
+       arg_var = cli_arg.replace('-', '_')
+       if eval('self.' + arg_var) is None:
+         parser.error('--' + cli_arg + ' is required')
     self.conifer_home = self.gus_home + '/lib/conifer'
 
   def _run_playbook(self, ansible_extra_vars, playbook):
