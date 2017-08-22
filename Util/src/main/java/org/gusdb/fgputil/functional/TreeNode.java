@@ -172,7 +172,7 @@ public class TreeNode<T> implements MultiLineToString {
    * @param pred predicate to test node contents against
    * @return found node or null if not found
    */
-  public TreeNode<T> findFirst(Predicate<TreeNode<?>> nodePred, Predicate<T> pred) {
+  public TreeNode<T> findFirst(Predicate<TreeNode<T>> nodePred, Predicate<T> pred) {
     if ((nodePred == null || nodePred.test(this)) &&
         (pred == null || pred.test(_nodeContents))) {
       return this;
