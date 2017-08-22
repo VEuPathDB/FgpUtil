@@ -216,4 +216,21 @@ public class Functions {
     }
     return initialValue;
   }
+
+  /**
+   * Transforms the values of a map to new values linked to the same keys.  A new LinkedHashMap containing
+   * the new values is returned (i.e. iteration order is maintained).  The old map is unmodified.  The new
+   * map will be the same size as the old one.
+   * 
+   * @param map a map from key to old value
+   * @param transform a function to transform old values to new values
+   * @return a new map containing the same keys pointing to new values
+   */
+  public static <R,S,T> Map<R,T> transformValues(Map<R,S> map, Function<S,T> transform) {
+    Map<R,T> newMap = new LinkedHashMap<>(); // maintain iteration order of the incoming map
+    for (Entry<R,S> entry : map.entrySet()) {
+      newMap.put(entry.getKey(), transform.apply(entry.getValue()));
+    }
+    return newMap;
+  }
 }
