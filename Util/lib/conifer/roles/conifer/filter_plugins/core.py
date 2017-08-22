@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import os.path
 import re
+from jinja2.runtime import Undefined, DebugUndefined, StrictUndefined
 from ansible.errors import AnsibleFilterError
 
 def swap_sld(fqdn, sld):
@@ -27,6 +28,8 @@ def swap_hostname(fqdn, mapping):
   
   If there is no match in mapping, the original fqdn is returned.
   """
+  if isinstance(fqdn, StrictUndefined):
+    return fqdn
   r = re.compile(r"^([^\.]+)\.([^\.]+\..+)")
   m = r.match(fqdn)
   if m is not None and m.group(1) is not None:
