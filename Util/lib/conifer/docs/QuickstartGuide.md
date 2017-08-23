@@ -10,7 +10,6 @@ populate configuration templates. The hierarchy allows you to define
 default values at a high level and then optionally override them a
 lower, more specific level.
 
-
 This quick start guide uses examples that depend on EBRC file and
 directory naming conventions which are use to derive conifer command line
 arguments based on the hostname of the website being configured. If you
@@ -24,8 +23,17 @@ from source as part of the WDK build but you can short circuit that long
 process and install conifer singularly. This step is useful if you want
 to do website configuration before you build the source code.
 
+This example uses EBRC file system naming conventions to derive
+project-home, et al. arguments.
+
 ```bash
 $ conifer install integrate.toxodb.org
+```
+
+Here is an example using explicit arguments.
+
+```bash
+$ conifer install --project-home $PROJECT_HOME --gus-home $GUS_HOME
 ```
 
 ### Seed    
@@ -35,6 +43,9 @@ needed to configure a website. Some settings can not be pre-defined and
 will need to be set by you in a site-specific file. The `seed`
 subcommand will generate a file of site-specific variables for you to
 fill in.
+
+This example uses EBRC file system naming conventions to derive
+project-home, et al. arguments.
 
 ```bash
 $ conifer seed integrate.toxodb.org
@@ -49,10 +60,19 @@ minimal set of required values you must supply. You can also override
 any of the pre-defined settings in your `conifer_site_vars.yml` file if
 you desire. See the UsersGuide for more information.
 
+
+Here is an example using explicit arguments.
+
+```bash
+conifer seed --project-home $PROJECT_HOME --gus-home $GUS_HOME \
+  --cohort EuPathDBIrods --project PlasmoDB
+```
+
 ### Configure
 
 Once you have conifer installed and a site-specific variable file
-prepared you can configure your site.
+prepared you can configure your site. This example uses EBRC file system
+naming conventions to derive project-home, et al. arguments.
 
 ```bash
 $ conifer configure integrate.toxodb.org
@@ -67,15 +87,10 @@ $ conifer configure integrate.toxodb.org \
   -e modelconfig_accountDb_password=sekr3t
 ```
 
-### Using Commandline Args
-
-If you are not using EBRC file naming conventions for your website or if
-you are not configuring a website, you can use commandline arguments to
-set required values. Here's an example for configuring EuPathDBIrods,
-which is not a website so has no file conventions.
+Here is an example using explicit arguments.
 
 ```bash
-$ conifer configure --project-home $PROJECT_HOME \
-  --gus-home $GUS_HOME --project PlasmoDB --cohort EuPathDBIrods \
-  --site-vars /path/to/multi_site_vars.yml --webapp-ctx non
+conifer configure --project-home $PROJECT_HOME --gus-home $GUS_HOME \
+  --cohort EuPathDBIrods --project PlasmoDB \
+  --site-vars conifer_site_vars.yml
 ```
