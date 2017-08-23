@@ -319,7 +319,7 @@ Available commands:
     shutil.copy2(src, dest)
 
 if __name__ == '__main__':
-  timer_start = datetime.now()
+  timer_start = datetime.now().replace(microsecond=0)
   try:
     g = ConiferCLI()
     banner_args = { 'msg': 'CONIFER {} RESULTS'.format(g.command.upper()), 'color': 'bright blue' }
@@ -333,6 +333,6 @@ if __name__ == '__main__':
     display.error(e)
     if g.debug: traceback.print_exc()
     sys.exit(1)
-  timer_stop = datetime.now()
+  timer_stop = datetime.now().replace(microsecond=0)
   display.display('Duration: {}'.format(timer_stop - timer_start))
   sys.exit(0)
