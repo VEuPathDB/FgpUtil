@@ -1,11 +1,15 @@
 #!/usr/bin/env python
-
+'''
+Conifer is a configuration system for the GUS application framework.
+'''
 import argparse
 import os
 import textwrap
 import traceback
 import sys
 import shutil
+import time
+from datetime import datetime
 from subprocess import call
 from copy import copy
 from collections import OrderedDict
@@ -315,6 +319,7 @@ Available commands:
     shutil.copy2(src, dest)
 
 if __name__ == '__main__':
+  timer_start = datetime.now()
   try:
     g = ConiferCLI()
     banner_args = { 'msg': 'CONIFER {} RESULTS'.format(g.command.upper()), 'color': 'bright blue' }
@@ -328,4 +333,6 @@ if __name__ == '__main__':
     display.error(e)
     if g.debug: traceback.print_exc()
     sys.exit(1)
+  timer_stop = datetime.now()
+  display.display('Duration: {}'.format(timer_stop - timer_start))
   sys.exit(0)
