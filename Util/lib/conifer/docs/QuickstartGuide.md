@@ -2,8 +2,8 @@
 
 # Conifer Quick Start Guide
 
-Conifer is a configuration framework for websites built on the GUS WDK
-platform.
+Conifer is a configuration system for the GUS application framework,
+including for websites built on the GUS WDK platform.
 
 It uses variables defined in hierarchical layers of YAML files to
 populate configuration templates. The hierarchy allows you to define
@@ -42,7 +42,10 @@ Your organization will have defined default values for most settings
 needed to configure a website. Some settings can not be pre-defined and
 will need to be set by you in a site-specific file. The `seed`
 subcommand will generate a file of site-specific variables for you to
-fill in.
+fill in. You only need to run the seed command when you need guidance on
+creating a working `conifer_site_vars.yml` file, typically that will be
+the first time preparing a GUS application or when configuration
+requirements change.
 
 This example uses EBRC file system naming conventions to derive
 project-home, et al. arguments.
@@ -53,13 +56,15 @@ $ conifer seed integrate.toxodb.org
 
 This generates a `conifer_site_vars.seed.yml` in your website's `etc`
 directory. Follow the instructions returned by the seed command to copy
-that file to `conifer_site_vars.yml` and assign appropriate values to
-the enclosed variables. The format of the file is YAML. The generated
-seed file has only the settings that have not been pre-defined - the
-minimal set of required values you must supply. You can also override
-any of the pre-defined settings in your `conifer_site_vars.yml` file if
-you desire. See the UsersGuide for more information.
+or rename that file to `conifer_site_vars.yml` and assign appropriate
+values to the enclosed variables. The format of the file is YAML. The
+generated seed file has only the settings that have not been pre-defined
+- the minimal set of required values you must supply. You can also
+override any of the pre-defined settings in your `conifer_site_vars.yml`
+file if you desire. See the UsersGuide for more information.
 
+Once you have your `conifer_site_vars.yml` file you no longer need the
+seed file and can safely delete it.
 
 Here is an example using explicit arguments.
 
