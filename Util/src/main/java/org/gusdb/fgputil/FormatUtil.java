@@ -52,6 +52,7 @@ public class FormatUtil {
 
   public static String urlEncodeUtf8(String s) {
     try {
+      if (s == null) return null;
       return URLEncoder.encode(s, UTF8_ENCODING);
     }
     catch (UnsupportedEncodingException e) {
@@ -62,6 +63,7 @@ public class FormatUtil {
 
   public static String urlDecodeUtf8(String s) {
     try {
+      if (s == null) return null;
       return URLDecoder.decode(s, UTF8_ENCODING);
     }
     catch (UnsupportedEncodingException e) {
