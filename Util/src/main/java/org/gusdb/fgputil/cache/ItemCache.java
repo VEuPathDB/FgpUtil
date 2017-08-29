@@ -1,6 +1,7 @@
 package org.gusdb.fgputil.cache;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,7 @@ public class ItemCache<S,T> {
   private final int _maxCachedItems;
   private final int _numToTrimOnCapacity;
   private final ItemCloner<T> _cloner;
+  private Date _lastTrimDate = null;
 
   /**
    * Creates a cache with default settings.
@@ -105,6 +107,36 @@ public class ItemCache<S,T> {
         return cachedItem;
       }
     });
+  }
+
+  /**
+   * Returns the maximum size of the cache (i.e. number of items).  Actual memory
+   * size will vary based on the size of the items stored and their keys.
+   * 
+   * @return maximum size of the cache
+   */
+  public int getMaxCachedItems() {
+    return _maxCachedItems;
+  }
+
+  /**
+   * Returns the number of items to be trimmed off the cache (least recently
+   * accessed trimmed first) when the capacity is reached.
+   * 
+   * @return number of items trimmed from cache if capacity is reached
+   */
+  public int getNumToTrimOnCapacity() {
+    return _numToTrimOnCapacity;
+  }
+
+  /**
+   * Returns date of last capacity trim (individual items may be marked invalid
+   * for other reasons at other times.
+   * 
+   * @return date of last capacity trim
+   */
+  public Date getLastTrimDate() {
+    return _lastTrimDate;
   }
 
   /**
@@ -207,11 +239,12 @@ public class ItemCache<S,T> {
   private void checkCapacity() {
     if (_cache.size() > _maxCachedItems) {
       // we know oldest records will appear first in map iteration
-      List<S> stepIdsToTrim = new ArrayList<>(_cache.keySet());
+      List<S> idsToTrim = new ArrayList<>(_cache.keySet());
       int numToTrim = Math.min(_numToTrimOnCapacity, _cache.size());
       LOG.debug("Capacity reached, will trim " + numToTrim + " cached items.");
+      _lastTrimDate = new Date();
       for (int i = 0; i < numToTrim; i++) {
-        S id = stepIdsToTrim.get(i);
+        S id = idsToTrim.get(i);
         LOG.debug("Trimming item with ID " + id);
         _cache.remove(id);
       }
