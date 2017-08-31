@@ -38,7 +38,7 @@ class LookupModule(LookupBase):
 
       paramvals = {
         'src' : None,
-        'col' : "1",
+        'col' : None,
       }
 
       # parameters specified?
@@ -87,8 +87,34 @@ class Colfile:
       return self._return_by_field(key, col, data)
     if isinstance(col, int):
       return self._return_by_colindex(key, col, data)
+    if not col:
+      return self._return_by_row(key, data)
     raise ValueError("col '{}' not allowed.".format(type(col)))
 
+  def _return_by_row(self, key, data):
+    match = {}
+    fields = None
+    for line in data.splitlines(True):
+      if line.startswith('#'):
+        continue
+      if not line.strip():
+        continue
+      if fields is None:
+        fields = line.split()
+        continue
+      values = line.split()
+      if len(values) == 0:
+        continue
+      display.vvvv("colfile looking for '{0}' in '{1}'".format(key, line))
+      if values[0] == key:
+        display.vvvv("colfile found {0} in {1}, getting fields".format(key, line))
+        match = {}
+        for i, f in enumerate(fields):
+          match[f] = values[i]
+        break
+    display.vvvv("match is {0}".format(match))
+    return [match]
+      
   def _return_by_colindex(self, key, idx, data):
     ret = []
     for line in data.splitlines(True):
@@ -150,5 +176,9 @@ row2value0   row2value1   row2value2   row2value3
   res = cf.lookup('row2value0', 'column3', data)
   assert(isinstance(res, list))
   assert(res[0] == 'row2value3')
+
+  res = cf.lookup('row0value0', None, data)
+  assert(isinstance(res, list))
+  assert(res == [{'column0': 'row0value0', 'column1': 'row0value1', 'column2': 'row0value2', 'column3': 'row0value3'}])
 
   print('All tests pass.')
