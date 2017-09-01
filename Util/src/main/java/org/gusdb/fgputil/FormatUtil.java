@@ -40,6 +40,18 @@ public class FormatUtil {
     return str.toString();
   }
 
+  public static String shrinkUtf8String(String str, int maxBytes) {
+    // assume incoming encoding uses >= 1 byte per char and cut to maxBytes chars
+    if (str.length() > maxBytes) {
+      str = str.substring(0, maxBytes);
+    }
+    // cut chars one-at-a-time until small enough to fit (TODO: use binary search?)
+    while (FormatUtil.getUtf8EncodedBytes(str).length > maxBytes) {
+      str = str.substring(0, str.length()-1);
+    }
+    return str;
+  }
+
   public static byte[] getUtf8EncodedBytes(String s) {
     try {
       return s.getBytes(UTF8_ENCODING);
