@@ -69,14 +69,14 @@ Available commands:
     self.env = None
     self.site_vars = None
     self.conifer_site_vars_seed_dest = None
-    self.user_conf_dest = None
+    self.conifer_site_vars_dest = None
     self.verbose = False
     self.debug = False
 
     self.default_site_vars = 'conifer_site_vars.yml'
     self.user_conf_src_fname = 'conifer_site_vars.yml'
     self.conifer_site_vars_seed_fname = 'conifer_site_vars.seed.yml'
-    self.user_conf_dest_fname = 'conifer_site_vars.yml'
+    self.conifer_site_vars_dest_fname = 'conifer_site_vars.yml'
     self.www_path = '/var/www'
 
     self.status = {}
@@ -147,6 +147,8 @@ Available commands:
     self._parse_args(required=['project-home', 'gus-home', 'cohort', 'project'])
     if self.conifer_site_vars_seed_dest is None:
       self.conifer_site_vars_seed_dest = os.path.expanduser('~') + '/' + self.conifer_site_vars_seed_fname
+    if self.conifer_site_vars_dest is None:
+      self.conifer_site_vars_dest = os.path.expanduser('~') + '/' + self.conifer_site_vars_dest_fname
     ansible_extra_vars = [
       '-e', 'gus_home=' + self.gus_home,
       '-e', 'cohort=' + self.cohort,
@@ -173,7 +175,7 @@ Available commands:
     rslt = self._run_playbook(ansible_extra_vars, playbook)
     if rslt == 0:
       msg = "A configuration seed file was created at {}.".format(self.conifer_site_vars_seed_dest)
-      msg += " Rename this file to {} and edit to supply the missing values.".format( self.user_conf_dest)
+      msg += " Rename this file to {} and edit to supply the missing values.".format( self.conifer_site_vars_dest)
       msg += " Then run 'conifer configure {}' to complete the configuration process.".format(' '.join(sys.argv[2:]).strip())
       wrapped = textwrap.fill((msg), display.columns, replace_whitespace=False, drop_whitespace=True)
       self.status = { 'msg': wrapped, 'color': C.COLOR_CHANGED}
@@ -301,7 +303,7 @@ Available commands:
     if self.site_vars is None:
       self.site_vars = self.www_path + '/' + self.hostname + '/etc/' + self.user_conf_src_fname
     self.conifer_site_vars_seed_dest = self.www_path + '/' + hostname + '/etc/' + self.conifer_site_vars_seed_fname
-    self.user_conf_dest = self.www_path + '/' + hostname + '/etc/' + self.user_conf_dest_fname
+    self.conifer_site_vars_dest = self.www_path + '/' + hostname + '/etc/' + self.conifer_site_vars_dest_fname
 
   def _copy_site_vars(self):
     '''
