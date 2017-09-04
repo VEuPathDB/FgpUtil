@@ -42,19 +42,12 @@ preferably the same as the configuration file name. This value is
 included in conifer's runtime stdout so that will be more readable if
 you match with the filename.
 
-    TemplateDB:
-      model-config.xml:
-        src: 'WDK/model-config.xml.j2'
-        dest: '{{ gus_home }}/config/{{ project }}/model-config.xml'
-      model.prop:
-        src: 'WDK/model.prop.j2'
-        dest: '{{ gus_home }}/config/{{ project }}/model.prop'
-
-_The use of the project name as the parent key allows you to define
-different templating for different projects within the same cohort,
-although that likely to be an uncommon situation given that each project
-in a cohort should be sharing the same code and therefore configuration
-requirements._
+    model-config.xml:
+      src: 'WDK/model-config.xml.j2'
+      dest: '{{ gus_home }}/config/{{ project }}/model-config.xml'
+    model.prop:
+      src: 'WDK/model.prop.j2'
+      dest: '{{ gus_home }}/config/{{ project }}/model.prop'
 
 ### Add default configuration values
 
