@@ -17,7 +17,8 @@ public class JsonType {
 
   public static enum NumberSubtype {
     LONG,
-    DOUBLE;
+    DOUBLE,
+    NAN;
   }
 
   private static final String PARSE_ERROR_MSG = "Passed string is not parsable into a JSON value: ";
@@ -30,6 +31,7 @@ public class JsonType {
 
   public static JsonType parse(String jsonStr) throws JSONException {
     JsonType instance = new JsonType();
+    instance._numberSubtype = NumberSubtype.NAN;
     // handle simple cases
     if ("null".equals(jsonStr)) {
       instance._type = ValueType.NULL;
@@ -76,6 +78,7 @@ public class JsonType {
   }
 
   private void setObject(Object object) {
+    _numberSubtype = NumberSubtype.NAN;
     if (object == null || object.equals(JSONObject.NULL)) {
       _type = ValueType.NULL;
       object = JSONObject.NULL;
@@ -123,6 +126,10 @@ public class JsonType {
 
   public ValueType getType() {
     return _type;
+  }
+
+  public NumberSubtype getNumberSubtype() {
+    return _numberSubtype;
   }
 
   public JSONObject getJSONObject() {
