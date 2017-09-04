@@ -4,7 +4,7 @@
 
 - name: ensure destination directories
   file:
-    dest: "{{ templates[project][item]['dest'] | dirname }}"
+    dest: "{{ templates[item]['dest'] | dirname }}"
     state: directory
   with_items: 
-    - "{{ templates[project].keys() }}"
+    - "{{ templates.keys() }}"
