@@ -477,6 +477,11 @@
         <artifactId>wraptag</artifactId>
         <version>1.4</version>
       </dependency>
+      <dependency>
+        <groupId>com.crashingdaily</groupId>
+        <artifactId>wheninrome</artifactId>
+        <version>1.0</version>
+      </dependency>
 
       <!-- Scala -->
       <dependency>
