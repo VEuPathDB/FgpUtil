@@ -134,7 +134,7 @@ cohort name here with the use of source code name in `templates`._
   configuration file.
 
 
-## Conifer and GUS-WDK Hierarchical Design Concepts
+## Conifer and GUS Hierarchical Design Concepts
 
 Conifer is modeled around the hierarchical nature of the WDK-based
 website source code and provisioning. Consider the following tiers.
@@ -159,6 +159,10 @@ machines.
 - Site - a single website, for example wdktemplate.gusdb.org
 
 ## Precedence of Vars Files
+
+The previous overview of the hierarchical nature of a GUS-based program
+was conceptual. Let's now look at how the specific files and directories
+used by Conifer map to this paradigm.
 
 Conifer collects variable assignments from a hierarchy modeled on the
 design of WDK-based website source code and provisioning. The hierarchy
@@ -189,18 +193,30 @@ to go to version control changes or to add files for a new hierarchy.
 
 ### `vars/default.yml`
 
-This is file is for your organizations default and required settings.
+This is file is for your organization's default and required settings.
 See ... for warning against including optional settings with an
 undefined value.
+
+There are no files named for your organization, there is only the
+`default.yml` file at the root level.
 
 Example SCM locations:
   - `EbrcWebsiteCommon/Model/lib/conifer/roles/conifer/vars/default.yml`
 
 _There is not an organization `default.yml` for the WDKTemplateSite._
 
+### `vars/{{ cohort }}/`
+
+This is required. The `vars/{{ cohort }}/` directory is where Conifer
+looks for the `templates.yml` file that defines template to end file
+mappings. There must be a directory named for the cohort which contains
+this `templates.yml` file.
+
 ### `vars/{{ cohort }}/default.yml`
 
-This is file is for your default and required settings for a given cohort.
+This file is for your default and required settings for a given
+cohort. 
+
 See ... for warning against including optional settings with an
 undefined value.
 
@@ -338,6 +354,24 @@ The filter takes a mapping of backend hostnames to public facing names.
       w1: ''
 
 In this example, a1.plasmodb.org is transformed in to alpha.plasmodb.org.
+
+### prod_prom_ctx()
+
+_This is an EBRC-specific filter but let us know if you also find it
+useful and we will consider including it with the base Conifer._
+
+EBRC Tomcat webapp context names are of the form `toxo.b10` (variable
+build number for each release cycle) for non-released sites and `toxo`
+for the released version (always same static name for public-facing
+sites). Filesystem directory names which scripts use to derive the
+webapp name use the former syntax regardless of the site's release
+status. This function converts an input `toxo.b10` name (say, derived
+from file conventions) to the `toxo` release format for fqdn that
+match criteria.
+
+    _webapp_ctx: '{{ webapp_ctx|prod_prom_ctx(hostname) }}'
+
+Provided by `ebrc.py` in `EbrcWebsiteCommon`.
 
 ## System conifer
 
