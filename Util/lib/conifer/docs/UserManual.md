@@ -316,6 +316,30 @@ This documents some use cases at EBRC to whet your appetite.
 
 dblink mapping ... the dblink can be looked up from a mapping with the UserDB.
 
+### Overriding default derived variables
+
+When running the conifer command in EBRC website convention mode,
+`conifer configure qa.toxodb.org`, several required variables -
+`project_home`, `gus_home`, `webapp_ctx`, et al. - are defined with
+values derived from filesystem naming conventions. Under the hood,
+conifer passes these values as `--extra-vars` to the underlying Ansible
+playbook. These command line extra-vars have higher precedence than the
+vars defined in the yaml files, preventing you from directly overriding
+them in your site vars yml. To work around this, EuPathDB does the
+following.
+
+In our `default.yml` file in `EbrcWebsiteCommon` we introduce a new
+variable for a level of indirection.
+
+    _webapp_ctx: '{{ webapp_ctx }}'
+    ...
+    modelconfig_webAppUrl: 'http://{{ _hostname }}/{{ _webapp_ctx }}///'
+
+This way, `_webapp_ctx` is the operative variable used, e.g. for
+templating `modelconfig_webAppUrl`. By default it has the same value as
+the high precedence `webapp_ctx` but can be effectively overridden by
+defining `_webapp_ctx` in a yaml file.
+
 ### Secrets
 
 Do not commit secrets to source control. Use lookups from local system
@@ -358,7 +382,7 @@ In this example, a1.plasmodb.org is transformed in to alpha.plasmodb.org.
 ### prod_prom_ctx()
 
 _This is an EBRC-specific filter but let us know if you also find it
-useful and we will consider including it with the base Conifer._
+useful and we will consider including it with the base Conifer  ._
 
 EBRC Tomcat webapp context names are of the form `toxo.b10` (variable
 build number for each release cycle) for non-released sites and `toxo`
