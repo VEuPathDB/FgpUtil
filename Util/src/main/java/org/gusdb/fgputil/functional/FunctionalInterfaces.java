@@ -77,6 +77,22 @@ public class FunctionalInterfaces {
   }
 
   /**
+   * Defines a single-argument predicate (function that returns a boolean) that may throw an exception
+   *
+   * @param <T> type of predicate input
+   */
+  public interface PredicateWithException<T> {
+    /**
+     * Tests the given input against the predicate and returns whether the
+     * passed input passes the test.
+     * 
+     * @param obj object to test
+     * @return true if object passes, else false
+     */
+    public boolean test(T obj) throws Exception;
+  }
+
+  /**
    * Aggregates a set of input values into a single output
    *
    * @param <T> type of input values
