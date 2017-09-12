@@ -14,6 +14,7 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.PredicateWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.ReducerWithException;
 
 public class Functions {
 
@@ -269,6 +270,26 @@ public class Functions {
     return x -> {
       try {
         return f.test(x);
+      }
+      catch (Exception e) {
+        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
+      }
+    };
+  }
+
+  /**
+   * Takes a reducer that may or may not have checked exceptions and returns a new reducer that performs
+   * the same operation but "swallows" any checked exception by wrapping it in a RuntimeException and
+   * throwing that instead.  If calling code wishes to inspect the underlying exception it must catch the
+   * RuntimeException and use getCause().
+   * 
+   * @param r reducer to wrap
+   * @return a new reducer that swallows checked exceptions
+   */
+  public static <S,T> Reducer<S,T> rSwallow(ReducerWithException<S,T> r) {
+    return (obj, prev) -> {
+      try {
+        return r.reduce(obj, prev);
       }
       catch (Exception e) {
         throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));

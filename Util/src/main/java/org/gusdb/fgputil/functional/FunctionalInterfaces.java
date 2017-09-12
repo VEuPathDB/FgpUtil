@@ -95,10 +95,10 @@ public class FunctionalInterfaces {
   /**
    * Aggregates a set of input values into a single output
    *
-   * @param <T> type of input values
-   * @param <S> type of result
+   * @param <S> type of input values
+   * @param <T> type of result
    */
-  public interface Reducer<T, S> {
+  public interface Reducer<S, T> {
     /**
      * Returns an aggregate result by combining the incoming value with that
      * produced by evaluating the passed object
@@ -107,7 +107,25 @@ public class FunctionalInterfaces {
      * @param incomingValue previous result value
      * @return revised result
      */
-    public S reduce(T obj, S incomingValue);
+    public T reduce(S obj, T incomingValue);
+  }
+
+  /**
+   * Aggregates a set of input values into a single output and may throw an exception
+   *
+   * @param <S> type of input values
+   * @param <T> type of result
+   */
+  public interface ReducerWithException<S, T> {
+    /**
+     * Returns an aggregate result by combining the incoming value with that
+     * produced by evaluating the passed object
+     * 
+     * @param obj object to evaluate
+     * @param incomingValue previous result value
+     * @return revised result
+     */
+    public T reduce(S obj, T incomingValue) throws Exception;
   }
 
   /**
