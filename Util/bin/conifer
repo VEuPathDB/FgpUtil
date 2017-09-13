@@ -17,6 +17,8 @@ from ansible.utils.color import stringc
 from ansible.utils.display import Display
 from ansible import constants as C
 
+display = Display()
+
 # used by WebhostPathResolver; which should be moved to a system lib
 from os import readlink
 from os.path import basename
@@ -25,7 +27,7 @@ from os.path import dirname
 class WebhostPathResolver:
   '''
     Derive values using EBRC file naming conventions.
-    (this needs to be refactored into a OS-level shared lib) 
+    (this needs to be refactored into a OS-level shared lib)
   '''
   def __init__(self, path):
     self.path = path
@@ -39,7 +41,50 @@ class WebhostPathResolver:
   def servername(self):
     return basename(self.path)
 
-display = Display()
+class UsageMonitor(object):
+  '''
+  Record Conifer usage for auditing. No file locking; this assumes each
+  write is < 4096 bytes, so should be atomic on Linux. Exceptions are
+  discarded. This is very Linux specific. This is primarily for beta
+  testing so can be removed if it causes problems.
+  '''
+  def __init__(self):
+    self.logdir = '/var/tmp/conifer'
+    self.logfile = self.logdir + '/conifer.log'
+  def log(self):
+    try:
+      self._write("{}\t{}\t{}\t{}\t{}".format(
+          timer_start, (timer_stop - timer_start),
+          os.getlogin(), self._caller(), ' '.join(sys.argv),
+        )
+      )
+    except:
+      pass
+  def _write(self, msg):
+    if not os.path.exists(self.logdir):
+      os.mkdir(self.logdir)
+      os.chmod(self.logdir, 0o777)
+    if not os.path.exists(self.logfile):
+      self._write_header()
+    logh = open(self.logfile, 'a')
+    logh.write(msg + "\n")
+    logh.close()
+  def _write_header(self):
+      logh = open(self.logfile, 'w')
+      logh.write("Start Time\tDuration\tUser\tCaller\tCommand\n")
+      logh.close()
+      os.chmod(self.logfile, 0o666)
+  def _caller(self):
+    pid = os.getppid()
+    cmd = open('/proc/{}/cmdline'.format(pid)).read()
+    if '/usr/bin/unbuffer' in cmd.split('\0'):
+      # likely being invoked through unbuffer in a script (e.g.
+      # rebuilder), so grandparent PID is the more interesting
+      grandpid = os.popen("ps -p {} -oppid=".format(pid)).read().strip()
+      cmd = open('/proc/{}/cmdline'.format(grandpid)).read()
+    process = ' '.join(cmd.split('\0')[1:])
+    if len(process) == 0: process = '-'
+    return process
 
 class ConiferCLI(object):
   def __init__(self):
@@ -185,7 +230,7 @@ Available commands:
 
   def install(self):
     '''
-    Delete any existing installed Conifer directory, recreate by 
+    Delete any existing installed Conifer directory, recreate by
     rsyncing files from project_home to gus_home.
     This is not driven by Ansible.
     '''
@@ -200,7 +245,7 @@ Available commands:
     if os.path.isdir(conifer_home):
       shutil.rmtree(conifer_home)
     cmd = ['find', self.project_home, '-path', '*/lib/conifer',
-      '-type', 'd', '-name', 'conifer', '-exec', 'rsync', '-a', '{}', 
+      '-type', 'd', '-name', 'conifer', '-exec', 'rsync', '-a', '{}',
       self.gus_home + '/lib/',  ';' ]
     if self.verbose: print(' '.join(cmd))
     print('Installing Conifer into ' + self.gus_home)
@@ -321,6 +366,7 @@ Available commands:
     shutil.copy2(src, dest)
 
 if __name__ == '__main__':
+  usemon = UsageMonitor()
   timer_start = datetime.now().replace(microsecond=0)
   try:
     g = ConiferCLI()
@@ -337,4 +383,5 @@ if __name__ == '__main__':
     sys.exit(1)
   timer_stop = datetime.now().replace(microsecond=0)
   display.display('Duration: {}'.format(timer_stop - timer_start))
+  usemon.log()
   sys.exit(0)
