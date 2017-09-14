@@ -340,6 +340,16 @@ templating `modelconfig_webAppUrl`. By default it has the same value as
 the high precedence `webapp_ctx` but can be effectively overridden by
 defining `_webapp_ctx` in a yaml file.
 
+### Backups
+
+By default Conifer creates a backup of changed files. The backup file
+name includes timestamp information and end with a tilde, e.g.
+`model-config.xml.4904.2017-09-14@10:34:10~`.
+
+This can be disabled in the site vars yaml file by setting
+
+    conifer_backup: no
+
 ### Secrets
 
 Do not commit secrets to source control. Use lookups from local system
