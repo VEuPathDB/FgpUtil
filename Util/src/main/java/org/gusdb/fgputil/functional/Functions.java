@@ -15,6 +15,7 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.PredicateWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ReducerWithException;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.TrinaryFunction;
 
 public class Functions {
 
@@ -208,14 +209,31 @@ public class Functions {
   /**
    * Performs a reduce operation on the passed collection using the passed reducer
    * 
-   * @param iterator iterator over items to operate on
+   * @param inputs an iterable of input elements
    * @param reducer reducer function
    * @param initialValue initial value passed to the reducer's reduce method along with the first element
    * @return reduction of the collection
    */
-  public static <S,T> T reduce(Iterator<S> iterator, Reducer<S,T> reducer, T initialValue) {
-    while (iterator.hasNext()) {
-      initialValue = reducer.reduce(iterator.next(), initialValue);
+  public static <S,T> T reduce(Iterable<S> inputs, Reducer<S,T> reducer, T initialValue) {
+    for (S next : inputs) {
+      initialValue = reducer.reduce(initialValue, next);
+    }
+    return initialValue;
+  }
+
+  /**
+   * Performs a reduce operation on the passed collection using the passed reducer function- a trinary
+   * function that takes the (0-based) iteration index as a third argument.
+   * 
+   * @param inputs an iterable of input elements
+   * @param reducer reducer function (with index capture)
+   * @param initialValue initial value passed to the reducer's reduce method along with the first element
+   * @return reduction of the collection
+   */
+  public static <S,T> T reduceWithIndex(Iterable<S> inputs, TrinaryFunction<T,S,Integer,T> reducer, T initialValue) {
+    int index = 0;
+    for (S next : inputs) {
+      initialValue = reducer.apply(initialValue, next, index++);
     }
     return initialValue;
   }
@@ -287,9 +305,9 @@ public class Functions {
    * @return a new reducer that swallows checked exceptions
    */
   public static <S,T> Reducer<S,T> rSwallow(ReducerWithException<S,T> r) {
-    return (obj, prev) -> {
+    return (accumulator, next) -> {
       try {
-        return r.reduce(obj, prev);
+        return r.reduce(accumulator, next);
       }
       catch (Exception e) {
         throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));

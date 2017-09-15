@@ -265,7 +265,7 @@ public class TreeNode<T> implements MultiLineToString {
    */
   public <S> S reduce(Predicate<TreeNode<T>> nodePred, Reducer<T,S> reducer, S initialValue) {
     if (nodePred == null || nodePred.test(this)) {
-      initialValue = reducer.reduce(_nodeContents, initialValue);
+      initialValue = reducer.reduce(initialValue, _nodeContents);
     }
     for (TreeNode<T> node : _childNodes) {
       initialValue = node.reduce(nodePred, reducer, initialValue);

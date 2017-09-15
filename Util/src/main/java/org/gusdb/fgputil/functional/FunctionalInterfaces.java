@@ -43,7 +43,7 @@ public class FunctionalInterfaces {
   }
 
   /**
-   * Defines a single-argument function
+   * Defines a two-argument function
    * 
    * @param <R> type of first function input
    * @param <S> type of second function input
@@ -61,11 +61,31 @@ public class FunctionalInterfaces {
   }
 
   /**
+   * Defines a three-argument function
+   * 
+   * @param <R> type of first function input
+   * @param <S> type of second function input
+   * @param <T> type of third function input
+   * @param <U> type of function output
+   */
+  public interface TrinaryFunction<R,S,T,U> {
+    /**
+     * Applies the function to the given input and returns output
+     * 
+     * @param obj1 input to function
+     * @param obj2 input to function
+     * @param obj3 input to function
+     * @return result of function
+     */
+    public U apply(R obj1, S obj2, T obj3);
+  }
+
+  /**
    * Defines a single-argument predicate (function that returns a boolean)
    *
    * @param <T> type of predicate input
    */
-  public interface Predicate<T> {
+  public interface Predicate<T> extends Function<T,Boolean> {
     /**
      * Tests the given input against the predicate and returns whether the
      * passed input passes the test.
@@ -74,6 +94,17 @@ public class FunctionalInterfaces {
      * @return true if object passes, else false
      */
     public boolean test(T obj);
+
+    /**
+     * Allows Predicates to act as Function<T,Boolean>. Simply returns test(obj).
+     * 
+     * @param obj object to test
+     * @return true if object passes, else false
+     */
+    @Override
+    public default Boolean apply(T obj) {
+      return test(obj);
+    }
   }
 
   /**
@@ -81,7 +112,7 @@ public class FunctionalInterfaces {
    *
    * @param <T> type of predicate input
    */
-  public interface PredicateWithException<T> {
+  public interface PredicateWithException<T> extends FunctionWithException<T,Boolean> {
     /**
      * Tests the given input against the predicate and returns whether the
      * passed input passes the test.
@@ -90,6 +121,17 @@ public class FunctionalInterfaces {
      * @return true if object passes, else false
      */
     public boolean test(T obj) throws Exception;
+
+    /**
+     * Allows Predicates to act as Function<T,Boolean>. Simply returns test(obj).
+     * 
+     * @param obj object to test
+     * @return true if object passes, else false
+     */
+    @Override
+    public default Boolean apply(T obj) throws Exception {
+      return test(obj);
+    }
   }
 
   /**
@@ -103,11 +145,11 @@ public class FunctionalInterfaces {
      * Returns an aggregate result by combining the incoming value with that
      * produced by evaluating the passed object
      * 
-     * @param obj object to evaluate
-     * @param incomingValue previous result value
+     * @param accumulator previous result value
+     * @param next object to evaluate
      * @return revised result
      */
-    public T reduce(S obj, T incomingValue);
+    public T reduce(T accumulator, S next);
   }
 
   /**
@@ -121,11 +163,11 @@ public class FunctionalInterfaces {
      * Returns an aggregate result by combining the incoming value with that
      * produced by evaluating the passed object
      * 
-     * @param obj object to evaluate
-     * @param incomingValue previous result value
+     * @param accumulator previous result value
+     * @param next object to evaluate
      * @return revised result
      */
-    public T reduce(S obj, T incomingValue) throws Exception;
+    public T reduce(T accumulator, S next) throws Exception;
   }
 
   /**
