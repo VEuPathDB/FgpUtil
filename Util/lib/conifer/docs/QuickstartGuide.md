@@ -23,12 +23,14 @@ from source as part of the WDK build but you can short circuit that long
 process and install conifer singularly. This step is useful if you want
 to do website configuration before you build the source code.
 
-<span style='color:orange'>_**Caution**: The `install` subcommand simply copies Conifer
+<span style='color:orange'>
+_**Caution**: The `install` subcommand simply copies Conifer
 files from project home to gus home without following a dependency tree.
 If you have a dirty project home - e.g. you have both `FgpUtil` and
 `FgpUtil.bak` working directories present - you may get unexpected
 results because conifer will copy files from both directories. In this
-case, you should run a full GUS build._</span>
+case, you should run a full GUS build._
+</span>
 
 This example uses EBRC file system naming conventions to derive
 project-home, et al. arguments.
