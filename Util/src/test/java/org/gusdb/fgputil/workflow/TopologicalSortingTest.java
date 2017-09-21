@@ -59,7 +59,7 @@ public class TopologicalSortingTest {
   }
 
   @Test
-  public void testSorting() throws Exception {
+  public void testSorting() {
 
     Param A = new Param("A", "C,B,D,E");
     Param B = new Param("B", "D,E");

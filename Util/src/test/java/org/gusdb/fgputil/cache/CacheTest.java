@@ -74,7 +74,7 @@ public class CacheTest {
   }
 
   @Test
-  public void singleThreadTest() throws Exception {
+  public void singleThreadTest() {
     LOG.info("Starting single thread test");
     ItemCache<Integer,String> cache = new ItemCache<>(5, 3);
     List<String> opOrder = new Vector<>();
@@ -88,7 +88,7 @@ public class CacheTest {
   }
   
   @Test
-  public void multiThreadTest() throws Exception {
+  public void multiThreadTest() {
     LOG.info("Starting multi-thread test");
     int numThreads = 100;
     ItemCache<Integer,String> cache = new ItemCache<>(4, 2);

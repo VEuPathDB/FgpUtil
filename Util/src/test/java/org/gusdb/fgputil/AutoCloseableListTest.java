@@ -18,7 +18,7 @@ public class AutoCloseableListTest {
   }
 
   @Test
-  public void basicTest() throws Exception {
+  public void basicTest() {
     AutoCloseableList<CloseLogger> list = new AutoCloseableList<>();
     System.out.println("Test 1");
     for (int i = 0; i < 5; i++) {
@@ -30,7 +30,7 @@ public class AutoCloseableListTest {
   }
 
   @Test
-  public void constructorTest() throws Exception {
+  public void constructorTest() {
     List<CloseLogger> list = new ArrayList<>();
     System.out.println("Test 2");
     for (int i = 0; i < 5; i++) {

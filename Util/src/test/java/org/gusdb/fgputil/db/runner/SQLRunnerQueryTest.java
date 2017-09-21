@@ -32,7 +32,7 @@ public class SQLRunnerQueryTest {
   }
   
   @Test
-  public void testInsert() throws Exception {
+  public void testInsert() {
     SQLRunner db = new SQLRunner(_ds, INSERT_USER);
     int rowsChanged = db.executeUpdate(new Object[] { 4, "ryan", "badpw" });
     
@@ -40,7 +40,7 @@ public class SQLRunnerQueryTest {
   }    
     
   @Test
-  public void testQuery() throws Exception {
+  public void testQuery() {
     testInsert();
 
     SQLRunner db = new SQLRunner(_ds, SELECT_BY_NAME);
@@ -60,7 +60,7 @@ public class SQLRunnerQueryTest {
   }
   
   @Test
-  public void testRowCount() throws Exception {
+  public void testRowCount() {
     SQLRunner db = new SQLRunner(_ds, COUNT_ROWS);
     db.executeQuery(_handler);
     
@@ -69,7 +69,7 @@ public class SQLRunnerQueryTest {
   }
 
   @Test
-  public void testBatchUpdate() throws Exception {
+  public void testBatchUpdate() {
     SQLRunner db = new SQLRunner(_ds, INSERT_USER);
     BasicArgumentBatch argBatch = new BasicArgumentBatch();
     argBatch.setBatchSize(2);
@@ -82,7 +82,7 @@ public class SQLRunnerQueryTest {
   }
   
   @Test
-  public void testBatchUpdateWithTypes() throws Exception {
+  public void testBatchUpdateWithTypes() {
     SQLRunner db = new SQLRunner(_ds, INSERT_USER);
     BasicArgumentBatch argBatch = new BasicArgumentBatch();
     argBatch.setParameterTypes(new Integer[]{ Types.INTEGER, Types.VARCHAR, Types.VARCHAR });
@@ -96,7 +96,7 @@ public class SQLRunnerQueryTest {
   }
   
   @After
-  public void testDropTable() throws Exception {
+  public void testDropTable() {
     SQLRunner db = new SQLRunner(_ds, DROP_USER_TABLE);
     db.executeStatement();
   }

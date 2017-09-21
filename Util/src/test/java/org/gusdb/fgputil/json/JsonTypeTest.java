@@ -11,7 +11,7 @@ import org.junit.Test;
 public class JsonTypeTest {
 
   @Test
-  public void nullTest() throws Exception {
+  public void nullTest() {
     Object value = null;
     JsonType json = new JsonType(value);
     assertEquals(ValueType.NULL, json.getType());

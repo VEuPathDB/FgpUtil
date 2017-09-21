@@ -9,7 +9,7 @@ import org.junit.Test;
 public class TuplesTest {
 
   @Test
-  public void testTwoTuple() throws Exception {
+  public void testTwoTuple() {
     TwoTuple<Integer, Float> result = getPlus5(3, 4.5F);
     assertEquals((Integer)8, result.getFirst());
     assertEquals((Float)9.5F, result.getSecond());
@@ -20,7 +20,7 @@ public class TuplesTest {
   }
   
   @Test
-  public void testThreeTuple() throws Exception {
+  public void testThreeTuple() {
     ThreeTuple<Integer, Float, String> result = getPlus5(3, 4.5F, "blah");
     assertEquals((Integer)8, result.getFirst());
     assertEquals((Float)9.5F, result.getSecond());

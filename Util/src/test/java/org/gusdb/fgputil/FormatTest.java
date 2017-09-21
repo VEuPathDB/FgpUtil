@@ -12,20 +12,20 @@ import org.junit.Test;
 public class FormatTest {
 
   @Test
-  public void testIterableJoin() throws Exception {
+  public void testIterableJoin() {
     List<String> list = Arrays.asList(new String[]{ "a", "b", "c" });
     String joined = FormatUtil.join(list, "|");
     Assert.assertEquals("a|b|c", joined);
   }
 
   @Test
-  public void testArrayToString() throws Exception {
+  public void testArrayToString() {
     String[] sample = { "a", "b", "c", "d" };
     System.out.println(FormatUtil.arrayToString(sample));
   }
   
   @Test
-  public void testPrettyPrint() throws Exception {
+  public void testPrettyPrint() {
     String NL = FormatUtil.NL;
     Map<Integer,String> emptyMap = new HashMap<>();
     Map<Integer,String> fullMap = new MapBuilder<>(1, "One").put(2, "Two")
@@ -39,7 +39,7 @@ public class FormatTest {
   }
     
   @Test
-  public void testPercentFormat() throws Exception {
+  public void testPercentFormat() {
     Integer[][] cases = new Integer[][]{
         { 12, 100 },
         { 56, 127 },
@@ -54,7 +54,7 @@ public class FormatTest {
   }
   
   @Test
-  public void testExceptionToString() throws Exception {
+  public void testExceptionToString() {
     Exception orig = new Exception("Nested Exception");
     Exception e = new Exception("Oh no!", orig);
     String stackTrace = FormatUtil.getStackTrace(e);
@@ -74,7 +74,7 @@ public class FormatTest {
   };
 
   @Test
-  public void testUnderscoreFormatter() throws Exception {
+  public void testUnderscoreFormatter() {
     for (String[] testCase : UNDERSCORE_TEST_CASES) {
       Assert.assertEquals(testCase[1], FormatUtil.toUnderscoreFormat(testCase[0]));
     }

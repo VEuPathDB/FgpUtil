@@ -81,7 +81,7 @@ public class ScriptTest {
   };
 
   @Test
-  public void booleanExprParseTest() throws Exception {
+  public void booleanExprParseTest() {
     JavaScript evaluator = new JavaScript();
     assertEquals(true, evaluator.isValidBooleanExpression(GOOD_PARAM_EXPR));
     
