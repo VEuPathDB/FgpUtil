@@ -1,5 +1,6 @@
 package org.gusdb.fgputil;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,7 +37,7 @@ public class SetBuilder<T> {
     return this;
   }
 
-  public SetBuilder<T> addAll(Set<T> set) {
+  public SetBuilder<T> addAll(Collection<? extends T> set) {
     _set.addAll(set);
     return this;
   }
