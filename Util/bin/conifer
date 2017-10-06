@@ -9,6 +9,7 @@ import traceback
 import sys
 import shutil
 import time
+import yaml
 from datetime import datetime
 from subprocess import call
 from copy import copy
@@ -361,9 +362,20 @@ Available commands:
     else:
       raise Exception("Can not find site_vars file: '{}'".format(self.site_vars))
 
+    self._check_yaml_syntax(src)
+    
     dest = self.conifer_home + '/roles/conifer/vars/'
     print("copying {0} to {1}".format(src, dest))
     shutil.copy2(src, dest)
+
+  def _check_yaml_syntax(self, file):
+    try:
+      with open(file) as f: y = yaml.safe_load(f)
+    except(Exception) as e:
+      display.banner(**banner_args)
+      display.error("Error checking YAML syntax: {}".format(e))
+      if g.debug: traceback.print_exc()
+      sys.exit(1)
 
 if __name__ == '__main__':
   usemon = UsageMonitor()
