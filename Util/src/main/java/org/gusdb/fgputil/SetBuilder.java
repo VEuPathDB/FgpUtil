@@ -42,6 +42,21 @@ public class SetBuilder<T> {
     return this;
   }
 
+  /**
+   * Tries to find oldObj in the set; if present, removes oldObj and adds newObj.
+   * If not found, does nothing (i.e. newObj is not added).
+   * 
+   * @param oldObj object to be replaced
+   * @param newObj object to replace oldObj with
+   * @return this set builder
+   */
+  public SetBuilder<T> replace(T oldObj, T newObj) {
+    if (_set.remove(oldObj)) {
+      _set.add(newObj);
+    }
+    return this;
+  }
+
   public Set<T> toSet() {
     return _set;
   }
