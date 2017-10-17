@@ -20,6 +20,7 @@ import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
+import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 
 /**
@@ -292,6 +293,56 @@ public class Oracle extends DBPlatform {
     }
     finally {
       SqlUtils.closeQuietly(stUnlock, stDelete, stLock);
+      try {
+        connection.setAutoCommit(true);
+      }
+      catch (SQLException e) {
+        LOG.error("Unable to set connection's auto-commit back to true.", e);
+      }
+      SqlUtils.closeQuietly(connection);
+    }
+  }
+
+  @Override
+  public void computeStatistics(DataSource dataSource, String schema, String tableName) throws SQLException {
+    schema = schema.trim().toUpperCase();
+    if (schema.endsWith("."))
+      schema = schema.substring(0, schema.length() - 1);
+    tableName = tableName.toUpperCase();
+    Connection connection = null;
+    CallableStatement stUnlock = null, stCompute = null, stLock = null;
+    try {
+      long start = System.currentTimeMillis();
+
+      connection = dataSource.getConnection();
+      connection.setAutoCommit(false);
+
+      stUnlock = connection.prepareCall(tableName);
+      stUnlock.executeUpdate("{call DBMS_STATS.unlock_table_stats('" + schema + "', '" + tableName + "') }");
+      stUnlock.executeUpdate();
+
+      String sql = 
+      "begin dbms_stats.gather_table_stats(ownname=> '" + schema + "', tabname=> '" + tableName +
+      "', estimate_percent=> DBMS_STATS.AUTO_SAMPLE_SIZE, cascade=> DBMS_STATS.AUTO_CASCADE, degree=> null, no_invalidate=> DBMS_STATS.AUTO_INVALIDATE, granularity=> 'AUTO', method_opt=> 'FOR ALL COLUMNS SIZE AUTO'); End;"; 
+
+      stCompute = connection.prepareCall(tableName);
+      stCompute.executeUpdate(sql);
+      stCompute.executeUpdate();
+
+      stLock = connection.prepareCall(tableName);
+      stLock.executeUpdate("{call DBMS_STATS.LOCK_TABLE_STATS('" + schema + "', '" + tableName + "') }");
+      stLock.executeUpdate();
+
+      connection.commit();
+      QueryLogger.logEndStatementExecution(sql, tableName + "__gather_table_stats", start);
+
+    }
+    catch (SQLException e) {
+      connection.rollback();
+      throw e;
+    }
+    finally {
+      SqlUtils.closeQuietly(stUnlock, stCompute, stLock);
       try {
         connection.setAutoCommit(true);
       }

@@ -112,6 +112,8 @@ public abstract class DBPlatform {
             throws SQLException;
 
     public abstract void disableStatistics(DataSource dataSource, String schema, String tableName) throws SQLException;
+    
+    public abstract void computeStatistics(DataSource dataSource, String schema, String tableName) throws SQLException;
 
     public abstract String getDriverClassName();
     

@@ -243,6 +243,12 @@ public class PostgreSQL extends DBPlatform {
   public void disableStatistics(DataSource dataSource, String schema, String tableName) {
     // do nothing in PSQL.
   }
+  
+  @Override
+  public void computeStatistics(DataSource dataSource, String schema, String tableName) {
+    // do nothing in PSQL.
+  }
+  
 
   /*
    * (non-Javadoc)
