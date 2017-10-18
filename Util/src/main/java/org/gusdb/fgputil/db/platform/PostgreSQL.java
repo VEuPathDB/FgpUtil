@@ -245,7 +245,7 @@ public class PostgreSQL extends DBPlatform {
   }
   
   @Override
-  public void computeStatistics(DataSource dataSource, String schema, String tableName) {
+  public void computeThenLockStatistics(DataSource dataSource, String schema, String tableName) {
     // do nothing in PSQL.
   }
   

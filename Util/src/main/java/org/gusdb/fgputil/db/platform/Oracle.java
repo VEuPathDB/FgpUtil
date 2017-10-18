@@ -20,7 +20,6 @@ import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
-import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 
 /**
@@ -304,7 +303,7 @@ public class Oracle extends DBPlatform {
   }
 
   @Override
-  public void computeStatistics(DataSource dataSource, String schema, String tableName) throws SQLException {
+  public void computeThenLockStatistics(DataSource dataSource, String schema, String tableName) throws SQLException {
     schema = schema.trim().toUpperCase();
     if (schema.endsWith("."))
       schema = schema.substring(0, schema.length() - 1);
@@ -322,7 +321,7 @@ public class Oracle extends DBPlatform {
 
       String sql = 
       "begin dbms_stats.gather_table_stats(ownname=> '" + schema + "', tabname=> '" + tableName +
-      "', estimate_percent=> DBMS_STATS.AUTO_SAMPLE_SIZE, cascade=> DBMS_STATS.AUTO_CASCADE, degree=> null, no_invalidate=> DBMS_STATS.AUTO_INVALIDATE, granularity=> 'AUTO', method_opt=> 'FOR ALL COLUMNS SIZE AUTO'); End;"; 
+      "', estimate_percent=> DBMS_STATS.AUTO_SAMPLE_SIZE, cascade=> TRUE, degree=> AUTO_DEGREE, method_opt=> 'FOR ALL COLUMNS SIZE AUTO'); End;"; 
 
       stCompute = connection.prepareCall(tableName);
       stCompute.executeUpdate(sql);
