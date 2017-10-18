@@ -38,6 +38,10 @@ public class QueryLogger {
     });
   }
 
+  public static synchronized boolean isActive() {
+    return (_instance != null);
+  }
+
   /** 
    * Call this version to track and log query time if you do not have a resultSet, eg, for an update or insert.  Call it after the execute.
    * 

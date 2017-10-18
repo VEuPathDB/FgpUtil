@@ -334,8 +334,10 @@ public class Oracle extends DBPlatform {
       stLock.executeUpdate();
 
       connection.commit();
-      QueryLogger.logEndStatementExecution(sql, tableName + "__gather_table_stats", start);
 
+      if (QueryLogger.isActive()) {
+        QueryLogger.logEndStatementExecution(sql, tableName + "__gather_table_stats", start);
+      }
     }
     catch (SQLException e) {
       connection.rollback();
