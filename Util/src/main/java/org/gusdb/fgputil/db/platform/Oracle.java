@@ -312,7 +312,6 @@ public class Oracle extends DBPlatform {
     Connection connection = null;
     CallableStatement stUnlock = null, stCompute = null, stLock = null;
     try {
-      long start = System.currentTimeMillis();
 
       connection = dataSource.getConnection();
       connection.setAutoCommit(false);
@@ -334,10 +333,6 @@ public class Oracle extends DBPlatform {
       stLock.executeUpdate();
 
       connection.commit();
-
-      if (QueryLogger.isActive()) {
-        QueryLogger.logEndStatementExecution(sql, tableName + "__gather_table_stats", start);
-      }
     }
     catch (SQLException e) {
       connection.rollback();
