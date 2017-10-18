@@ -321,7 +321,7 @@ public class Oracle extends DBPlatform {
 
       String sql = 
       "begin dbms_stats.gather_table_stats(ownname=> '" + schema + "', tabname=> '" + tableName +
-      "', estimate_percent=> DBMS_STATS.AUTO_SAMPLE_SIZE, cascade=> TRUE, degree=> AUTO_DEGREE, method_opt=> 'FOR ALL COLUMNS SIZE AUTO'); End;"; 
+      "', estimate_percent=> DBMS_STATS.AUTO_SAMPLE_SIZE, cascade=> TRUE, degree=> null, method_opt=> 'FOR ALL COLUMNS SIZE AUTO'); End;"; 
 
       stCompute = connection.prepareCall(tableName);
       stCompute.executeUpdate(sql);
