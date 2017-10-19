@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;
 
 public class QueryLogger {
 
@@ -41,12 +40,6 @@ public class QueryLogger {
 
   public static synchronized boolean isActive() {
     return (_instance != null);
-  }
-
-  public static void queryLog(String name, String queryInfo, Procedure p) {
-    long startTime = System.currentTimeMillis();
-    p.perform();
-    QueryLogger.logEndStatementExecution(queryInfo, name, startTime);
   }
 
   /** 
