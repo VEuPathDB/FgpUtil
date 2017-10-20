@@ -121,9 +121,9 @@ can add other roles if your organization's provisioning dictates -
 perhaps a role to restart services after configuration.
 
 - `action_plugins`, `filter_plugins`, `library`, `lookup_plugins` -
-custom extensions to the Ansible engine. See [Ansible Plugin
-documentation](http://docs.ansible.com/ansible/latest/dev_guide/
-developing_plugins.html) for more information.
+custom extensions to the Ansible engine. See
+[Ansible Plugin documentation](http://docs.ansible.com/ansible/latest/dev_guide/developing_plugins.html)
+for more information.
 
 - `tasks` - Ansible task files for the Conifer role that direct the
 consumption of variables and deposition of website configuration files
@@ -371,9 +371,9 @@ This can be disabled in the site vars yaml file by setting
 
 Do not commit secrets to source control. Use lookups from local system
 files or an external, secure data source such as Vault. Custom lookup
-plugins can be added to `lookup_plugins`.  See [Ansible Plugin
-documentation](http://docs.ansible.com/ansible/latest/dev_guide/
-developing_plugins.html) for more information.
+plugins can be added to `lookup_plugins`.  See
+[Ansible Plugin documentation](http://docs.ansible.com/ansible/latest/dev_guide/developing_plugins.html)
+for more information.
 
 ## Useful Jinja2 filters and functions
 
