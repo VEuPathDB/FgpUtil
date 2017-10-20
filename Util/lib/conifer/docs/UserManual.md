@@ -9,10 +9,15 @@ files required for the website components (WDK, CGI scripts, etc.).
 It uses variables defined in hierarchical layers of YAML files to
 generate working application configurations from templates. The
 hierarchy allows you to define default values at a high level and then
-optionally override them a lower, more specific level. The templating
-leverages lookup and other functions to reduce human error, minimize
-human input and even outsource managing settings to a centralize
-datastore.
+optionally override them a lower, more specific level. This design is
+similar to the modular, hierarchical layout of GUS application source
+code For example, the source code from ApiCommonWebsite + ... + WDK are
+layered and combined to create a EuPathDB genomics website, whereas
+OrthoMCLWebsite + ... + WDK produce an OrthoMCL website. Likewise the
+Conifer configurations are assembled from default variables and
+templates that co-exist with the source code. The templating leverages
+lookup and other functions to reduce human error, minimize human input
+and even outsource managing settings to a centralize datastore.
 
 ### Introduction
 
@@ -28,14 +33,18 @@ Similarity tool is using.
 
 A driving goal of Conifer to manage these individual configurations by
 taking in a set of variable assignments and injecting their values into
-templates to generate endpoint files. This way the application database
-can be defined once and Conifer will reuse the value as many times as
-templates demand.
+templates to generate endpoint files. This way the application database,
+as one example, can be defined once and Conifer will reuse the value as
+many times as templates demand.
 
 Conifer is maintained by EuPathDB BRC to support its needs and examples
 in this document reflect that. Nevertheless the framework is flexible
 and is intended be adaptable for other organizations that do not deviate
-too far from GUS WDK conventions.
+too far from GUS WDK conventions. Also, this document leans heavily
+towards configuring WDK-based websites as that is the primary use case
+and, within the GUS application family, is the one with the most complex
+configuration requirements. Nevertheless, Conifer should be adaptable
+for any GUS framework application.
 
 ### Conifer stands on the shoulders of giants
 
@@ -63,33 +72,35 @@ The following software packages must be installed and in the user's `$PATH`.
 
 ### Meet the files
 
-Conifer is installed to `$GUS_HOME/lib/conifer` and has a directory
-structure something like the following example from one of EBRC's
-websites.
+Conifer is installed to `$GUS_HOME/lib/conifer` - either as part of the
+GUS build system or by invoking the `conifer install` command - and has
+a directory structure something like the following example from one of
+EBRC's websites.
 
-    $GUS_HOME/lib/conifer/
-                          conifer.cfg
-                          playbook.yml
-                          roles/
-                                conifer/
-                                        filter_plugins/
-                                        action_plugins/
-                                        lookup_plugins/
-                                        vars/
-                                             ApiCommon/
-                                             ApiCommon/savm/
-                                             ApiCommon/production/
-                                        templates/
-                                                  ApiCommonWebsite/
-                                                  ApiCommonWebService/
-                                                  FgpUtil/
-                                                  EbrcWebsiteCommon/
-                                                  Conifer/
-                                                  EbrcWebSvcCommon/
-                                        library/
-                                        tasks/
-                          docs/
-
+```
+$GUS_HOME/lib/conifer/
+                      conifer.cfg
+                      playbook.yml
+                      roles/
+                            conifer/
+                                    filter_plugins/
+                                    action_plugins/
+                                    lookup_plugins/
+                                    vars/
+                                         ApiCommon/
+                                         ApiCommon/savm/
+                                         ApiCommon/production/
+                                    templates/
+                                              ApiCommonWebsite/
+                                              ApiCommonWebService/
+                                              FgpUtil/
+                                              EbrcWebsiteCommon/
+                                              Conifer/
+                                              EbrcWebSvcCommon/
+                                    library/
+                                    tasks/
+                      docs/
+```
 
 
 _Most of the action takes place in the `roles/conifer` subdirectory.
@@ -139,7 +150,7 @@ cohort name here with the use of source code name in `templates`._
 Conifer is modeled around the hierarchical nature of the WDK-based
 website source code and provisioning. Consider the following tiers.
 
-- Organization - This is the umbrella encompassing all hosted websites.
+- Organization - This is the umbrella level, encompassing all hosted websites.
 'EuPathDB BRC', for example.
 
 - Cohort - This is a logical collection of projects that share the same
@@ -147,10 +158,10 @@ code base and configuration requirements (with allowance for small
 variation). Cohort examples at EBRC include ApiCommon, ClinEpi,
 Microbiome, OrthoMCL.
 
-- Project - This a WDK concept that is often called 'projectid' or
-'model'. Examples at EBRC include AmoebaDB, ToxoDB, ClinEpiDB,
-MicrobiomeDB. AmoebaDB and ToxoDB belong to the ApiCommon cohort.
-ClinEpiDB belongs to the ClinEpi cohort.
+- Project - This a WDK concept that is often referred to as 'projectid'
+or 'model'. Examples at EBRC include AmoebaDB, ToxoDB, ClinEpiDB,
+MicrobiomeDB. AmoebaDB and ToxoDB projects belong to the ApiCommon
+cohort. ClinEpiDB project belongs to the ClinEpi cohort.
 
 - Environment - Websites have a runtime environment which may influence
 configuration values. Examples at EBRC include production and virtual
@@ -240,23 +251,29 @@ any name you desire, as followss.
 Create a subdirectory of the cohort vars directory having the name of
 the environment.
 
-    vars/
-         ApiCommon/
-                   production/
+```
+vars/
+     ApiCommon/
+               production/
+```
 
 Additional project-specific vars can be defined for specific environment
 by placing the vars in a yaml file named after the project.
 
-    vars/
-         ApiCommon/
-                   production/
-                              ProjectDB.yml
+```
+vars/
+     ApiCommon/
+               production/
+                          ProjectDB.yml
+```
 
 By default, Conifer does not look for an environment level. You must
 specify use the `--env` option on the command line or set it in your
 site-specific `conifer_site_vars.yml` file.
 
-    env: production
+```
+env: production
+```
   
 It might be tempting to create a `development` environment and expect
 that be Conifer's default but in practice that unnecessarily increases
