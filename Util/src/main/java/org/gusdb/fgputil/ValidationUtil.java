@@ -1,11 +1,11 @@
 package org.gusdb.fgputil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.gusdb.fgputil.json.JsonUtil;
 import org.json.JSONObject;
 
 public class ValidationUtil {
@@ -14,17 +14,15 @@ public class ValidationUtil {
     return validateProperties(obj, requiredProps, optionalProps, false);
   }
 
-  public static List<String> validateProperties(List<String> properties, Set<String> requiredProps, Set<String> optionalProps) {
+  public static List<String> validateProperties(Set<String> properties, Set<String> requiredProps, Set<String> optionalProps) {
     return validateProperties(properties, requiredProps, optionalProps, false);
   }
 
   public static List<String> validateProperties(JSONObject obj, Set<String> requiredProps, Set<String> optionalProps, boolean allowSupplementalProperties) {
-    String[] objPropNames = JSONObject.getNames(obj);
-    if (objPropNames == null) objPropNames = new String[0];
-    return validateProperties(Arrays.asList(objPropNames), requiredProps, optionalProps, allowSupplementalProperties);
+    return validateProperties(JsonUtil.getKeys(obj), requiredProps, optionalProps, allowSupplementalProperties);
   }
 
-  public static List<String> validateProperties(List<String> properties, Set<String> requiredProps, Set<String> optionalProps,  boolean allowSupplementalProperties) {
+  public static List<String> validateProperties(Set<String> properties, Set<String> requiredProps, Set<String> optionalProps,  boolean allowSupplementalProperties) {
     List<String> errorMsgs = new ArrayList<>();
     Set<String> foundRequiredProps = new HashSet<>();
     for (String prop : properties) {

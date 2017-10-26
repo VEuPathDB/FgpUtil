@@ -1,12 +1,11 @@
 package org.gusdb.fgputil;
 
 import static org.junit.Assert.assertEquals;
-import static java.util.Arrays.asList;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
 
 import org.json.JSONObject;
 import org.junit.Test;
@@ -56,7 +55,7 @@ public class ValidationTest {
       String[] optionalProps, boolean allowExtra, int numExpectedMessages) {
     log("Test " + testNumber + ":");
     List<String> messages = ValidationUtil.validateProperties(
-        asList(properties), toSet(requiredProps), toSet(optionalProps), allowExtra);
+        toSet(properties), toSet(requiredProps), toSet(optionalProps), allowExtra);
     log(messages);
     assertEquals(numExpectedMessages, messages.size());
   }

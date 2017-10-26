@@ -2,9 +2,12 @@ package org.gusdb.fgputil.json;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,7 +51,7 @@ public class JsonUtil {
     if (json.length() == 0) {
       return map;
     }
-    for (String key : JSONObject.getNames(json)) {
+    for (String key : JsonUtil.getKeys(json)) {
       map.put(key, json.getString(key));
     }
     return map;
@@ -98,6 +101,18 @@ public class JsonUtil {
     StringBuilder sb = new StringBuilder();
     write(json, sb);
     return sb.toString();
+  }
+
+  /**
+   * Gets keys of a JSONObject in a null-safe way.
+   * 
+   * @param obj object from which to retrieve keys
+   * @return array of keys or empty array if none exist
+   */
+  public static Set<String> getKeys(JSONObject obj) {
+    String[] keys = JSONObject.getNames(obj);
+    return (keys == null ? Collections.emptySet() :
+      new HashSet<String>(Arrays.asList(keys)));
   }
 
   /**
