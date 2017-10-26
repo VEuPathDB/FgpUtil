@@ -401,7 +401,7 @@
       <dependency>
         <groupId>org.irods.jargon</groupId>
         <artifactId>jargon-core</artifactId>
-        <version>4.0.2.6-RELEASE</version>
+        <version>4.2.0.0-RELEASE</version>
         <exclusions>
           <exclusion>
             <groupId>commons-codec</groupId>
