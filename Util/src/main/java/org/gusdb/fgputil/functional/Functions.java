@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.functional;
 
+import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -8,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunction;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
@@ -313,5 +316,39 @@ public class Functions {
         throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
       }
     };
+  }
+
+  /**
+   * Zips two Iterables of objects into a single List of "combined" objects.  Combined objects are generated
+   * by the passed zipper function.  If the two input Iterables contain unequal numbers of objects, the
+   * stopOnExhaustion parameter is used to determine whether to apply the combiner only until both Iterables
+   * continue to produce objects (i.e. true is passed), or to continue adding items to the resulting list
+   * until both Iterables have been exhausted (i.e. false is passed).  If the latter, the zipper function
+   * will be called with the objects remaining in the unexhausted Iterable, and null as the parameter
+   * previously provided from the exhausted Iterable.
+   * 
+   * @param first an iterable over the first parameterized type 
+   * @param second an iterable over the second parameterized type
+   * @param zipper function to combine items of each passed iterator into a combined object
+   * @param stopOnExhaustion whether to stop adding combined items when one of the iterators ends
+   * @return an ArrayList of the third parameterized type
+   */
+  public static <R,S,T> List<T> zipToList(Iterable<R> first, Iterable<S> second,
+      BinaryFunction<R,S,T> zipper, boolean stopOnExhaustion) {
+    ListBuilder<T> zippedItems = new ListBuilder<>();
+    Iterator<R> col1Iter = first.iterator();
+    Iterator<S> col2Iter = second.iterator();
+    while (col1Iter.hasNext() && col2Iter.hasNext()) {
+      zippedItems.add(zipper.apply(col1Iter.next(), col2Iter.next()));
+    }
+    if (!stopOnExhaustion) {
+      if (col1Iter.hasNext()) {
+        reduce(toIterable(col1Iter), (accumulator, next) -> accumulator.add(zipper.apply(next, null)), zippedItems);
+      }
+      else if (col2Iter.hasNext()) {
+        reduce(toIterable(col2Iter), (accumulator, next) -> accumulator.add(zipper.apply(null, next)), zippedItems);
+      }
+    }
+    return zippedItems.toList();
   }
 }
