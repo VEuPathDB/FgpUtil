@@ -77,7 +77,7 @@ sub getSystemProps {
   #set the log4j configuration
   $sysProps .= " -Dlog4j.configuration=\"file://$GUS_HOME/config/log4j.properties\"";
   # use system cacerts if available
-  if (-e /etc/pki/tls/certs/cacerts ) {
+  if (-e "/etc/pki/tls/certs/cacerts" ) {
     $sysProps .= " -Djavax.net.ssl.trustStore=/etc/pki/tls/certs/cacerts";
   }
 
