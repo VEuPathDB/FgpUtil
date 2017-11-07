@@ -16,12 +16,19 @@ class LookupModule(LookupBase):
   '''
   Look up values from columnar data from URL or file path
 
-  col can be an integer referencing a column index (zero-based)
-  or a string referencing the column name taken from the
-  first non-comment line in the file.
+  Optional 'col' can be an integer referencing a column index
+  (zero-based) or a string referencing the column name taken from the
+  first non-comment line in the file. The 'col' attribute is optional
+  and, if not present, the lookup returns a dictionary of all fields for
+  the host.
 
-  lookup('colfile', '<key> col=1 url=https...')
-  lookup('colfile', '<key> col=header_key url=https...')
+  Return single value,
+    lookup('colfile', '<key> col=1 src=https...')
+    lookup('colfile', '<key> col=header_key src=https...')
+
+  Return dictionary,
+    lookup('colfile', <key> 'src=https...') 
+
   '''
   def run(self, terms, variables=None, **kwargs):
 
