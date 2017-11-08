@@ -1,8 +1,11 @@
 from __future__ import (absolute_import, division, print_function)
+import time
+from ansible import constants as C
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.lookup import LookupBase
 from ansible.module_utils._text import to_text
 from ansible.module_utils.urls import open_url, ConnectionError, SSLValidationError
+from ansible.module_utils.six.moves.urllib.error import HTTPError, URLError
 from ansible.compat.six import string_types
 
 try:
@@ -21,6 +24,9 @@ class LookupModule(LookupBase):
   first non-comment line in the file. The 'col' attribute is optional
   and, if not present, the lookup returns a dictionary of all fields for
   the host.
+
+  Optional 'retry' attribute is the number of times http URLs are
+  retried. Default is 1 retry (total of 2 attempts).
 
   Return single value,
     lookup('colfile', '<key> col=1 src=https...')
@@ -46,6 +52,7 @@ class LookupModule(LookupBase):
       paramvals = {
         'src' : None,
         'col' : None,
+        'retry': 1,
       }
 
       # parameters specified?
@@ -58,6 +65,7 @@ class LookupModule(LookupBase):
         raise AnsibleError(e)
 
       src = paramvals['src']
+      retry = int(paramvals['retry'])
       try:
         col = int(paramvals['col'])
       except:
@@ -65,18 +73,29 @@ class LookupModule(LookupBase):
 
       if src.startswith('http'):
         url = src
-        display.vvvv("url lookup connecting to %s" % url)
-        try:
-          response = open_url(url, validate_certs=validate_certs)
-          data = response.read()
-        except HTTPError as e:
-          raise AnsibleError("Received HTTP error for %s : %s" % (url, str(e)))
-        except URLError as e:
-          raise AnsibleError("Failed lookup url for %s : %s" % (url, str(e)))
-        except SSLValidationError as e:
-          raise AnsibleError("Error validating the server's certificate for %s: %s" % (url, str(e)))
-        except ConnectionError as e:
-          raise AnsibleError("Error connecting to %s: %s" % (url, str(e)))
+        retry_delay = 3
+        http_attempt = 1
+        while True:
+          try:
+            display.vvvv("colfile lookup: connecting to {} (attempt {})".format(url, http_attempt))
+            response = open_url(url, validate_certs=validate_certs)
+            data = response.read()
+            break
+          except HTTPError as e:
+            # display.display() because display.warning() dedups messages
+            display.display("colfile lookup: Received HTTP error for {} : {}".format(url, str(e)), color=C.COLOR_WARN)
+          except URLError as e:
+            display.display("colfile lookup: Failed lookup url for {} : {}".format(url, str(e)), color=C.COLOR_WARN)
+          except ConnectionError as e:
+            display.display("colfile lookup: Error connecting to {}: {}".format(url, str(e)), color=C.COLOR_WARN)
+          except SSLValidationError as e:
+            # no retry for SSL validation errors
+            raise AnsibleError("colfile lookup: Error validating the server's certificate for {}: {}".format(url, str(e)))
+          if http_attempt > retry:
+            raise AnsibleError("colfile lookup: reached maximum {} url attempts without success.".format(http_attempt))
+          http_attempt += 1
+          display.display("colfile lookup: will try again in {} seconds.".format(retry_delay))
+          time.sleep(retry_delay)
       else:
         if src.startswith('file://'):
           # strip 'file://'
