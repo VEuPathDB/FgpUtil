@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -127,6 +128,7 @@ public final class SqlUtils {
   public static PreparedStatement getPreparedStatement(DataSource dataSource, String sql) throws SQLException {
     Connection connection = null;
     PreparedStatement ps = null;
+
     try {
       connection = ConnectionMapping.getConnection(dataSource);
       ps = connection.prepareStatement(sql);
@@ -136,9 +138,10 @@ public final class SqlUtils {
     catch (SQLException ex) {
       closeStatement(ps);
 
-      if (ps == null && connection != null)
+      if (ps == null && connection != null) 
         SqlUtils.closeQuietly(connection);
-      throw new SQLException("Failed to prepare query: \n" + sql, ex);
+  
+      throw new SQLException("Failed to prepare query: \n" + sql + getUrlAndUser(connection), ex);
     }
   }
 
@@ -157,6 +160,9 @@ public final class SqlUtils {
    */
   public static boolean executePreparedStatement(PreparedStatement stmt, String sql, String name)
       throws SQLException {
+    
+    Connection connection = stmt.getConnection();
+
     try {
       long start = System.currentTimeMillis();
       boolean result = stmt.execute();
@@ -164,10 +170,10 @@ public final class SqlUtils {
       return result;
     }
     catch (SQLException ex) {
-      throw new SQLException("Failed to execute statement: \n" + sql, ex);
+      throw new SQLException("Failed to execute statement: \n" + sql + getUrlAndUser(connection), ex);
     }
   }
-
+  
   /**
    * Executes a batch update; returns numbers of rows affected by each batch
    * 
@@ -184,6 +190,9 @@ public final class SqlUtils {
    */
   public static int[] executePreparedStatementBatch(PreparedStatement stmt, String sql, String name)
       throws SQLException {
+    
+    Connection connection = stmt.getConnection();
+
     try {
       long start = System.currentTimeMillis();
       int[] numUpdates = stmt.executeBatch();
@@ -191,7 +200,7 @@ public final class SqlUtils {
       return numUpdates;
     }
     catch (SQLException ex) {
-      throw new SQLException("Failed to execute statement batch: \n" + sql, ex);
+      throw new SQLException("Failed to execute statement batch: \n" + sql + getUrlAndUser(connection), ex);
     }
   }
 
@@ -234,6 +243,7 @@ public final class SqlUtils {
     logger.trace("running sql: " + name + "\n" + sql);
     Connection connection = null;
     Statement stmt = null;
+    
     try {
       long start = System.currentTimeMillis();
       connection = dataSource.getConnection();
@@ -243,7 +253,7 @@ public final class SqlUtils {
       return result;
     }
     catch (SQLException ex) {
-      throw new SQLException("Failed to run SQL:\n" + sql, ex);
+      throw new SQLException("Failed to run SQL:\n" + sql + getUrlAndUser(connection), ex);
     }
     finally {
       SqlUtils.closeQuietly(stmt, connection);
@@ -267,6 +277,7 @@ public final class SqlUtils {
   public static int executeUpdate(Connection connection, String sql, String name) throws SQLException {
     logger.trace("running sql: " + name + "\n" + sql);
     Statement stmt = null;
+
     try {
       long start = System.currentTimeMillis();
       stmt = connection.createStatement();
@@ -275,7 +286,7 @@ public final class SqlUtils {
       return result;
     }
     catch (SQLException ex) {
-      throw new SQLException("Failed to run SQL:\n" + sql, ex);
+      throw new SQLException("Failed to run SQL:\n" + sql + getUrlAndUser(connection), ex);
     }
     finally {
       if (stmt != null)
@@ -346,6 +357,7 @@ public final class SqlUtils {
     Connection connection = null;
     Statement stmt = null;
     ResultSet resultSet = null;
+
     try {
       connection = ConnectionMapping.getConnection(dataSource);
       long start = System.currentTimeMillis();
@@ -356,13 +368,13 @@ public final class SqlUtils {
       return resultSet;
     }
     catch (SQLException ex) {
-      if (stmt == null)
+     if (stmt == null)
         // may or may not have a connection, but don't have stmt or rs
         SqlUtils.closeQuietly(connection);
       else
         // have at least a statement; close everything we can
         closeResultSetAndStatement(resultSet, stmt);
-      throw new SQLException("Failed to run query:\n" + sql, ex);
+      throw new SQLException("Failed to run query:\n" + sql + getUrlAndUser(connection), ex);
     }
   }
 
@@ -370,6 +382,8 @@ public final class SqlUtils {
       throws SQLException {
     logger.trace("running sql: " + name + "\n" + sql);
     ResultSet resultSet = null;
+    Connection connection = stmt.getConnection();
+
     try {
       long start = System.currentTimeMillis();
       resultSet = stmt.executeQuery();
@@ -378,7 +392,7 @@ public final class SqlUtils {
     }
     catch (SQLException ex) {
       closeResultSetAndStatement(resultSet, stmt);
-      throw new SQLException("Failed to run query:\n" + sql, ex);
+      throw new SQLException("Failed to run query:\n" + sql + getUrlAndUser(connection), ex);
     }
   }
 
@@ -634,4 +648,19 @@ public final class SqlUtils {
       }
     }
   }
+  
+  private static String getUrlAndUser(Connection c) {
+    String oops = "/nConnect URL: unknown \nUser: unknown";
+    if (c == null) return oops;
+    try {
+      DatabaseMetaData md = c.getMetaData();
+      String url = md.getURL();
+      String user = md.getUserName();
+      return "\nConnect URL: " + url + "\nUser: " + user;
+    } catch (Exception e) {
+      return oops;
+    }
+
+  }
+
 }
