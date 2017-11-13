@@ -171,6 +171,10 @@ public class JsonType {
     return (Boolean)_object;
   }
 
+  public boolean isNull() {
+    return _type.equals(ValueType.NULL);
+  }
+
   private void checkType(ValueType type, NumberSubtype subtype, String call) {
     checkType(type, call);
     if (!subtype.equals(_numberSubtype)) {
