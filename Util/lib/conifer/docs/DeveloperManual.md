@@ -380,6 +380,29 @@ this is a limitation of Subversion's custom keywords.
 
 Refer to `svn help ps` for more information on custom keywords.
 
+### Undesired Syslogging
+
+Ansible's core `ansible.module_utils.basic` module includes logging to
+journal/syslog. For example from `/var/log/messages`,
+
+```
+Nov 14 09:44:35 santol python: ansible-stat Invoked with checksum_algorithm=sha1 get_checksum=True path=/var/www/integrate.microsporidiadb.org/gus_home/config/highSpeedSnpSearch-config.xml checksum_algo=sha1 follow=False get_md5=False get_mime=True get_attributes=True
+Nov 14 09:44:35 santol python: ansible-file Invoked with directory_mode=None force=False remote_src=None path=/var/www/integrate.microsporidiadb.org/gus_home/config/highSpeedSnpSearch-config.xml owner=None follow=True group=None unsafe_writes=None serole=None content=NOT_LOGGING_PARAMETER state=None diff_peek=None setype=None dest=/var/www/integrate.microsporidiadb.org/gus_home/config/highSpeedSnpSearch-config.xml selevel=None original_basename=highSpeedSnpSearch-config.xml.j2 regexp=None validate=None src=None seuser=None recurse=False delimiter=None mode=None attributes=None backup=yes
+```
+
+This is usually just noise to the system administrator but can not be
+turned off in Ansible (as of 2.3.1.0) except using `no_log = True`,
+however that also affects console logging. The only workaround I've
+found is to exclude them via a rsyslog configuration. For example,
+create `/etc/rsyslog.d/conifer.conf` with contents,
+
+```
+if $programname == "python" and $msg contains "ansible-" and $msg contains "gus_home" then stop
+```
+
+Related:
+ - https://groups.google.com/forum/#!msg/ansible-project/ZA6Ua0PciKw/Mg1TqYRnbhUJ
+ 
 ### An example of backtracking from working files to source
 
 A working Conifer installation in `GUS_HOME` is generated from source
@@ -505,3 +528,4 @@ Commit your changes.
 ```bash
 $ svn commit -m 'strip trailing slashes from WEBAPP_BASE_URL in model.prop'
 ```
+
