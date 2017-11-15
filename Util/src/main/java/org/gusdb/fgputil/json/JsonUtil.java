@@ -224,5 +224,15 @@ public class JsonUtil {
       out.append(JSONObject.quote(value.toString()));
     }
   }
+  
+  /**
+   * Convenience method to insure that nulls intended for JSONObject values are
+   * converted to JSONObject.NULL
+   * @param obj - value to convert
+   * @return - obj or JSONObject.NULL
+   */
+  public static Object convertNulls(Object obj) {
+	return obj == null ? JSONObject.NULL : obj;
+  }
 
 }
