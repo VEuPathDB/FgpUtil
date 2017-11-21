@@ -4,7 +4,7 @@ import org.gusdb.fgputil.Timer;
 
 /**
  * An extension of the Timer class that records timestamps of each step in the
- * sequence of operations that occur over the course of a SQL statement or query.
+ * sequence of operations that occur over the course of an SQL statement
  * 
  * @author rdoherty
  */
