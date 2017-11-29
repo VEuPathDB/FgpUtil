@@ -19,7 +19,7 @@ templates that co-exist with the source code. The templating leverages
 lookup and other functions to reduce human error, minimize human input
 and even outsource managing settings to a centralize datastore.
 
-### Introduction
+## Introduction
 
 As with most any application, a WDK-based website uses one or more
 configuration files that define its runtime phenotype. An EBRC website
@@ -63,14 +63,188 @@ custom plugins and filters. See Ansible and Jinja2 documentation for
 details and Conifer subdirectories `action_plugins`, `filter_plugins`,
 `library`  and `lookup_plugins` for use cases.
 
-### Requirements
+## Requirements
 
 The following software packages must be installed and in the user's `$PATH`.
 
 - Ansible 2.3.x
 - Rsync
 
-### Meet the files
+## Conifer Subcommands
+
+Conifer uses subcommands to perform selected actions. The actions
+require some information, such as location of source code to install or
+the name of cohort to assemble. Depending on the specific use case, some
+of this information can be automatically determined by naming
+conventions or other means. The supported use cases are:
+
+- WDK website that follows EBRC conventions
+- GUS component such as ApiCommonWebsite (analogous to the GUS `build ApiCommonWebsite`)
+- freestyle mode in which all required arguments are explicitly set on the command line
+
+The subcommands are as follows.
+
+### Install
+
+Conifer source files are contained within the same SCM repositories as
+GUS/WDK application code and will be installed as part of the routine
+GUS build system. Alternatively, you can run the `conifer install`
+subcommand to install conifer independently of GUS build. This has the
+advantage of being very quick and you can do your configuration before
+the lengthy GUS build process.
+
+The `install` subcommand copies files from `project_home` to
+`gus_home/lib/conifer` following a dependency list described in detail
+in the Developers Manual. The filesystem paths for `project_home` and
+`gus_home` can be defined as shell environment variables `$PROJECT_HOME`
+and `$GUS_HOME`, or set as CLI arguments `--project-home` and
+`--gus-home`, or derived from the directory conventions of
+EBRC-compliant websites. The precedence order is CLI arguments >
+environment > derived.
+
+A cohort value is required so Conifer knows the set of variables and
+templates to assemble. This is autodiscovered in the case of
+EBRC-compliant websites and GUS components, or explicitly set with the
+`--cohort` CLI argument.
+
+Once Conifer is installed, `project_home` is no longer required. All
+other subcommands only require `gus_home`. This design is to permit
+deployment of compiled GUS/WDK applications without source code.
+
+For `seed` and `configure`, a project value is required, it is used to
+look for an optional project-specific vars yaml file. This is
+autodiscovered in the case of EBRC-compliant websites and GUS
+components, or explicitly set with the `--project` CLI argument.
+
+#### Examples
+
+An EBRC-compliant website installation:
+
+```
+conifer install toxodb.org
+```
+
+The previous example autodiscovers the source code component, e.g.
+ApiCommonWebsite, that contains a cohort. The discovery uses
+first component found in a list, such as
+
+```
+ClinEpiWebsite  
+OrthoMCLWebsite 
+MicrobiomeWebsite
+ApiCommonWebsite
+WDKTemplateSite
+```
+
+If your `project_home` has more than one of these components and the
+autodiscovery is picking the wrong one, you can use the `--cohort-root`
+CLI argument to explicitly pick the correct one.
+
+```
+conifer install toxodb.org --cohort-root ApiCommonWebsite
+```
+
+Installing from a GUS component, using shell environment variables:
+
+```
+PROJECT_HOME=~/gusApps/project_home
+GUS_HOME=~/gusApps/gus_home
+conifer install ApiCommonWebsite
+```
+
+Installing from a GUS component, using explicit CLI arguments:
+
+```
+conifer install ApiCommonWebsite \
+  --project-home ~/gusApps/project_home \
+  --gus-home ~/gusApps/gus_home
+```
+
+
+```
+conifer install \
+  --cohort ApiCommon \
+  --project-home ~/gusApps/project_home \
+  --gus-home ~/gusApps/gus_home
+```
+
+### Seed
+
+Your organization will have defined default values for most settings
+needed to configure a website. Some settings can not be pre-defined and
+will need to be set by you in a site-specific file. The `seed`
+subcommand will generate a file of site-specific variables for you to
+fill in. You only need to run the seed command when you need guidance on
+creating a working `conifer_site_vars.yml` file, typically that will be
+the first time preparing a GUS application or when configuration
+requirements change. The file is required but can be empty if there are
+no site-specific settings required.
+
+#### Examples
+
+Seeding from an EBRC-compliant website:
+
+```
+conifer seed toxodb.org
+```
+
+Seeding from a GUS component, using shell environment variables:
+
+```
+GUS_HOME=~/gusApps/gus_home
+conifer seed ApiCommonWebsite \
+  --project TrichDB
+```
+
+Seeding from a GUS component, using explicit CLI arguments. The cohort
+is autodiscovered but can be explicitly set with the `--cohort` CLI
+argument.
+
+```
+conifer seed ApiCommonWebsite \
+  --project TrichDB \
+  --gus-home ~/gusApps/gus_home
+```
+
+Seeding with explicit arguments (neither website nor GUS component given):
+
+```
+conifer seed \
+  --gus-home $GUS_HOME \
+  --cohort ApiCommon \
+  --project PlasmoDB
+```
+
+### Configure
+
+Once you have conifer installed and a site-specific variable file
+prepared you can configure your site. This example uses EBRC file system
+naming conventions to derive project-home, et al. arguments.
+
+```bash
+$ conifer configure integrate.toxodb.org
+```
+
+Here is an example using explicit arguments (neither website nor GUS component given).
+
+```bash
+conifer configure \
+  --gus-home $GUS_HOME \
+  --cohort EuPathDBIrods \
+  --project PlasmoDB \
+  --site-vars conifer_site_vars.yml
+```
+
+You can optionally pass vars on the commandline using the `-e` CLI
+argument. These have precedence over the same vars defined in YAML files.
+
+```bash
+$ conifer configure integrate.toxodb.org \
+  -e modelconfig_accountDb_login=janedoe \
+  -e modelconfig_accountDb_password=sekr3t
+```
+
+## Meet the files
 
 Conifer is installed to `$GUS_HOME/lib/conifer` - either as part of the
 GUS build system or by invoking the `conifer install` command - and has
@@ -169,6 +343,7 @@ machines.
 
 - Site - a single website, for example wdktemplate.gusdb.org
 
+
 ## Precedence of Vars Files
 
 The previous overview of the hierarchical nature of a GUS-based program
@@ -226,7 +401,7 @@ this `templates.yml` file.
 ### `vars/{{ cohort }}/default.yml`
 
 This file is for your default and required settings for a given
-cohort. 
+cohort.
 
 See ... for warning against including optional settings with an
 undefined value.
@@ -274,7 +449,7 @@ site-specific `conifer_site_vars.yml` file.
 ```
 env: production
 ```
-  
+
 It might be tempting to create a `development` environment and expect
 that be Conifer's default but in practice that unnecessarily increases
 the proliferation of `vars` files. Just put your development defaults in
@@ -327,13 +502,13 @@ Example SCM locations:
   passwords and other secrets so you probably don't want this in source
   control.
 
-### Making good use of templating and lookups in vars files
+## Making good use of templating and lookups in vars files
 
 This documents some use cases at EBRC to whet your appetite.
 
 dblink mapping ... the dblink can be looked up from a mapping with the UserDB.
 
-### Overriding default derived variables
+## Overriding default derived variables
 
 When running the conifer command in EBRC website convention mode,
 `conifer configure qa.toxodb.org`, several required variables -
@@ -357,7 +532,7 @@ templating `modelconfig_webAppUrl`. By default it has the same value as
 the high precedence `webapp_ctx` but can be effectively overridden by
 defining `_webapp_ctx` in a yaml file.
 
-### Backups
+## Backups
 
 By default Conifer creates a backup of changed files. The backup file
 name includes timestamp information and end with a tilde, e.g.
@@ -367,7 +542,7 @@ This can be disabled in the site vars yaml file by setting
 
     conifer_backup: no
 
-### Secrets
+## Secrets
 
 Do not commit secrets to source control. Use lookups from local system
 files or an external, secure data source such as Vault. Custom lookup

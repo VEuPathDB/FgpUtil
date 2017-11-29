@@ -23,15 +23,6 @@ from source as part of the WDK build but you can short circuit that long
 process and install conifer singularly. This step is useful if you want
 to do website configuration before you build the source code.
 
-<span style='color:orange'>
-_**Caution**: The `install` subcommand simply copies Conifer
-files from project home to gus home without following a dependency tree.
-If you have a dirty project home - e.g. you have both `FgpUtil` and
-`FgpUtil.bak` working directories present - you may get unexpected
-results because conifer will copy files from both directories. In this
-case, you should run a full GUS build._
-</span>
-
 This example uses EBRC file system naming conventions to derive
 project-home, et al. arguments.
 
@@ -42,10 +33,10 @@ $ conifer install integrate.toxodb.org
 Here is an example using explicit arguments.
 
 ```bash
-$ conifer install --project-home $PROJECT_HOME --gus-home $GUS_HOME
+$ conifer install --cohort ApiCommon --project-home $PROJECT_HOME --gus-home $GUS_HOME
 ```
 
-### Seed    
+### Seed
 
 Your organization will have defined default values for most settings
 needed to configure a website. Some settings can not be pre-defined and
@@ -78,7 +69,7 @@ seed file and can safely delete it.
 Here is an example using explicit arguments.
 
 ```bash
-conifer seed --project-home $PROJECT_HOME --gus-home $GUS_HOME \
+conifer seed --gus-home $GUS_HOME \
   --cohort EuPathDBIrods --project PlasmoDB
 ```
 
@@ -104,7 +95,7 @@ $ conifer configure integrate.toxodb.org \
 Here is an example using explicit arguments.
 
 ```bash
-conifer configure --project-home $PROJECT_HOME --gus-home $GUS_HOME \
+conifer configure --gus-home $GUS_HOME \
   --cohort EuPathDBIrods --project PlasmoDB \
   --site-vars conifer_site_vars.yml
 ```
