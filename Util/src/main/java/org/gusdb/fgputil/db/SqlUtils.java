@@ -1,6 +1,9 @@
 package org.gusdb.fgputil.db;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringReader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -456,13 +459,17 @@ public final class SqlUtils {
     }
   }
 
-  public static void setClobData(PreparedStatement ps, int columnIndex, String content) throws SQLException {
+  public static void setClobData(PreparedStatement ps, int columnIndex, Object content) throws SQLException {
     if (content == null) {
       ps.setNull(columnIndex, Types.CLOB);
     }
     else {
-      StringReader reader = new StringReader(content);
-      ps.setCharacterStream(columnIndex, reader, content.length());
+      Reader reader = (
+          content instanceof Reader ? (Reader)content :
+          content instanceof InputStream ? new InputStreamReader((InputStream)content) :
+          new StringReader(content.toString())
+      );
+      ps.setCharacterStream(columnIndex, reader);
     }
   }
 
