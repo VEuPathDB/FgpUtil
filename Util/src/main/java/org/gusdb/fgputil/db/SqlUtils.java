@@ -480,10 +480,10 @@ public final class SqlUtils {
           content instanceof InputStream ? new InputStreamReader((InputStream)content) :
           new StringReader(content.toString()) // convert any other type to String
       );
-      switch (charSqlType) {
-        case Types.LONGVARCHAR:
+      //switch (charSqlType) {
+      //  case Types.LONGVARCHAR:
           ps.setCharacterStream(columnIndex, reader);
-          break;
+      /*    break;
         case Types.CLOB:
           try {
             Clob clob = ps.getConnection().createClob();
@@ -495,7 +495,7 @@ public final class SqlUtils {
             throw new SQLException("Could not transfer character data to CLOB", e);
           }
           break;
-      }
+      }*/
     }
   }
 
