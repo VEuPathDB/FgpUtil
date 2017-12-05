@@ -1,11 +1,14 @@
 package org.gusdb.fgputil.db;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.sql.CallableStatement;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -21,6 +24,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
@@ -460,16 +464,38 @@ public final class SqlUtils {
   }
 
   public static void setClobData(PreparedStatement ps, int columnIndex, Object content) throws SQLException {
+    setClobData(ps, columnIndex, content, Types.CLOB);
+  }
+
+  public static void setClobData(PreparedStatement ps, int columnIndex, Object content, int charSqlType) throws SQLException {
+    if (charSqlType != Types.CLOB && charSqlType != Types.LONGVARCHAR) {
+      throw new SQLException("CLOB type must be either java.sql.Types.CLOB or java.sql.Types.LONGVARCHAR");
+    }
     if (content == null) {
-      ps.setNull(columnIndex, Types.CLOB);
+      ps.setNull(columnIndex, charSqlType);
     }
     else {
       Reader reader = (
           content instanceof Reader ? (Reader)content :
           content instanceof InputStream ? new InputStreamReader((InputStream)content) :
-          new StringReader(content.toString())
+          new StringReader(content.toString()) // convert any other type to String
       );
-      ps.setCharacterStream(columnIndex, reader);
+      switch (charSqlType) {
+        case Types.LONGVARCHAR:
+          ps.setCharacterStream(columnIndex, reader);
+          break;
+        case Types.CLOB:
+          try {
+            Clob clob = ps.getConnection().createClob();
+            Writer clobWriter = clob.setCharacterStream(1);
+            IoUtil.transferStream(clobWriter, reader);
+            ps.setClob(columnIndex, clob);
+          }
+          catch (IOException e) {
+            throw new SQLException("Could not transfer character data to CLOB", e);
+          }
+          break;
+      }
     }
   }
 
@@ -573,13 +599,13 @@ public final class SqlUtils {
       else if (args[i] == null) {
         stmt.setNull(i + 1, types[i]);
       }
-      // handle clob data
-      else if (types[i].intValue() == Types.CLOB) {
-        SqlUtils.setClobData(stmt, i + 1, args[i].toString());
+      // handle arbitrary character data (clob or long varchar)
+      else if (types[i].intValue() == Types.CLOB || types[i].intValue() == Types.LONGVARCHAR) {
+        setClobData(stmt, i + 1, args[i].toString(), types[i]);
       }
       // handle arbitrary binary data (either blob or long byte array)
       else if (types[i].intValue() == Types.BLOB || types[i].intValue() == Types.LONGVARBINARY) {
-        SqlUtils.setBinaryData(stmt, i + 1, (byte[]) args[i], types[i].intValue());
+        setBinaryData(stmt, i + 1, (byte[]) args[i], types[i]);
       }
       else {
         stmt.setObject(i + 1, args[i], types[i]);
