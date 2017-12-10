@@ -11,10 +11,10 @@ default values at a high level and then optionally override them a
 lower, more specific level.
 
 This quick start guide uses examples that depend on EBRC file and
-directory naming conventions which are use to derive conifer command line
-arguments based on the hostname of the website being configured. If you
-do not use EBRC naming conventions then you will need to supply all the
-required conifer command line arguments manually.
+directory naming conventions which are, in turn, used to derive conifer
+command line arguments based on the hostname of the website being
+configured. If you do not use EBRC naming conventions then you will need
+to supply all the required conifer command line arguments manually.
 
 ### Install
 
@@ -24,7 +24,7 @@ process and install conifer singularly. This step is useful if you want
 to do website configuration before you build the source code.
 
 This example uses EBRC file system naming conventions to derive
-project-home, et al. arguments.
+project-home and other command arguments.
 
 ```bash
 $ conifer install integrate.toxodb.org
@@ -54,16 +54,17 @@ project-home, et al. arguments.
 $ conifer seed integrate.toxodb.org
 ```
 
-This generates a `conifer_site_vars.seed.yml` in your website's `etc`
-directory. Follow the instructions returned by the seed command to copy
-or rename that file to `conifer_site_vars.yml` and assign appropriate
-values to the enclosed variables. The format of the file is YAML. The
+This generates a `conifer_site_vars.seed.yml` in the `etc` directory of
+your website. Follow the instructions returned by the seed command to
+copy or rename that file to `conifer_site_vars.yml` and assign
+appropriate values to the enclosed variables. The format of the file is
+[YAML](http://docs.ansible.com/ansible/latest/YAMLSyntax.html). The
 generated seed file has only the settings that have not been pre-defined
-- the minimal set of required values you must supply. You can also
+- i.e., the minimal set of required values you must supply. You can also
 override any of the pre-defined settings in your `conifer_site_vars.yml`
 file if you desire. See the UsersGuide for more information.
 
-Once you have your `conifer_site_vars.yml` file you no longer need the
+Once you have your `conifer_site_vars.yml` file, you no longer need the
 seed file and can safely delete it.
 
 Here is an example using explicit arguments.
@@ -88,8 +89,8 @@ over the same vars defined in YAML files.
 
 ```bash
 $ conifer configure integrate.toxodb.org \
-  -e modelconfig_accountDb_login=janedoe \
-  -e modelconfig_accountDb_password=sekr3t
+  -e accountDb_login=janedoe \
+  -e accountDb_password=sekr3t
 ```
 
 Here is an example using explicit arguments.
