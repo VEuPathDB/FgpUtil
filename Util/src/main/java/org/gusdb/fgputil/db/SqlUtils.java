@@ -579,7 +579,7 @@ public final class SqlUtils {
       }
       // handle arbitrary character data (clob or long varchar)
       else if (types[i].intValue() == Types.CLOB || types[i].intValue() == Types.LONGVARCHAR) {
-        setClobData(stmt, i + 1, args[i].toString(), types[i]);
+        setClobData(stmt, i + 1, args[i], types[i]);
       }
       // handle arbitrary binary data (either blob or long byte array)
       else if (types[i].intValue() == Types.BLOB || types[i].intValue() == Types.LONGVARBINARY) {
