@@ -468,9 +468,6 @@ public final class SqlUtils {
   }
 
   public static void setClobData(PreparedStatement ps, int columnIndex, Object content, int charSqlType) throws SQLException {
-    if (charSqlType != Types.CLOB && charSqlType != Types.LONGVARCHAR) {
-      throw new SQLException("CLOB type must be either java.sql.Types.CLOB or java.sql.Types.LONGVARCHAR");
-    }
     if (content == null) {
       ps.setNull(columnIndex, charSqlType);
     }
@@ -480,22 +477,7 @@ public final class SqlUtils {
           content instanceof InputStream ? new InputStreamReader((InputStream)content) :
           new StringReader(content.toString()) // convert any other type to String
       );
-      //switch (charSqlType) {
-      //  case Types.LONGVARCHAR:
-          ps.setCharacterStream(columnIndex, reader);
-      /*    break;
-        case Types.CLOB:
-          try {
-            Clob clob = ps.getConnection().createClob();
-            Writer clobWriter = clob.setCharacterStream(1);
-            IoUtil.transferStream(clobWriter, reader);
-            ps.setClob(columnIndex, clob);
-          }
-          catch (IOException e) {
-            throw new SQLException("Could not transfer character data to CLOB", e);
-          }
-          break;
-      }*/
+      ps.setCharacterStream(columnIndex, reader);
     }
   }
 
