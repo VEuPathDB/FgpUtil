@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -32,6 +33,9 @@ public class DatabaseResultStream extends InputStream implements Wrapper {
       throws SQLException {
     _resultSet = resultSet;
     _dataStream = _resultSet.getBinaryStream(dataFieldName);
+    if (_dataStream == null) { // NULL value in DB
+      _dataStream = new ByteArrayInputStream(new byte[0]);
+    }
   }
 
   /**

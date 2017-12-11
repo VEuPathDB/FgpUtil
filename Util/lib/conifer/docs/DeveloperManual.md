@@ -4,8 +4,7 @@
 
 Conifer is a configuration framework for websites built on the GUS WDK
 platform. This manual is for developers wishing to debug or extend
-Conifer.
-
+Conifer's functionality.
 
 ## Adding A New Cohort or Project
 
@@ -30,7 +29,7 @@ put templates and vars files.
 
 ```
 WDKTemplateSite/Model/lib/conifer/roles/conifer/templates/[optional.conf.j2]
-    
+
 WDKTemplateSite/Model/lib/conifer/roles/conifer/vars/WDKTemplate/templates.yml
 ```
 
@@ -53,6 +52,34 @@ model-config.xml:
 model.prop:
   src: 'WDK/model.prop.j2'
   dest: '{{ gus_home }}/config/{{ project }}/model.prop'
+```
+
+The conifer `install` subcommand needs to know what to install. That is
+defined in the `install.yml` file in the cohort directory. For example,
+`ApiCommonWebsite/Model/lib/conifer/roles/conifer/vars/ApiCommon/install.yml`
+
+The yaml file lists dependency paths whose contents will be copied to
+`$GUS_HOME/lib/`. Template macros are allowed.
+
+```
+dependencies:
+  - '{{ project_home }}/ApiCommonModel/Model/lib/conifer'
+  - '{{ project_home }}/ApiCommonWebService/WSFPlugin/lib/conifer'
+  - '{{ project_home }}/ApiCommonWebsite/Model/lib/conifer'
+  - '{{ project_home }}/EbrcWebsiteCommon/Model/lib/conifer'
+  - '{{ project_home }}/EbrcWebSvcCommon/WSFPlugin/lib/conifer'
+  - '{{ project_home }}/WDK/Model/lib/conifer'
+```
+
+The core source for Conifer, `{{project_home}}/FgpUtil/Util/lib/conifer`,
+and the cohort parent (aka a child of the cohort-root), e.g.
+`{{project_home }}/ApiCommonWebsite/Model/lib/conifer`,
+are automatically included so do not have to be explicitly listed.
+
+If there are no dependencies, set the dependencies var to an empty array.
+
+```
+dependencies: []
 ```
 
 ### Add default configuration values
@@ -135,7 +162,7 @@ pitfalls.
 
 The variables taken from the vars files are stored in the `conifer`
 namespace by the `load_values.yml` task. Note that this is a branch of
-the `vars` dictionary, e.g. 
+the `vars` dictionary, e.g.
 
 ```
 '{{ vars.conifer.modelconfig_appDb_connectionUrl }}'
@@ -402,7 +429,7 @@ if $programname == "python" and $msg contains "ansible-" and $msg contains "gus_
 
 Related:
  - https://groups.google.com/forum/#!msg/ansible-project/ZA6Ua0PciKw/Mg1TqYRnbhUJ
- 
+
 ### An example of backtracking from working files to source
 
 A working Conifer installation in `GUS_HOME` is generated from source
@@ -435,13 +462,13 @@ The runtime configuration file includes metadata at the top about its
 origin. Viewing that with the `head` command,
 
 ```
-$ head -n7 model.prop 
+$ head -n7 model.prop
 # Templated by Conifer using
 # /var/www/OrthoMCL/orthomcl.msh/gus_home/lib/conifer/roles/conifer/templates/WDK/model.prop.j2
-# with vars from 
+# with vars from
 # Cohort: OrthoMCL
 # Project: OrthoMCL
-# Environment: 
+# Environment:
 # site_vars file: conifer_site_vars.yml
 ```
 
@@ -482,7 +509,7 @@ discovered from the metadata at the top of the YAML file.
 
 ```
 [13:40 20170816 mheiges@luffa /var/www/OrthoMCL/orthomcl.msh/gus_home/lib/conifer/roles/conifer/vars]
-$ head -n1 OrthoMCL/default.yml 
+$ head -n1 OrthoMCL/default.yml
 # $SourceFileURL: OrthoMCLWebsite/trunk/Model/lib/conifer/roles/conifer/vars/OrthoMCL/default.yml $
 ```
 
@@ -502,7 +529,7 @@ and edit `default.yml` to include the `regex()` filter to strip trailing
 slashes.
 
 ```bash
-$ svn diff default.yml 
+$ svn diff default.yml
 -  LEGACY_WEBAPP_BASE_URL: '{{ modelconfig_webAppUrl }}'
 +  LEGACY_WEBAPP_BASE_URL: "{{ modelconfig_webAppUrl|regex_replace('/+$', '') }}"
 -  WEBAPP_BASE_URL: '{{ modelconfig_webAppUrl }}/app'
@@ -513,7 +540,7 @@ To be sure, install the fixes and run configure again.
 
 ```bash
 $ conifer install mheiges.orthomcl.org
-$ conifer configure mheiges.orthomcl.org 
+$ conifer configure mheiges.orthomcl.org
 ```
 
 The model.prop is now correct. w00t!
@@ -528,4 +555,10 @@ Commit your changes.
 ```bash
 $ svn commit -m 'strip trailing slashes from WEBAPP_BASE_URL in model.prop'
 ```
+
+
+## ToDo
+
+- self.component and self.cohort_root in the conifer script are probably
+synonymous. If so, unify these.
 

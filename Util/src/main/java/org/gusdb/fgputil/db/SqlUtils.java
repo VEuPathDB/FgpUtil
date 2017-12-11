@@ -1,6 +1,9 @@
 package org.gusdb.fgputil.db;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringReader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -456,13 +459,21 @@ public final class SqlUtils {
     }
   }
 
-  public static void setClobData(PreparedStatement ps, int columnIndex, String content) throws SQLException {
+  public static void setClobData(PreparedStatement ps, int columnIndex, Object content) throws SQLException {
+    setClobData(ps, columnIndex, content, Types.CLOB);
+  }
+
+  public static void setClobData(PreparedStatement ps, int columnIndex, Object content, int charSqlType) throws SQLException {
     if (content == null) {
-      ps.setNull(columnIndex, Types.CLOB);
+      ps.setNull(columnIndex, charSqlType);
     }
     else {
-      StringReader reader = new StringReader(content);
-      ps.setCharacterStream(columnIndex, reader, content.length());
+      Reader reader = (
+          content instanceof Reader ? (Reader)content :
+          content instanceof InputStream ? new InputStreamReader((InputStream)content) :
+          new StringReader(content.toString()) // convert any other type to String
+      );
+      ps.setCharacterStream(columnIndex, reader);
     }
   }
 
@@ -566,13 +577,13 @@ public final class SqlUtils {
       else if (args[i] == null) {
         stmt.setNull(i + 1, types[i]);
       }
-      // handle clob data
-      else if (types[i].intValue() == Types.CLOB) {
-        SqlUtils.setClobData(stmt, i + 1, args[i].toString());
+      // handle arbitrary character data (clob or long varchar)
+      else if (types[i].intValue() == Types.CLOB || types[i].intValue() == Types.LONGVARCHAR) {
+        setClobData(stmt, i + 1, args[i], types[i]);
       }
       // handle arbitrary binary data (either blob or long byte array)
       else if (types[i].intValue() == Types.BLOB || types[i].intValue() == Types.LONGVARBINARY) {
-        SqlUtils.setBinaryData(stmt, i + 1, (byte[]) args[i], types[i].intValue());
+        setBinaryData(stmt, i + 1, (byte[]) args[i], types[i]);
       }
       else {
         stmt.setObject(i + 1, args[i], types[i]);

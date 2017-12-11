@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from ansible.compat.six import iteritems
 '''
 Conifer is a configuration system for the GUS application framework.
 '''
@@ -12,11 +13,13 @@ import time
 import yaml
 from datetime import datetime
 from subprocess import call
-from copy import copy
+from copy import copy, deepcopy
 from collections import OrderedDict
 from ansible.utils.color import stringc
 from ansible.utils.display import Display
 from ansible import constants as C
+from ansible.parsing.dataloader import DataLoader
+from ansible.template import Templar
 
 display = Display()
 
@@ -104,12 +107,24 @@ Available commands:
 '''
     )
 
+    #EBRC-specific mapping and candidate for factoring out to system file
+    self.component_cohort_map = OrderedDict([
+      ('ClinEpiWebsite',    'ClinEpi'),
+      ('OrthoMCLWebsite',   'OrthoMCL'),
+      ('MicrobiomeWebsite', 'Microbiome'),
+      ('ApiCommonWebsite',  'ApiCommon'),
+      ('EuPathDBIrods',     'EuPathDBIrods'),
+      ('WDKTemplateSite',   'WDKTemplate'),
+    ])
+
     self.command = None
+    self.component = None
     self.hostname = None
     self.webapp_ctx = None
     self.project_home = None
     self.gus_home = None
     self.conifer_home = None
+    self.cohort_root = None
     self.cohort = None
     self.project = None
     self.env = None
@@ -150,7 +165,7 @@ Available commands:
     Run an Ansible playbook to generate GUS configuration files
     from templates.
     '''
-    self._parse_args(required=['project-home', 'gus-home', 'cohort', 'project', 'site-vars'])
+    self._parse_args(required=['gus-home', 'cohort', 'project', 'site-vars'])
     self._copy_site_vars()
     ansible_extra_vars = [
       '-e', 'gus_home=' + self.gus_home,
@@ -190,7 +205,7 @@ Available commands:
     Generate a sample site-specific vars file that can be edited and
     used with the `configure` subcommand.
     '''
-    self._parse_args(required=['project-home', 'gus-home', 'cohort', 'project'])
+    self._parse_args(required=['gus-home', 'cohort', 'project'])
     if self.conifer_site_vars_seed_dest is None:
       self.conifer_site_vars_seed_dest = os.path.expanduser('~') + '/' + self.conifer_site_vars_seed_fname
     if self.conifer_site_vars_dest is None:
@@ -235,26 +250,46 @@ Available commands:
     rsyncing files from project_home to gus_home.
     This is not driven by Ansible.
     '''
-    self._parse_args(required=['project-home', 'gus-home'])
+    self._parse_args(required=['project-home', 'gus-home', 'cohort', 'cohort_root'])
+
     conifer_home = self.gus_home + '/lib/conifer'
+
     if not os.path.isdir(self.project_home):
-      raise Exception("Can not install because project_home, '" + self.project_home + "', not found.")
+      raise Exception("Can not install because project_home, '{}', not found.".format(self.project_home))
+
+    # lookup dependencies for the Cohort
+    if self.verbose: print("Using cohort-root '{}', cohort '{}'.".format(self.cohort_root, self.cohort))
+    cohort_install_yml = self.project_home + '/' + self.cohort_root \
+      + '/Model/lib/conifer/roles/conifer/vars/' + self.cohort + '/install.yml'
+
+    if not os.path.isfile(cohort_install_yml):
+      raise Exception("Can not install because instructions file, '{}', not found.".format(cohort_install_yml))
+    install_data = self._yml_to_dict(cohort_install_yml)
+    if not 'dependencies' in install_data:
+      raise Exception("No 'dependencies' attribute found in {}".format(cohort_install_yml))
+    dependencies = self._sanitize_src_paths(install_data['dependencies'])
+
     for dir in [ self.gus_home + '/lib', self.gus_home + '/bin' ]:
       if not os.path.isdir(dir):
         print("mkdir {}".format(dir))
         os.makedirs(dir)
     if os.path.isdir(conifer_home):
       shutil.rmtree(conifer_home)
-    cmd = ['find', self.project_home, '-path', '*/lib/conifer',
-      '-type', 'd', '-name', 'conifer', '-exec', 'rsync', '-a', '{}',
-      self.gus_home + '/lib/',  ';' ]
+
+    # install Conifer files, except executable
+    cmd = ['rsync', '-a']
+    cmd.extend(dependencies)
+    cmd.append(self.gus_home + '/lib/')
     if self.verbose: print(' '.join(cmd))
     print('Installing Conifer into ' + self.gus_home)
     cpcore = call(cmd)
+
+    # install executable
     cmd = ['rsync', '-a', self.project_home + '/FgpUtil/Util/bin/conifer',
       self.gus_home + '/bin/' ]
     if self.verbose: print(' '.join(cmd))
     cpbin = call(cmd)
+
     cmd = ['chmod', '0755', self.gus_home + '/bin/conifer']
     chmodbin = call(cmd)
     if cpcore == 0 and cpbin == 0 and chmodbin == 0:
@@ -262,16 +297,82 @@ Available commands:
     else:
       raise Exception('Was unable to complete installation.')
 
+  def _first_website_cohort_root_found(self, hostname):
+    for component, cohort in self.component_cohort_map.iteritems():
+      p = self.project_home + '/' + component
+      if self.verbose: print("Looking for '{}'".format(p))
+      if os.path.isdir(p):
+        if self.verbose: print("Found '{}'".format(p))
+        return component
+    raise Exception("No cohort-root found for '{}' using project_home '{}'.".format(hostname, self.project_home))
+
+  def _first_coniferhome_cohort_found(self):
+    ''' return out first cohort found in Conifer home '''
+    for component, cohort in self.component_cohort_map.iteritems():
+      p = self.gus_home + '/lib/conifer/roles/conifer/vars/' + cohort
+      if self.verbose: print("Looking for '{}'".format(p))
+      if os.path.isdir(p):
+        if self.verbose: print("Found '{}'".format(p))
+        return cohort
+    raise Exception("No component found in '{}'.".format(self.gus_home))
+
+  def _lookup_cohort(self, component):
+    try:
+      return self.component_cohort_map[component]
+    except KeyError:
+      raise Exception("Component '{}' not found in the cohort_map dictionary defined in {}"
+       .format(component, sys.argv[0]))
+
+  def _lookup_component(self, cohort):
+    for key, value in self.component_cohort_map.iteritems():
+      if value == cohort:
+        return key
+    raise Exception("Cohort '{}' not found in the cohort_map dictionary defined in {}"
+     .format(cohort, sys.argv[0]))
+
+  def _sanitize_src_paths(self, paths):
+    '''
+    - Ensure dependency install paths do not have trailing slash, so
+      directory (not contents) is rsync'd.
+    - Ensure dependent directory is present.
+    '''
+    clean_paths = []
+    for path in paths:
+      if not os.path.exists(path):
+        raise Exception("Source directory '{}' not found.".format(path))
+      clean_paths.append(path.rstrip("/"))
+    if self.project_home + '/FgpUtil/Util/lib/conifer' not in clean_paths:
+      clean_paths.append(self.project_home + '/FgpUtil/Util/lib/conifer')
+    if self.project_home + '/' + self.cohort_root + '/Model/lib/conifer' not in clean_paths:
+      clean_paths.append(self.project_home + '/' + self.cohort_root + '/Model/lib/conifer')
+    return clean_paths
+
+  def _yml_to_dict(self, yml):
+    yml_vars = {}
+    with open(yml, 'r') as stream:
+      try:
+        yml_vars = yaml.load(stream)
+      except yaml.YAMLError as yerr:
+        raise Exception("Failed to parse {}: {}".format(yml, yerr))
+    tmpl_vars = {}
+    tmpl_vars.update(deepcopy(self.__dict__))
+    tmpl_vars.update(deepcopy(yml_vars))
+    dl = DataLoader()
+    templar = Templar(loader=dl, variables=tmpl_vars)
+    return templar.template(yml_vars)
+
   def _parse_args(self, required=None):
     if required is None:
       required = ['project-home', 'gus-home', 'cohort', 'project', 'site-vars']
     parser = argparse.ArgumentParser(
       description='Deploy configurations')
-    parser.add_argument("hostname", nargs='?', help="hostname for the website to configure")
+    parser.add_argument("component", nargs='?', help="GUS component or website hostname to install/configure")
+    parser.add_argument("--hostname", help="")
     parser.add_argument('--extra-vars', '-e', action='append', help="extra-vars to pass to Ansible")
-    parser.add_argument("--project-home", help="path to GUS source code")
-    parser.add_argument("--gus-home", help="")
+    parser.add_argument("--project-home", default=os.getenv('PROJECT_HOME'), help="path to GUS source code")
+    parser.add_argument("--gus-home", default=os.getenv('GUS_HOME'), help="")
     parser.add_argument("--cohort", help="")
+    parser.add_argument("--cohort-root", help="Where to initiate the search for the cohort data.")
     parser.add_argument("--project", help="")
     parser.add_argument("--webapp-ctx", help="")
     parser.add_argument("--env", help="configuration environment; typically 'development' or 'production'")
@@ -279,28 +380,68 @@ Available commands:
     parser.add_argument("--verbose", action='store_true', help="Show some process details.")
     parser.add_argument("--debug", action='store_true', help="Show stack traces and other processing details.")
 
-    ######### These arg names with underscore are deprecated
-    parser.add_argument("--project_home", help="path to GUS source code")
-    parser.add_argument("--gus_home", help="")
-    parser.add_argument("--webapp_ctx", help="")
-    parser.add_argument("--site_vars", help="")
-    ######## End deprecated
-
     # now that we're inside a subcommand, ignore the first
     # two argvs, ie the command (conifer) and the subcommand (configure)
     args = parser.parse_args(sys.argv[2:])
     self.args = args
     self.__dict__.update(copy(args.__dict__))
 
-    if self.hostname is not None:
-     if self.verbose: print('will attempt to derive args from EBRC-style file conventions')
-     self._derive_env(self.hostname)
+    if self.command == 'install':
+      self._pre_install_setenv()
     else:
-     for cli_arg in required:
-       arg_var = cli_arg.replace('-', '_')
-       if eval('self.' + arg_var) is None:
-         parser.error('--' + cli_arg + ' is required')
+      self._post_install_setenv()
+
     self.conifer_home = self.gus_home + '/lib/conifer'
+
+    for cli_arg in required:
+      arg_var = cli_arg.replace('-', '_')
+      if eval('self.' + arg_var) is None:
+        parser.error('--{} is required for {}'.format(cli_arg, self.command))
+
+  def _pre_install_setenv(self):
+    ''' Use project_home to derive environment needed for install '''
+    if self.component is None:
+      if self.cohort_root is None:
+        self.cohort_root = self._lookup_component(self.cohort)
+    else:
+      if os.path.exists(self.www_path + '/' + self.component + '/etc'):
+        if self.verbose: print("Treating '{}' as an EBRC-style website.".format(self.component))
+        self._derive_website_env(self.component)
+        if self.cohort_root is None:
+          self.cohort_root = self._first_website_cohort_root_found(self.hostname)
+        if self.cohort is None:
+          self.cohort = self._lookup_cohort(self.cohort_root)
+      # project_home and gus_home is required beyond this point
+      elif self.project_home is None:
+        raise Exception("project_home must be provided, either as a --project-home commandline argument or as the PROJECT_HOME environment variable.")
+      elif self.gus_home is None:
+        raise Exception("gus_home must be provided, either as a --gus-home commandline argument or as the GUS_HOME environment variable.")
+      elif not os.path.isdir(self.project_home):
+        raise Exception("Could not find project_home directory at '{}'".format(self.project_home))
+      elif os.path.isdir(self.project_home + '/' + self.component):
+        if self.verbose: print("Treating '{}' as GUS component.".format(self.component))
+        self.cohort_root = self.component
+        if self.cohort is None:
+          self.cohort = self._lookup_cohort(self.cohort_root)
+      else:
+        raise Exception("I do not understand '{}'. Please supply a GUS component in project_home ('{}') or a website hostname.".format(self.component, self.project_home))
+
+  def _post_install_setenv(self):
+    ''' Use Conifer layout installed in gus_home to derive environment '''
+    if self.component is None:
+      pass
+    else:
+      if os.path.exists(self.www_path + '/' + self.component + '/etc'):
+        if self.verbose: print("Treating '{}' as an EBRC-style website.".format(self.component))
+        self._derive_website_env(self.component)
+        if self.cohort is None:
+          self.cohort = self._first_coniferhome_cohort_found()
+      elif self.gus_home is None:
+        raise Exception("gus_home must be provided, either as a --gus-home commandline argument or as the GUS_HOME environment variable.")
+      else:
+        if self.verbose: print("Treating '{}' as GUS component.".format(self.component))
+        if self.cohort is None:
+          self.cohort = self._lookup_cohort(self.component)
 
   def _run_playbook(self, ansible_extra_vars, playbook):
     shell_env = os.environ.copy()
@@ -314,33 +455,20 @@ Available commands:
     )
     return call(cmd, env=shell_env)
 
-  def _derive_env(self, hostname):
+  def _derive_website_env(self, hostname):
     '''
     Use EuPathDB BRC file/path naming conventions to derive
     parameter values, unless explicitly set on CLI.
     '''
     wpr = WebhostPathResolver(self.www_path + '/' + hostname)
     if (self.gus_home is None):
-      self.gus_home = self.www_path + '/' + hostname + '/gus_home'
+      self.gus_home = os.path.realpath(self.www_path + '/' + hostname + '/gus_home')
     if (self.project_home is None):
-      self.project_home = self.www_path + '/' + hostname + '/project_home'
-    cohort_map = OrderedDict([
-      ('ClinEpiWebsite', 'ClinEpi'),
-      ('OrthoMCLWebsite', 'OrthoMCL'),
-      ('MicrobiomeWebsite', 'Microbiome'),
-      ('ApiCommonWebsite', 'ApiCommon'),
-      ('WDKTemplateSite', 'WDKTemplate'),
-    ])
+      self.project_home = os.path.realpath(self.www_path + '/' + hostname + '/project_home')
 
-    for dir, cohort in cohort_map.iteritems():
-      p = self.www_path + '/' + hostname + '/project_home/' + dir
-      if self.verbose: print("Looking for '{}'".format(p))
-      if os.path.isdir(p):
-        if self.verbose: print("Found '{}'".format(p))
-        self.cohort = cohort
-        break
-    if self.cohort is None:
-      raise Exception('Was unable to determine the cohort to use.')
+    if self.hostname is None:
+      self.hostname = hostname
+
     if self.verbose: print("Selecting cohort: {}".format(self.cohort))
     if self.project is None:
       self.project = wpr.product
@@ -380,6 +508,8 @@ Available commands:
 if __name__ == '__main__':
   usemon = UsageMonitor()
   timer_start = datetime.now().replace(microsecond=0)
+  banner_args = { 'msg': 'CONIFER' }
+  g = None
   try:
     g = ConiferCLI()
     banner_args = { 'msg': 'CONIFER {} RESULTS'.format(g.command.upper()), 'color': 'bright blue' }
@@ -390,8 +520,8 @@ if __name__ == '__main__':
       display.display(**g.status)
   except(Exception, KeyboardInterrupt) as e:
     display.banner(**banner_args)
-    display.error(e)
-    if g.debug: traceback.print_exc()
+    display.error("{}".format(e))
+    if g is not None and g.debug: traceback.print_exc()
     sys.exit(1)
   timer_stop = datetime.now().replace(microsecond=0)
   display.display('Duration: {}'.format(timer_stop - timer_start))

@@ -16,6 +16,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -153,6 +154,28 @@ public class IoUtil {
     finally {
       // only close input stream; container will close output stream
       inputStream.close();
+    }
+  }
+
+  /**
+   * Transfers character data from the reader to the writer until no more data
+   * is available, then closes reader (but not the writer).
+   * 
+   * @param writer writer data is written to
+   * @param reader reader data is read from
+   * @throws IOException if problem reading/writing data occurs
+   */
+  public static void transferStream(Writer writer, Reader reader) throws IOException {
+    try {
+      char[] buffer = new char[1024]; // send 1kb at a time
+      int bytesRead;
+      while ((bytesRead = reader.read(buffer)) != -1) {
+        writer.write(buffer, 0, bytesRead);
+      }
+    }
+    finally {
+      // only close reader; container will close writer
+      reader.close();
     }
   }
 

@@ -64,7 +64,7 @@ public class DataSourceWrapper implements DataSource {
     }
 
     public String getBasicInfo() {
-      String timeOpenedStr = new SimpleDateFormat(DATE_FORMAT).format(_timeOpened);
+      String timeOpenedStr = new SimpleDateFormat(FormatUtil.STANDARD_TIMESTAMP_FORMAT).format(_timeOpened);
       double secondsOpen = ((double)(new Date().getTime() - _timeOpened.getTime())) / 1000;
       return new StringBuilder()
           .append("Connection to ").append(_dbName)
@@ -82,8 +82,6 @@ public class DataSourceWrapper implements DataSource {
         .toString();
     }
   }
-
-  private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
   private final String _dbName;
   private final DataSource _underlyingDataSource;
