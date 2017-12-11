@@ -248,6 +248,7 @@ public class FormatUtil {
    * @return pretty string value of map
    */
   public static <S,T> String prettyPrint(Map<S,T> map, Style style, Function<T,String> toString) {
+    if (map == null) return "null";
     StringBuilder sb = new StringBuilder("{").append(style.introDelimiter);
     boolean firstRecord = true;
     for (Entry<S,T> entry : map.entrySet()) {
