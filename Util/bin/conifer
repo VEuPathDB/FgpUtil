@@ -461,10 +461,10 @@ Available commands:
     parameter values, unless explicitly set on CLI.
     '''
     wpr = WebhostPathResolver(self.www_path + '/' + hostname)
-    if (self.gus_home is None):
-      self.gus_home = os.path.realpath(self.www_path + '/' + hostname + '/gus_home')
-    if (self.project_home is None):
-      self.project_home = os.path.realpath(self.www_path + '/' + hostname + '/project_home')
+
+    # Ignore any ENV and CLI args for gus_home and project_home
+    self.gus_home = os.path.realpath(self.www_path + '/' + hostname + '/gus_home')
+    self.project_home = os.path.realpath(self.www_path + '/' + hostname + '/project_home')
 
     if self.hostname is None:
       self.hostname = hostname
