@@ -1,12 +1,12 @@
 from __future__ import (absolute_import, division, print_function)
 import time
+from six import string_types
 from ansible import constants as C
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.lookup import LookupBase
 from ansible.module_utils._text import to_text
 from ansible.module_utils.urls import open_url, ConnectionError, SSLValidationError
 from ansible.module_utils.six.moves.urllib.error import HTTPError, URLError
-from ansible.compat.six import string_types
 
 try:
   from __main__ import display
