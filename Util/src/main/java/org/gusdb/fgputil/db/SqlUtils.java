@@ -661,7 +661,7 @@ public final class SqlUtils {
   }
   
   private static String getUrlAndUser(Connection c) {
-    String oops = "/nConnect URL: unknown \nUser: unknown";
+    String oops = "\nConnect URL: unknown \nUser: unknown";
     if (c == null) return oops;
     try {
       DatabaseMetaData md = c.getMetaData();
