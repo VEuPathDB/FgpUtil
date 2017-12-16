@@ -21,6 +21,13 @@ public class FormatUtil {
   public static final String TAB = "\t";
   public static final String UTF8_ENCODING = "UTF-8";
 
+  public static final String STANDARD_TIME_FORMAT = "HH:mm:ss";
+  public static final String STANDARD_DATE_FORMAT_SLASH = "yyyy/MM/dd";
+  public static final String STANDARD_DATETIME_FORMAT_SLASH = STANDARD_DATE_FORMAT_SLASH + " " + STANDARD_TIME_FORMAT;
+  public static final String STANDARD_DATE_FORMAT_DASH = "yyyy-MM-dd";
+  public static final String STANDARD_DATETIME_FORMAT_DASH = STANDARD_DATE_FORMAT_DASH + " " + STANDARD_TIME_FORMAT;
+  public static final String STANDARD_TIMESTAMP_FORMAT = STANDARD_DATETIME_FORMAT_DASH + ".SSS";
+
   public interface MultiLineToString {
     public String toMultiLineString(String indentation);
   }
@@ -241,6 +248,7 @@ public class FormatUtil {
    * @return pretty string value of map
    */
   public static <S,T> String prettyPrint(Map<S,T> map, Style style, Function<T,String> toString) {
+    if (map == null) return "null";
     StringBuilder sb = new StringBuilder("{").append(style.introDelimiter);
     boolean firstRecord = true;
     for (Entry<S,T> entry : map.entrySet()) {
