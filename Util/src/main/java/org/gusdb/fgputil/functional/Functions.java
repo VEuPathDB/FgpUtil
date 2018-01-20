@@ -20,6 +20,8 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ReducerWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.TrinaryFunction;
 
+import org.gusdb.fgputil.Tuples.TwoTuple;
+
 public class Functions {
 
   private Functions() {}
@@ -105,11 +107,7 @@ public class Functions {
    * @return map from passed keys to generated values
    */
   public static <S,T> Map<S,T> getMapFromKeys(Iterable<S> keys, Function<S,T> function) {
-    Map<S,T> result = new LinkedHashMap<>();
-    for (S key : keys) {
-      result.put(key, function.apply(key));
-    }
-    return result;
+    return getMapFromList(keys, key -> new TwoTuple<S,T>(key, function.apply(key)));
   }
 
   /**
@@ -120,9 +118,22 @@ public class Functions {
    * @return map from generated keys to passed values
    */
   public static <S,T> Map<S,T> getMapFromValues(Iterable<T> values, Function<T,S> function) {
+    return getMapFromList(values, value -> new TwoTuple<S,T>(function.apply(value), value));
+  }
+
+  /**
+   * Converts an iterable of values into a map.  A passed function takes each value in the iterable and
+   * transforms it to an entry for insertion into the returned map
+   * 
+   * @param values input values
+   * @param function entry generator
+   * @return map containing the resulting entries
+   */
+  public static <R,S,T> Map<S,T> getMapFromList(Iterable<R> values, Function<R,Entry<S,T>> function) {
     Map<S,T> result = new LinkedHashMap<>();
-    for (T value : values) {
-      result.put(function.apply(value), value);
+    for (R value : values) {
+      Entry<S,T> entry = function.apply(value);
+      result.put(entry.getKey(), entry.getValue());
     }
     return result;
   }

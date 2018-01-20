@@ -69,6 +69,16 @@ public class FormatUtil {
     }
   }
 
+  public static String decodeUtf8EncodedBytes(byte[] bytes) {
+    try {
+      return new String(bytes, UTF8_ENCODING);
+    }
+    catch (UnsupportedEncodingException e) {
+      // this should never happen; if it does, wrap in RuntimeException
+      throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
+    }
+  }
+
   public static String urlEncodeUtf8(String s) {
     try {
       if (s == null) return null;
