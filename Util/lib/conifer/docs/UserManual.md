@@ -237,6 +237,8 @@ conifer configure \
 
 You can optionally pass vars on the commandline using the `-e` CLI
 argument. These have precedence over the same vars defined in YAML files.
+_Note that the `-e` parameters use `key=value` syntax rather than YAML.
+So it goes._
 
 ```bash
 $ conifer configure integrate.toxodb.org \
