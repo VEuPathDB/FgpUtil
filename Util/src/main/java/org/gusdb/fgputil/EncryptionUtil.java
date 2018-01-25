@@ -1,8 +1,21 @@
 package org.gusdb.fgputil;
 
+import static java.util.Arrays.asList;
+import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
+import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+import static org.gusdb.fgputil.FormatUtil.decodeUtf8EncodedBytes;
+import static org.gusdb.fgputil.FormatUtil.getUtf8EncodedBytes;
+import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.functional.Functions.getMapFromList;
+import static org.gusdb.fgputil.functional.Functions.mapToList;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.gusdb.fgputil.Tuples.TwoTuple;
 
 public class EncryptionUtil {
 
@@ -62,5 +75,32 @@ public class EncryptionUtil {
     }
 
     return convertToHex(byteBuffer, true);
+  }
+
+  // pattern to check validity of incoming ID names (non-empty alpha-numeric string + '_')
+  private static final Pattern VALID_ID_PATTERN = Pattern.compile("[\\.\\-_a-zA-Z0-9]+");
+
+  public static String encodeMap(Map<String,String> map) {
+    return printBase64Binary(getUtf8EncodedBytes(join(mapToList(map.entrySet(), entry ->
+        validateStringToEncode(entry.getKey(), "keys") + "=" +
+        validateStringToEncode(entry.getValue(), "values")), "|")));
+  }
+
+  private static String validateStringToEncode(String value, String typePlural) {
+    if (!VALID_ID_PATTERN.matcher(value).matches()) {
+      throw new IllegalArgumentException("Cannot encode '" + value + "'.  Only non-empty alpha-numeric " +
+          typePlural + " (plus period, hyphen, underscore) allowed.");
+    }
+    return value;
+  }
+
+  public static Map<String,String> decodeEncodedMap(String encodedMap) {
+    return getMapFromList(asList(decodeUtf8EncodedBytes(parseBase64Binary(encodedMap)).split("\\|")), pair -> {
+      String[] tokens = pair.split("=");
+      if (tokens.length != 2) {
+        throw new IllegalArgumentException("Value '" + encodedMap + "' cannot be decoded.");
+      }
+      return new TwoTuple<String,String>(tokens[0], tokens[1]);
+    });
   }
 }

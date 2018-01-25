@@ -1,5 +1,7 @@
 package org.gusdb.fgputil;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +28,6 @@ public class FormatTest {
   
   @Test
   public void testPrettyPrint() {
-    String NL = FormatUtil.NL;
     Map<Integer,String> emptyMap = new HashMap<>();
     Map<Integer,String> fullMap = new MapBuilder<>(1, "One").put(2, "Two")
         .put(3, "Three").put(4, "Four").put(5, "Five").toMap();
@@ -78,5 +79,28 @@ public class FormatTest {
     for (String[] testCase : UNDERSCORE_TEST_CASES) {
       Assert.assertEquals(testCase[1], FormatUtil.toUnderscoreFormat(testCase[0]));
     }
+  }
+
+  private static String[][] TYPICAL_USE = {
+    { "uid", "2452345234" },
+    { "dsid", "24352345234" },
+    { "file", "someWeirdoFileForGbrowse.bed" }
+  };
+
+  @Test
+  public void testMapEncoder() {
+    testMapEncoder(UNDERSCORE_TEST_CASES);
+    testMapEncoder(TYPICAL_USE);
+  }
+
+  private static void testMapEncoder(String[][] testCase) {
+    Map<String,String> inputMap = new HashMap<>();
+    for (String[] pair : testCase) {
+      inputMap.put(pair[0], pair[1]);
+    }
+    String codedValue = EncryptionUtil.encodeMap(inputMap);
+    System.out.println(NL + "Encoded Map (" + codedValue.length() + "): " + codedValue);
+    Map<String,String> outputMap = EncryptionUtil.decodeEncodedMap(codedValue);
+    System.out.println(NL + "Decoded Map: " + FormatUtil.prettyPrint(outputMap, Style.MULTI_LINE));
   }
 }
