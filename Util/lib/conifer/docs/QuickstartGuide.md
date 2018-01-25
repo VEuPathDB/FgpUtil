@@ -28,7 +28,11 @@ Conifer must be installed in to your `gus_home` before you can use it to
 configure your website. Conifer is installed from source as part of the
 WDK build but you can bypass that long build process and install conifer
 singularly. This step is useful if you want to do website configuration
-before you build the source code.
+before you build the WDK. This way, when you do build your web
+application it will already be correctly configured and ready for
+deployment.
+
+To install, run the command:
 
 ```bash
 $ conifer install integrate.toxodb.org
@@ -43,7 +47,7 @@ Your organization will have defined default values for most settings
 needed to configure a website. Some settings can not be pre-defined and
 will need to be set by you in a site-specific file. The `seed`
 subcommand will generate a file of these site-specific variables for you
-to fill in.
+to fill in. Run it like so:
 
 ```bash
 $ conifer seed integrate.toxodb.org
@@ -89,13 +93,15 @@ information._
 
 You only need to run the `seed` command when you need guidance
 on creating a working `conifer_site_vars.yml` file, typically that will
-be the first time preparing a web site or when configuration
+be the first time preparing a website or when configuration
 requirements change.
 
 ### Configure
 
 Once you have Conifer installed and a site-specific
 `conifer_site_vars.yml` file prepared you are ready configure your site.
+
+To configure, run the command:
 
 ```bash
 $ conifer configure integrate.toxodb.org
@@ -127,7 +133,7 @@ Conifer does not require that you build your WDK and other source code
 before using it. Once you have source code checked out in `project_home`
 you can `install` Conifer,  then create a `conifer_site_vars.yml` file
 with the help of the `seed` command and then run `configure` to
-configure your website. This way when you do build your web application
+configure your website. This way, when you do build your web application
 it will already be correctly configured and ready for deployment.
 
 The `rebuilder` command used to build EBRC websites will automatically
