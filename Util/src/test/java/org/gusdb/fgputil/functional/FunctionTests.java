@@ -2,6 +2,7 @@ package org.gusdb.fgputil.functional;
 
 import static java.util.Arrays.asList;
 import static org.gusdb.fgputil.FormatUtil.join;
+import static org.gusdb.fgputil.functional.Functions.findFirstIndex;
 import static org.gusdb.fgputil.functional.Functions.mapToListWithIndex;
 import static org.gusdb.fgputil.functional.Functions.reduce;
 import static org.gusdb.fgputil.functional.Functions.reduceWithIndex;
@@ -62,5 +63,12 @@ public class FunctionTests {
       }
       results.clear();
     }
+  }
+
+  @Test
+  public void findFirstIndexTest() {
+    assertEquals(3, findFirstIndex(CHARS, c -> c == 'c'));
+    assertEquals(-1, findFirstIndex(CHARS, c -> c == 'z'));
+    assertEquals(0, findFirstIndex(CHARS, c -> c > 'b'));
   }
 }

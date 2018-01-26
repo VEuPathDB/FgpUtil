@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunction;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
@@ -19,8 +20,6 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.PredicateWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ReducerWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.TrinaryFunction;
-
-import org.gusdb.fgputil.Tuples.TwoTuple;
 
 public class Functions {
 
@@ -361,5 +360,25 @@ public class Functions {
       }
     }
     return zippedItems.toList();
+  }
+
+  /**
+   * Finds the zero-based index of the first item in the passed iterable that matches the predicate.  Index
+   * is defined as the iteration order so for unordered iterables (e.g. HashSet), this function is probably
+   * not useful.
+   * 
+   * @param items iterable of items
+   * @param predicate test on the type of item in items
+   * @return index of the first item that passes the predicate, or -1 if none do
+   */
+  public static <T> int findFirstIndex(Iterable<T> items, Predicate<T> predicate) {
+    int i = 0;
+    for (T item : items) {
+      if (predicate.test(item)) {
+        return i;
+      }
+      i++;
+    }
+    return -1;
   }
 }
