@@ -21,11 +21,13 @@ WDK/Model/lib/conifer/roles/conifer/templates/WDK/model.prop.j2
 ```
 
 If your website only uses the WDK and has no other applications that
-need configuring, then perhaps the provided templates are all you need.
+need configuring, then the provided templates are all you need.
 
-Your new web site will have a directory of source code for your WDK
-model and website UI, e.g. `WDKTemplateSite`. There is where you will
-put templates and vars files.
+Your new web site project will have a directory of source code specific
+for your implementation of WDK model and website UI. For this manual's
+example, that directory is named
+[`WDKTemplateSite`](https://cbilsvn.pmacs.upenn.edu/svn/gus/WDKTemplateSite/).
+There is where you will put templates (if any) and vars files.
 
 ```
 WDKTemplateSite/Model/lib/conifer/roles/conifer/templates/[optional.conf.j2]
@@ -33,17 +35,18 @@ WDKTemplateSite/Model/lib/conifer/roles/conifer/templates/[optional.conf.j2]
 WDKTemplateSite/Model/lib/conifer/roles/conifer/vars/WDKTemplate/templates.yml
 ```
 
-The WDKTemplateSite only needs the templates provided by FgpUtil so this
+The WDKTemplateSite only needs the templates provided by the WDK so this
 directory is empty. You could even omit the empty directory entirely.
 
-The `templates.yml` is a dictionary with the project name(s) as the
-parent key(s). Each configuration file is listed with a `src` source for
-the Jinja2 template and a `dest` destination for the rendered
-configuration file. The actual key value (e.g. `model-config.xml:`) for
-each entry can be anything but must be unique within the dictionary and
-preferably the same as the configuration file name. This value is
-included in conifer's runtime stdout so that will be more readable if
-you match with the filename.
+The `templates.yml` file encodes a YAML dictionary. Each configuration
+file managed by Conifer for this cohort is listed with a `src` key for
+the path to the Jinja2 template, relative to the `templates` directory,
+and a `dest` key with the full path to the rendered configuration file.
+The actual key value (e.g. `model-config.xml:`) for each entry can be
+anything but must be unique within the dictionary and preferably the
+same or similar as the configuration file name for readability. This
+value is included in conifer's runtime stdout so that will be more
+readable if you match with the filename.
 
 ```
 model-config.xml:
@@ -56,10 +59,21 @@ model.prop:
 
 The conifer `install` subcommand needs to know what to install. That is
 defined in the `install.yml` file in the cohort directory. For example,
-`ApiCommonWebsite/Model/lib/conifer/roles/conifer/vars/ApiCommon/install.yml`
+`WDKTemplateSite/Model/lib/conifer/roles/conifer/vars/WDKTemplate/install.yml`
 
 The yaml file lists dependency paths whose contents will be copied to
 `$GUS_HOME/lib/`. Template macros are allowed.
+
+Here is the `install.yml` for the `WDKTemplate` cohort of the
+`TemplateDB` project which uses only the templates provided by the `WDK`.
+
+```
+dependencies:
+  - '{{ project_home }}/WDK/Model/lib/conifer'
+```
+
+Here is another example from the `ApiCommon` cohort in the
+`ApiCommonWebsite` project.
 
 ```
 dependencies:
@@ -104,6 +118,7 @@ templates. Also some variables might not fit the regex used here (e.g.
 ```
 find .  -name '*.j2' | xargs grep '{{' | sed  's/[^{]*{{ *\([^ |]*\).*/\1/'
 ```
+
 ### Add cohort-specific playbook
 Optional. The stock `playbook.yml` provided by FgpUtil is usually sufficient, but
 if you need a cohort specific playbook, say you would like to run some
