@@ -381,4 +381,13 @@ public class Functions {
     }
     return -1;
   }
+
+  /**
+   * Converts a FgpUtil Function to a Java8 function
+   * @param f FgpUtil function
+   * @return equivalent Java8 native function
+   */
+  public static <S,T> java.util.function.Function<S,T> toJavaFunction(Function<S,T> f) {
+    return s -> f.apply(s);
+  }
 }
