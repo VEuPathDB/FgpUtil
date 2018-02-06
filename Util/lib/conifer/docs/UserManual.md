@@ -2,9 +2,10 @@
 
 # Conifer User Manual
 
-Conifer is a configuration framework for websites built on the GUS WDK
-platform that takes care of producing all the individual configuration
-files required for the website components (WDK, CGI scripts, etc.).
+Conifer is a configuration management framework for websites built on
+the GUS WDK platform which takes care of producing all the individual
+configuration files required for the website components (WDK, CGI
+scripts, etc.).
 
 It uses variables defined in hierarchical layers of YAML files to
 generate working application configurations from templates. The
@@ -74,9 +75,11 @@ The following software packages must be installed and in the user's `$PATH`.
 
 Conifer uses subcommands to perform selected actions. The actions
 require some information, such as location of source code to install or
-the name of cohort to assemble. Depending on the specific use case, some
-of this information can be automatically determined by naming
-conventions or other means. The supported use cases are:
+the name of cohort to assemble (a cohort is a named collection of
+projects that share the same code base and configuration requirements).
+Depending on the specific use case, some of this information can be
+automatically determined by naming conventions or other means. The
+supported use cases are:
 
 - WDK website that follows EBRC conventions
 - GUS component such as ApiCommonWebsite (analogous to the GUS `build ApiCommonWebsite`)
@@ -334,10 +337,10 @@ code base and configuration requirements (with allowance for small
 variation). Cohort examples at EBRC include ApiCommon, ClinEpi,
 Microbiome, OrthoMCL.
 
-- Project - This a WDK concept that is often referred to as 'projectid'
-or 'model'. Examples at EBRC include AmoebaDB, ToxoDB, ClinEpiDB,
-MicrobiomeDB. AmoebaDB and ToxoDB projects belong to the ApiCommon
-cohort. ClinEpiDB project belongs to the ClinEpi cohort.
+- Project - This a GUS/WDK concept that is also referred to as
+'projectid' or 'model'. Examples at EBRC include AmoebaDB, ToxoDB,
+ClinEpiDB, MicrobiomeDB. AmoebaDB and ToxoDB projects belong to the
+ApiCommon cohort. ClinEpiDB project belongs to the ClinEpi cohort.
 
 - Environment - Websites have a runtime environment which may influence
 configuration values. Examples at EBRC include production and virtual
@@ -556,6 +559,52 @@ for more information.
 
 The following are some Jinja2 filters and functions included with Conifer.
 
+### lookup('colfile')
+
+The lookup() function is an Ansible built-in that uses a named plugin to
+fetch data from external sources. One useful plugin, custom for Conifer,
+is the `colfile` plugin that does lookups from a columnar file. The file
+can be local (`file:///etc/wdksecret`) or remotely accessible over
+http(s).
+
+Optional 'col' can be an integer referencing a column index
+(zero-based) or a string referencing the column name taken from the
+first non-comment line in the file. The 'col' attribute is optional
+and, if not present, the lookup returns a dictionary of all fields for
+the host.
+
+Optional 'retry' attribute is the number of times http URLs are
+retried. Default is 1 retry (for a total of 2 attempts).
+
+Return single value,
+```
+  lookup('colfile', '<key> col=1 src=https...')
+  lookup('colfile', '<key> col=header_key src=https...')
+```
+
+Return dictionary,
+```
+  lookup('colfile', <key> 'src=https...') 
+```
+
+This example retrieves the dictionary of values for the key
+`w1.toxodb.org` and assigns that dictionary to `host_data`. Selected
+values can then be looked up in `host_data` dictionary. This is a common
+technique used in EBRC production website builds as it allows us to
+manage database configuration in a central, version-controlled location.
+
+```
+host_data: "{{ lookup('colfile',
+    '{} src=https://cbilsvn.pmacs.upenn.edu/svn/apidb/websiteconf/master_configuration_set'.format('w1.toxodb.org')
+  ) }}"
+
+appDb_login: "{{ host_data['appDb_login'] }}"
+userDb_login: "{{ host_data['userDb_login'] }}"
+```
+
+The colfile plugin can be found at
+`FgpUtil/Util/lib/conifer/roles/conifer/lookup_plugins/colfile.py`.
+
 ### swap_hostname()
 
 Some websites are served through a reverse proxy, e.g. Nginx, such that
@@ -583,6 +632,9 @@ The filter takes a mapping of backend hostnames to public facing names.
 
 In this example, a1.plasmodb.org is transformed in to alpha.plasmodb.org.
 
+This function is defined in
+`FgpUtil/Util/lib/conifer/roles/conifer/filter_plugins/conifer.py`
+
 ### prod_prom_ctx()
 
 _This is an EBRC-specific filter but let us know if you also find it
@@ -599,7 +651,7 @@ match criteria.
 
     _webapp_ctx: '{{ webapp_ctx|prod_prom_ctx(hostname) }}'
 
-Provided by `ebrc.py` in `EbrcWebsiteCommon`.
+This function is provided by `ebrc.py` in `EbrcWebsiteCommon`.
 
 ## System conifer
 
