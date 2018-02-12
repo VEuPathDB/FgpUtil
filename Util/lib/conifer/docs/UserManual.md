@@ -602,6 +602,11 @@ appDb_login: "{{ host_data['appDb_login'] }}"
 userDb_login: "{{ host_data['userDb_login'] }}"
 ```
 
+_The `{}` placeholder and `format()` method are Python constructs for
+formatting strings, similar to Java's `String.format()` method. Here's a
+[Python string formatting tutorial](https://www.digitalocean.com/community/tutorials/how-to-use-string-formatters-in-python-3)
+if you would like additional information._
+
 The colfile plugin can be found at
 `FgpUtil/Util/lib/conifer/roles/conifer/lookup_plugins/colfile.py`.
 
