@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -53,6 +54,7 @@ public class AccountManager {
   private static final String DEFINED_PROPERTY_NAMES_MACRO = "$$DEFINED_PROPERTY_NAMES$$";
   private static final String DEFINED_PROPERTY_SELECTION_MACRO = "$$DEFINED_PROPERTIES_MACRO$$";
   private static final String DEFINED_PROPERTY_NAME_MACRO = "$$PROPERTY_NAME$$";
+  private static final String EMAIL_LIST_MACRO = "$$EMAIL_LIST$$";
 
   private static final String INSERT_USER_SQL =
       "insert into " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " (" + COL_USER_ID +
@@ -114,6 +116,11 @@ public class AccountManager {
 
   private static final String UPDATE_EMAIL_SQL = getUpdateColumnSql(COL_EMAIL);
   private static final Integer[] UPDATE_EMAIL_PARAM_TYPES = { Types.VARCHAR, Types.BIGINT };
+
+  private static final String FIND_USER_IDS_BY_EMAIL_SQL =
+      "select " + COL_USER_ID + ", " + COL_EMAIL +
+      "  from " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS +
+      " where " + COL_EMAIL + " in (" + EMAIL_LIST_MACRO + ")";
 
   private final DatabaseInstance _accountDb;
   private final String _accountSchema;
@@ -370,5 +377,17 @@ public class AccountManager {
     return (SELECT_FLAT_USER_PROPS_SQL + accountDbLink)
         .replace(ACCOUNT_SCHEMA_MACRO, accountSchema)
         .replace(DEFINED_PROPERTY_SELECTION_MACRO, getPropSelectionSql(propertyNames));
+  }
+
+  public Map<String,Long> lookUpUserIdsByEmail(Collection<String> emailList) {
+    String emailListSql = emailList.stream().map(id -> "'" + id.replace("'", "''") + "'").collect(Collectors.joining(","));
+    String sql = FIND_USER_IDS_BY_EMAIL_SQL.replace(EMAIL_LIST_MACRO, emailListSql);
+    Map<String, Long> result = new HashMap<>();
+    new SQLRunner(_accountDb.getDataSource(), sql, "look-up-user-ids-by-email").executeQuery(rs -> {
+      while (rs.next()) {
+        result.put(rs.getString(COL_EMAIL), rs.getLong(COL_USER_ID));
+      }
+    });
+    return result;
   }
 }
