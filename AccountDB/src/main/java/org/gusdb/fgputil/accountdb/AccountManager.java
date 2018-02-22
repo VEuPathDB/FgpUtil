@@ -55,6 +55,7 @@ public class AccountManager {
   private static final String DEFINED_PROPERTY_SELECTION_MACRO = "$$DEFINED_PROPERTIES_MACRO$$";
   private static final String DEFINED_PROPERTY_NAME_MACRO = "$$PROPERTY_NAME$$";
   private static final String EMAIL_LIST_MACRO = "$$EMAIL_LIST$$";
+  private static final String ID_LIST_MACRO = "$$ID_LIST$$";
 
   private static final String INSERT_USER_SQL =
       "insert into " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " (" + COL_USER_ID +
@@ -121,6 +122,11 @@ public class AccountManager {
       "select " + COL_USER_ID + ", " + COL_EMAIL +
       "  from " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS +
       " where " + COL_EMAIL + " in (" + EMAIL_LIST_MACRO + ")";
+
+  private static final String FIND_USER_IDS =
+      "select " + COL_USER_ID +
+      "  from " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS +
+      " where " + COL_USER_ID + " in (" + ID_LIST_MACRO + ")";
 
   private final DatabaseInstance _accountDb;
   private final String _accountSchema;
@@ -388,6 +394,22 @@ public class AccountManager {
         result.put(rs.getString(COL_EMAIL), rs.getLong(COL_USER_ID));
       }
     });
+    return result;
+  }
+
+  public Map<Long,Boolean> verifyUserids(Collection<Long> userIdList) {
+    String sql = FIND_USER_IDS.replace(ID_LIST_MACRO, join(userIdList, ","));
+    Map<Long, Boolean> result = new HashMap<>();
+    new SQLRunner(_accountDb.getDataSource(), sql, "find-user-ids").executeQuery(rs -> {
+      while (rs.next()) {
+        result.put(rs.getLong(COL_USER_ID), true);
+      }
+    });
+    for (Long id : userIdList) {
+      if (!result.containsKey(id)) {
+        result.put(id, false);
+      }
+    }
     return result;
   }
 }
