@@ -398,7 +398,7 @@ public class AccountManager {
   }
 
   public Map<Long,Boolean> verifyUserids(Collection<Long> userIdList) {
-    String sql = FIND_USER_IDS.replace(ID_LIST_MACRO, join(userIdList, ","));
+    String sql = FIND_USER_IDS.replace(ACCOUNT_SCHEMA_MACRO, _accountSchema).replace(ID_LIST_MACRO, join(userIdList, ","));
     Map<Long, Boolean> result = new HashMap<>();
     new SQLRunner(_accountDb.getDataSource(), sql, "find-user-ids").executeQuery(rs -> {
       while (rs.next()) {
