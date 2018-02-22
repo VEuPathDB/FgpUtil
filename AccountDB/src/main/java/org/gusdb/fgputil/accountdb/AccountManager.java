@@ -387,7 +387,9 @@ public class AccountManager {
 
   public Map<String,Long> lookUpUserIdsByEmail(Collection<String> emailList) {
     String emailListSql = emailList.stream().map(id -> "'" + id.replace("'", "''") + "'").collect(Collectors.joining(","));
-    String sql = FIND_USER_IDS_BY_EMAIL_SQL.replace(EMAIL_LIST_MACRO, emailListSql);
+    String sql = FIND_USER_IDS_BY_EMAIL_SQL
+        .replace(ACCOUNT_SCHEMA_MACRO, _accountSchema)
+        .replace(EMAIL_LIST_MACRO, emailListSql);
     Map<String, Long> result = new HashMap<>();
     new SQLRunner(_accountDb.getDataSource(), sql, "look-up-user-ids-by-email").executeQuery(rs -> {
       while (rs.next()) {
@@ -398,7 +400,9 @@ public class AccountManager {
   }
 
   public Map<Long,Boolean> verifyUserids(Collection<Long> userIdList) {
-    String sql = FIND_USER_IDS.replace(ACCOUNT_SCHEMA_MACRO, _accountSchema).replace(ID_LIST_MACRO, join(userIdList, ","));
+    String sql = FIND_USER_IDS
+        .replace(ACCOUNT_SCHEMA_MACRO, _accountSchema)
+        .replace(ID_LIST_MACRO, join(userIdList, ","));
     Map<Long, Boolean> result = new HashMap<>();
     new SQLRunner(_accountDb.getDataSource(), sql, "find-user-ids").executeQuery(rs -> {
       while (rs.next()) {
