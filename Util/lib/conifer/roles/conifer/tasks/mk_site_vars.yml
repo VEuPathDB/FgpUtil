@@ -16,6 +16,7 @@
 - template_with_vars:
     src: Conifer/conifer_site_vars_seed.yml.j2
     dest: '{{ conifer_site_vars_seed_dest }}'
+    mode: 0600
     vars:
       site_vars: "{{ vars.conifer|conifer_pluck('=c=') }}"
   tags:
