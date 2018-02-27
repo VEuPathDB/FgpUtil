@@ -147,14 +147,20 @@ public class PostgreSQL extends DBPlatform {
    * (non-Javadoc)
    * 
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String, int, int)
+   *
+   * EGA : modified to deal with postgres (9.5.x) bug (pg_stats calculation) where correlations between
+   * physical and logical ordering of the rows << 1 lead to large table scans when using LIMIT
+   * solution is to sort again on rownum
    */
   @Override
   public String getPagedSql(String sql, int startIndex, int endIndex) {
-    StringBuffer buffer = new StringBuffer("SELECT f.* FROM ");
-    buffer.append("(").append(sql).append(") f ");
-    buffer.append(" LIMIT ").append(endIndex - startIndex + 1);
-    buffer.append(" OFFSET ").append(startIndex - 1);
-    return buffer.toString();
+      // StringBuffer buffer = new StringBuffer("SELECT f.* FROM ");
+      StringBuffer buffer = new StringBuffer("SELECT f.*, row_number() OVER () AS rnum FROM "); /* postgres bug patch -- EGA */
+      buffer.append("(").append(sql).append(") f ");
+      buffer.append(" ORDER BY rnum");/* postgres bug patch -- EGA */
+      buffer.append(" LIMIT ").append(endIndex - startIndex + 1);
+      buffer.append(" OFFSET ").append(startIndex - 1);
+      return buffer.toString();
   }
 
   /*
