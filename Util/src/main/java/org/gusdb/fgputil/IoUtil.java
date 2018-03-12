@@ -18,6 +18,7 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -296,7 +297,29 @@ public class IoUtil {
    * @throws IOException if unable to create directory or apply permissions
    */
   public static void createOpenPermsDirectory(Path directory) throws IOException {
-    openPosixPermissions(Files.createDirectory(directory));
+    createOpenPermsDirectory(directory, false);
+  }
+
+  /**
+   * Create a directory at the given path and open rwx perms to all.  Second argument allows caller to ignore
+   * any existing directory by that name.  If directory exists and ignoreExisting is true, function simply
+   * returns.  If ignoreExisting false, then exception will be thrown if directory already exists.  Note
+   * this means an existing file's permissions may NOT have been opened.
+   * 
+   * @param directory path to directory
+   * @param ignoreExisting if true and directory exists, this function simply returns
+   * @throws IOException if unable to create directory or apply permissions
+   */
+  public static void createOpenPermsDirectory(Path directory, boolean ignoreExisting) throws IOException {
+    try {
+      openPosixPermissions(Files.createDirectory(directory));
+    }
+    catch (FileAlreadyExistsException e) {
+      if (ignoreExisting) {
+        return;
+      }
+      throw e;
+    }
   }
 
   /**
