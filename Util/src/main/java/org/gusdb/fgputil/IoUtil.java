@@ -301,25 +301,25 @@ public class IoUtil {
   }
 
   /**
-   * Create a directory at the given path and open rwx perms to all.  Second argument allows caller to ignore
-   * any existing directory by that name.  If directory exists and ignoreExisting is true, function simply
-   * returns.  If ignoreExisting false, then exception will be thrown if directory already exists.  Note
-   * this means an existing file's permissions may NOT have been opened.
+   * Create a directory at the given path and open rwx perms to all.  Second argument allows caller to use
+   * an existing directory by that name.  If directory exists and useExisting is true, an attempt will be
+   * made to open permissions on the existing directory.  If useExisting is false, an exception will be
+   * thrown if the directory already exists.
    * 
    * @param directory path to directory
-   * @param ignoreExisting if true and directory exists, this function simply returns
+   * @param useExisting if false and directory exists, an exception will be thrown
    * @throws IOException if unable to create directory or apply permissions
    */
-  public static void createOpenPermsDirectory(Path directory, boolean ignoreExisting) throws IOException {
+  public static void createOpenPermsDirectory(Path directory, boolean useExisting) throws IOException {
     try {
-      openPosixPermissions(Files.createDirectory(directory));
+      directory = Files.createDirectory(directory);
     }
     catch (FileAlreadyExistsException e) {
-      if (ignoreExisting) {
-        return;
+      if (!useExisting) {
+        throw e;
       }
-      throw e;
     }
+    openPosixPermissions(directory);
   }
 
   /**
