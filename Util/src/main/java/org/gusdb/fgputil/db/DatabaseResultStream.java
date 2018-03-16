@@ -18,6 +18,8 @@ import java.sql.Wrapper;
  */
 public class DatabaseResultStream extends InputStream implements Wrapper {
 
+  private Connection _connection;
+  private Statement _statement;
   private ResultSet _resultSet;
   private InputStream _dataStream;
 
@@ -25,12 +27,16 @@ public class DatabaseResultStream extends InputStream implements Wrapper {
    * Creates an input stream of data from the passed field of the passed
    * result set.
    * 
+   * @param connection Connection over which the data will be passed
+   * @param statement Statement which produced the result set (may be null)
    * @param resultSet ResultSet from which to retrieve data
    * @param dataFieldName name of field containing binary data
    * @throws SQLException if column name is invalid or other DB problem occurs
    */
-  public DatabaseResultStream(ResultSet resultSet, String dataFieldName)
+  public DatabaseResultStream(Connection connection, Statement statement, ResultSet resultSet, String dataFieldName)
       throws SQLException {
+    _connection = connection;
+    _statement = statement;
     _resultSet = resultSet;
     _dataStream = _resultSet.getBinaryStream(dataFieldName);
     if (_dataStream == null) { // NULL value in DB
@@ -58,13 +64,8 @@ public class DatabaseResultStream extends InputStream implements Wrapper {
     catch (Exception e) {
       // do nothing; hopefully will be fixed when we close result set
     }
-    try {
-      Statement stmt = _resultSet.getStatement();
-      Connection conn = stmt.getConnection();
-      SqlUtils.closeQuietly(_resultSet, stmt, conn);
-    }
-    catch (SQLException e) {
-      throw new IOException("Unable to retrieve statement or connection for closing.", e);
+    finally {
+      SqlUtils.closeQuietly(_resultSet, _statement, _connection);
     }
   }
 
