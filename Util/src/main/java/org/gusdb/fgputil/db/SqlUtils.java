@@ -659,7 +659,7 @@ public final class SqlUtils {
       }
     }
   }
-  
+
   private static String getUrlAndUser(Connection c) {
     String oops = "\nConnect URL: unknown \nUser: unknown";
     if (c == null) return oops;
@@ -671,7 +671,20 @@ public final class SqlUtils {
     } catch (Exception e) {
       return oops;
     }
-
   }
 
+  public static Long fetchNullableLong(ResultSet rs, String columnName, Long nullValue) throws SQLException {
+    long value = rs.getLong(columnName);
+    return rs.wasNull() ? nullValue : value;
+  }
+
+  public static Integer fetchNullableInteger(ResultSet rs, String columnName, Integer nullValue) throws SQLException {
+    int value = rs.getInt(columnName);
+    return rs.wasNull() ? nullValue : value;
+  }
+
+  public static Boolean fetchNullableBoolean(ResultSet rs, String columnName, Boolean nullValue) throws SQLException {
+    boolean value = rs.getBoolean(columnName);
+    return rs.wasNull() ? nullValue : value;
+  }
 }
