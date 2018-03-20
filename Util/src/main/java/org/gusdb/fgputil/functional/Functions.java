@@ -129,7 +129,7 @@ public class Functions {
    * @return map containing the resulting entries
    */
   public static <R,S,T> Map<S,T> getMapFromList(Iterable<R> values, Function<R,Entry<S,T>> function) {
-    Map<S,T> result = new LinkedHashMap<>();
+    Map<S,T> result = new LinkedHashMap<>(); // some callers depend on proper ordering
     for (R value : values) {
       Entry<S,T> entry = function.apply(value);
       result.put(entry.getKey(), entry.getValue());
