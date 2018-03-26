@@ -687,4 +687,22 @@ public final class SqlUtils {
     boolean value = rs.getBoolean(columnName);
     return rs.wasNull() ? nullValue : value;
   }
+
+  public static void setNullableLong(PreparedStatement ps, int paramIndex, Long value) throws SQLException {
+    if (value == null) {
+      ps.setNull(paramIndex, Types.BIGINT);
+    }
+    else {
+      ps.setLong(paramIndex, value);
+    }
+  }
+
+  public static void setNullableString(PreparedStatement ps, int paramIndex, String value) throws SQLException {
+    if (value == null) {
+      ps.setNull(paramIndex, Types.VARCHAR);
+    }
+    else {
+      ps.setString(paramIndex, value);
+    }
+  }
 }
