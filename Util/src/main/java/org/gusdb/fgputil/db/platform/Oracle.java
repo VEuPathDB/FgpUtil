@@ -32,7 +32,12 @@ public class Oracle extends DBPlatform {
   public Oracle() {
     super();
   }
-
+  
+  @Override
+  public String getNvlFunctionName() {
+	  return "NVL";
+  }
+  
   @Override
   public String getDriverClassName() {
     return "oracle.jdbc.driver.OracleDriver";

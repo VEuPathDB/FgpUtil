@@ -153,6 +153,8 @@ public abstract class DBPlatform {
     public abstract String getRowNumberColumn();
     
     public abstract String prepareExpressionList(String[] values);
+    
+    public abstract String getNvlFunctionName();
 
     //#########################################################################
     // Common methods are platform independent

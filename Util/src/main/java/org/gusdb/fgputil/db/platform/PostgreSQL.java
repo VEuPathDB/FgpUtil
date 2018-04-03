@@ -25,6 +25,11 @@ public class PostgreSQL extends DBPlatform {
   }
 
   @Override
+  public String getNvlFunctionName() {
+	  return "COALESCE";
+  }
+  
+  @Override
   public String getDriverClassName() {
     return DRIVER_NAME;
   }
