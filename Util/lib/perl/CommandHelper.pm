@@ -11,14 +11,15 @@
 package FgpUtil::Util::CommandHelper;
 
 use strict;
-use Carp;
+use Carp qw(confess cluck);
 
 sub getJavaClasspath {
+
   my $GUS_HOME = shift;
   my $javaDir = "$GUS_HOME/lib/java";
 
   opendir(JARDIR, $javaDir) ||
-    &confess ("Error:  Could not open $javaDir.  Please check it exists and try again.");
+    confess("Error: Could not open $javaDir. Please check its existance and try again.");
 
   my $CLASSPATH = "";
 
@@ -30,7 +31,7 @@ sub getJavaClasspath {
 
   my $dbDriverDir = "$javaDir/db_driver";
   opendir(DBDRIVERDIR, $dbDriverDir) ||
-    &confess("Error: Could not open $dbDriverDir. Please check it exists and try again");
+    cluck("Warning: Could not open $dbDriverDir. No DB driver jars will be added to the classpath.");
 
   my $driverFiles = 0;
   while (my $nextFileName = readdir(DBDRIVERDIR)) {
@@ -39,7 +40,7 @@ sub getJavaClasspath {
       $driverFiles++;
     }
   }
-  &confess("Error: No database driver files under ${dbDriverDir}.") if !$driverFiles;
+  cluck("Warning: No DB driver jars found in $dbDriverDir.") if !$driverFiles;
 
   return $CLASSPATH;
 }
@@ -94,4 +95,3 @@ sub getSystemProps {
 }
 
 1;
-
