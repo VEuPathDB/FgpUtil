@@ -17,7 +17,7 @@ public class CacheTest {
   private static final Logger LOG = Logger.getLogger(CacheTest.class);
   private static final boolean LOG_ON = false;
 
-  private static class StringFetcher extends NoUpdateItemFetcher<Integer,String> {
+  private static class StringFetcher implements NoUpdateItemFetcher<Integer,String> {
 
     private final List<String> _opOrder;
 
