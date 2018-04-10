@@ -34,7 +34,7 @@ my @sharedSiteProjects = ('EbrcModelCommon:apidb', 'EbrcWebsiteCommon:apidb', 'E
 # Additional projects for Api sites
 my @apiSiteProjects = ('ApiCommonPresenters:apidb', 'ApiCommonDatasets:apidb',
                        'ReFlow:gus', 'ApiCommonModel:apidb','GBrowse:apidb',
-                       'ApiCommonWebsite:apidb', 'ApiCommonWebService:apidb');
+                       'ApiCommonWebsite:apidb', 'ApiCommonWebService:apidb', 'EupathDBIrods:apidb', 'EupathGalaxy:apidb');
 
 # Additional projects for Ortho
 my @orthoSiteProjects = ('OrthoMCLModel:apidb', 'OrthoMCLWebsite:apidb',
