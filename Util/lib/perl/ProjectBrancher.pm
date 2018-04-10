@@ -34,7 +34,7 @@ my @sharedSiteProjects = ('EbrcModelCommon:apidb', 'EbrcWebsiteCommon:apidb', 'E
 # Additional projects for Api sites
 my @apiSiteProjects = ('ApiCommonPresenters:apidb', 'ApiCommonDatasets:apidb',
                        'ReFlow:gus', 'ApiCommonModel:apidb','GBrowse:apidb',
-                       'ApiCommonWebsite:apidb', 'ApiCommonWebService:apidb', 'EupathDBIrods:apidb', 'EupathGalaxy:apidb');
+                       'ApiCommonWebsite:apidb', 'ApiCommonWebService:apidb');
 
 # Additional projects for Ortho
 my @orthoSiteProjects = ('OrthoMCLModel:apidb', 'OrthoMCLWebsite:apidb',
@@ -50,8 +50,7 @@ my @microbiomeSiteProjects = ('MicrobiomePresenters:apidb', 'MicrobiomeDatasets:
 
 # All other projects not listed above
 my @otherProjects = ('DJob:gus', 'TuningManager:gus', 'OAuth2Server:gus',
-                     'WDKTemplateSite:gus', 'WSFTemplate:gus', 'EuPathGalaxy:apidb',
-                     'EuPathTemplateSite:apidb');
+                     'WDKTemplateSite:gus', 'WSFTemplate:gus', 'EuPathGalaxy:apidb','EupathDBIrods:apidb', 'EuPathTemplateSite:apidb');
 
 # Keys for selecting project groups
 sub uniq { my %seen; grep !$seen{$_}++, @_; }
