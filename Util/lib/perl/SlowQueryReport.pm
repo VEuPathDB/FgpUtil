@@ -17,13 +17,13 @@ sub makeReport {
     # (if human readable will have a : char)
     if ($time_filter =~ /\:/) {
       my ($startTime, $endTime) = split(/,\s*/, $time_filter);
-      $startTime =~ /(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)/ || die "Can't parse start time filter $time_filter.  Must be in 02/Jun/2013:23:41:28 format.\n";
+      $startTime =~ /(\d+)\/(.+)\/(\d+)[:|](\d\d):(\d\d):(\d\d)/ || die "Can't parse start time filter $time_filter.  Must be in 02/Jun/2017|23:41:28 format.\n";
       my ($day, $mon, $year, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
       my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
       my $new_time_filter = timelocal($sec, $min, $hour, $day, $monthNumber, $year - 1900);
 
       if ($endTime) {
-	$endTime =~ /(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)/ || die "Can't parse end time filter $time_filter.  Must be in 02/Jun/2013:23:41:28 format.\n";
+	$endTime =~ /(\d+)\/(.+)\/(\d+)[:|](\d\d):(\d\d):(\d\d)/ || die "Can't parse end time filter $time_filter.  Must be in 02/Jun/2017|23:41:28 format.\n";
 	($day, $mon, $year, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
 	$monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
 	$new_time_filter = "$new_time_filter," . timelocal($sec, $min, $hour, $day, $monthNumber, $year - 1900);
