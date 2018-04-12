@@ -238,6 +238,23 @@ conifer configure \
   --site-vars conifer_site_vars.yml
 ```
 
+Configuring a typical website's cohort using explicit arguments need a
+few additional arguments. The take home message is that different
+cohorts may have different argument requirements and it isn't going to
+be immediately obvious what those are. Some tinkering, guided by thrown
+errors, may be needed to work out requirements. Once you do work it out,
+document it for yourself for future reference.
+
+```bash
+conifer configure \
+  --gus-home $GUS_HOME \
+  --cohort ApiCommon \
+  --project TrichDB \
+  --site-vars /var/www/integrate.trichdb.org/etc/conifer_site_vars.yml \
+  --webapp-ctx trichdb.integrate \
+  --hostname integrate.trichdb.org
+```
+
 You can optionally pass vars on the commandline using the `-e` CLI
 argument. These have precedence over the same vars defined in YAML files.
 _Note that the `-e` parameters use `key=value` syntax rather than YAML.
