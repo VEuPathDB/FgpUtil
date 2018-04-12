@@ -32,8 +32,7 @@ public class ArrayUtil {
   }
 
   /**
-   * Returns a copy of the passed array with the passed values appended to the
-   * end, in order.
+   * Returns a copy of array with eacy value in values appended to the end, in order.
    * 
    * @param <T> type contained in the arrays
    * @param array base array
