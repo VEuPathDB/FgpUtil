@@ -108,13 +108,23 @@ Available commands:
     )
 
     #EBRC-specific mapping and candidate for factoring out to system file
+    # It roughly matches BUILDROOT_LIST in EBRC's rebuilder
     self.component_cohort_map = OrderedDict([
-      ('ClinEpiWebsite',    'ClinEpi'),
-      ('OrthoMCLWebsite',   'OrthoMCL'),
-      ('MicrobiomeWebsite', 'Microbiome'),
       ('ApiCommonWebsite',  'ApiCommon'),
-      ('EuPathDBIrods',     'EuPathDBIrods'),
+      ('ClinEpiWebsite',    'ClinEpi'),
+      ('MicrobiomeWebsite', 'Microbiome'),
       ('WDKTemplateSite',   'WDKTemplate'),
+      ('OrthoMCLWebsite',   'OrthoMCL'),
+      ('EuPathDBIrods',     'EuPathDBIrods'),
+## This is the original order up until 14 April 2018
+## Retained temporarily for reference in case the BUILDROOT_LIST order
+## is a brown-bag.
+#       ('ClinEpiWebsite',    'ClinEpi'),
+#       ('OrthoMCLWebsite',   'OrthoMCL'),
+#       ('MicrobiomeWebsite', 'Microbiome'),
+#       ('ApiCommonWebsite',  'ApiCommon'),
+#       ('EuPathDBIrods',     'EuPathDBIrods'),
+#       ('WDKTemplateSite',   'WDKTemplate'),
     ])
 
     self.command = None
@@ -168,27 +178,44 @@ Available commands:
     self._parse_args(required=['gus-home', 'cohort', 'project', 'site-vars'])
     self._copy_site_vars()
     ansible_extra_vars = [
-      '-e', 'gus_home=' + self.gus_home,
-      '-e', 'cohort=' + self.cohort,
-      '-e', 'project=' + self.project,
+      '-e', 'derived_project=' + self.project,
+      '-e', 'derived_cohort=' + self.cohort,
+      '-e', 'derived_gus_home=' + self.gus_home,
       '-e', 'site_vars=' + os.path.basename(self.site_vars),
       '-e', 'templates_config=' + self.cohort + '/templates.yml',
     ]
+
+    # if --project is explicitly set on CLI, use that to override any
+    # vars yaml files (Ansible extra vars takes final precedence)
+    if self.args.project is not None:
+      ansible_extra_vars.extend([ '-e', 'project=' + self.project ])
+    if self.args.cohort is not None:
+      ansible_extra_vars.extend([ '-e', 'cohort=' + self.cohort ])
+    if self.args.gus_home is not None:
+      ansible_extra_vars.extend([ '-e', 'gus_home=' + self.gus_home ])
+
     if self.env is not None:
       ansible_extra_vars.extend([ '-e', 'env=' + self.env ])
     if self.hostname is not None:
       ansible_extra_vars.extend([
-        '-e', 'hostname=' + self.hostname,
+        '-e', 'derived_hostname=' + self.hostname,
       ])
     if self.webapp_ctx is not None:
       ansible_extra_vars.extend([
-        '-e', 'webapp_ctx=' + self.webapp_ctx,
+        '-e', 'derived_webapp_ctx=' + self.webapp_ctx,
       ])
     if self.extra_vars is not None:
       for extra_var in self.extra_vars:
         ansible_extra_vars.extend([
           '-e', extra_var
         ])
+
+    if self.debug:
+      ansible_extra_vars.extend([
+        '-e', 'conifer_log_vars=true',
+      ])
+
+
     if os.path.isfile(self.conifer_home + '/' + self.cohort + '_playbook.yml'):
       playbook = self.conifer_home + '/' + self.cohort + '_playbook.yml'
     else:
@@ -211,9 +238,9 @@ Available commands:
     if self.conifer_site_vars_dest is None:
       self.conifer_site_vars_dest = os.path.expanduser('~') + '/' + self.conifer_site_vars_dest_fname
     ansible_extra_vars = [
-      '-e', 'gus_home=' + self.gus_home,
-      '-e', 'cohort=' + self.cohort,
-      '-e', 'project=' + self.project,
+      '-e', 'derived_gus_home=' + self.gus_home,
+      '-e', 'derived_cohort=' + self.cohort,
+      '-e', 'derived_project=' + self.project,
       '-e', 'templates_config=' + self.cohort + '/templates.yml',
       '-e', 'conifer_site_vars_seed_dest=' + self.conifer_site_vars_seed_dest
     ]
@@ -221,11 +248,11 @@ Available commands:
       ansible_extra_vars.extend([ '-e', 'env=' + self.env ])
     if self.hostname is not None:
       ansible_extra_vars.extend([
-        '-e', 'hostname=' + self.hostname,
+        '-e', 'derived_hostname=' + self.hostname,
       ])
     if self.webapp_ctx is not None:
       ansible_extra_vars.extend([
-        '-e', 'webapp_ctx=' + self.webapp_ctx,
+        '-e', 'derived_webapp_ctx=' + self.webapp_ctx,
       ])
     if self.extra_vars is not None:
       for extra_var in self.extra_vars:
@@ -269,12 +296,20 @@ Available commands:
       raise Exception("No 'dependencies' attribute found in {}".format(cohort_install_yml))
     dependencies = self._sanitize_src_paths(install_data['dependencies'])
 
+    # ensure parent directories for conifer_home in place
     for dir in [ self.gus_home + '/lib', self.gus_home + '/bin' ]:
       if not os.path.isdir(dir):
         print("mkdir {}".format(dir))
         os.makedirs(dir)
+
+    # remove conifer_home before fresh install
     if os.path.isdir(conifer_home):
       shutil.rmtree(conifer_home)
+
+    # directory for Conifer logging
+    for dir in [ conifer_home + '/log' ]:
+      if not os.path.isdir(dir):
+        os.makedirs(dir)
 
     # install Conifer files, except executable
     cmd = ['rsync', '-a']
@@ -491,7 +526,7 @@ Available commands:
       raise Exception("Can not find site_vars file: '{}'".format(self.site_vars))
 
     self._check_yaml_syntax(src)
-    
+
     dest = self.conifer_home + '/roles/conifer/vars/'
     print("copying {0} to {1}".format(src, dest))
     shutil.copy2(src, dest)

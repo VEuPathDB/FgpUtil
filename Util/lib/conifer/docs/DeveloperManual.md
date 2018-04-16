@@ -57,6 +57,16 @@ model.prop:
   dest: '{{ gus_home }}/config/{{ project }}/model.prop'
 ```
 
+_**Caution: A given cohort can use templates provided by another cohort
+but each cohort needs its own `templates.yml` file.** Conifer does not
+support the concept of stacking cohorts; there is only one in operation
+at at time. It's just that configuration template files from other
+cohorts happen to be installed where `templates.yml` can reference them
+as `src` files. So, if you add a new template to, say WDK, you will need
+to update the `template.yml` files in all your cohorts. Or not. This
+design gives you the flexibilty for a given cohort to exclude
+configuration templates that do not apply._
+
 The conifer `install` subcommand needs to know what to install. That is
 defined in the `install.yml` file in the cohort directory. For example,
 `WDKTemplateSite/Model/lib/conifer/roles/conifer/vars/WDKTemplate/install.yml`
@@ -179,6 +189,11 @@ The variables taken from the vars files are stored in the `conifer`
 namespace by the `load_values.yml` task. Note that this is a branch of
 the `vars` dictionary, e.g.
 
+__I'm a bit unclear on Ansible's variable inventory. In these examples
+where I refer to `vars`, it might actually be the
+`vars.hostvars.localhost` branch that tasks are using. For brevity, I'll
+just say `vars`.__
+
 ```
 '{{ vars.conifer.modelconfig_appDb_connectionUrl }}'
 ```
@@ -222,6 +237,150 @@ file. The `conifer_scrub` filter is defined in `filter_plugins/core.py`.
 Following this processing, variables not given values in the vars files
 are truly undefined and the templating engine will error when they are
 encountered.
+
+## More about the `load_values` task
+
+Conifer needs several bootstrapping values defined before it can run the
+`configuration` subcommand. This includes `gus_home`, `project_home`,
+`cohort`, et al.
+
+When using filesystem naming conventions to derive bootstrapping values,
+Conifer generates an Ansible command constructed like,
+
+```
+ANSIBLE_CONFIG=/var/www/ClinEpiDB/ce.mheiges/gus_home/lib/conifer/conifer.cfg ansible-playbook \
+  -i localhost, \
+  -e derived_project=ClinEpiDB \
+  -e derived_cohort=ClinEpi \
+  -e derived_gus_home=/var/www/ClinEpiDB/ce.mheiges/gus_home \
+  -e site_vars=conifer_site_vars.yml \
+  -e templates_config=ClinEpi/templates.yml \
+  -e derived_hostname=mheiges.clinepidb.org \
+  -e derived_webapp_ctx=ce.mheiges /var/www/ClinEpiDB/ce.mheiges/gus_home/lib/conifer/playbook.yml
+```
+
+The `-e` CLI args are Ansible extra vars that have highest precedence.
+The `derived_*` variables are used so the precedence of extra variables
+does not override variables we want set in the vars file hierarchy
+(`conifer_site_vars.yml`, et al.). Let's look at the lifecycle of
+`project` and its relationship to the extra vars `derived_project` as an
+exemplar.
+
+The `project` variable is used throughout configurations. It the
+selector of the subdirectory in `gus_home/config` that the WDK uses to
+locate configuration files (see the `model` parameter Tomcat deployment
+descriptor file, e.g. `gus_home/config/toxo.b3.xml`) and is used by the
+WDK `includeProjects`/`excludeProjects` flags in the WDK model.
+
+In the simplest case, we can override the project derived from
+file-naming conventions by passing `--project ToxoDB` to the CLI and be
+done. The conifer executable sets both `derived_project` and `project`
+as a highest-precedence Ansible extra vars.
+
+Absent that, when using EBRC file-naming conventions to derive bootstrap
+values, we want a way to override that self-discovery with values in
+`conifer_site_vars.yml`.
+
+The basic idea is that we initially copy the value of `derived_project`
+to `project` and then optionally override that during the vars files
+hierarchy traversal. Let's walk through the process to illustrate.
+
+_Tip: When the `--debug` CLI option is used Conifer will log the state of
+variables during the `load_values.yml` task to files in
+`$GUS_HOME/lib/conifer/log/`. Use these to trace the progress of
+variable overrides as the vars file hierarchy is traversed._
+
+
+In the following walkthrough, we're looking at values under
+`vars.hostvars.localhost` branch of Ansible's variables dictionary tree
+but writing only `project` and `conifer.project` for brevity.
+
+_Reminder, the `vars.hostvars.localhost` values are used for variables
+in Ansible tasks. The `vars.hostvars.localhost.conifer` values are used
+in the templates that Conifer provisions for configuration. So we need
+to ensure that we keep both sets of variables in sync. This leads to a
+bit of juggling of `include_vars` tasks in `load_values.yml` to manage
+these two namespaces. Pay attention to the absence or presence of `name:
+conifer` attribute in the `include_vars` tasks. This determines the
+global or conifer namespace, respectively, where var values are being
+assigned._
+
+For this example, I used my website, `mheiges.clinepidb.org`, installed
+at `/var/www/ClinEpiDB/ce.mheiges`. The `derived_project` is `ClinEpiDB`
+(derived from the `/var/www/ClinEpiDB` path). But, I want to use `Gates`
+for the project. In `conifer_site_vars.yml` I set `project: Gates`. For
+this walkthrough, I am **not** setting the cohort in
+`conifer_site_vars.yml`. I'm letting `cohort` default to the
+`derived_cohort` extra vars set by the `conifer` executable, so I want
+to follow that situation as well to further illustrate this process.
+
+_Again, if you use `--project` on the CLI then that value takes highest
+precedence per Ansible extra vars rules, so the following is not
+relevant._
+
+The `load_values.yml` task runs several tasks to include vars from
+files. This is what we see happening as it runs through the hierarchy.
+
+- "`load bootstrap values to global namespace`" assigns `derived_project`
+to `project` and `derived_cohort` to `cohort`, so we then have
+  - `project` is `ClinEpiDB`
+  - `cohort` is `ClinEpi` as desired
+  - `conifer.project` is undef
+  - `conifer.cohort` is undef
+  - Note `project` does not yet the desired `Gates` value.
+
+- "`load user values to global namespace`" assigns/overrides with values
+from `conifer_site_vars.yml`, so we then have
+  - `project` is now Gates.
+  - `cohort` is `ClinEpi` as desired
+  - `conifer.project` is undef.
+  - `conifer.cohort` is `ClinEpi` as desired
+  - This is now the desired `Gates` value.
+  - This is important. The `project` (not `conifer.project`) value is
+    used by `load cohort values`, et al. for `with_items: {{ project}}.yml`.
+    This gives us the option for project-specific custom settings in
+    `ClinEpiDB.yml` vs. `Gates.yml`.
+
+- "`load default values`" assigns/overrides with values from `default.yml`, so we then have
+  - `project` is still `Gates` as desired
+  - `cohort` is `ClinEpi` as desired
+  - `conifer.project` is now `=c= e.g. ToxoDB`
+    - oops, our `Gates` value from `conifer_site_vars.yml` has been
+    clobbered with the value from `default.yml`
+      - _btw, this is a Conifer comment used by the `seed` subcommand,
+      we don't want to 'fix' the clobbering by removing this from
+      `default.yml`_
+  - `conifer.cohort` is `=c= e.g. ...`
+    - oops, our `ClinEp` value copied from `derived_cohort` in
+    `bootstrap.yml` has been clobbered by the value from `default.yml`
+  - This state is maintained through the vars hierachy
+
+- "`load cohort values`"
+- "`load environment values`"
+  - no effect on `project` and `cohort`
+
+- "`load bootstrap values to conifer namespace`" assigns `derived_project`
+    to `conifer.project` and `derived_cohort` to `conifer.cohort`, so we
+    then have
+  - `project` is still `Gates`
+  - `cohort` is again `ClinEpi`
+  - `conifer.project` is now `ClinEpiDB`
+    - oops, this should have value `Gates` from `conifer_site_vars.yml`,
+    we've clobbered this with the `derived_project` value with the
+    `bootstrap.yml` task.
+  - `conifer.cohort` is the desired `ClinEpi`
+
+Finally,
+
+- "`load user values to conifer namespace`" assigns/overrides with values
+  from `conifer_site_vars.yml`, so we then have
+  - `project` is `Gates` as desired.
+  - `cohort` is `ClinEpi` as desired.
+  - `conifer.project` is `Gates` as desired.
+  - `conifer.cohort` is `ClinEpi` as desired.
+
+Whew!
+
 
 ## Conifer seed
 

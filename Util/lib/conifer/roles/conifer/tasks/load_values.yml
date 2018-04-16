@@ -4,16 +4,33 @@
 # any `--extra-vars` passed to the playbook and adds them to the
 # `conifer` dictionary, overriding any earlier assignments..
 #
-- name: load user values
+
+# This loads in to the 'global' namespace (not 'conifer' namespace).
+- name: load bootstrap values to global namespace
   include_vars:
-    name: conifer
+    dir: 'vars'
+    depth: 1
+    files_matching: '^{{ item }}$'
+  with_items:
+    - bootstrap.yml
+
+- include: log_vars.yml
+  vars:
+    tag: load_bootstrap_values_1_global_ns
+
+- name: load user values to global namespace
+  include_vars:
     dir: 'vars'
     depth: 1
     files_matching: '{{ item }}'
   with_items:
     - '{{ site_vars }}'
   when: site_vars is defined
-  
+
+- include: log_vars.yml
+  vars:
+    tag: load_user_values_1_global_ns
+
 - name: load default values
   include_vars:
     name: conifer
@@ -22,6 +39,10 @@
     files_matching: '^{{ item }}$'
   with_items:
     - default.yml
+
+- include: log_vars.yml
+  vars:
+    tag: load_default_values_1_conifer_ns
 
 - name: load cohort values
   include_vars:
@@ -48,7 +69,24 @@
     - '{{ project }}.yml'
   when: env is defined or vars.conifer.env is defined
 
-- name: load user values
+- include: log_vars.yml
+  vars:
+    tag: load_env_values_conifer_ns
+
+- name: load bootstrap values to conifer namespace
+  include_vars:
+    name: conifer
+    dir: 'vars'
+    depth: 1
+    files_matching: '^{{ item }}$'
+  with_items:
+    - bootstrap.yml
+
+- include: log_vars.yml
+  vars:
+    tag: load_bootstrap_values_2_conifer_ns
+
+- name: load user values to conifer namespace
   include_vars:
     name: conifer
     dir: 'vars'
@@ -57,6 +95,10 @@
   with_items:
     - '{{ site_vars }}'
   when: site_vars is defined
+
+- include: log_vars.yml
+  vars:
+    tag: load_user_values_2_conifer_ns
 
 # Be aware that the `copy_extra_vars` callback plugin collects any
 # `--extra-vars` passed to the playbook and adds them to the `conifer`
