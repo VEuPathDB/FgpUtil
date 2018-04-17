@@ -285,10 +285,11 @@ The basic idea is that we initially copy the value of `derived_project`
 to `project` and then optionally override that during the vars files
 hierarchy traversal. Let's walk through the process to illustrate.
 
-_Tip: When the `--debug` CLI option is used Conifer will log the state of
+_Tip: When the `--log-vars` CLI option is used Conifer will log the state of
 variables during the `load_values.yml` task to files in
 `$GUS_HOME/lib/conifer/log/`. Use these to trace the progress of
-variable overrides as the vars file hierarchy is traversed._
+variable overrides as the vars file hierarchy is traversed. This logging
+may fail with plugin exceptions if dependent variables are not defined._
 
 
 In the following walkthrough, we're looking at values under
