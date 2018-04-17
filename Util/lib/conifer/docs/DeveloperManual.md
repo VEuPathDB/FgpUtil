@@ -324,14 +324,14 @@ files. This is what we see happening as it runs through the hierarchy.
 - "`load bootstrap values to global namespace`" assigns `derived_project`
 to `project` and `derived_cohort` to `cohort`, so we then have
   - `project` is `ClinEpiDB`
+    - this is not yet the desired `Gates` value.
   - `cohort` is `ClinEpi` as desired
   - `conifer.project` is undef
   - `conifer.cohort` is undef
-  - Note `project` does not yet the desired `Gates` value.
 
 - "`load user values to global namespace`" assigns/overrides with values
 from `conifer_site_vars.yml`, so we then have
-  - `project` is now Gates.
+  - `project` is now Gates as desired.
   - `cohort` is `ClinEpi` as desired
   - `conifer.project` is undef.
   - `conifer.cohort` is `ClinEpi` as desired
@@ -353,11 +353,12 @@ from `conifer_site_vars.yml`, so we then have
   - `conifer.cohort` is `=c= e.g. ...`
     - oops, our `ClinEp` value copied from `derived_cohort` in
     `bootstrap.yml` has been clobbered by the value from `default.yml`
-  - This state is maintained through the vars hierachy
 
 - "`load cohort values`"
+  - no change to `project` and `cohort`
+
 - "`load environment values`"
-  - no effect on `project` and `cohort`
+  - no change to `project` and `cohort`
 
 - "`load bootstrap values to conifer namespace`" assigns `derived_project`
     to `conifer.project` and `derived_cohort` to `conifer.cohort`, so we
