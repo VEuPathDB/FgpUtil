@@ -210,7 +210,7 @@ Available commands:
           '-e', extra_var
         ])
 
-    if self.debug:
+    if self.log_vars:
       ansible_extra_vars.extend([
         '-e', 'conifer_log_vars=true',
       ])
@@ -414,6 +414,7 @@ Available commands:
     parser.add_argument("--site-vars", help="")
     parser.add_argument("--verbose", action='store_true', help="Show some process details.")
     parser.add_argument("--debug", action='store_true', help="Show stack traces and other processing details.")
+    parser.add_argument("--log-vars", action='store_true', help="Log variables to gus_home/lib/conifer/log/.")
 
     # now that we're inside a subcommand, ignore the first
     # two argvs, ie the command (conifer) and the subcommand (configure)
