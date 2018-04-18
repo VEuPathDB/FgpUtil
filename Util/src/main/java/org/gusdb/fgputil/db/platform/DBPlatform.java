@@ -156,6 +156,8 @@ public abstract class DBPlatform {
     
     public abstract String getNvlFunctionName();
 
+    public abstract boolean shouldPerformPreCloseCommit(boolean connectionAutoCommitValue);
+
     //#########################################################################
     // Common methods are platform independent
     //#########################################################################
@@ -170,4 +172,5 @@ public abstract class DBPlatform {
       Boolean value = rs.getBoolean(columnName);
       return (rs.wasNull() ? nullValue : value);
     }
+
 }

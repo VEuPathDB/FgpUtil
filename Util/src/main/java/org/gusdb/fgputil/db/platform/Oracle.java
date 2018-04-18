@@ -477,4 +477,16 @@ public class Oracle extends DBPlatform {
       throw e;
     }
   }
+
+  /**
+   * A pre-close commit will help "clear" resources if close() is actually simply a return to a connection
+   * pool.  Always return true since Oracle does not have a problem with commits at any point in a
+   * connection's life cycle.
+   * 
+   * @param connectionAutoCommitValue connection's current value of isAutoCommit()
+   */
+  @Override
+  public boolean shouldPerformPreCloseCommit(boolean connectionAutoCommitValue) {
+    return true;
+  }
 }

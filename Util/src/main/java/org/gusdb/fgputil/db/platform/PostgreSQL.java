@@ -323,4 +323,16 @@ public class PostgreSQL extends DBPlatform {
       throws SQLException, UnsupportedOperationException {
     throw new UnsupportedOperationException("Method not yet supported.");
   }
+
+  /**
+   * A pre-close commit will help "clear" resources if close() is actually simply a return to a connection
+   * pool.  Since Postgres will throw an exception if commit is called on a connection where autocommit is
+   * already turned on, only return true if auto-commit is false
+   * 
+   * @param connectionAutoCommitValue connection's current value of isAutoCommit()
+   */
+  @Override
+  public boolean shouldPerformPreCloseCommit(boolean connectionAutoCommitValue) {
+    return !connectionAutoCommitValue;
+  }
 }
