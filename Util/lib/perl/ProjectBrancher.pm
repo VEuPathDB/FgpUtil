@@ -50,7 +50,7 @@ my @microbiomeSiteProjects = ('MicrobiomePresenters:apidb', 'MicrobiomeDatasets:
 
 # All other projects not listed above
 my @otherProjects = ('DJob:gus', 'TuningManager:gus', 'OAuth2Server:gus',
-                     'WDKTemplateSite:gus', 'WSFTemplate:gus', 'EuPathGalaxy:apidb','EupathDBIrods:apidb', 'EuPathTemplateSite:apidb');
+                     'WDKTemplateSite:gus', 'WSFTemplate:gus', 'EuPathGalaxy:apidb','EuPathDBIrods:apidb', 'EuPathTemplateSite:apidb');
 
 # Keys for selecting project groups
 sub uniq { my %seen; grep !$seen{$_}++, @_; }
