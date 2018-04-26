@@ -15,4 +15,8 @@ public class UnfetchableItemException extends Exception {
   public UnfetchableItemException(Exception cause) {
     super(cause);
   }
+
+  public UnfetchableItemException(String message) {
+    super(message);
+  }
 }
