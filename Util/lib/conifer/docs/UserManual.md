@@ -675,6 +675,31 @@ match criteria.
 
 This function is provided by `ebrc.py` in `EbrcWebsiteCommon`.
 
+## More Useful Conifer Conventions for EuPathDB
+
+- Change the URL scheme used in webappUrl, et al. (will also need https
+support in the Apache vhost, this is not handled by Conifer)
+  - `_self_url_scheme: https`
+
+- Change the default webapp context name normally derived from the filesystem path
+  - `webapp_ctx: foo.mheiges`
+
+- Change the default project ID normally derived from the filesystem path. This
+is really only useful for products that have multiple models, like ClinEpiDB's
+`ClinEpiDB`, `ICEMR` and `Gates`.
+  - `project: ICEMR`
+
+- Change the yarn cache path (the default is probably the user's home).
+The primary use case is to move the cache into
+`project_home` for Jenkins-managed jobs so Jenkins' `wipe workspace` operation
+will also remove the yarn cache.
+  - `yarn_cache_folder: "{{ '{}/../project_home/.cache/yarn'.format(gus_home) | realpath }}"`
+
+    _Conifer configure does not have a direct knowledge `project_home` because it is designed
+    to work post-deployment where source code may not be present. So we have to work around
+    to get to `project_home` by relative path from `gus_home`._
+
+
 ## System conifer
 
 Optional. At EBRC we use a wrapper script named `conifer` installed in
