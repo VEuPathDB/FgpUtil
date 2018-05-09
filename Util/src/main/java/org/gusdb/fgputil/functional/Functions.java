@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunction;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
@@ -129,12 +130,10 @@ public class Functions {
    * @return map containing the resulting entries
    */
   public static <R,S,T> Map<S,T> getMapFromList(Iterable<R> values, Function<R,Entry<S,T>> function) {
-    Map<S,T> result = new LinkedHashMap<>(); // some callers depend on proper ordering
-    for (R value : values) {
-      Entry<S,T> entry = function.apply(value);
-      result.put(entry.getKey(), entry.getValue());
-    }
-    return result;
+    return reduce(values,
+        (acc, next) -> acc.put(next, function),
+        new MapBuilder<S,T>(new LinkedHashMap<>()) // some callers depend on proper ordering
+    ).toMap();
   }
 
   /**
