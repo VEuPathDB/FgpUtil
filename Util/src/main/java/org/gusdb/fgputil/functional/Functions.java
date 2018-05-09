@@ -180,10 +180,10 @@ public class Functions {
    */
   public static <T> List<T> filter(Iterable<T> inputs, Predicate<T> predicate) {
     List<T> result = new ArrayList<>();
-    for(T obj : inputs) {
-      if(predicate.test(obj)) {
+    for (T obj : inputs) {
+      if (predicate.test(obj)) {
         result.add(obj);
-      }  
+      }
     }
     return result;
   }
@@ -202,20 +202,6 @@ public class Functions {
         iterator.remove();
       }
     }
-  }
-
-  /**
-   * Returns a function that takes a key and returns the value in the passed map for that key
-   * 
-   * @param map any map
-   * @return functional facade over the map's get method
-   */
-  public static <S,T> Function<S,T> toMapFunction(final Map<S,T> map) {
-    return new Function<S,T>() {
-      @Override public T apply(S key) {
-        return map.get(key);
-      }
-    };
   }
 
   /**
