@@ -20,6 +20,7 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.PredicateWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ReducerWithException;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.TrinaryFunction;
 
 public class Functions {
@@ -374,5 +375,21 @@ public class Functions {
    */
   public static <S,T> java.util.function.Function<S,T> toJavaFunction(Function<S,T> f) {
     return s -> f.apply(s);
+  }
+
+  /**
+   * Attempts to retrieve a value from the passed supplier.  If an exception occurs, a default value
+   * is returned and the exception is buried.
+   * 
+   * @param f supplier function to execute
+   * @param defaultValue value to return if supplier fails
+   */
+  public static <T> T defaultOnException(SupplierWithException<T> f, T defaultValue) {
+    try {
+      return f.supply();
+    }
+    catch (Exception e) {
+      return defaultValue;
+    }
   }
 }
