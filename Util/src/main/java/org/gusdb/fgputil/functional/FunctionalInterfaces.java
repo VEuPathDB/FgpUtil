@@ -171,6 +171,21 @@ public class FunctionalInterfaces {
   }
 
   /**
+   * Functional interface that returns a value but does not take arguments
+   * 
+   * @param <T> type of result
+   */
+  public interface SupplierWithException<T> {
+    /**
+     * Returns a value but does not take arguments
+     * 
+     * @return a value
+     * @throws Exception if something goes wrong
+     */
+    public T supply() throws Exception;
+  }
+
+  /**
    * Performs a procedure that has no output and does not need parameters
    */
   public interface Procedure {
