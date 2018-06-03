@@ -17,6 +17,10 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
  */
 public class MapBuilder<S,T> {
 
+  public static <S,T> Map<S,T> getMapFromEntries(Collection<Entry<S,T>> entries) {
+    return new MapBuilder<S,T>().putAll(entries, entry -> entry).toMap();
+  }
+
   private Map<S,T> _map;
 
   public MapBuilder() {
@@ -66,4 +70,5 @@ public class MapBuilder<S,T> {
   public Map<S,T> toMap() {
     return _map;
   }
+
 }
