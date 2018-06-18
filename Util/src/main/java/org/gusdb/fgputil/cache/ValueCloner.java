@@ -4,7 +4,7 @@ package org.gusdb.fgputil.cache;
  * Clones an object in a cache-safe way.  Any type of object can be cached, but
  * sometimes measures must be taken to ensure that an object returned from the
  * cache is not modified in a way that affects the cached version.  The creator
- * of the cache can ensure this by passing an ItemCloner implementation that
+ * of the cache can ensure this by passing an ValueCloner implementation that
  * disallows cached object modification.
  * 
  * This can be accomplished in a variety of ways:
@@ -22,15 +22,15 @@ package org.gusdb.fgputil.cache;
  * @author rdoherty
  * @param <T> type of object to clone
  */
-public interface ItemCloner<T> {
+public interface ValueCloner<T> {
 
   /**
    * Returns an object representing the passed object.  The returned object will
    * be returned by the cache instead of the "real" cached object.
    * 
-   * @param cachedItem object stored in the cache
+   * @param cachedValue object stored in the cache
    * @return object returned by the cache instead of the cached object itself
    */
-  public T createCachesafeClone(T cachedItem);
+  public T createCachesafeClone(T cachedValue);
 
 }

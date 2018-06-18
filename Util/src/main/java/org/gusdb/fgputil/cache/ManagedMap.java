@@ -5,26 +5,26 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Represents an ItemCache whose items should be explicitly added.  Implements the Map interface
- * for familiarity but iteration through members is not supported.  Items in the ManagedMap are
- * purged using trimming characteristics passed to constructor, or default if none are passed.
+ * Represents an InMemoryCache whose key/value pairs must be explicitly added.  Implements the Map
+ * interface for familiarity but iteration through entries is not supported.  Entries in the ManagedMap
+ * are purged using trimming characteristics passed to constructor, or default if none are passed.
  * 
  * @author rdoherty
  *
  * @param <S> type of key
  * @param <T> type of value
  */
-public class ManagedMap<S,T> extends ItemCache<S,T> implements Map<S,T> {
+public class ManagedMap<S,T> extends InMemoryCache<S,T> implements Map<S,T> {
 
-  // fetcher used to insert a new item into the cache
-  private NoUpdateItemFetcher<S,T> getValueFetcher(T value){
+  // factory used to insert a new item into the cache
+  private ValueFactory<S,T> getValueFactory(T value){
     return key -> value;
   }
 
-  // fetcher used to check presence of a key in the cache
-  private NoUpdateItemFetcher<S,T> getNotFoundFetcher() {
+  // factory used to create items not found; if item is not found, we throw exception
+  private ValueFactory<S,T> getNotFoundFactory() {
     return key -> {
-      throw new UnfetchableItemException("Key not found in managed map.");
+      throw new ValueProductionException("Key not found in managed map.");
     };
   }
 
@@ -36,17 +36,17 @@ public class ManagedMap<S,T> extends ItemCache<S,T> implements Map<S,T> {
   }
 
   /**
-   * Creates a managed map with custom max-size and trimming characteristics.
+   * Creates a managed map with custom capacity and trimming characteristics.
    * 
-   * @param maxCachedItems maximum number of objects that can be cached
+   * @param capacity maximum number of objects that can be cached
    * @param numToTrimOnCapacity number of objects to trim when capacity reached
    */
-  public ManagedMap(int maxCachedItems, int numToTrimOnCapacity) {
-    super(maxCachedItems, numToTrimOnCapacity);
+  public ManagedMap(int capacity, int numToTrimOnCapacity) {
+    super(capacity, numToTrimOnCapacity);
   }
 
   /**
-   * @return number of items currently stored in the map
+   * @return number of entries currently stored in the map
    */
   @Override
   public int size() {
@@ -62,43 +62,37 @@ public class ManagedMap<S,T> extends ItemCache<S,T> implements Map<S,T> {
   }
 
   /**
-   * @param possible key to item in the map
-   * @return true if the passed key represents an item in the map, else false
+   * @param possible key to value in the map
+   * @return true if the passed key represents a value in the map, else false
    */
   @SuppressWarnings("unchecked")
   @Override
   public boolean containsKey(Object key) {
     try {
-      getItem((S)key, getNotFoundFetcher());
+      getValue((S)key, getNotFoundFactory());
       return true;
     }
-    catch (UnfetchableItemException e) {
+    catch (ValueProductionException e) {
       return false;
     }
   }
 
   /**
-   * Unsupported due to ItemCache limitations
-   */
-  @Override
-  public boolean containsValue(Object value) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Returns the item associated with the passed key
+   * Returns the value associated with the passed key
    * 
-   * @param possible key to item in the map
-   * @return the item associated with the passed key, or null if that key does not exist
+   * @param possible key to value in the map
+   * @return the value associated with the passed key, or null if that key does not exist
    */
   @SuppressWarnings("unchecked")
   @Override
   public T get(Object key) {
-    try {
-      return getItem((S)key, getNotFoundFetcher());
-    }
-    catch (UnfetchableItemException e) {
-      return null;
+    synchronized(this) {
+      try {
+        return getValue((S)key, getNotFoundFactory());
+      }
+      catch (ValueProductionException e) {
+        return null;
+      }
     }
   }
 
@@ -111,17 +105,19 @@ public class ManagedMap<S,T> extends ItemCache<S,T> implements Map<S,T> {
    */
   @Override
   public T put(S key, T value) {
-    try {
-      T oldValue = get(key);
-      if (oldValue != null) {
-        remove(key);
+    synchronized(this) {
+      try {
+        T oldValue = get(key);
+        if (oldValue != null) {
+          remove(key);
+        }
+        getValue(key, getValueFactory(value));
+        return value;
       }
-      getItem(key, getValueFetcher(value));
-      return value;
-    }
-    catch (UnfetchableItemException e) {
-      // this should never happen
-      throw new RuntimeException(e);
+      catch (ValueProductionException e) {
+        // this should never happen
+        throw new RuntimeException(e);
+      }
     }
   }
 
@@ -134,9 +130,11 @@ public class ManagedMap<S,T> extends ItemCache<S,T> implements Map<S,T> {
   @SuppressWarnings("unchecked")
   @Override
   public T remove(Object key) {
-    T oldValue = get(key);
-    expireCachedItems((S)key);
-    return oldValue;
+    synchronized(this) {
+      T oldValue = get(key);
+      expireEntries((S)key);
+      return oldValue;
+    }
   }
 
   /**
@@ -152,15 +150,24 @@ public class ManagedMap<S,T> extends ItemCache<S,T> implements Map<S,T> {
   }
 
   /**
-   * Unsupported due to ItemCache limitations
+   * Unsupported due to InMemoryCache limitations
    */
   @Override
   public void clear() {
+    // TODO: implement - no reason this can't be done relatively easily
     throw new UnsupportedOperationException();
   }
 
   /**
-   * Unsupported due to ItemCache limitations
+   * Unsupported due to InMemoryCache limitations
+   */
+  @Override
+  public boolean containsValue(Object value) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Unsupported due to InMemoryCache limitations
    */
   @Override
   public Set<S> keySet() {
@@ -168,7 +175,7 @@ public class ManagedMap<S,T> extends ItemCache<S,T> implements Map<S,T> {
   }
 
   /**
-   * Unsupported due to ItemCache limitations
+   * Unsupported due to InMemoryCache limitations
    */
   @Override
   public Collection<T> values() {
@@ -176,7 +183,7 @@ public class ManagedMap<S,T> extends ItemCache<S,T> implements Map<S,T> {
   }
 
   /**
-   * Unsupported due to ItemCache limitations
+   * Unsupported due to InMemoryCache limitations
    */
   @Override
   public Set<java.util.Map.Entry<S, T>> entrySet() {

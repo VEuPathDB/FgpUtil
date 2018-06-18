@@ -17,7 +17,7 @@ public class CacheTest {
   private static final Logger LOG = Logger.getLogger(CacheTest.class);
   private static final boolean LOG_ON = false;
 
-  private static class StringFetcher implements NoUpdateItemFetcher<Integer,String> {
+  private static class StringFetcher implements ValueFactory<Integer,String> {
 
     private final List<String> _opOrder;
 
@@ -26,7 +26,7 @@ public class CacheTest {
     }
 
     @Override
-    public String fetchItem(Integer itemId) throws UnfetchableItemException {
+    public String getNewValue(Integer itemId) throws ValueProductionException {
       if (LOG_ON) LOG.info("Fetching item " + itemId);
       _opOrder.add("b" + itemId);
       return String.valueOf(itemId);
@@ -35,11 +35,11 @@ public class CacheTest {
 
   private class Worker implements Runnable {
 
-    private final ItemCache<Integer, String> _cache;
+    private final InMemoryCache<Integer, String> _cache;
     private final List<String> _opOrder;
     private final AtomicInteger _completedCount;
 
-    public Worker(ItemCache<Integer, String> cache, List<String> opOrder, AtomicInteger completedCount) {
+    public Worker(InMemoryCache<Integer, String> cache, List<String> opOrder, AtomicInteger completedCount) {
       _cache = cache;
       _opOrder = opOrder;
       _completedCount = completedCount;
@@ -53,9 +53,9 @@ public class CacheTest {
         if (LOG_ON) LOG.info("Asking for item " + id);
         _opOrder.add("a" + id);
         try {
-          _cache.getItem(id, fetcher);
+          _cache.getValue(id, fetcher);
         }
-        catch (UnfetchableItemException e) {
+        catch (ValueProductionException e) {
           // should never happen
           LOG.error("Error fetching", e);
         }
@@ -63,7 +63,7 @@ public class CacheTest {
         if (LOG_ON) LOG.info("Current size: " + size);
         _opOrder.add("s" + size);
         if (id == 4) {
-          _cache.expireCachedItems(3);
+          _cache.expireEntries(3);
           size = _cache.getSize();
           if (LOG_ON) LOG.info("Current size: " + size);
           _opOrder.add("s" + size);
@@ -76,7 +76,7 @@ public class CacheTest {
   @Test
   public void singleThreadTest() {
     LOG.info("Starting single thread test");
-    ItemCache<Integer,String> cache = new ItemCache<>(5, 3);
+    InMemoryCache<Integer,String> cache = new InMemoryCache<>(5, 3);
     List<String> opOrder = new Vector<>();
     AtomicInteger completedCount = new AtomicInteger(0);
     Executors.newSingleThreadExecutor().execute(new Worker(cache, opOrder, completedCount));
@@ -91,7 +91,7 @@ public class CacheTest {
   public void multiThreadTest() {
     LOG.info("Starting multi-thread test");
     int numThreads = 100;
-    ItemCache<Integer,String> cache = new ItemCache<>(4, 2);
+    InMemoryCache<Integer,String> cache = new InMemoryCache<>(4, 2);
     List<String> opOrder = new Vector<>();
     AtomicInteger completedCount = new AtomicInteger(0);
     Executor exec = Executors.newFixedThreadPool(10);
