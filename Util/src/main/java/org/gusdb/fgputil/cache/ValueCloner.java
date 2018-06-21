@@ -22,6 +22,7 @@ package org.gusdb.fgputil.cache;
  * @author rdoherty
  * @param <T> type of object to clone
  */
+@FunctionalInterface
 public interface ValueCloner<T> {
 
   /**

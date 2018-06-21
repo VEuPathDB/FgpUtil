@@ -15,6 +15,7 @@ public class FunctionalInterfaces {
    * @param <S> type of function input
    * @param <T> type of function output
    */
+  @FunctionalInterface
   public interface Function<S,T> {
     /**
      * Applies the function to the given input and returns output
@@ -31,6 +32,7 @@ public class FunctionalInterfaces {
    * @param <S> type of function input
    * @param <T> type of function output
    */
+  @FunctionalInterface
   public interface FunctionWithException<S,T> {
     /**
      * Applies the function to the given input and returns output
@@ -49,6 +51,7 @@ public class FunctionalInterfaces {
    * @param <S> type of second function input
    * @param <T> type of function output
    */
+  @FunctionalInterface
   public interface BinaryFunction<R,S,T> {
     /**
      * Applies the function to the given input and returns output
@@ -68,6 +71,7 @@ public class FunctionalInterfaces {
    * @param <T> type of third function input
    * @param <U> type of function output
    */
+  @FunctionalInterface
   public interface TrinaryFunction<R,S,T,U> {
     /**
      * Applies the function to the given input and returns output
@@ -85,6 +89,7 @@ public class FunctionalInterfaces {
    *
    * @param <T> type of predicate input
    */
+  @FunctionalInterface
   public interface Predicate<T> extends Function<T,Boolean> {
     /**
      * Tests the given input against the predicate and returns whether the
@@ -112,6 +117,7 @@ public class FunctionalInterfaces {
    *
    * @param <T> type of predicate input
    */
+  @FunctionalInterface
   public interface PredicateWithException<T> extends FunctionWithException<T,Boolean> {
     /**
      * Tests the given input against the predicate and returns whether the
@@ -140,6 +146,7 @@ public class FunctionalInterfaces {
    * @param <S> type of input values
    * @param <T> type of result
    */
+  @FunctionalInterface
   public interface Reducer<S, T> {
     /**
      * Returns an aggregate result by combining the incoming value with that
@@ -158,6 +165,7 @@ public class FunctionalInterfaces {
    * @param <S> type of input values
    * @param <T> type of result
    */
+  @FunctionalInterface
   public interface ReducerWithException<S, T> {
     /**
      * Returns an aggregate result by combining the incoming value with that
@@ -175,6 +183,7 @@ public class FunctionalInterfaces {
    * 
    * @param <T> type of result
    */
+  @FunctionalInterface
   public interface SupplierWithException<T> {
     /**
      * Returns a value but does not take arguments
@@ -188,6 +197,7 @@ public class FunctionalInterfaces {
   /**
    * Performs a procedure that has no output and does not need parameters
    */
+  @FunctionalInterface
   public interface Procedure {
     public void perform();
   }

@@ -8,6 +8,7 @@ package org.gusdb.fgputil.cache;
  * @param <S> type of cache key
  * @param <T> type of cached value
  */
+@FunctionalInterface
 public interface ValueFactory<S,T> {
 
   /**
