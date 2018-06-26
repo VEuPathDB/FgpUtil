@@ -41,12 +41,31 @@ public class InterviewFollowUp {
   /**
    * Takes a node of a tree and returns a clone of tree where the nodes are
    * reversed (i.e. left and right children are swapped).
-   * @param root
-   * @return
+   * 
+   * For example, given a tree that looks like:
+   * 
+   *                3
+   *               / \
+   *              2   5
+   *             /   / \
+   *            1   4   6
+   * 
+   * This function will return a new tree that looks like:
+   * 
+   *                3
+   *               / \
+   *              5   2
+   *             / \   \
+   *            6   4   1
+   * 
+   * @param root root node of a tree
+   * @return a new tree where left and right children are swapped
    */
   public <T> Node<T> reverseTree(Node<T> root) {
+
     // TODO implement
-    return root;
+
+    return null;
   }
 
   //=======================================================
@@ -57,11 +76,13 @@ public class InterviewFollowUp {
    * Writes the lines of the (text) file referred to by inFile to outFile,
    * reversing the lines (delimited by '\n').
    * 
-   * @param inFile locaion of file to read
+   * @param inFile location of file to read
    * @param outFile location to write reversed lines
    */
   public void reverseLinesOfFile(Path inFile, Path outFile) {
+
     // TODO implement
+
   }
 
   //=======================================================
