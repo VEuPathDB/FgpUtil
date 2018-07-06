@@ -44,17 +44,24 @@ sub copyTo {
     # run copy cmd, saving a check sum on each side
     my $localCmd = "tar cfh - $fromFile | $gzip tee >(md5sum > $sumFile)";
     my $remoteCmd = qq(/bin/bash -c \\"set -e -o pipefail; cd $toDir; tee >(md5sum > $sumFile) | $gunzip tar xf -\\");
-    $self->{mgr}->runCmd(0, "/bin/bash -c \"set -e -o pipefail; $localCmd | ssh -2 $ssh_target '$remoteCmd'\"");
 
-    # get cluster sum and local sum, and compare them
-    my $checksumOnCluster = $self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $toDir; cat $sumFile'");
-    my $checksumLocal = $self->{mgr}->runCmd(0, "cat $sumFile");
+    eval {
+      $self->{mgr}->runCmd(0, "/bin/bash -c \"set -e -o pipefail; $localCmd | ssh -2 $ssh_target '$remoteCmd'\"");
+
+      # get cluster sum and local sum, and compare them
+      my $checksumOnCluster = $self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $toDir; cat $sumFile'");
+      my $checksumLocal = $self->{mgr}->runCmd(0, "cat $sumFile");
+
+      $self->{mgr}->error("It appears the copy to cluster of file '$fromDir/$fromFile' failed. Checksum on cluster '$checksumOnCluster' and local checksum '$checksumLocal' do not match.") unless $checksumOnCluster eq $checksumLocal;
+    };
+
+    my $err = $@;
 
     # delete sum files
     $self->{mgr}->runCmd(0, "rm $sumFile");
     $self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $toDir; rm -f $sumFile'");
 
-    $self->{mgr}->error("It appears the copy to cluster of file '$fromDir/$fromFile' failed. Checksum on cluster '$checksumOnCluster' and local checksum '$checksumLocal' do not match.") unless $checksumOnCluster eq $checksumLocal;
+    $self->{mgr}->error($err) if $err;
 
 }
 
@@ -76,17 +83,25 @@ sub copyFrom {
     # run copy cmd, saving a check sum on each side
     my $remoteCmd = qq(/bin/bash -c \\"set -e -o pipefail; cd $fromDir; tar cf - $fromFile | $gzip tee >(md5sum > $sumFile)\\");
     my $localCmd = "tee >(md5sum > $sumFile) | $gunzip tar xf -";
-    $self->{mgr}->runCmd(0, "/bin/bash -c \"set -e -o pipefail; ssh -2 $ssh_target '$remoteCmd' | $localCmd\"");
 
-    # get cluster sum and local sum, and compare them
-    my $checksumOnCluster = $self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $fromDir; cat $sumFile'");
-    my $checksumLocal = $self->{mgr}->runCmd(0, "cat $sumFile");
+    # catch the error, to ensure we clean up the sum files
+    eval {
+      $self->{mgr}->runCmd(0, "/bin/bash -c \"set -e -o pipefail; ssh -2 $ssh_target '$remoteCmd' | $localCmd\"");
 
+      # get cluster sum and local sum, and compare them
+      my $checksumOnCluster = $self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $fromDir; cat $sumFile'");
+      my $checksumLocal = $self->{mgr}->runCmd(0, "cat $sumFile");
+
+      $self->{mgr}->error("It appears the copy from cluster of file '$fromDir/$fromFile' failed. Checksum on cluster '$checksumOnCluster' and local checksum '$checksumLocal' do not match.") unless $checksumOnCluster eq $checksumLocal;
+    };
+    my $err = $@;
+    
     # delete sum files
     $self->{mgr}->runCmd(0, "rm $sumFile");
     $self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $fromDir; rm -f $sumFile'");
 
-    $self->{mgr}->error("It appears the copy from cluster of file '$fromDir/$fromFile' failed. Checksum on cluster '$checksumOnCluster' and local checksum '$checksumLocal' do not match.") unless $checksumOnCluster eq $checksumLocal;
+    $self->{mgr}->error($err) if $err;
+
 
     if ($deleteAfterCopy) {
 	$self->{mgr}->runCmd(0, "ssh -2 $ssh_target 'cd $fromDir; rm -rf $fromFile'");
