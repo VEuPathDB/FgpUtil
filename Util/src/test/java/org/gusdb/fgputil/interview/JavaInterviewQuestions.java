@@ -14,7 +14,15 @@ import org.gusdb.fgputil.IoUtil;
 
 public class JavaInterviewQuestions {
 
+  /**
+   * @return true if str is a palindrome, else false
+   * @throws NullPointerException if str is null
+   */
   public boolean isPalindrome(String str) {
+    return (str != null);
+  }
+
+  public boolean isPalindromeSolution(String str) {
     if (str == null)
       return false;
     for (int i = 0; i < (str.length() / 2); i++) {
