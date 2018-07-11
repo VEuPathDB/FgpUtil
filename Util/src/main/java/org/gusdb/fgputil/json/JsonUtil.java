@@ -232,7 +232,29 @@ public class JsonUtil {
    * @return - obj or JSONObject.NULL
    */
   public static Object convertNulls(Object obj) {
-	return obj == null ? JSONObject.NULL : obj;
+    return obj == null ? JSONObject.NULL : obj;
+  }
+
+  /**
+   * Creates a deep clone of the passed JSON object and returns it.  Currently this implementation is rather
+   * expensive since it serializes the object and then parses it again.  TODO: make more efficient
+   * 
+   * @param json object to clone
+   * @return clone
+   */
+  public static JSONObject clone(JSONObject json) {
+    return new JSONObject(json.toString());
+  }
+
+  /**
+   * Creates a deep clone of the passed JSON array and returns it.  Currently this implementation is rather
+   * expensive since it serializes the array and then parses it again.  TODO: make more efficient
+   * 
+   * @param json arrat to clone
+   * @return clone
+   */
+  public static JSONArray clone(JSONArray json) {
+    return new JSONArray(json.toString());
   }
 
 }
