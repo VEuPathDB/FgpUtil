@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.functional.Functions;
+
 /**
  * Immutable class representing the validation status of a Validated object.  To create, use the static
  * method ValidationBundle.builder() to create a builder, add errors, set the validation status, and then
@@ -51,6 +53,20 @@ public class ValidationBundle {
 
     public boolean hasErrors() {
       return !_errors.isEmpty() || !_keyedErrors.isEmpty();
+    }
+
+    public <T extends Validateable> ValidationBundleBuilder aggregateStatus(List<T> objects) {
+      ValidationStatus[] statusValues = ValidationStatus.values();
+      setStatus(statusValues[Functions.reduce(objects, (aggregate, obj) ->
+          Math.min(aggregate, obj.getValidationBundle().getStatus().ordinal()), statusValues.length - 1)]);
+      objects.stream().forEach(obj -> {
+        ValidationBundle errors = obj.getValidationBundle();
+        errors._errors.stream().forEach(error -> addError(error));
+        errors._keyedErrors.entrySet().stream().forEach(entry -> {
+          entry.getValue().stream().forEach(value -> { addError(entry.getKey(), value); });
+        });
+      });
+      return this;
     }
   }
 

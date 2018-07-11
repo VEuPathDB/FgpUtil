@@ -27,7 +27,7 @@ public class ValidObjectFactory {
     }
   }
 
-  public static class SemanticallyValid<T extends Validateable> extends Valid<T> {
+  public static class SemanticallyValid<T extends Validateable> extends SyntacticallyValid<T> {
     private SemanticallyValid(T validatedObject) {
       super(validatedObject);
     }
@@ -44,8 +44,9 @@ public class ValidObjectFactory {
   public static <T extends Validateable> SyntacticallyValid<T> getSyntacticallyValid(T validatedObject) {
     switch(validatedObject.getValidationBundle().getStatus()) {
       case SYNTACTICALLY_VALID:
-      case SEMANTICALLY_VALID:
         return new SyntacticallyValid<>(validatedObject);
+      case SEMANTICALLY_VALID:
+        return new SemanticallyValid<>(validatedObject);
       default:
         throw new ValidObjectWrappingException();
     }
