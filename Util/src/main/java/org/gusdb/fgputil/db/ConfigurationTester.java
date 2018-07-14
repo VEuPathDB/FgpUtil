@@ -16,7 +16,9 @@ public class ConfigurationTester {
     }
     SupportedPlatform platform = SupportedPlatform.toPlatform(args[0]);
     ConnectionPoolConfig dbConfig = SimpleDbConfig.create(platform, args[1], args[2], args[3], (short)1);
+    System.out.println("Created DB config object: " + dbConfig.toString());
     try (DatabaseInstance db = new DatabaseInstance(dbConfig)) {
+      System.out.println("DatabaseInstance object created. Running validation query...");
       new SQLRunner(db.getDataSource(), db.getPlatform().getValidationQuery()).executeStatement();
       System.out.println("Successfully connected and executed validation query.");
     }
