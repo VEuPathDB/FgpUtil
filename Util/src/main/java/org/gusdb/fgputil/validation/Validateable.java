@@ -10,8 +10,17 @@ public interface Validateable {
 
   /**
    * Returns a validation bundle containing validation information about this object
+   * 
    * @return a validation bundle containing validation information about this object
    */
   public ValidationBundle getValidationBundle();
 
+  /**
+   * By default, returns the response of the validation bundle's status's isValid()
+   * 
+   * @return whether this object is valid
+   */
+  public default boolean isValid() {
+    return getValidationBundle().getStatus().isValid();
+  }
 }

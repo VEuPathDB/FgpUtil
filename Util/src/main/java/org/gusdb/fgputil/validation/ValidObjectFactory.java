@@ -42,14 +42,15 @@ public class ValidObjectFactory {
    * @throws ValidObjectWrappingException if passed object is not syntactically valid
    */
   public static <T extends Validateable> SyntacticallyValid<T> getSyntacticallyValid(T validatedObject) {
-    switch(validatedObject.getValidationBundle().getStatus()) {
-      case SYNTACTICALLY_VALID:
-        return new SyntacticallyValid<>(validatedObject);
-      case SEMANTICALLY_VALID:
-        return new SemanticallyValid<>(validatedObject);
-      default:
-        throw new ValidObjectWrappingException();
+    ValidationBundle validation = validatedObject.getValidationBundle();
+    if (validation.getStatus().equals(ValidationStatus.VALID)) {
+      switch(validation.getLevel()) {
+        case SYNTACTIC: return new SyntacticallyValid<>(validatedObject);
+        case SEMANTIC:  return new SemanticallyValid<>(validatedObject);
+        default: /* drop through to exception */
+      }
     }
+    throw new ValidObjectWrappingException();
   }
 
   /**
@@ -61,11 +62,11 @@ public class ValidObjectFactory {
    * @throws ValidObjectWrappingException if passed object is not semantically valid
    */
   public static <T extends Validateable> SemanticallyValid<T> getSemanticallyValid(T validatedObject) {
-    switch(validatedObject.getValidationBundle().getStatus()) {
-      case SEMANTICALLY_VALID:
-        return new SemanticallyValid<>(validatedObject);
-      default:
-        throw new ValidObjectWrappingException();
+    ValidationBundle validation = validatedObject.getValidationBundle();
+    if (validation.getStatus().equals(ValidationStatus.VALID) &&
+        validation.getLevel().equals(ValidationLevel.SEMANTIC)) {
+      return new SemanticallyValid<>(validatedObject);
     }
+    throw new ValidObjectWrappingException();
   }
 }

@@ -3,12 +3,11 @@ package org.gusdb.fgputil.validation;
 import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.gusdb.fgputil.functional.Functions;
 
 /**
  * Immutable class representing the validation status of a Validated object.  To create, use the static
@@ -21,15 +20,12 @@ public class ValidationBundle {
 
   public static class ValidationBundleBuilder {
 
-    private ValidationStatus _status = ValidationStatus.UNVALIDATED;
+    private final ValidationLevel _level;
     private List<String> _errors = new ArrayList<>();
     private Map<String,List<String>> _keyedErrors = new HashMap<>();
 
-    private ValidationBundleBuilder() {} // only access is through static method
-
-    public ValidationBundleBuilder setStatus(ValidationStatus status) {
-      _status = status;
-      return this;
+    private ValidationBundleBuilder(ValidationLevel level) { // only access is through static method
+      _level = level;
     }
 
     public ValidationBundleBuilder addError(String error) {
@@ -48,19 +44,19 @@ public class ValidationBundle {
     }
 
     public ValidationBundle build() {
-      return new ValidationBundle(_status, _errors, _keyedErrors);
+      return new ValidationBundle(_level, _errors, _keyedErrors);
     }
 
     public boolean hasErrors() {
       return !_errors.isEmpty() || !_keyedErrors.isEmpty();
     }
 
-    public <T extends Validateable> ValidationBundleBuilder aggregateStatus(List<T> objects) {
-      ValidationStatus[] statusValues = ValidationStatus.values();
-      setStatus(statusValues[Functions.reduce(objects, (aggregate, obj) ->
-          Math.min(aggregate, obj.getValidationBundle().getStatus().ordinal()), statusValues.length - 1)]);
-      objects.stream().forEach(obj -> {
+    public ValidationBundleBuilder aggregateStatus(Validateable... objects) {
+      Arrays.asList(objects).stream().forEach(obj -> {
         ValidationBundle errors = obj.getValidationBundle();
+        if (!errors.getLevel().equals(_level)) {
+          throw new IllegalArgumentException("Can only aggregate status of objects with the same validation level.");
+        }
         errors._errors.stream().forEach(error -> addError(error));
         errors._keyedErrors.entrySet().stream().forEach(entry -> {
           entry.getValue().stream().forEach(value -> { addError(entry.getKey(), value); });
@@ -70,23 +66,39 @@ public class ValidationBundle {
     }
   }
 
-  public static ValidationBundleBuilder builder() {
-    return new ValidationBundleBuilder();
+  public static ValidationBundleBuilder builder(ValidationLevel level) {
+    return new ValidationBundleBuilder(level);
   }
 
-  private final ValidationStatus _status;
+  private final ValidationLevel _level;
   private final List<String> _errors;
   private final Map<String,List<String>> _keyedErrors;
 
-  private ValidationBundle(ValidationStatus status, List<String> errors, Map<String, List<String>> keyedErrors) {
-    _status = status;
+  private ValidationBundle(ValidationLevel level, List<String> errors, Map<String, List<String>> keyedErrors) {
+    _level = level;
     _errors = Collections.unmodifiableList(new ArrayList<>(errors));
     _keyedErrors = Collections.unmodifiableMap(getMapFromKeys(keyedErrors.keySet(),
         key -> Collections.unmodifiableList(keyedErrors.get(key))));
   }
 
-  public ValidationStatus getStatus() { return _status; }
-  public List<String> getErrors() { return _errors; }
-  public Map<String,List<String>> getKeyedErrors() { return _keyedErrors; }
+  public ValidationStatus getStatus() {
+    return _level.equals(ValidationLevel.NONE) ? ValidationStatus.UNVALIDATED :
+      hasErrors() ? ValidationStatus.FAILED : ValidationStatus.VALID;
+  }
 
+  public ValidationLevel getLevel() {
+    return _level;
+  }
+
+  public List<String> getErrors() {
+    return _errors;
+  }
+
+  public Map<String,List<String>> getKeyedErrors() {
+    return _keyedErrors;
+  }
+
+  public boolean hasErrors() {
+    return !_errors.isEmpty() || !_keyedErrors.isEmpty();
+  }
 }
