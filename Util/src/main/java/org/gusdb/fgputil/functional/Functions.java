@@ -16,6 +16,7 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunction;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.NoArgFunctionWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.PredicateWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
@@ -312,6 +313,21 @@ public class Functions {
         throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
       }
     };
+  }
+
+  /**
+   * Takes a no-arg function that may throw an exception, calls it, and returns the result
+   * 
+   * @param producer a function that produces a value from no arguments
+   * @return the value the function produces
+   */
+  public static <T> T swallowAndGet(NoArgFunctionWithException<T> producer) {
+    try {
+      return producer.apply();
+    }
+    catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
