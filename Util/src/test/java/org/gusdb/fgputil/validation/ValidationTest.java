@@ -2,22 +2,18 @@ package org.gusdb.fgputil.validation;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SyntacticallyValid;
-import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
+// TODO: write better tests... not much coverage here
 public class ValidationTest {
 
   public static class Blah implements Validateable {
 
     private final ValidationBundle _validationBundle;
 
-    public Blah(ValidationStatus status) {
-      ValidationBundleBuilder builder = ValidationBundle.builder().setStatus(status);
-      if (!status.isValid()) {
-        builder.addError("Found to be invalid since status is: " + status);
-      }
-      _validationBundle = builder.build();
+    public Blah(ValidationLevel level) {
+      _validationBundle = ValidationBundle.builder(level).build();
     }
 
     @Override
@@ -31,7 +27,7 @@ public class ValidationTest {
 
   @Test
   public void testValidationFramework() {
-    Blah blah = new Blah(ValidationStatus.SYNTACTICALLY_VALID);
+    Blah blah = new Blah(ValidationLevel.SYNTACTIC);
     SyntacticallyValid<Blah> validBlah = ValidObjectFactory.getSyntacticallyValid(blah);
     doSyntacticThings(validBlah);
     Blah blah2 = validBlah.getObject();
@@ -40,7 +36,7 @@ public class ValidationTest {
 
   @Test
   public void testValidationFramework2() {
-    Blah blah = new Blah(ValidationStatus.SEMANTICALLY_VALID);
+    Blah blah = new Blah(ValidationLevel.SEMANTIC);
     SemanticallyValid<Blah> validBlah = ValidObjectFactory.getSemanticallyValid(blah);
     doSyntacticThings(validBlah);
     doSemanticThings(validBlah);
