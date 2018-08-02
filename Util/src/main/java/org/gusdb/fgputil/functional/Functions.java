@@ -16,6 +16,7 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunction;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.NoArgFunction;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.NoArgFunctionWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.PredicateWithException;
@@ -119,7 +120,7 @@ public class Functions {
    * @param function key generator
    * @return map from generated keys to passed values
    */
-  public static <S,T> Map<S,T> getMapFromValues(Iterable<T> values, Function<T,S> function) {
+  public static <R,S,T extends R> Map<S,T> getMapFromValues(Iterable<T> values, Function<R,S> function) {
     return getMapFromList(values, value -> new TwoTuple<S,T>(function.apply(value), value));
   }
 
@@ -316,6 +317,26 @@ public class Functions {
   }
 
   /**
+   * Takes a no-arg function that may or may not have checked exceptions and returns a new no-arg function
+   * that performs the same operation but "swallows" any checked exception by wrapping it in a
+   * RuntimeException and throwing that instead.  If calling code wishes to inspect the underlying exception
+   * it must catch the RuntimeException and use getCause().
+   * 
+   * @param r reducer to wrap
+   * @return a new reducer that swallows checked exceptions
+   */
+  public static <T> NoArgFunction<T> nSwallow(NoArgFunctionWithException<T> f) {
+    return () -> {
+      try {
+        return f.apply();
+      }
+      catch (Exception e) {
+        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
+      }
+    };
+  }
+
+  /**
    * Takes a no-arg function that may throw an exception, calls it, and returns the result
    * 
    * @param producer a function that produces a value from no arguments
@@ -373,7 +394,7 @@ public class Functions {
    * @param predicate test on the type of item in items
    * @return index of the first item that passes the predicate, or -1 if none do
    */
-  public static <T> int findFirstIndex(Iterable<T> items, Predicate<T> predicate) {
+  public static <S, T extends S> int findFirstIndex(Iterable<T> items, Predicate<S> predicate) {
     int i = 0;
     for (T item : items) {
       if (predicate.test(item)) {
@@ -382,6 +403,17 @@ public class Functions {
       i++;
     }
     return -1;
+  }
+
+  /**
+   * Returns true if any elements in the passed iterable pass the test in the passed predicate
+   * 
+   * @param items iterable of items
+   * @param predicate test on the type of item in items
+   * @return true if items contains a value that passes the predicate, else false
+   */
+  public static <S, T extends S> boolean contains(Iterable<T> items, Predicate<S> predicate) {
+    return findFirstIndex(items, predicate) != -1;
   }
 
   /**

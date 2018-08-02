@@ -85,6 +85,21 @@ public class FunctionalInterfaces {
   }
 
   /**
+   * Defines a no-argument function
+   *
+   * @param <T> type of function output
+   */
+  @FunctionalInterface
+  public interface NoArgFunction<T> {
+    /**
+     * Applies the function to produce an object of type T
+     * 
+     * @return result of function
+     */
+    public T apply();
+  }
+
+  /**
    * Defines a no-argument function that may throw an exception
    *
    * @param <T> type of function output

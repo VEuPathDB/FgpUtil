@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.NoArgFunction;
 
 /**
  * Convenience class for building Maps.
@@ -52,6 +53,10 @@ public class MapBuilder<S,T> {
 
   public <R> MapBuilder<S,T> putIf(boolean put, R obj, Function<R, Entry<S,T>> converter) {
     return (put ? put(obj, converter) : this);
+  }
+
+  public MapBuilder<S,T> putIf(boolean put, S key, NoArgFunction<T> valueFactory) {
+    return (put ? put(key, valueFactory.apply()) : this);
   }
 
   public MapBuilder<S,T> putAll(Map<S,T> map) {
