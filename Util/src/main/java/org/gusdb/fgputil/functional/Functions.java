@@ -14,6 +14,7 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunction;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunctionWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.NoArgFunction;
@@ -322,13 +323,33 @@ public class Functions {
    * RuntimeException and throwing that instead.  If calling code wishes to inspect the underlying exception
    * it must catch the RuntimeException and use getCause().
    * 
-   * @param r reducer to wrap
-   * @return a new reducer that swallows checked exceptions
+   * @param r function to wrap
+   * @return a new function that swallows checked exceptions
    */
-  public static <T> NoArgFunction<T> nSwallow(NoArgFunctionWithException<T> f) {
+  public static <T> NoArgFunction<T> f0Swallow(NoArgFunctionWithException<T> f) {
     return () -> {
       try {
         return f.apply();
+      }
+      catch (Exception e) {
+        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
+      }
+    };
+  }
+
+  /**
+   * Takes a 2-arg function that may or may not have checked exceptions and returns a new 2-arg function
+   * that performs the same operation but "swallows" any checked exception by wrapping it in a
+   * RuntimeException and throwing that instead.  If calling code wishes to inspect the underlying exception
+   * it must catch the RuntimeException and use getCause().
+   * 
+   * @param f function to wrap
+   * @return a new function that swallows checked exceptions
+   */
+  public static <R,S,T> BinaryFunction<R,S,T> f2Swallow(BinaryFunctionWithException<R,S,T> f) {
+    return (obj1, obj2) -> {
+      try {
+        return f.apply(obj1, obj2);
       }
       catch (Exception e) {
         throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));

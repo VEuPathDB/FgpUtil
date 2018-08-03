@@ -64,6 +64,26 @@ public class FunctionalInterfaces {
   }
 
   /**
+   * Defines a two-argument function that may throw an exception
+   * 
+   * @param <R> type of first function input
+   * @param <S> type of second function input
+   * @param <T> type of function output
+   */
+  @FunctionalInterface
+  public interface BinaryFunctionWithException<R,S,T> {
+    /**
+     * Applies the function to the given input and returns output
+     * 
+     * @param obj1 input to function
+     * @param obj2 input to function
+     * @return result of function
+     * @throws Exception as needed
+     */
+    public T apply(R obj1, S obj2) throws Exception;
+  }
+
+  /**
    * Defines a three-argument function
    * 
    * @param <R> type of first function input
