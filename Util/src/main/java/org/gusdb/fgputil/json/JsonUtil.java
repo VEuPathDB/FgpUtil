@@ -57,6 +57,13 @@ public class JsonUtil {
     return map;
   }
 
+  /**
+   * Creates a JSON object from a map of string keys to string values
+   * @param map Value to convert to a JSON object
+   * @return JSON object containing the data present in the input map
+   * @deprecated use {@link JSONObject#JSONObject(Map)}
+   */
+  @Deprecated
   public static JSONObject toJsonObject(Map<String,String> map) {
     JSONObject json = new JSONObject();
     for (Entry<String,String> entry : map.entrySet()) {
@@ -65,6 +72,13 @@ public class JsonUtil {
     return json;
   }
 
+  /**
+   * Creates a JSON array from an array of strings.
+   * @param strings value to convert to a JSON array
+   * @return JSON array containing the strings present in the input array
+   * @deprecated use {@link JSONArray#JSONArray(Object)}
+   */
+  @Deprecated
   public static JSONArray toJsonStringArray(String[] strings) {
     JSONArray json = new JSONArray();
     for (String s : strings) {
@@ -250,7 +264,7 @@ public class JsonUtil {
    * Creates a deep clone of the passed JSON array and returns it.  Currently this implementation is rather
    * expensive since it serializes the array and then parses it again.  TODO: make more efficient
    * 
-   * @param json arrat to clone
+   * @param json array to clone
    * @return clone
    */
   public static JSONArray clone(JSONArray json) {
