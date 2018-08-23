@@ -47,7 +47,7 @@ public class EncryptionUtil {
    * is not compatible with md5
    **/
   public static String md5(String str) {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     for (byte code : newMd5Digester().digest(str.getBytes())) {
       buffer.append(Integer.toString((code & 0xff) + 0x100, 16).substring(1));
     }
@@ -90,7 +90,7 @@ public class EncryptionUtil {
   }
 
   // pattern to check validity of incoming ID names (non-empty alpha-numeric string + '_')
-  private static final Pattern VALID_ID_PATTERN = Pattern.compile("[\\.\\-_a-zA-Z0-9]+");
+  private static final Pattern VALID_ID_PATTERN = Pattern.compile("[.\\-_a-zA-Z0-9]+");
 
   public static String encodeMap(Map<String,String> map) {
     return printBase64Binary(getUtf8EncodedBytes(join(mapToList(map.entrySet(), entry ->
@@ -112,7 +112,7 @@ public class EncryptionUtil {
       if (tokens.length != 2) {
         throw new IllegalArgumentException("Value '" + encodedMap + "' cannot be decoded.");
       }
-      return new TwoTuple<String,String>(tokens[0], tokens[1]);
+      return new TwoTuple<>(tokens[0], tokens[1]);
     });
   }
 }
