@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
@@ -51,6 +52,10 @@ public class Named {
                 obj1.getName().compareTo(obj2.getName());
         }
       }});
+  }
+
+  public static <T extends NamedObject> Predicate<T> nameMatches(String name) {
+    return named -> named.getName().equals(name);
   }
 
 }

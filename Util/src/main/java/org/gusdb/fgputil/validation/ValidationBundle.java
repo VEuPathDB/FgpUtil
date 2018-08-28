@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
+
 /**
  * Immutable class representing the validation status of a Validated object.  To create, use the static
  * method ValidationBundle.builder() to create a builder, add errors, set the validation status, and then
@@ -100,5 +102,15 @@ public class ValidationBundle {
 
   public boolean hasErrors() {
     return !_errors.isEmpty() || !_keyedErrors.isEmpty();
+  }
+
+  @Override
+  public String toString() {
+    return new JSONObject()
+        .put("validationLevel", getLevel().toString())
+        .put("validationStatus", getStatus().toString())
+        .put("errors", getErrors())
+        .put("keyedErrors", getKeyedErrors())
+        .toString();
   }
 }

@@ -33,6 +33,12 @@ public class ValidObjectFactory {
     }
   }
 
+  public static class Runnable<T extends Validateable> extends SemanticallyValid<T> {
+    private Runnable(T validatedObject) {
+      super(validatedObject);
+    }
+  }
+
   /**
    * Attempts to wrap a Validateable object in a SyntacticallyValid wrapper.  If the passed object is not
    * syntactically valid, throws an exception.
@@ -47,10 +53,11 @@ public class ValidObjectFactory {
       switch(validation.getLevel()) {
         case SYNTACTIC: return new SyntacticallyValid<>(validatedObject);
         case SEMANTIC:  return new SemanticallyValid<>(validatedObject);
+        case RUNNABLE:  return new Runnable<>(validatedObject);
         default: /* drop through to exception */
       }
     }
-    throw new ValidObjectWrappingException();
+    throw new ValidObjectWrappingException(validatedObject.getValidationBundle());
   }
 
   /**
@@ -63,10 +70,30 @@ public class ValidObjectFactory {
    */
   public static <T extends Validateable> SemanticallyValid<T> getSemanticallyValid(T validatedObject) {
     ValidationBundle validation = validatedObject.getValidationBundle();
-    if (validation.getStatus().equals(ValidationStatus.VALID) &&
-        validation.getLevel().equals(ValidationLevel.SEMANTIC)) {
-      return new SemanticallyValid<>(validatedObject);
+    if (validation.getStatus().equals(ValidationStatus.VALID)) {
+      switch(validation.getLevel()) {
+        case SEMANTIC:  return new SemanticallyValid<>(validatedObject);
+        case RUNNABLE:  return new Runnable<>(validatedObject);
+        default: /* drop through to exception */
+      }
     }
-    throw new ValidObjectWrappingException();
+    throw new ValidObjectWrappingException(validatedObject.getValidationBundle());
+  }
+
+  /**
+   * Attempts to wrap a Validateable object in a Runnable wrapper.  If the passed object is not
+   * runnable, throws an exception.
+   * 
+   * @param validatedObject runnable object
+   * @return wrapper around passed object
+   * @throws ValidObjectWrappingException if passed object is not runnable
+   */
+  public static <T extends Validateable> Runnable<T> getRunnable(T validatedObject) {
+    ValidationBundle validation = validatedObject.getValidationBundle();
+    if (validation.getStatus().equals(ValidationStatus.VALID) &&
+        validation.getLevel().equals(ValidationLevel.RUNNABLE)) {
+      return new Runnable<>(validatedObject);
+    }
+    throw new ValidObjectWrappingException(validatedObject.getValidationBundle());
   }
 }
