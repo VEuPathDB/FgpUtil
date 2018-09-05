@@ -29,7 +29,7 @@ my @backendProjects = ('GusAppFramework:gus', 'GusSchema:gus', 'ReFlow:gus',
                        'OrthoMCLDatasets:apidb', 'ApiCommonMetadataRepository:apidb');
 
 # Shared website projects
-my @sharedSiteProjects = ('EbrcModelCommon:apidb', 'EbrcWebsiteCommon:apidb', 'EbrcWebSvcCommon:apidb');
+my @sharedSiteProjects = ('WDKClient:gus', 'EbrcModelCommon:apidb', 'EbrcWebsiteCommon:apidb', 'EbrcWebSvcCommon:apidb');
 
 # Additional projects for Api sites
 my @apiSiteProjects = ('ApiCommonPresenters:apidb', 'ApiCommonDatasets:apidb',
