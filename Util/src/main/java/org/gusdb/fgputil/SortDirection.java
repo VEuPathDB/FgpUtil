@@ -17,7 +17,8 @@ public enum SortDirection {
     _boolValue = boolValue;
   }
 
-  public boolean getBoolValue() {
+  // deprecated pending refactoring of WDK sort ordering code
+  public boolean isAscending() {
     return _boolValue;
   }
 
@@ -31,10 +32,11 @@ public enum SortDirection {
     }
   }
 
-  public static SortDirection fromBoolean(Boolean value) {
+  // deprecated pending refactoring of WDK sort ordering code
+  public static SortDirection getFromIsAscending(Boolean isAscending) {
     for (SortDirection d : values()) {
-      if (d._boolValue == value) return d;
+      if (d._boolValue == isAscending) return d;
     }
-    throw new IllegalArgumentException("No direction has bool value " + value);
+    throw new IllegalArgumentException("No direction has bool value " + isAscending);
   }
 }
