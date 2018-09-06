@@ -100,6 +100,22 @@ public class FormatUtil {
       throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
     }
   }
+  
+  /**
+   * Attempts to convert the given text into HTML, replacing special characters
+   * with their HTML equivalents.
+   * TODO: this method should be improved!
+   * 
+   * @param str string to convert
+   * @return converted string
+   */
+  public static String escapeHtml(String str) {
+    return str
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("&", "&amp;")
+        .replaceAll("\n", "<br/>\n");
+  }
 
   public static String splitCamelCase(String s) {
     return s.replaceAll(
