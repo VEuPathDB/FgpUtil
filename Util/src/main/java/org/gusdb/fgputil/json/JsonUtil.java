@@ -1,13 +1,7 @@
 package org.gusdb.fgputil.json;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -126,7 +120,7 @@ public class JsonUtil {
   public static Set<String> getKeys(JSONObject obj) {
     String[] keys = JSONObject.getNames(obj);
     return (keys == null ? Collections.emptySet() :
-      new HashSet<String>(Arrays.asList(keys)));
+      new HashSet<>(Arrays.asList(keys)));
   }
 
   /**
@@ -140,7 +134,6 @@ public class JsonUtil {
    *
    * @param jsonObj the JSON object
    * @param out string builder to write to
-   * @throws JSONException
    */
   // NOTE: this method was taken and modified from json.org's JSONObject
   private static void write(JSONObject jsonObj, StringBuilder out) throws JSONException {
@@ -176,7 +169,6 @@ public class JsonUtil {
    *
    * @param jsonArr the JSON array
    * @param out string builder to write to
-   * @throws JSONException
    */
   // NOTE: this method was taken and modified from json.org's JSONArray
   private static void write(JSONArray jsonArr, StringBuilder out) throws JSONException {
@@ -200,7 +192,7 @@ public class JsonUtil {
 
   // NOTE: this method was taken and modified from json.org's JSONObject
   private static void writeValue(Object value, StringBuilder out) throws JSONException {
-    if (value == null || value.equals(null)) {
+    if (value == null) {
       out.append("null");
     }
     else if (value instanceof JSONObject) {
