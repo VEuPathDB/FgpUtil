@@ -144,6 +144,12 @@
         <artifactId>jackson-annotations</artifactId>
         <version>${jackson.version}</version>
       </dependency>
+      <dependency>
+	<groupId>com.fasterxml.jackson.datatype</groupId>
+	<!-- converter to org.json.JSONObject -->
+	<artifactId>jackson-datatype-json-org</artifactId>
+	<version>${jackson.version}</version>
+      </dependency>
 
       <!-- JSON Web Token processing -->
       <dependency>
