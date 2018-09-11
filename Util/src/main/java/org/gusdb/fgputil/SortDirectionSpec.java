@@ -1,6 +1,7 @@
 package org.gusdb.fgputil;
 
 import org.gusdb.fgputil.Named.NamedObject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class SortDirectionSpec<T extends NamedObject> {
   T _item;
@@ -11,8 +12,11 @@ public class SortDirectionSpec<T extends NamedObject> {
     _direction = direction;
   }
 
+  @JsonIgnore
   public T getItem() { return _item; }
+
   public String getItemName() { return _item.getName(); }
+
   public SortDirection getDirection() { return _direction; }
 
 }
