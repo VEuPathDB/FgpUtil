@@ -22,7 +22,7 @@ public enum SortDirection {
     return _boolValue;
   }
 
-  public static boolean isDirection(String str) {
+  public static boolean isValidDirection(String str) {
     try {
       valueOf(str);
       return true;
