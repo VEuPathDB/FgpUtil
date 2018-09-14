@@ -24,10 +24,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.log4j.Logger;
 
@@ -90,6 +92,22 @@ public class IoUtil {
   }
 
   /**
+   * Checks if the passed directory exists and is readable and throws an exception supplied by
+   * the passed supplier if not
+   * 
+   * @param directoryName directory to check
+   * @return File object for found, readable directory
+   * @throws T exception thrown if directory specified does not exist or is not readable
+   */
+  public static <T extends Exception> File getReadableDirectoryOrThrow(String directoryName, Supplier<T> supplier) throws T {
+    File f = new File(directoryName);
+    if (!f.isDirectory() || !f.canWrite()) {
+      throw supplier.get();
+    }
+    return f;
+  }
+
+  /**
    * Checks if the passed directory exists and is writable and calls
    * System.exit() with the default exit error code if not
    * 
@@ -97,11 +115,26 @@ public class IoUtil {
    * @return File object for found, writable directory
    */
   public static File getWritableDirectoryOrDie(String directoryName) {
+    return getWriteableDirectoryOrThrow(directoryName, () -> {
+      File f = new File(directoryName);
+      System.err.println("ERROR: " + f.getAbsolutePath() + " is not a writable directory.");
+      System.exit(DEFAULT_ERROR_EXIT_CODE);
+      return new RuntimeException(); // unreachable code
+    });
+  }
+
+  /**
+   * Checks if the passed directory exists and is writable and throws an exception supplied by
+   * the passed supplier if not
+   * 
+   * @param directoryName directory to check
+   * @return File object for found, writable directory
+   * @throws T exception thrown if directory specified does not exist or is not writeable
+   */
+  public static <T extends Exception> File getWriteableDirectoryOrThrow(String directoryName, Supplier<T> supplier) throws T {
     File f = new File(directoryName);
     if (!f.isDirectory() || !f.canWrite()) {
-      System.err.println("ERROR: " + f.getAbsolutePath()
-          + " is not a writable directory.");
-      System.exit(DEFAULT_ERROR_EXIT_CODE);
+      throw supplier.get();
     }
     return f;
   }
@@ -114,11 +147,26 @@ public class IoUtil {
    * @return File object for found, writable directory
    */
   public static File getReadableFileOrDie(String fileName) {
+    return getReadableFileOrThrow(fileName, () -> {
+      File f = new File(fileName);
+      System.err.println("ERROR: " + f.getAbsolutePath() + " is not a readable file.");
+      System.exit(DEFAULT_ERROR_EXIT_CODE);
+      return new RuntimeException(); // unreachable code
+    });
+  }
+
+  /**
+   * Checks if the passed file exists and is readable and throws an exception supplied by
+   * the passed supplier if not
+   * 
+   * @param fileName directory to check
+   * @return File object for found, writable directory
+   * @throws T exception thrown if file specified does not exist or is not readable
+   */
+  public static <T extends Exception> File getReadableFileOrThrow(String fileName, Supplier<T> supplier) throws T {
     File f = new File(fileName);
     if (!f.isFile() || !f.canRead()) {
-      System.err.println("ERROR: " + f.getAbsolutePath()
-          + " is not a readable file.");
-      System.exit(DEFAULT_ERROR_EXIT_CODE);
+      throw supplier.get();
     }
     return f;
   }
@@ -323,6 +371,20 @@ public class IoUtil {
   }
 
   /**
+   * Creates a directory by creating all nonexistent parent directories first. Unlike the createDirectory method,
+   * an exception is not thrown if the directory could not be created because it already exists.  This method
+   * assumes you are on a POSIX system and applies open permissions (rwxrwxrwx) to any directories created during
+   * its call.  This is done atomically when creating the nonexistent directories.  If this method fails, then it may
+   * do so after creating some, but not all, of the parent directories.
+   * 
+   * @param directory the directory to create
+   * @returns the directory
+   */
+  public static Path createOpenPermsDirectories(Path directory) throws IOException {
+    return Files.createDirectories(directory, getOpenPosixPermsAsFileAttribute());
+  }
+
+/**
    * Generate an empty, open-permissions temporary directory in the default tmp location.
    * 
    * @param dirPrefix prefix applied to generated directory name
@@ -364,5 +426,14 @@ public class IoUtil {
       LOG.warn("Cannot set permissions to " + path);
     }
     return path;
+  }
+
+  /**
+   * Create a file attribute representing open file permissions on a POSIX system (rwx on owner, group, all)
+   * 
+   * @return open posix permissions as a file attribute
+   */
+  public static FileAttribute<Set<PosixFilePermission>> getOpenPosixPermsAsFileAttribute() {
+    return PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxrwxrwx"));
   }
 }
