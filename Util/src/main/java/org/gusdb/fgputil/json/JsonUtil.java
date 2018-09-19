@@ -30,6 +30,10 @@ public class JsonUtil {
     return (obj.has(key) ? obj.getInt(key) : defaultValue);
   }
 
+  public static JSONArray getJsonArrayOrDefault(JSONObject obj, String key, JSONArray defaultValue) {
+    return (obj.has(key) ? obj.getJSONArray(key) : defaultValue);
+  }  
+  
   public static JSONObject getJsonObjectOrDefault(JSONObject obj, String key, JSONObject defaultValue) {
     return (obj.has(key) ? obj.getJSONObject(key) : defaultValue);
   }
@@ -55,6 +59,16 @@ public class JsonUtil {
       map.put(key, json.getString(key));
     }
     return map;
+  }
+  
+  public static String[] toStringArray(JSONArray json) {
+    String[] result = new String[json.length()];
+    
+    for (int i = 0; i < result.length; i++) {
+      result[i] = json.getString(i);
+    }
+    
+    return result;
   }
 
   public static JSONObject toJsonObject(Map<String,String> map) {

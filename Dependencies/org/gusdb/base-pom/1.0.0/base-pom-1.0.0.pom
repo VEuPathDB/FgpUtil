@@ -71,7 +71,7 @@
     <java.version>1.8</java.version>
     <scala.version>2.12.2</scala.version>
     <jersey.version>2.25.1</jersey.version>
-    <jackson.version>2.6.1</jackson.version>
+    <jackson.version>2.9.6</jackson.version>
     <oltu.version>1.0.0</oltu.version>
   </properties>
 
@@ -83,6 +83,11 @@
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
+    </repository>
+
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
     </repository>
   </repositories>
 
@@ -105,7 +110,7 @@
       <dependency>
         <groupId>org.json</groupId>
         <artifactId>json</artifactId>
-        <version>20140107</version>
+        <version>20170516</version>
       </dependency>
       <dependency>
         <groupId>javax.json</groupId>
@@ -139,12 +144,29 @@
         <artifactId>jackson-annotations</artifactId>
         <version>${jackson.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-json-provider</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-json-org</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
 
       <!-- JSON Web Token processing -->
       <dependency>
         <groupId>io.jsonwebtoken</groupId>
         <artifactId>jjwt</artifactId>
         <version>0.6.0</version>
+      </dependency>
+
+      <!-- JSON Schema validation -->
+      <dependency>
+        <groupId>com.github.java-json-tools</groupId>
+        <artifactId>json-schema-validator</artifactId>
+        <version>2.2.10</version>
       </dependency>
 
       <!-- XML Parsing and Validation -->
@@ -356,7 +378,7 @@
         <artifactId>spring-context</artifactId>
         <version>4.0.6.RELEASE</version>
       </dependency>
-      <!-- 
+      <!--
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-web</artifactId>
@@ -409,7 +431,7 @@
           </exclusion>
         </exclusions>
       </dependency>
-      
+
       <!--  CSV File Handling -->
       <!-- https://mvnrepository.com/artifact/net.sf.opencsv/opencsv -->
       <dependency>
@@ -511,6 +533,11 @@
         <artifactId>testng</artifactId>
         <version>6.8</version>
       </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>2.21.0</version>
+      </dependency>
 
       <!-- Logging -->
       <dependency>
@@ -530,14 +557,14 @@
         <artifactId>log4j</artifactId>
         <version>1.2.17</version>
       </dependency>
-      
+
       <!--  Reflections -->
       <dependency>
         <groupId>org.reflections</groupId>
         <artifactId>reflections</artifactId>
         <version>0.9.9-RC1</version>
       </dependency>
-      
+
       <!--  Miscellany -->
       <dependency>
         <groupId>com.google.gdata</groupId>
@@ -550,13 +577,13 @@
           </exclusion>
         </exclusions>
       </dependency>
-      
+
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>13.0.1</version>
+        <version>26.0-jre</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
