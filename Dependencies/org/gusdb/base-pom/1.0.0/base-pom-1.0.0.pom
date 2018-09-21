@@ -304,11 +304,6 @@
         <version>${jersey.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.glassfish.jersey.media</groupId>
-        <artifactId>jersey-media-moxy</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.glassfish.jersey.ext</groupId>
         <artifactId>jersey-mvc</artifactId>
         <version>${jersey.version}</version>

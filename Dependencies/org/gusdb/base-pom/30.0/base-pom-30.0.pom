@@ -73,7 +73,7 @@
     <jackson.version>2.6.1</jackson.version>
     <oltu.version>1.0.0</oltu.version>
   </properties>
-  
+
   <repositories>
     <repository>
       <id>dice.repository</id>
@@ -387,7 +387,7 @@
           </exclusion>
         </exclusions>
       </dependency>
-      
+
       <!--  CSV File Handling -->
       <!-- https://mvnrepository.com/artifact/net.sf.opencsv/opencsv -->
       <dependency>
