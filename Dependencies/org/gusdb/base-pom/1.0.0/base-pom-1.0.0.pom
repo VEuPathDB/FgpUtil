@@ -167,6 +167,18 @@
         <groupId>com.github.java-json-tools</groupId>
         <artifactId>json-schema-validator</artifactId>
         <version>2.2.10</version>
+        <exclusions>
+          <!-- Exclude this lib so we can use fixed version below -->
+          <exclusion>
+            <groupId>com.github.fge</groupId>
+            <artifactId>msg-simple</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.github.fge</groupId>
+        <artifactId>msg-simple</artifactId>
+        <version>1.2-EUPATHDB</version>
       </dependency>
 
       <!-- XML Parsing and Validation -->
@@ -301,11 +313,6 @@
       <dependency>
         <groupId>org.glassfish.jersey.containers</groupId>
         <artifactId>jersey-container-jetty-http</artifactId>
-        <version>${jersey.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.glassfish.jersey.media</groupId>
-        <artifactId>jersey-media-moxy</artifactId>
         <version>${jersey.version}</version>
       </dependency>
       <dependency>
