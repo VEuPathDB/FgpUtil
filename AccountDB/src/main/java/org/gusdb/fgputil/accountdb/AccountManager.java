@@ -305,25 +305,25 @@ public class AccountManager {
    * in the AccountDB, but this mechanism ensures user IDs are not duplicated or
    * conflicting across various sites that use AccountDB.
    * 
-   * @param emailPrefix string indicating type of temporary user (e.g. true guest or system user)
+   * @param stableIdPrefix string indicating type of temporary user (e.g. true guest or system user)
    * @return user profile for the guest
    * @throws SQLException if unable to allocate a new ID for this user
    */
-  public UserProfile createGuestAccount(String emailPrefix) throws SQLException {
+  public UserProfile createGuestAccount(String stableIdPrefix) throws SQLException {
     long userId = getNextUserId();
-    return createGuestProfile(emailPrefix, userId, new Date());
+    return createGuestProfile(stableIdPrefix, userId, new Date());
   }
 
   /**
-   * Creates a complete user profile from an email prefix, user ID, and timestamp.
+   * Creates a complete user profile from a stable ID prefix, user ID, and timestamp.
    * 
-   * @param emailPrefix
+   * @param stableIdPrefix
    * @param userId
    * @param timestamp
    * @return 
    */
-  public static UserProfile createGuestProfile(String emailPrefix, long userId, Date timestamp) {
-    String stableId = emailPrefix + userId;
+  public static UserProfile createGuestProfile(String stableIdPrefix, long userId, Date timestamp) {
+    String stableId = stableIdPrefix + userId;
     UserProfile profile = new UserProfile();
     profile.setUserId(userId);
     profile.setGuest(true);
