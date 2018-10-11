@@ -408,4 +408,22 @@ public class Functions {
       return defaultValue;
     }
   }
+
+  /**
+   * Takes a supplier that may throw an exception, and a mapper from that exception to a desired exception;
+   * calls the supplier, throwing a mapped exception is something goes wrong.
+   * 
+   * @param f supplier
+   * @param exceptionMapper exception mapper
+   * @return value supplied by supplier if successful
+   * @throws S mapped exception if supplier is not successful
+   */
+  public static <T, S extends Exception> T mapException(SupplierWithException<T> f, Function<Exception, S> exceptionMapper) throws S {
+    try {
+      return f.supply();
+    }
+    catch (Exception e) {
+      throw exceptionMapper.apply(e);
+    }
+  }
 }

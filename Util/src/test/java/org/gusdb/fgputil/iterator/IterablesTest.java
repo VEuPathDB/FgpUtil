@@ -15,15 +15,15 @@ import static org.junit.Assert.assertEquals;
 public class IterablesTest {
 
   List<Collection<Integer>> TEST_CASE_1 = new ListBuilder<Collection<Integer>>()
-      .add(Collections.EMPTY_LIST)
+      .add(Collections.emptyList())
       .add(Arrays.asList(new Integer[]{ 0,1,2,3,4,5 }))
-      .add(Collections.EMPTY_LIST)
+      .add(Collections.emptyList())
       .add(Arrays.asList(new Integer[]{ 6,7,8 }))
       .add(Arrays.asList(new Integer[]{ 9 }))
       .add(Arrays.asList(new Integer[]{ }))
       .add(Arrays.asList(new Integer[]{ 10,11 }))
       .add(Arrays.asList(new Integer[]{ 12 }))
-      .add(Collections.EMPTY_LIST)
+      .add(Collections.emptyList())
       .toList();
 
   Integer[] CASE_1_DESIRED = new Integer[]{ 0,1,2,3,4,5,6,7,8,9,10,11,12 };
