@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.validation;
 
+import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
 
 import java.util.ArrayList;
@@ -8,7 +9,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.gusdb.fgputil.ListBuilder;
 import org.json.JSONObject;
 
 /**
@@ -92,12 +95,21 @@ public class ValidationBundle {
     return _level;
   }
 
-  public List<String> getErrors() {
+  public List<String> getUnkeyedErrors() {
     return _errors;
   }
 
   public Map<String,List<String>> getKeyedErrors() {
     return _keyedErrors;
+  }
+
+  public List<String> getAllErrors() {
+    return new ListBuilder<String>(_errors)
+        .addAll(_keyedErrors.entrySet().stream()
+            .map(entry -> entry.getKey() + ": [" + join(entry.getValue(), ", ") + "]")
+            .collect(Collectors.toList()))
+        .toList();
+    
   }
 
   public boolean hasErrors() {
@@ -109,7 +121,7 @@ public class ValidationBundle {
     return new JSONObject()
         .put("validationLevel", getLevel().toString())
         .put("validationStatus", getStatus().toString())
-        .put("errors", getErrors())
+        .put("errors", getUnkeyedErrors())
         .put("keyedErrors", getKeyedErrors())
         .toString();
   }

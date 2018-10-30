@@ -479,4 +479,16 @@ public class Functions {
       throw exceptionMapper.apply(e);
     }
   }
+
+  /**
+   * Checks the passed list's size to ensure n is a valid index; if so, returns the
+   * value at that index, else returns null.
+   * 
+   * @param list a list
+   * @param n an index into the list
+   * @return value at the passed index or null if index is invalid
+   */
+  public static <T> T getNthOrNull(List<T> list, int n) {
+    return (n >= 0 && list.size() < n ? list.get(n) : null);
+  }
 }
