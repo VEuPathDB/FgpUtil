@@ -17,7 +17,7 @@ public class ReadOnlyHashMap<K,V> implements ReadOnlyMap<K,V> {
     }
   }
 
-  private Map<K,V> _map;
+  protected Map<K,V> _map;
 
   public static <K,V> Builder<K,V> builder() {
     return new Builder<>();

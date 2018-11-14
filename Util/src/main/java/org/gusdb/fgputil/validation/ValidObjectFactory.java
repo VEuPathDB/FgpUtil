@@ -33,8 +33,8 @@ public class ValidObjectFactory {
     }
   }
 
-  public static class Runnable<T extends Validateable> extends SemanticallyValid<T> {
-    private Runnable(T validatedObject) {
+  public static class RunnableObj<T extends Validateable> extends SemanticallyValid<T> {
+    private RunnableObj(T validatedObject) {
       super(validatedObject);
     }
   }
@@ -53,7 +53,7 @@ public class ValidObjectFactory {
       switch(validation.getLevel()) {
         case SYNTACTIC: return new SyntacticallyValid<>(validatedObject);
         case SEMANTIC:  return new SemanticallyValid<>(validatedObject);
-        case RUNNABLE:  return new Runnable<>(validatedObject);
+        case RUNNABLE:  return new RunnableObj<>(validatedObject);
         default: /* drop through to exception */
       }
     }
@@ -73,7 +73,7 @@ public class ValidObjectFactory {
     if (validation.getStatus().equals(ValidationStatus.VALID)) {
       switch(validation.getLevel()) {
         case SEMANTIC:  return new SemanticallyValid<>(validatedObject);
-        case RUNNABLE:  return new Runnable<>(validatedObject);
+        case RUNNABLE:  return new RunnableObj<>(validatedObject);
         default: /* drop through to exception */
       }
     }
@@ -88,11 +88,11 @@ public class ValidObjectFactory {
    * @return wrapper around passed object
    * @throws ValidObjectWrappingException if passed object is not runnable
    */
-  public static <T extends Validateable> Runnable<T> getRunnable(T validatedObject) {
+  public static <T extends Validateable> RunnableObj<T> getRunnable(T validatedObject) {
     ValidationBundle validation = validatedObject.getValidationBundle();
     if (validation.getStatus().equals(ValidationStatus.VALID) &&
         validation.getLevel().equals(ValidationLevel.RUNNABLE)) {
-      return new Runnable<>(validatedObject);
+      return new RunnableObj<>(validatedObject);
     }
     throw new ValidObjectWrappingException(validatedObject.getValidationBundle());
   }
