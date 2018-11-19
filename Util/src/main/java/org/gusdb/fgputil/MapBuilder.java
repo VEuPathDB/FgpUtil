@@ -76,6 +76,10 @@ public class MapBuilder<S,T> {
     return _map.containsKey(key);
   }
 
+  public T get(S key) {
+    return _map.get(key);
+  }
+
   public Map<S,T> toMap() {
     return _map;
   }
