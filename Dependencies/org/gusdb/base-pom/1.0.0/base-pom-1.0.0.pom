@@ -597,6 +597,12 @@
         <version>3.1</version>
       </dependency>
 
+      <dependency>
+        <groupId>io.vulpine.lib</groupId>
+        <artifactId>Jackfish</artifactId>
+        <version>1.1.0</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
