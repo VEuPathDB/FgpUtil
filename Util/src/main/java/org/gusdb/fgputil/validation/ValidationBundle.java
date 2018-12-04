@@ -56,7 +56,7 @@ public class ValidationBundle {
       return !_errors.isEmpty() || !_keyedErrors.isEmpty();
     }
 
-    public ValidationBundleBuilder aggregateStatus(Validateable... objects) {
+    public ValidationBundleBuilder aggregateStatus(Validateable<?>... objects) {
       Arrays.asList(objects).stream().forEach(obj -> {
         ValidationBundle errors = obj.getValidationBundle();
         if (!errors.getLevel().equals(_level)) {

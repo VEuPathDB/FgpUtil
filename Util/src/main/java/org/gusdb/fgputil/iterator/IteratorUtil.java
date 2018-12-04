@@ -3,9 +3,9 @@ package org.gusdb.fgputil.iterator;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 
 import org.gusdb.fgputil.Wrapper;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 
 public class IteratorUtil {
 

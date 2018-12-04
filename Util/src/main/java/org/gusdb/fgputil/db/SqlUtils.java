@@ -17,13 +17,13 @@ import java.sql.Types;
 import java.sql.Wrapper;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;
 import org.gusdb.fgputil.iterator.Cursor;
 

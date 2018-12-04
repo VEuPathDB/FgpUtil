@@ -1,6 +1,7 @@
 package org.gusdb.fgputil.db.cache;
 
 import java.sql.ResultSet;
+import java.util.function.Function;
 
 import javax.sql.DataSource;
 
@@ -9,7 +10,6 @@ import org.gusdb.fgputil.cache.InMemoryCache;
 import org.gusdb.fgputil.cache.ValueFactory;
 import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 
 public class SqlResultCache<T> extends InMemoryCache<String,T> {
 

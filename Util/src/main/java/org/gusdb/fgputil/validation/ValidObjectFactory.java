@@ -8,7 +8,7 @@ package org.gusdb.fgputil.validation;
  */
 public class ValidObjectFactory {
 
-  private static abstract class Valid<T extends Validateable> {
+  private static abstract class Valid<T extends Validateable<T>> {
 
     private final T _validatedObject;
 
@@ -21,19 +21,19 @@ public class ValidObjectFactory {
     }
   }
 
-  public static class SyntacticallyValid<T extends Validateable> extends Valid<T> {
+  public static class SyntacticallyValid<T extends Validateable<T>> extends Valid<T> {
     private SyntacticallyValid(T validatedObject) {
       super(validatedObject);
     }
   }
 
-  public static class SemanticallyValid<T extends Validateable> extends SyntacticallyValid<T> {
+  public static class SemanticallyValid<T extends Validateable<T>> extends SyntacticallyValid<T> {
     private SemanticallyValid(T validatedObject) {
       super(validatedObject);
     }
   }
 
-  public static class RunnableObj<T extends Validateable> extends SemanticallyValid<T> {
+  public static class RunnableObj<T extends Validateable<T>> extends SemanticallyValid<T> {
     private RunnableObj(T validatedObject) {
       super(validatedObject);
     }
@@ -47,7 +47,7 @@ public class ValidObjectFactory {
    * @return wrapper around passed object
    * @throws ValidObjectWrappingException if passed object is not syntactically valid
    */
-  public static <T extends Validateable> SyntacticallyValid<T> getSyntacticallyValid(T validatedObject) {
+  public static <T extends Validateable<T>> SyntacticallyValid<T> getSyntacticallyValid(T validatedObject) {
     ValidationBundle validation = validatedObject.getValidationBundle();
     if (validation.getStatus().equals(ValidationStatus.VALID)) {
       switch(validation.getLevel()) {
@@ -68,7 +68,7 @@ public class ValidObjectFactory {
    * @return wrapper around passed object
    * @throws ValidObjectWrappingException if passed object is not semantically valid
    */
-  public static <T extends Validateable> SemanticallyValid<T> getSemanticallyValid(T validatedObject) {
+  public static <T extends Validateable<T>> SemanticallyValid<T> getSemanticallyValid(T validatedObject) {
     ValidationBundle validation = validatedObject.getValidationBundle();
     if (validation.getStatus().equals(ValidationStatus.VALID)) {
       switch(validation.getLevel()) {
@@ -88,7 +88,7 @@ public class ValidObjectFactory {
    * @return wrapper around passed object
    * @throws ValidObjectWrappingException if passed object is not runnable
    */
-  public static <T extends Validateable> RunnableObj<T> getRunnable(T validatedObject) {
+  public static <T extends Validateable<T>> RunnableObj<T> getRunnable(T validatedObject) {
     ValidationBundle validation = validatedObject.getValidationBundle();
     if (validation.getStatus().equals(ValidationStatus.VALID) &&
         validation.getLevel().equals(ValidationLevel.RUNNABLE)) {

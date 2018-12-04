@@ -8,7 +8,7 @@ import org.junit.Test;
 // TODO: write better tests... not much coverage here
 public class ValidationTest {
 
-  public static class Blah implements Validateable {
+  public static class Blah implements Validateable<Blah> {
 
     private final ValidationBundle _validationBundle;
 

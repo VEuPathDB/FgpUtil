@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.Named;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunction;
 import org.junit.Test;
 
@@ -71,4 +73,18 @@ public class FunctionTests {
     assertEquals(-1, findFirstIndex(CHARS, c -> c == 'z'));
     assertEquals(0, findFirstIndex(CHARS, c -> c > 'b'));
   }
+
+  private static class MyNamed implements NamedObject {
+    @Override
+    public String getName() {
+      return "myName";
+    }
+  }
+
+  @Test
+  public void testMapWithNamed() {
+    List<MyNamed> listOfNamedObj = new ArrayList<>();
+    Functions.mapToList(listOfNamedObj, Named.TO_NAME);
+  }
+ 
 }

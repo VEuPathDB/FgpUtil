@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.functional;
 
+import java.util.function.Function;
+
 /**
  * Static class provides basic functional interfaces and true and false predicates
  * 
@@ -8,23 +10,6 @@ package org.gusdb.fgputil.functional;
 public class FunctionalInterfaces {
 
   private FunctionalInterfaces(){}
-
-  /**
-   * Defines a single-argument function
-   * 
-   * @param <S> type of function input
-   * @param <T> type of function output
-   */
-  @FunctionalInterface
-  public interface Function<S,T> {
-    /**
-     * Applies the function to the given input and returns output
-     * 
-     * @param obj input to function
-     * @return result of function
-     */
-    public T apply(S obj);
-  }
 
   /**
    * Defines a single-argument function that may throw an exception
