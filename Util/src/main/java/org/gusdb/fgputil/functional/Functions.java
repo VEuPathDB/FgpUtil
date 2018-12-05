@@ -9,22 +9,21 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunction;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunctionWithException;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.NoArgFunction;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.NoArgFunctionWithException;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.PredicateWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ReducerWithException;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.TrinaryFunction;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.TriFunction;
 
 public class Functions {
 
@@ -165,7 +164,7 @@ public class Functions {
    * @param function a function to be performed on each element
    * @return List of function outputs
    */
-  public static <S,T,R extends S> List<T> mapToListWithIndex(Iterable<R> inputs, BinaryFunction<S, Integer, T> function) {
+  public static <S,T,R extends S> List<T> mapToListWithIndex(Iterable<R> inputs, BiFunction<S, Integer, T> function) {
     List<T> result = new ArrayList<>();
     int i = 0;
     for (R obj : inputs) {
@@ -232,7 +231,7 @@ public class Functions {
    * @param initialValue initial value passed to the reducer's reduce method along with the first element
    * @return reduction of the collection
    */
-  public static <S,T> T reduceWithIndex(Iterable<S> inputs, TrinaryFunction<T,S,Integer,T> reducer, T initialValue) {
+  public static <S,T> T reduceWithIndex(Iterable<S> inputs, TriFunction<T,S,Integer,T> reducer, T initialValue) {
     int index = 0;
     for (S next : inputs) {
       initialValue = reducer.apply(initialValue, next, index++);
@@ -326,10 +325,10 @@ public class Functions {
    * @param r function to wrap
    * @return a new function that swallows checked exceptions
    */
-  public static <T> NoArgFunction<T> f0Swallow(NoArgFunctionWithException<T> f) {
+  public static <T> Supplier<T> f0Swallow(SupplierWithException<T> f) {
     return () -> {
       try {
-        return f.apply();
+        return f.get();
       }
       catch (Exception e) {
         throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
@@ -346,7 +345,7 @@ public class Functions {
    * @param f function to wrap
    * @return a new function that swallows checked exceptions
    */
-  public static <R,S,T> BinaryFunction<R,S,T> f2Swallow(BinaryFunctionWithException<R,S,T> f) {
+  public static <R,S,T> BiFunction<R,S,T> f2Swallow(BiFunctionWithException<R,S,T> f) {
     return (obj1, obj2) -> {
       try {
         return f.apply(obj1, obj2);
@@ -363,9 +362,9 @@ public class Functions {
    * @param producer a function that produces a value from no arguments
    * @return the value the function produces
    */
-  public static <T> T swallowAndGet(NoArgFunctionWithException<T> producer) {
+  public static <T> T swallowAndGet(SupplierWithException<T> producer) {
     try {
-      return producer.apply();
+      return producer.get();
     }
     catch (Exception e) {
       throw new RuntimeException(e);
@@ -388,7 +387,7 @@ public class Functions {
    * @return an ArrayList of the third parameterized type
    */
   public static <R,S,T> List<T> zipToList(Iterable<R> first, Iterable<S> second,
-      BinaryFunction<R,S,T> zipper, boolean stopOnExhaustion) {
+      BiFunction<R,S,T> zipper, boolean stopOnExhaustion) {
     ListBuilder<T> zippedItems = new ListBuilder<>();
     Iterator<R> col1Iter = first.iterator();
     Iterator<S> col2Iter = second.iterator();
@@ -455,7 +454,7 @@ public class Functions {
    */
   public static <T> T defaultOnException(SupplierWithException<T> f, T defaultValue) {
     try {
-      return f.supply();
+      return f.get();
     }
     catch (Exception e) {
       return defaultValue;
@@ -473,7 +472,7 @@ public class Functions {
    */
   public static <T, S extends Exception> T mapException(SupplierWithException<T> f, Function<Exception, S> exceptionMapper) throws S {
     try {
-      return f.supply();
+      return f.get();
     }
     catch (Exception e) {
       throw exceptionMapper.apply(e);

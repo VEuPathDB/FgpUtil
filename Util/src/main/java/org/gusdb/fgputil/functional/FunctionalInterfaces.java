@@ -1,6 +1,6 @@
 package org.gusdb.fgputil.functional;
 
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Static class provides basic functional interfaces and true and false predicates
@@ -30,25 +30,6 @@ public class FunctionalInterfaces {
   }
 
   /**
-   * Defines a two-argument function
-   * 
-   * @param <R> type of first function input
-   * @param <S> type of second function input
-   * @param <T> type of function output
-   */
-  @FunctionalInterface
-  public interface BinaryFunction<R,S,T> {
-    /**
-     * Applies the function to the given input and returns output
-     * 
-     * @param obj1 input to function
-     * @param obj2 input to function
-     * @return result of function
-     */
-    public T apply(R obj1, S obj2);
-  }
-
-  /**
    * Defines a two-argument function that may throw an exception
    * 
    * @param <R> type of first function input
@@ -56,7 +37,7 @@ public class FunctionalInterfaces {
    * @param <T> type of function output
    */
   @FunctionalInterface
-  public interface BinaryFunctionWithException<R,S,T> {
+  public interface BiFunctionWithException<R,S,T> {
     /**
      * Applies the function to the given input and returns output
      * 
@@ -77,7 +58,7 @@ public class FunctionalInterfaces {
    * @param <U> type of function output
    */
   @FunctionalInterface
-  public interface TrinaryFunction<R,S,T,U> {
+  public interface TriFunction<R,S,T,U> {
     /**
      * Applies the function to the given input and returns output
      * 
@@ -90,61 +71,18 @@ public class FunctionalInterfaces {
   }
 
   /**
-   * Defines a no-argument function
-   *
-   * @param <T> type of function output
-   */
-  @FunctionalInterface
-  public interface NoArgFunction<T> {
-    /**
-     * Applies the function to produce an object of type T
-     * 
-     * @return result of function
-     */
-    public T apply();
-  }
-
-  /**
    * Defines a no-argument function that may throw an exception
    *
    * @param <T> type of function output
    */
   @FunctionalInterface
-  public interface NoArgFunctionWithException<T> {
+  public interface SupplierWithException<T> {
     /**
      * Applies the function to produce an object of type T
      * 
      * @return result of function
      */
-    public T apply() throws Exception;
-  }
-
-  /**
-   * Defines a single-argument predicate (function that returns a boolean)
-   *
-   * @param <T> type of predicate input
-   */
-  @FunctionalInterface
-  public interface Predicate<T> extends Function<T,Boolean> {
-    /**
-     * Tests the given input against the predicate and returns whether the
-     * passed input passes the test.
-     * 
-     * @param obj object to test
-     * @return true if object passes, else false
-     */
-    public boolean test(T obj);
-
-    /**
-     * Allows Predicates to act as Function<T,Boolean>. Simply returns test(obj).
-     * 
-     * @param obj object to test
-     * @return true if object passes, else false
-     */
-    @Override
-    public default Boolean apply(T obj) {
-      return test(obj);
-    }
+    public T get() throws Exception;
   }
 
   /**
@@ -153,7 +91,7 @@ public class FunctionalInterfaces {
    * @param <T> type of predicate input
    */
   @FunctionalInterface
-  public interface PredicateWithException<T> extends FunctionWithException<T,Boolean> {
+  public interface PredicateWithException<T> {
     /**
      * Tests the given input against the predicate and returns whether the
      * passed input passes the test.
@@ -162,17 +100,6 @@ public class FunctionalInterfaces {
      * @return true if object passes, else false
      */
     public boolean test(T obj) throws Exception;
-
-    /**
-     * Allows Predicates to act as Function<T,Boolean>. Simply returns test(obj).
-     * 
-     * @param obj object to test
-     * @return true if object passes, else false
-     */
-    @Override
-    public default Boolean apply(T obj) throws Exception {
-      return test(obj);
-    }
   }
 
   /**
@@ -211,22 +138,6 @@ public class FunctionalInterfaces {
      * @return revised result
      */
     public T reduce(T accumulator, S next) throws Exception;
-  }
-
-  /**
-   * Functional interface that returns a value but does not take arguments
-   * 
-   * @param <T> type of result
-   */
-  @FunctionalInterface
-  public interface SupplierWithException<T> {
-    /**
-     * Returns a value but does not take arguments
-     * 
-     * @return a value
-     * @throws Exception if something goes wrong
-     */
-    public T supply() throws Exception;
   }
 
   /**

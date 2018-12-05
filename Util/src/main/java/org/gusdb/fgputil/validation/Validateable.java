@@ -68,7 +68,7 @@ public interface Validateable<T extends Validateable<T>> {
 
   static <S> Optional<S> optionalOnException(SupplierWithException<S> supplier) {
     try {
-      return Optional.of(supplier.supply());
+      return Optional.of(supplier.get());
     }
     catch (Exception e) {
       return Optional.empty();

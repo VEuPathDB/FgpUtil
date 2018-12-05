@@ -3,9 +3,9 @@ package org.gusdb.fgputil.functional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.gusdb.fgputil.FormatUtil.MultiLineToString;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
 
 /**
