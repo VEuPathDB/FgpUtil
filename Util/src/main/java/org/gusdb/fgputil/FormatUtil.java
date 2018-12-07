@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.gusdb.fgputil.functional.Functions;
 import org.json.JSONArray;
@@ -155,6 +156,10 @@ public class FormatUtil {
       first = false;
     }
     return sb.toString();
+  }
+
+  public static <T> String join(Stream<T> stream, String delim) {
+    return join((Iterable<T>)stream::iterator, delim);
   }
 
   public static String join(Object[] array, String delim) {

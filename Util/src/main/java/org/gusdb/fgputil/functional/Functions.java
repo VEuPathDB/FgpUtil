@@ -480,6 +480,17 @@ public class Functions {
   }
 
   /**
+   * Calls the passed supplier and wraps any throw exception with a RuntimeException
+   * 
+   * @param f supplier
+   * @return value supplied by the supplier if successful
+   * @throws RuntimeException if not successful
+   */
+  public static <T> T wrapException(SupplierWithException<T> f) {
+    return mapException(f, e -> new RuntimeException(e));
+  }
+
+  /**
    * Checks the passed list's size to ensure n is a valid index; if so, returns the
    * value at that index, else returns null.
    * 

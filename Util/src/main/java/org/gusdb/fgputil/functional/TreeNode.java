@@ -51,6 +51,7 @@ public class TreeNode<T> implements MultiLineToString {
    * @param <T> The type of object stored in this tree
    * @param <S> The type of a single 'node' each node in this tree will be mapped to
    */
+  @FunctionalInterface
   public static interface StructureMapper<T, S> {
     /**
      * Maps the contents of a node, and its already-mapped children, to the
