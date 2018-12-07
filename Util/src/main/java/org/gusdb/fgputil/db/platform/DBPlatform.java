@@ -106,7 +106,7 @@ public abstract class DBPlatform {
     public abstract boolean checkTableExists(DataSource dataSource, String schema, String tableName)
             throws SQLException;
 
-    public abstract String convertBoolean(boolean value);
+    public abstract Object convertBoolean(boolean value);
 
     public abstract void dropTable(DataSource dataSource, String schema, String table, boolean purge)
             throws SQLException;

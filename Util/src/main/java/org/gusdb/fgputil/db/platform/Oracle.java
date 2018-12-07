@@ -231,8 +231,8 @@ public class Oracle extends DBPlatform {
    * @see org.gusdb.wdk.model.dbms.DBPlatform#convertBoolean(boolean)
    */
   @Override
-  public String convertBoolean(boolean value) {
-    return value ? "1" : "0";
+  public Integer convertBoolean(boolean value) {
+    return value ? 1 : 0;
   }
 
   /*
