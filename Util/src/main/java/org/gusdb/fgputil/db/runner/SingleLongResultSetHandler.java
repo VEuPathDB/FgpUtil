@@ -60,6 +60,13 @@ public class SingleLongResultSetHandler implements ResultSetHandler {
   }
 
   /**
+   * @return true if current status is NON_NULL_VALUE, else false
+   */
+  public boolean containsValue() {
+    return _status.equals(Status.NON_NULL_VALUE);
+  }
+
+  /**
    * Returns value retrieved from result set
    * @return value retrieved from result set
    */
