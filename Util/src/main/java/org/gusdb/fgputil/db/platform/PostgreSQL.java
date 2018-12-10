@@ -28,7 +28,7 @@ public class PostgreSQL extends DBPlatform {
   public String getNvlFunctionName() {
 	  return "COALESCE";
   }
-  
+
   @Override
   public String getDriverClassName() {
     return DRIVER_NAME;
@@ -41,7 +41,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#createSequence(java.lang.String, int, int)
    */
   @Override
@@ -58,7 +58,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getBooleanDataType()
    */
   @Override
@@ -68,7 +68,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getClobData(java.sql.ResultSet, java.lang.String)
    */
   @Override
@@ -78,7 +78,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getClobDataType()
    */
   @Override
@@ -98,7 +98,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getMinusOperator()
    */
   @Override
@@ -108,7 +108,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String, java.lang.String)
    */
   @Override
@@ -123,7 +123,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String, java.lang.String)
    */
   @Override
@@ -138,7 +138,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getNumberDataType(int)
    */
   @Override
@@ -148,7 +148,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String, int, int)
    */
   @Override
@@ -165,7 +165,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getStringDataType(int)
    */
   @Override
@@ -176,7 +176,7 @@ public class PostgreSQL extends DBPlatform {
   /**
    * Check the existence of a table. If the schema is null or empty, the schema will will be ignored, and will
    * look up the table in the public schema.
-   * 
+   *
    * @see org.gusdb.fgputil.db.platform.DBPlatform#checkTableExists(DataSource, String, String)
    */
   @Override
@@ -195,7 +195,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getDateDataType()
    */
   @Override
@@ -205,7 +205,7 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getFloatDataType(int)
    */
   @Override
@@ -215,17 +215,17 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#convertBoolean(boolean)
    */
   @Override
-  public String convertBoolean(boolean value) {
-    return value ? "TRUE" : "FALSE";
+  public Boolean convertBoolean(boolean value) {
+    return value;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#dropTable(java.lang.String, java.lang.String)
    */
   @Override
@@ -241,23 +241,23 @@ public class PostgreSQL extends DBPlatform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String, java.lang.String)
    */
   @Override
   public void disableStatistics(DataSource dataSource, String schema, String tableName) {
     // do nothing in PSQL.
   }
-  
+
   @Override
   public void computeThenLockStatistics(DataSource dataSource, String schema, String tableName) {
     // do nothing in PSQL.
   }
-  
+
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.gusdb.wdk.model.dbms.DBPlatform#getTables(java.lang.String, java.lang.String)
    */
   @Override
@@ -328,7 +328,7 @@ public class PostgreSQL extends DBPlatform {
    * A pre-close commit will help "clear" resources if close() is actually simply a return to a connection
    * pool.  Since Postgres will throw an exception if commit is called on a connection where autocommit is
    * already turned on, only return true if auto-commit is false
-   * 
+   *
    * @param connectionAutoCommitValue connection's current value of isAutoCommit()
    */
   @Override
