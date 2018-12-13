@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
@@ -183,16 +182,18 @@ public class AccountManager {
 
   private UserProfile getSingleUserProfile(final String condition, final Object[] params, final Integer[] types) {
     String sql = new StringBuilder(_selectSql).append(condition).toString();
-    final Wrapper<UserProfile> profileWrapper = new Wrapper<>();
     LOG.debug("Running the following SQL: " + sql);
-    new SQLRunner(_accountDb.getDataSource(), sql).executeQuery(params, types, rs -> {
+    return new SQLRunner(_accountDb.getDataSource(), sql).executeQuery(params, types, rs -> {
       if (rs.next()) {
-        profileWrapper.set(loadUserProfile(rs, _propertyNames.values()));
+        UserProfile profile = loadUserProfile(rs, _propertyNames.values());
         if (rs.next()) {
           throw new IllegalStateException("More than one user found under condition '" +
               condition + "' with values: " + FormatUtil.join(params, ", "));
-        }}});
-    return profileWrapper.get();
+        }
+        return profile;
+      }
+      return null;  
+    });
   }
 
   private static UserProfile loadUserProfile(ResultSet rs, Collection<UserPropertyName> props) throws SQLException {
@@ -390,25 +391,27 @@ public class AccountManager {
     String sql = FIND_USER_IDS_BY_EMAIL_SQL
         .replace(ACCOUNT_SCHEMA_MACRO, _accountSchema)
         .replace(EMAIL_LIST_MACRO, emailListSql);
-    Map<String, Long> result = new HashMap<>();
-    new SQLRunner(_accountDb.getDataSource(), sql, "look-up-user-ids-by-email").executeQuery(rs -> {
+    return new SQLRunner(_accountDb.getDataSource(), sql, "look-up-user-ids-by-email").executeQuery(rs -> {
+      Map<String, Long> result = new HashMap<>();
       while (rs.next()) {
         result.put(rs.getString(COL_EMAIL), rs.getLong(COL_USER_ID));
       }
+      return result;
     });
-    return result;
   }
 
   public Map<Long,Boolean> verifyUserids(Collection<Long> userIdList) {
     String sql = FIND_USER_IDS
         .replace(ACCOUNT_SCHEMA_MACRO, _accountSchema)
         .replace(ID_LIST_MACRO, join(userIdList, ","));
-    Map<Long, Boolean> result = new HashMap<>();
-    new SQLRunner(_accountDb.getDataSource(), sql, "find-user-ids").executeQuery(rs -> {
-      while (rs.next()) {
-        result.put(rs.getLong(COL_USER_ID), true);
-      }
-    });
+    Map<Long, Boolean> result = new SQLRunner(_accountDb.getDataSource(), sql, "find-user-ids")
+      .executeQuery(rs -> {
+        Map<Long, Boolean> result1 = new HashMap<>();
+        while (rs.next()) {
+          result1.put(rs.getLong(COL_USER_ID), true);
+        }
+        return result1;
+      });
     for (Long id : userIdList) {
       if (!result.containsKey(id)) {
         result.put(id, false);

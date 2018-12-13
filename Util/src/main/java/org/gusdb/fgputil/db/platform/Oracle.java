@@ -19,7 +19,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 
 /**
@@ -458,17 +457,14 @@ public class Oracle extends DBPlatform {
   @Override
   public boolean containsUncommittedActions(Connection c)
       throws SQLException, UnsupportedOperationException {
-    final boolean[] result = { false };
     try {
-      new SQLRunner(c, UNCOMMITED_STATEMENT_CHECK_SQL, "check-uncommitted-statements").executeQuery(new ResultSetHandler() {
-        @Override public void handleResult(ResultSet rs) throws SQLException {
+      return new SQLRunner(c, UNCOMMITED_STATEMENT_CHECK_SQL, "check-uncommitted-statements")
+        .executeQuery(rs -> {
           if (!rs.next()) {
             throw new SQLException("Count query returned zero rows."); // should never happen
           }
-          result[0] = (rs.getInt(1) > 0);
-        }
-      });
-      return result[0];
+          return (rs.getInt(1) > 0);
+        });
     }
     catch (SQLRunnerException e) {
       if (e.getCause() instanceof SQLException) {

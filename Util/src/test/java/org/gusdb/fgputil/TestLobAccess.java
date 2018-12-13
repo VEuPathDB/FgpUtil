@@ -2,8 +2,6 @@ package org.gusdb.fgputil;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +15,7 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.pool.SimpleDbConfig;
 import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
+import org.gusdb.fgputil.db.runner.SQLRunnerException;
 
 /**
  * This class demonstrates a working example of how to read and write LOB values
@@ -95,27 +93,24 @@ public class TestLobAccess {
 
   private List<Row> retrieveRecords() {
     LOG.info("Retrieving records.");
-    final List<Row> objList = new ArrayList<>();
-    SQLRunner runner = new SQLRunner(_ds, Row.SELECT_SQL);
-    runner.executeQuery(new ResultSetHandler() {
-      @Override public void handleResult(ResultSet rs) throws SQLException {
-        try {
-          while (rs.next()) {
-            objList.add(new Row(
-                rs.getInt(1),
-                rs.getString(2),
-                rs.getBoolean(3),
-                IoUtil.readAllChars(rs.getCharacterStream(4)),
-                (Row)IoUtil.deserialize(IoUtil.readAllBytes(rs.getBinaryStream(5)))
-            ));
-          }
+    return new SQLRunner(_ds, Row.SELECT_SQL).executeQuery(rs -> {
+      try {
+        List<Row> objList = new ArrayList<>();
+        while (rs.next()) {
+          objList.add(new Row(
+            rs.getInt(1),
+            rs.getString(2),
+            rs.getBoolean(3),
+            IoUtil.readAllChars(rs.getCharacterStream(4)),
+            (Row)IoUtil.deserialize(IoUtil.readAllBytes(rs.getBinaryStream(5)))
+          ));
         }
-        catch (Exception e) {
-          throw new RuntimeException(e);
-        }
+        return objList;
+      }
+      catch (IOException | ClassNotFoundException e) {
+        throw new SQLRunnerException(e);
       }
     });
-    return objList;
   }
 
   private void printRecords(List<Row> objList) {

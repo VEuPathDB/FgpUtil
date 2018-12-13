@@ -34,7 +34,8 @@ public class SQLRunner {
    * 
    * @author rdoherty
    */
-  public interface ResultSetHandler {
+  @FunctionalInterface
+  public interface ResultSetHandler<T> {
     /**
      * Handles a result set.  The implementer should not attempt to close the
      * result set, as this is handled by SQLRunner.
@@ -42,7 +43,7 @@ public class SQLRunner {
      * @param rs result set to be handled
      * @throws SQLException if a DB error occurs while reading results
      */
-    public void handleResult(ResultSet rs) throws SQLException;
+    public T handleResult(ResultSet rs) throws SQLException;
   }
 
   /**
@@ -280,9 +281,7 @@ public class SQLRunner {
    * @throws SQLRunnerException if error occurs during processing
    */
   public int executeUpdate(Object[] args, Integer[] types) {
-    UpdateExecutor runner = new UpdateExecutor(args, types);
-    executeSql(runner);
-    return runner.getNumUpdates();
+    return executeSql(new UpdateExecutor(args, types));
   }
 
   /**
@@ -299,9 +298,7 @@ public class SQLRunner {
    * @throws SQLRunnerException if error occurs during processing
    */
   public int executeUpdateBatch(ArgumentBatch batch) {
-    BatchUpdateExecutor runner = new BatchUpdateExecutor(batch);
-    executeSql(runner);
-    return runner.getNumUpdates();
+    return executeSql(new BatchUpdateExecutor(batch));
   }
 
   /**
@@ -312,7 +309,7 @@ public class SQLRunner {
    * @return the passed handler
    * @throws SQLRunnerException if error occurs during processing
    */
-  public <T extends ResultSetHandler> T executeQuery(T handler) {
+  public <T> T executeQuery(ResultSetHandler<T> handler) {
     return executeQuery(new Object[]{ }, null, handler);
   }
 
@@ -326,7 +323,7 @@ public class SQLRunner {
    * @return the passed handler
    * @throws SQLRunnerException if error occurs during processing
    */
-  public <T extends ResultSetHandler> T executeQuery(Object[] args, T handler) {
+  public <T> T executeQuery(Object[] args, ResultSetHandler<T> handler) {
     return executeQuery(args, null, handler);
   }
 
@@ -341,12 +338,11 @@ public class SQLRunner {
    * @return the passed handler
    * @throws SQLRunnerException if error occurs during processing
    */
-  public <T extends ResultSetHandler> T executeQuery(Object[] args, Integer[] types, T handler) {
-    executeSql(new QueryExecutor(handler, args, types));
-    return handler;
+  public <T> T executeQuery(Object[] args, Integer[] types, ResultSetHandler<T> handler) {
+    return executeSql(new QueryExecutor<T>(handler, args, types));
   }
 
-  private void executeSql(PreparedStatementExecutor exec) {
+  private <T> T executeSql(PreparedStatementExecutor<T> exec) {
     Connection conn = null;
     PreparedStatement stmt = null;
     boolean connectionSuccessful = false;
@@ -369,7 +365,7 @@ public class SQLRunner {
       timer.sqlExecuted();
 
       // handle result of SQL
-      exec.handleResult();
+      T result = exec.handleResult();
       timer.resultsHandled();
 
       // complete execution
@@ -377,6 +373,7 @@ public class SQLRunner {
       _lastExecutionTime = exec.getLastExecutionTime();
       timer.complete();
       getSqlLogger().submitTimer(timer);
+      return result;
 
     }
     catch (Exception e) {
