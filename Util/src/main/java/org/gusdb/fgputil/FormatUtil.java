@@ -304,14 +304,6 @@ public class FormatUtil {
     return str.append("}").append(NL).toString();
   }
 
-  public static JSONArray stringCollectionToJsonArray(Collection<String> strings) {
-    JSONArray array = new JSONArray();
-    for (String string : strings) {
-      array.put(string);
-    }
-    return array;
-  }
-
  /* Algorithm for the method below
   * 
   * if lower or underscore
