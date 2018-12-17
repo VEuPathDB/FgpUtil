@@ -6,7 +6,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,7 +13,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.gusdb.fgputil.functional.Functions;
-import org.json.JSONArray;
 
 public class FormatUtil {
 
