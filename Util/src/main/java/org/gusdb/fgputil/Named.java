@@ -15,6 +15,9 @@ public class Named {
 
   public static interface NamedObject {
     public String getName();
+    public default String getFullName() {
+      return getName();
+    }
   }
 
   /**
