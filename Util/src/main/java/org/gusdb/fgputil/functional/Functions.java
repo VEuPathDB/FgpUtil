@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -509,5 +510,22 @@ public class Functions {
    */
   public static <T> Predicate<T> not(final Predicate<T> pred) {
     return pred.negate();
+  }
+
+  /**
+   * Tries to get the next value from the passed supplier.  If successful,
+   * returns an optional containing the supplied value; if not and an exception
+   * is thrown, returns an empty optional.
+   *
+   * @param supplier supplier with exception
+   * @return optional of supplied value, or empty optional if exception thrown
+   */
+  public static <S> Optional<S> optionalOnException(SupplierWithException<S> supplier) {
+    try {
+      return Optional.of(supplier.get());
+    }
+    catch (Exception e) {
+      return Optional.empty();
+    }
   }
 }

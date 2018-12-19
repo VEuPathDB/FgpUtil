@@ -8,7 +8,7 @@ package org.gusdb.fgputil.validation;
  */
 public class ValidObjectFactory {
 
-  private static abstract class Valid<T extends Validateable<T>> {
+  public static abstract class Valid<T extends Validateable<T>> {
 
     private final T _validatedObject;
 

@@ -41,6 +41,10 @@ public class MapBuilder<S,T> {
     return this;
   }
 
+  public MapBuilder<S,T> put(Entry<S, T> entry) {
+    return put(entry.getKey(), entry.getValue());
+  }
+
   public <R> MapBuilder<S,T> put(R obj, Function<R, Entry<S,T>> converter) {
     Entry<S,T> entry = converter.apply(obj);
     return put(entry.getKey(), entry.getValue());

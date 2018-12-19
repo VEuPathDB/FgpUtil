@@ -1,11 +1,10 @@
 package org.gusdb.fgputil.validation;
 
-import java.util.Optional;
-
-import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.validation.ValidObjectFactory.RunnableObj;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SyntacticallyValid;
+import org.gusdb.fgputil.validation.ValidObjectFactory.Valid;
 
 /**
  * Simple interface to add to classes that use this validation package to demonstrate
@@ -40,8 +39,8 @@ public interface Validateable<T extends Validateable<T>> {
   }
 
   @SuppressWarnings("unchecked")
-  public default Optional<SyntacticallyValid<T>> getSyntacticallyValid() {
-    return optionalOnException(() -> ValidObjectFactory.getSyntacticallyValid((T)this));
+  public default OptionallyInvalid<T, SyntacticallyValid<T>> getSyntacticallyValid() {
+    return optionallyValidOnException((T)this, value -> ValidObjectFactory.getSyntacticallyValid(value));
   }
 
   public default boolean isSemanticallyValid() {
@@ -52,8 +51,8 @@ public interface Validateable<T extends Validateable<T>> {
   }
 
   @SuppressWarnings("unchecked")
-  public default Optional<SemanticallyValid<T>> getSemanticallyValid() {
-    return optionalOnException(() -> ValidObjectFactory.getSemanticallyValid((T)this));
+  public default OptionallyInvalid<T, SemanticallyValid<T>> getSemanticallyValid() {
+    return optionallyValidOnException((T)this, value -> ValidObjectFactory.getSemanticallyValid(value));
   }
 
   public default boolean isRunnable() {
@@ -62,16 +61,18 @@ public interface Validateable<T extends Validateable<T>> {
   }
 
   @SuppressWarnings("unchecked")
-  public default Optional<RunnableObj<T>> getRunnable() {
-    return optionalOnException(() -> ValidObjectFactory.getRunnable((T)this));
+  public default OptionallyInvalid<T, RunnableObj<T>> getRunnable() {
+    return optionallyValidOnException((T)this, value -> ValidObjectFactory.getRunnable(value));
   }
 
-  static <S> Optional<S> optionalOnException(SupplierWithException<S> supplier) {
+  static <T extends Validateable<T>, S extends Valid<T>> OptionallyInvalid<T,S>
+  optionallyValidOnException(T value, FunctionWithException<T,S> converter) {
     try {
-      return Optional.of(supplier.get());
+      S wrappedValue = converter.apply(value);
+      return new OptionallyInvalid<T,S>(wrappedValue, null);
     }
     catch (Exception e) {
-      return Optional.empty();
+      return new OptionallyInvalid<T,S>(null, value);
     }
   }
 }
