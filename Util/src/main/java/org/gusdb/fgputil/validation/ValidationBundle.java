@@ -69,6 +69,10 @@ public class ValidationBundle {
       });
       return this;
     }
+
+    public ValidationLevel getLevel() {
+      return _level;
+    }
   }
 
   public static ValidationBundleBuilder builder(ValidationLevel level) {
