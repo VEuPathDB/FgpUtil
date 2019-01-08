@@ -50,7 +50,7 @@ public class Functions {
    * @return a copy of the input map with non-passing entries removed
    */
   public static <S,T> Map<S,T> pickKeys(Map<S,T> inputMap, Predicate<S> keyPred) {
-    return pickKeys(inputMap, keyPred, new LinkedHashMap<S,T>());
+    return pickKeys(inputMap, keyPred, new LinkedHashMap<>());
   }
 
   /**
@@ -81,7 +81,7 @@ public class Functions {
    * @return a copy of the input map with non-passing entries removed
    */
   public static <S,T> Map<S,T> pickValues(Map<S,T> inputMap, Predicate<T> valuePred) {
-    return pickValues(inputMap, valuePred, new HashMap<S,T>());
+    return pickValues(inputMap, valuePred, new HashMap<>());
   }
 
   /**
@@ -111,7 +111,7 @@ public class Functions {
    * @return map from passed keys to generated values
    */
   public static <S,T> Map<S,T> getMapFromKeys(Iterable<S> keys, Function<S,T> function) {
-    return getMapFromList(keys, key -> new TwoTuple<S,T>(key, function.apply(key)));
+    return getMapFromList(keys, key -> new TwoTuple<>(key, function.apply(key)));
   }
 
   /**
@@ -122,7 +122,8 @@ public class Functions {
    * @return map from generated keys to passed values
    */
   public static <R,S,T extends R> Map<S,T> getMapFromValues(Iterable<T> values, Function<R,S> function) {
-    return getMapFromList(values, value -> new TwoTuple<S,T>(function.apply(value), value));
+    return getMapFromList(values, value -> new TwoTuple<>(function.apply(value),
+        value));
   }
 
   /**
@@ -323,7 +324,7 @@ public class Functions {
    * RuntimeException and throwing that instead.  If calling code wishes to inspect the underlying exception
    * it must catch the RuntimeException and use getCause().
    *
-   * @param r function to wrap
+   * @param f function to wrap
    * @return a new function that swallows checked exceptions
    */
   public static <T> Supplier<T> f0Swallow(SupplierWithException<T> f) {
@@ -438,15 +439,6 @@ public class Functions {
   }
 
   /**
-   * Converts a FgpUtil Function to a Java8 function
-   * @param f FgpUtil function
-   * @return equivalent Java8 native function
-   */
-  public static <S,T> java.util.function.Function<S,T> toJavaFunction(Function<S,T> f) {
-    return s -> f.apply(s);
-  }
-
-  /**
    * Attempts to retrieve a value from the passed supplier.  If an exception occurs, a default value
    * is returned and the exception is buried.
    *
@@ -488,7 +480,7 @@ public class Functions {
    * @throws RuntimeException if not successful
    */
   public static <T> T wrapException(SupplierWithException<T> f) {
-    return mapException(f, e -> new RuntimeException(e));
+    return mapException(f, RuntimeException::new);
   }
 
   /**
@@ -500,7 +492,7 @@ public class Functions {
    * @return value at the passed index or null if index is invalid
    */
   public static <T> T getNthOrNull(List<T> list, int n) {
-    return (n >= 0 && list.size() < n ? list.get(n) : null);
+    return n >= 0 && list.size() > n ? list.get(n) : null;
   }
 
   /**
