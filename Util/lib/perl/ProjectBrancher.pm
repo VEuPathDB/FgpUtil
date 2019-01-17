@@ -34,6 +34,7 @@ my @sharedSiteProjects = ('WDKClient:gus', 'WDKWebsite:gus', 'EbrcModelCommon:ap
 # Additional projects for Api sites
 my @apiSiteProjects = ('ApiCommonPresenters:apidb', 'ApiCommonDatasets:apidb',
                        'ReFlow:gus', 'ApiCommonModel:apidb','GBrowse:apidb',
+		       'JBrowse:apidb',
                        'ApiCommonWebsite:apidb', 'ApiCommonWebService:apidb');
 
 # Additional projects for Ortho
