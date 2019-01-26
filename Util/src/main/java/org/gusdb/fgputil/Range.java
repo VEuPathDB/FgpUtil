@@ -41,4 +41,13 @@ public class Range<T extends Comparable<T>> {
   public void setEndInclusive(boolean isInclusive) { _isEndInclusive = isInclusive; }
   public boolean isEndInclusive() { return _isEndInclusive; }
 
+  @Override
+  public String toString() {
+    return
+        (_isBeginInclusive ? "[" : "(") +
+        (hasBegin() ? _beginValue.get() : "") +
+        "," +
+        (hasEnd() ? _endValue.get() : "") +
+        (_isEndInclusive ? "]" : ")");
+  }
 }
