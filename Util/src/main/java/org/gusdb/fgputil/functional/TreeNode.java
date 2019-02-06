@@ -94,7 +94,7 @@ public class TreeNode<T> implements MultiLineToString {
    * @return this node
    */
   public TreeNode<T> addChild(T childContents) {
-    _childNodes.add(new TreeNode<T>(childContents));
+    _childNodes.add(new TreeNode<>(childContents));
     return this;
   }
 
@@ -116,7 +116,7 @@ public class TreeNode<T> implements MultiLineToString {
    * @return this node
    */
   public TreeNode<T> addAllChildNodes(List<TreeNode<T>> children) {
-    return addChildNodes(children, new FunctionalInterfaces.TruePredicate<TreeNode<T>>());
+    return addChildNodes(children, new FunctionalInterfaces.TruePredicate<>());
   }
 
   /**
@@ -296,13 +296,10 @@ public class TreeNode<T> implements MultiLineToString {
    */
   @Override
   public TreeNode<T> clone() {
-    return mapStructure(new StructureMapper<T,TreeNode<T>>() {
-      @Override
-      public TreeNode<T> map(T obj, List<TreeNode<T>> mappedChildren) {
-        TreeNode<T> copy = new TreeNode<T>(obj);
-        copy._childNodes = mappedChildren;
-        return copy;
-      }
+    return mapStructure((obj, mappedChildren) -> {
+      TreeNode<T> copy = new TreeNode<T>(obj);
+      copy._childNodes = mappedChildren;
+      return copy;
     });
   }
 
@@ -445,28 +442,27 @@ public class TreeNode<T> implements MultiLineToString {
   }
 
   @Override
-  public String toMultiLineString(String indentation) {
-    String IND = indentation;
+  public String toMultiLineString(String ind) {
     String NL = System.lineSeparator();
 
     String nodeString = (!_hasMultiLineSupport ? _nodeContents.toString() :
-      ((MultiLineToString)_nodeContents).toMultiLineString(IND + "  "));
+      ((MultiLineToString)_nodeContents).toMultiLineString(ind + "  "));
     StringBuilder str = new StringBuilder()
-        .append(IND).append("TreeNode {").append(NL)
-        .append(IND).append("  ").append(nodeString).append(NL)
-        .append(IND).append("  Leaves:").append(NL);
+        .append(ind).append("TreeNode {").append(NL)
+        .append(ind).append("  ").append(nodeString).append(NL)
+        .append(ind).append("  Leaves:").append(NL);
     for (TreeNode<T> node : _childNodes) {
       if (node.isLeaf()) {
-        str.append(node.toMultiLineString(IND + "    ")).append(NL);
+        str.append(node.toMultiLineString(ind + "    ")).append(NL);
       }
     }
-    str.append(IND).append("  Children {").append(NL);
+    str.append(ind).append("  Children {").append(NL);
     for (TreeNode<T> child : _childNodes) {
       if (!child.isLeaf()) {
-        str.append(child.toMultiLineString(IND + "    "));
+        str.append(child.toMultiLineString(ind + "    "));
       }
     }
-    str.append(IND).append("  }").append(NL).append(IND).append("}").append(NL);
+    str.append(ind).append("  }").append(NL).append(ind).append("}").append(NL);
     return str.toString();
   }
 }
