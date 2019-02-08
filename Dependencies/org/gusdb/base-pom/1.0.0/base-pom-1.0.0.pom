@@ -633,7 +633,7 @@
             <artifactId>asm</artifactId>
             <version>7.0</version>
           </dependency>
-        </dependencies>->
+        </dependencies>-->
       </plugin>
       <!--<plugin>
         <groupId>org.scala-tools</groupId>
