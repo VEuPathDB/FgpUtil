@@ -24,7 +24,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.iterator.Cursor;
 
 /**
@@ -34,7 +34,7 @@ public final class SqlUtils {
   
   public static final int DEFAULT_FETCH_SIZE = 100;
 
-  private static final Logger logger = Logger.getLogger(SqlUtils.class.getName());
+  private static final Logger logger = Logger.getLogger(SqlUtils.class);
 
   /**
    * private constructor, make sure SqlUtils cannot be instanced.
@@ -627,11 +627,12 @@ public final class SqlUtils {
    * @param procedures set of procedures containing operations (presumably against the passed connection)
    * @throws Exception if any of the procedures fails
    */
-  public static void performInTransaction(Connection conn, Procedure... procedures) throws Exception {
+  @SafeVarargs
+  public static void performInTransaction(Connection conn, ConsumerWithException<Connection>... procedures) throws Exception {
     try {
       conn.setAutoCommit(false);
-      for (Procedure proc : procedures) {
-        proc.perform();
+      for (ConsumerWithException<Connection> proc : procedures) {
+        proc.accept(conn);
       }
       // commit the transaction
       conn.commit();

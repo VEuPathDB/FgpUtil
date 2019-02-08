@@ -251,17 +251,13 @@ public class AccountManager {
     final ArgumentBatch propertyBatch = getUserPropertyBatch(userId, profileProperties);
 
     // perform all inserts in a transaction
-    final Connection conn = _accountDb.getDataSource().getConnection();
-    try {
-      SqlUtils.performInTransaction(conn, () -> {
+    try(Connection connection = _accountDb.getDataSource().getConnection()) {
+      SqlUtils.performInTransaction(connection, conn -> {
         // perform user row insert
         new SQLRunner(conn, insertUserSql, "insert-user-row").executeStatement(params, INSERT_USER_PARAM_TYPES);
         // perform property rows insert
         new SQLRunner(conn, insertPropSql, "insert-user-prop-rows").executeStatementBatch(propertyBatch);
       });
-    }
-    finally {
-      SqlUtils.closeQuietly(conn);
     }
   }
 
@@ -366,17 +362,13 @@ public class AccountManager {
     final ArgumentBatch propertyBatch = getUserPropertyBatch(userId, profileProperties);
 
     // perform all property-related operations in a transaction
-    final Connection conn = _accountDb.getDataSource().getConnection();
-    try {
-      SqlUtils.performInTransaction(conn, () -> {
+    try(Connection connection = _accountDb.getDataSource().getConnection()) {
+      SqlUtils.performInTransaction(connection, conn -> {
         // perform property rows delete
         new SQLRunner(conn, removePropsSql, "remove-user-prop-rows").executeStatement(removePropsParams, REMOVE_PROPERTIES_PARAM_TYPES);
         // perform property rows insert
         new SQLRunner(conn, insertPropSql, "insert-user-prop-rows").executeStatementBatch(propertyBatch);
       });
-    }
-    finally {
-      SqlUtils.closeQuietly(conn);
     }
   }
 
