@@ -154,7 +154,28 @@
         <artifactId>jackson-datatype-json-org</artifactId>
         <version>${jackson.version}</version>
       </dependency>
-
+      <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>2.3.0</version>
+      </dependency>
+<!-- Not sure if we need for Java 11; keep until shown we don't
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>2.3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>2.3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.activation</groupId>
+        <artifactId>activation</artifactId>
+        <version>1.1.1</version>
+    </dependency>
+-->
       <!-- JSON Web Token processing -->
       <dependency>
         <groupId>io.jsonwebtoken</groupId>
@@ -385,13 +406,6 @@
         <artifactId>spring-context</artifactId>
         <version>4.0.6.RELEASE</version>
       </dependency>
-      <!--
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-web</artifactId>
-        <version>4.0.6.RELEASE</version>
-      </dependency>
-      -->
 
       <!-- Struts and MVC/Action Support -->
       <dependency>
@@ -426,7 +440,7 @@
         </exclusions>
       </dependency>
 
-      <!--  IRODS Jargon -->
+      <!-- IRODS Jargon -->
       <dependency>
         <groupId>org.irods.jargon</groupId>
         <artifactId>jargon-core</artifactId>
@@ -439,7 +453,7 @@
         </exclusions>
       </dependency>
 
-      <!--  CSV File Handling -->
+      <!-- CSV File Handling -->
       <!-- https://mvnrepository.com/artifact/net.sf.opencsv/opencsv -->
       <dependency>
         <groupId>net.sf.opencsv</groupId>
@@ -605,13 +619,23 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.8.0</version>
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
+          <!--<compilerArgs>
+            <arg>-J-Xss10m</arg>
+          </compilerArgs>-->
         </configuration>
+        <!-- <dependencies>
+          <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>7.0</version>
+          </dependency>
+        </dependencies>->
       </plugin>
-      <plugin>
+      <!--<plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
         <version>${scala.version}</version>
@@ -637,7 +661,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin>-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
