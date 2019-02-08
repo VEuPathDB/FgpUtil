@@ -81,8 +81,24 @@ public class FunctionalInterfaces {
      * Applies the function to produce an object of type T
      * 
      * @return result of function
+     * @throws Exception if something goes wrong
      */
     public T get() throws Exception;
+  }
+
+  /**
+   * Defines a consumer that may throw an exception
+   * 
+   * @param <T> type of object being consumed
+   */
+  public interface ConsumerWithException<T> {
+    /**
+     * Consumes an object of type T
+     * 
+     * @param obj object to consume
+     * @throws Exception if something goes wrong
+     */
+    public void accept(T obj) throws Exception;
   }
 
   /**
