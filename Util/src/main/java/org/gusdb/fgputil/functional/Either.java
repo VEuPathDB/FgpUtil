@@ -12,8 +12,9 @@ import java.util.function.Consumer;
  * @param <R> Right type, conventionally a value case.
  */
 public class Either < L, R > {
-  private final L left;
-  private final R right;
+
+  private final L _left;
+  private final R _right;
 
   /**
    * Construct a new either out of exactly 1 value and 1 null.
@@ -27,39 +28,39 @@ public class Either < L, R > {
    * params are null
    */
   public Either(L left, R right) {
-    if (Objects.isNull(left) ^ Objects.isNull(right))
+    if (!(Objects.isNull(left) ^ Objects.isNull(right))) {
       throw new IllegalArgumentException("either must have exactly 1 value");
-
-    this.left = left;
-    this.right = right;
+    }
+    _left = left;
+    _right = right;
   }
 
   /**
    * @return whether or not this is an Either of {@link L}
    */
   public boolean isLeft() {
-    return left != null;
+    return _left != null;
   }
 
   /**
    * @return whether or not this is an Either of {@link R}
    */
   public boolean isRight() {
-    return right != null;
+    return _right != null;
   }
 
   /**
    * @return an option of an {@link L} value.
    */
   public Optional<L> left() {
-    return Optional.ofNullable(left);
+    return Optional.ofNullable(_left);
   }
 
   /**
    * @return an option of an {@link R} value.
    */
   public Optional<R> right() {
-    return Optional.ofNullable(right);
+    return Optional.ofNullable(_right);
   }
 
   /**
@@ -70,10 +71,10 @@ public class Either < L, R > {
    * @throws NoSuchElementException if this is not a left either.
    */
   public L getLeft() {
-    if (left == null)
+    if (_left == null)
       throw new NoSuchElementException("left value not present");
 
-    return left;
+    return _left;
   }
 
   /**
@@ -84,10 +85,10 @@ public class Either < L, R > {
    * @throws NoSuchElementException if this is not a right either.
    */
   public R getRight() {
-    if (right == null)
+    if (_right == null)
       throw new NoSuchElementException("right value not present");
 
-    return right;
+    return _right;
   }
 
   /**
@@ -100,7 +101,7 @@ public class Either < L, R > {
    */
   public Either < L, R > ifLeft(Consumer<L> fn) {
     if (isLeft())
-      fn.accept(left);
+      fn.accept(_left);
 
     return this;
   }
@@ -115,7 +116,7 @@ public class Either < L, R > {
    */
   public Either < L, R > ifRight(Consumer<R> fn) {
     if (isRight())
-      fn.accept(right);
+      fn.accept(_right);
 
     return this;
   }
