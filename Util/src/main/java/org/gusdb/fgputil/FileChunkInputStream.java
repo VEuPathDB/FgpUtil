@@ -51,6 +51,11 @@ public class FileChunkInputStream extends FileInputStream {
   }
 
   @Override
+  public int read(byte b[]) throws IOException {
+    return read(b, 0, b.length);
+  }
+
+  @Override
   public int read(byte b[], int off, int len) throws IOException {
     LOG.info("INPUT[" + off + "," + len + "] current: " + _currentByte + ", last: " + _lastByteToRead);
     if (_currentByte > _lastByteToRead) {
