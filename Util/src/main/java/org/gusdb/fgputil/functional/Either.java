@@ -4,6 +4,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Either represents a value that MUST be one of 2 options, left or right.
@@ -119,6 +120,32 @@ public class Either < L, R > {
       fn.accept(_right);
 
     return this;
+  }
+
+  /**
+   * Returns the left value if present, else throws the throwable supplied by
+   * the given method.
+   *
+   * @param fn  Throwable supplier
+   * @param <E> Type of Throwable
+   * @return left value
+   * @throws E if this is not a left either.
+   */
+  public <E extends Throwable> L leftOrElseThrow(Supplier<E> fn) throws E {
+    return left().orElseThrow(fn);
+  }
+
+  /**
+   * Returns the right value if present, else throws the throwable supplied by
+   * the given method.
+   *
+   * @param fn  Throwable supplier
+   * @param <E> Type of Throwable
+   * @return right value
+   * @throws E if this is not a right either.
+   */
+  public <E extends Throwable> R rightOrElseThrow(Supplier<E> fn) throws E {
+    return right().orElseThrow(fn);
   }
 
   /**
