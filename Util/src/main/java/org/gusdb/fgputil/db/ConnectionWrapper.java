@@ -53,7 +53,7 @@ public class ConnectionWrapper implements Connection {
 
     // check to see if uncommitted changes are present in this connection
     boolean uncommittedChangesPresent =
-        PERFORM_UNCOMMITTED_CHANGES_CHECK ? false : checkForUncommittedChanges();
+        PERFORM_UNCOMMITTED_CHANGES_CHECK ? checkForUncommittedChanges() : false;
 
     // roll back any changes before returning connection to pool
     if (uncommittedChangesPresent) {
