@@ -32,13 +32,12 @@ public class FileChunkInputStream extends FileInputStream {
     long bytesToSkip = (byteRange.isBeginInclusive() ?
         byteRange.getBegin() : byteRange.getBegin() + 1);
     if (bytesToSkip <= 0) {
-      bytesToSkip = 0;
       _currentByte = 0;
+      LOG.info("Don't need to skip any bytes. Will read until byte " + _lastByteToRead);
     }
     else if (bytesToSkip > 0) {
-      LOG.info("Skipping the first " + bytesToSkip + " bytes in the file.");
       _currentByte = skip(bytesToSkip);
-      LOG.info("Successfully skipped first " + _currentByte + " bytes.");
+      LOG.info("Successfully skipped first " + _currentByte + " bytes. Will read until byte " + _lastByteToRead);
     }
   }
 
@@ -53,6 +52,7 @@ public class FileChunkInputStream extends FileInputStream {
 
   @Override
   public int read(byte b[], int off, int len) throws IOException {
+    LOG.info("INPUT[" + off + "," + len + "] current: " + _currentByte + ", last: " + _lastByteToRead);
     if (_currentByte > _lastByteToRead) {
       return -1;
     }
