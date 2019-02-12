@@ -33,12 +33,16 @@ public class FileChunkInputStream extends FileInputStream {
         byteRange.getBegin() : byteRange.getBegin() + 1);
     if (bytesToSkip <= 0) {
       _currentByte = 0;
-      LOG.info("Don't need to skip any bytes. Will read until byte " + _lastByteToRead);
+      LOG.debug("Don't need to skip any bytes. Will read until byte " + _lastByteToRead);
     }
     else if (bytesToSkip > 0) {
       _currentByte = skip(bytesToSkip);
-      LOG.info("Successfully skipped first " + _currentByte + " bytes. Will read until byte " + _lastByteToRead);
+      LOG.debug("Successfully skipped first " + _currentByte + " bytes. Will read until byte " + _lastByteToRead);
     }
+  }
+
+  private int bytesLeftToRead() {
+    return (int)(_lastByteToRead - _currentByte + 1);
   }
 
   @Override
@@ -57,14 +61,19 @@ public class FileChunkInputStream extends FileInputStream {
 
   @Override
   public int read(byte b[], int off, int len) throws IOException {
-    LOG.info("INPUT[" + off + "," + len + "] current: " + _currentByte + ", last: " + _lastByteToRead);
+    LOG.debug("INPUT[" + off + "," + len + "] current: " + _currentByte + ", last: " + _lastByteToRead);
     if (_currentByte > _lastByteToRead) {
       return -1;
     }
     if (_currentByte + len > _lastByteToRead) {
-      len = (int)(_lastByteToRead - _currentByte + 1);
+      len = bytesLeftToRead();
     }
     _currentByte += len;
     return super.read(b, off, len);
+  }
+
+  @Override
+  public int available() throws IOException {
+    return Math.min(bytesLeftToRead(), super.available());
   }
 }
