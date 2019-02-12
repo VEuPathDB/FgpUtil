@@ -28,6 +28,8 @@ public class ConnectionWrapper implements Connection {
 
   private static final Logger LOG = Logger.getLogger(ConnectionWrapper.class);
 
+  private static final boolean PERFORM_UNCOMMITTED_CHANGES_CHECK = false;
+
   private final Connection _underlyingConnection;
   private final DataSourceWrapper _parentDataSource;
   private final DBPlatform _underlyingPlatform;
@@ -46,10 +48,12 @@ public class ConnectionWrapper implements Connection {
 
   @Override
   public void close() throws SQLException {
+
     _parentDataSource.unregisterClosedConnection(_underlyingConnection);
 
     // check to see if uncommitted changes are present in this connection
-    boolean uncommittedChangesPresent = checkForUncommittedChanges();
+    boolean uncommittedChangesPresent =
+        PERFORM_UNCOMMITTED_CHANGES_CHECK ? false : checkForUncommittedChanges();
 
     // roll back any changes before returning connection to pool
     if (uncommittedChangesPresent) {
