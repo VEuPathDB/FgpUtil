@@ -108,7 +108,8 @@ public class ValidationBundle {
   }
 
   public List<String> getAllErrors() {
-    return new ListBuilder<String>(_errors)
+    return new ListBuilder<String>()
+        .addAll(_errors)
         .addAll(_keyedErrors.entrySet().stream()
             .map(entry -> entry.getKey() + ": [" + join(entry.getValue(), ", ") + "]")
             .collect(Collectors.toList()))
