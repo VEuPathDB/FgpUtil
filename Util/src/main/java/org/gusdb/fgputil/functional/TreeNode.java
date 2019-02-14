@@ -1,13 +1,18 @@
 package org.gusdb.fgputil.functional;
 
-import java.util.*;
+import static org.gusdb.fgputil.functional.Functions.not;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.gusdb.fgputil.FormatUtil.MultiLineToString;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
-
-import static org.gusdb.fgputil.functional.Functions.not;
 
 /**
  * This class provides a common implementation of tree structure and the ability
@@ -46,7 +51,7 @@ public class TreeNode<T> implements MultiLineToString {
    * @param <S> The type of a single 'node' each node in this tree will be mapped to
    */
   @FunctionalInterface
-  public interface StructureMapper<T, S> {
+  public interface StructureMapper<T, S> extends BiFunction<T, List<S>, S> {
     /**
      * Maps the contents of a node, and its already-mapped children, to the
      * node type of the new structure.
@@ -55,7 +60,8 @@ public class TreeNode<T> implements MultiLineToString {
      * @param mappedChildren the already-mapped children of this node
      * @return a mapped object incorporating this node's contents and its children
      */
-    S map(T obj, List<S> mappedChildren);
+    @Override
+    S apply(T obj, List<S> mappedChildren);
   }
 
   protected T _nodeContents;
@@ -282,7 +288,7 @@ public class TreeNode<T> implements MultiLineToString {
       mappedChildren.add(child.mapStructure(mapper));
     }
     // pass this object plus converted children to mapper
-    return mapper.map(_nodeContents, mappedChildren);
+    return mapper.apply(_nodeContents, mappedChildren);
   }
 
   /**
@@ -449,20 +455,15 @@ public class TreeNode<T> implements MultiLineToString {
       ((MultiLineToString)_nodeContents).toMultiLineString(ind + "  "));
     StringBuilder str = new StringBuilder()
         .append(ind).append("TreeNode {").append(NL)
-        .append(ind).append("  ").append(nodeString).append(NL)
-        .append(ind).append("  Leaves:").append(NL);
-    for (TreeNode<T> node : _childNodes) {
-      if (node.isLeaf()) {
-        str.append(node.toMultiLineString(ind + "    ")).append(NL);
-      }
-    }
-    str.append(ind).append("  Children {").append(NL);
-    for (TreeNode<T> child : _childNodes) {
-      if (!child.isLeaf()) {
+        .append(ind).append("  Contents: ").append(nodeString).append(NL);
+    if (!_childNodes.isEmpty()) {
+      str.append(ind).append("  Children: [").append(NL);
+      for (TreeNode<T> child : _childNodes) {
         str.append(child.toMultiLineString(ind + "    "));
       }
+      str.append(ind).append("  ]").append(NL);
     }
-    str.append(ind).append("  }").append(NL).append(ind).append("}").append(NL);
+    str.append(ind).append("}").append(NL);
     return str.toString();
   }
 }
