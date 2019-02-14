@@ -154,12 +154,12 @@
         <artifactId>jackson-datatype-json-org</artifactId>
         <version>${jackson.version}</version>
       </dependency>
+<!-- Not sure if we need for Java 11; keep until shown we don't
       <dependency>
         <groupId>javax.xml.bind</groupId>
         <artifactId>jaxb-api</artifactId>
         <version>2.3.0</version>
       </dependency>
-<!-- Not sure if we need for Java 11; keep until shown we don't
       <dependency>
         <groupId>com.sun.xml.bind</groupId>
         <artifactId>jaxb-impl</artifactId>
