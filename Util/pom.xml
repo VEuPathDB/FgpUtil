@@ -55,12 +55,12 @@
       <artifactId>javax.json</artifactId>
       <scope>test</scope>
     </dependency>
-<!-- Not sure if we need for Java 11; keep until shown we don't
 
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
     </dependency>
+<!-- Not sure if we need for Java 11; keep commented until shown we do
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
