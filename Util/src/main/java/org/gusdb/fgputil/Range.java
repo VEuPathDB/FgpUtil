@@ -8,7 +8,7 @@ public class Range<T extends Comparable<T>> {
   private boolean _isBeginInclusive = true;
 
   private Optional<T> _endValue = Optional.empty();
-  private boolean _isEndInclusive = true;
+  private boolean _isEndInclusive = false;
 
   public Range() {
     this(Optional.empty(), Optional.empty());
