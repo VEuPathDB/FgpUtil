@@ -16,7 +16,7 @@ public class ValidObjectFactory {
       _validatedObject = validatedObject;
     }
 
-    public T getObject() {
+    public T get() {
       return _validatedObject;
     }
   }
