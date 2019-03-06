@@ -6,7 +6,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,6 +51,35 @@ public class FormatUtil {
     StringWriter str = new StringWriter(150);
     t.printStackTrace(new PrintWriter(str));
     return str.toString();
+  }
+
+  public static Date parseDate(String date) {
+    return Date.from(LocalDate
+        .parse(date, STANDARD_DATE_FORMAT)
+        .atStartOfDay()
+        .atZone(ZoneId.systemDefault())
+        .toInstant());
+  }
+
+  public static Date parseDateTime(String dateTime) {
+    return Date.from(LocalDateTime
+        .parse(dateTime, STANDARD_DATE_TIME_FORMAT)
+        .atZone(ZoneId.systemDefault())
+        .toInstant());
+  }
+
+  public static String formatDate(Date date) {
+    return STANDARD_DATE_FORMAT.format(date
+        .toInstant()
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate());
+  }
+
+  public static String formatDateTime(Date date) {
+    return STANDARD_DATE_TIME_FORMAT.format(date
+        .toInstant()
+        .atZone(ZoneId.systemDefault())
+        .toLocalDateTime());
   }
 
   public static String shrinkUtf8String(String str, int maxBytes) {
