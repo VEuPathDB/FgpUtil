@@ -57,7 +57,7 @@ public class ValidationBundle {
     }
 
     public ValidationBundleBuilder aggregateStatus(Validateable<?>... objects) {
-      Arrays.asList(objects).stream().forEach(obj -> {
+      Arrays.stream(objects).forEach(obj -> {
         ValidationBundle errors = obj.getValidationBundle();
         if (!errors.getLevel().equals(_level)) {
           throw new IllegalArgumentException("Can only aggregate status of objects with the same validation level.");
