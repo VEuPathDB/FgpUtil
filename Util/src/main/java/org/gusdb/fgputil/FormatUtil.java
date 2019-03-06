@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,6 +20,9 @@ public class FormatUtil {
   public static final String NL = System.lineSeparator();
   public static final String TAB = "\t";
   public static final String UTF8_ENCODING = "UTF-8";
+
+  public static final DateTimeFormatter STANDARD_DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
+  public static final DateTimeFormatter STANDARD_DATE_TIME_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
   public static final String STANDARD_TIME_FORMAT = "HH:mm:ss";
   public static final String STANDARD_DATE_FORMAT_SLASH = "yyyy/MM/dd";
