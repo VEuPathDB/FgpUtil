@@ -3,6 +3,7 @@ package org.gusdb.fgputil;
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,5 +103,34 @@ public class FormatTest {
     System.out.println(NL + "Encoded Map (" + codedValue.length() + "): " + codedValue);
     Map<String,String> outputMap = EncryptionUtil.decodeEncodedMap(codedValue);
     System.out.println(NL + "Decoded Map: " + FormatUtil.prettyPrint(outputMap, Style.MULTI_LINE));
+  }
+
+  @Test
+  public void testDateFormatters() {
+    Date d0 = new Date();
+    String s0 = FormatUtil.formatDate(d0);
+    String s1 = FormatUtil.formatDateTime(d0);
+    Date d1 = FormatUtil.parseDate(s0);
+    //Date d2 = FormatUtil.parseDateTime(s0);
+    //Date d3 = FormatUtil.parseDate(s1);
+    Date d4 = FormatUtil.parseDateTime(s1);
+    String s2 = FormatUtil.formatDate(d1);
+    String s3 = FormatUtil.formatDateTime(d1);
+    //String s4 = FormatUtil.formatDate(d2);
+    //String s5 = FormatUtil.formatDateTime(d2);
+    //String s6 = FormatUtil.formatDate(d3);
+    //String s7 = FormatUtil.formatDateTime(d3);
+    String s8 = FormatUtil.formatDate(d4);
+    String s9 = FormatUtil.formatDateTime(d4);
+    System.out.println("s0: " + s0);
+    System.out.println("s1: " + s1);
+    System.out.println("s2: " + s2);
+    System.out.println("s3: " + s3);
+    //System.out.println("s4: " + s4);
+    //System.out.println("s5: " + s5);
+    //System.out.println("s6: " + s6);
+    //System.out.println("s7: " + s7);
+    System.out.println("s8: " + s8);
+    System.out.println("s9: " + s9);
   }
 }

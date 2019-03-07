@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -27,13 +28,6 @@ public class FormatUtil {
 
   public static final DateTimeFormatter STANDARD_DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
   public static final DateTimeFormatter STANDARD_DATE_TIME_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-
-  public static final String STANDARD_TIME_FORMAT = "HH:mm:ss";
-  public static final String STANDARD_DATE_FORMAT_SLASH = "yyyy/MM/dd";
-  public static final String STANDARD_DATETIME_FORMAT_SLASH = STANDARD_DATE_FORMAT_SLASH + " " + STANDARD_TIME_FORMAT;
-  public static final String STANDARD_DATE_FORMAT_DASH = "yyyy-MM-dd";
-  public static final String STANDARD_DATETIME_FORMAT_DASH = STANDARD_DATE_FORMAT_DASH + " " + STANDARD_TIME_FORMAT;
-  public static final String STANDARD_TIMESTAMP_FORMAT = STANDARD_DATETIME_FORMAT_DASH + ".SSS";
 
   public interface MultiLineToString {
     public String toMultiLineString(String indentation);
@@ -53,7 +47,7 @@ public class FormatUtil {
     return str.toString();
   }
 
-  public static Date parseDate(String date) {
+  public static Date parseDate(String date) throws DateTimeParseException {
     return Date.from(LocalDate
         .parse(date, STANDARD_DATE_FORMAT)
         .atStartOfDay()
@@ -61,7 +55,7 @@ public class FormatUtil {
         .toInstant());
   }
 
-  public static Date parseDateTime(String dateTime) {
+  public static Date parseDateTime(String dateTime) throws DateTimeParseException {
     return Date.from(LocalDateTime
         .parse(dateTime, STANDARD_DATE_TIME_FORMAT)
         .atZone(ZoneId.systemDefault())
