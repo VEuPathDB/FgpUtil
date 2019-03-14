@@ -121,13 +121,20 @@ public class ValidationBundle {
     return !_errors.isEmpty() || !_keyedErrors.isEmpty();
   }
 
-  @Override
-  public String toString() {
+  private JSONObject toJson() {
     return new JSONObject()
         .put("validationLevel", getLevel().toString())
         .put("validationStatus", getStatus().toString())
         .put("errors", getUnkeyedErrors())
-        .put("keyedErrors", getKeyedErrors())
-        .toString();
+        .put("keyedErrors", getKeyedErrors());
+  }
+
+  @Override
+  public String toString() {
+    return toJson().toString();
+  }
+
+  public String toString(int indentation) {
+    return toJson().toString(indentation);
   }
 }
