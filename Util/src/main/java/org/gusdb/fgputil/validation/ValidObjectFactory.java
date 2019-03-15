@@ -27,7 +27,13 @@ public class ValidObjectFactory {
     }
   }
 
-  public static class SemanticallyValid<T extends Validateable<T>> extends SyntacticallyValid<T> {
+  public static class DisplayablyValid<T extends Validateable<T>> extends SyntacticallyValid<T> {
+    private DisplayablyValid(T validatedObject) {
+      super(validatedObject);
+    }
+  }
+
+  public static class SemanticallyValid<T extends Validateable<T>> extends DisplayablyValid<T> {
     private SemanticallyValid(T validatedObject) {
       super(validatedObject);
     }
@@ -49,11 +55,33 @@ public class ValidObjectFactory {
    */
   public static <T extends Validateable<T>> SyntacticallyValid<T> getSyntacticallyValid(T validatedObject) {
     ValidationBundle validation = validatedObject.getValidationBundle();
-    if (validation.getStatus().equals(ValidationStatus.VALID)) {
+    if (validation.getStatus().isValid()) {
       switch(validation.getLevel()) {
-        case SYNTACTIC: return new SyntacticallyValid<>(validatedObject);
-        case SEMANTIC:  return new SemanticallyValid<>(validatedObject);
-        case RUNNABLE:  return new RunnableObj<>(validatedObject);
+        case SYNTACTIC:   return new SyntacticallyValid<>(validatedObject);
+        case DISPLAYABLE: return new DisplayablyValid<>(validatedObject);
+        case SEMANTIC:    return new SemanticallyValid<>(validatedObject);
+        case RUNNABLE:    return new RunnableObj<>(validatedObject);
+        default: /* drop through to exception */
+      }
+    }
+    throw new ValidObjectWrappingException(validatedObject.getValidationBundle());
+  }
+
+  /**
+   * Attempts to wrap a Validateable object in a DisplayablyValid wrapper.  If the passed object is not
+   * displayably valid, throws an exception.
+   * 
+   * @param validatedObject displayably valid object
+   * @return wrapper around passed object
+   * @throws ValidObjectWrappingException if passed object is not displayably valid
+   */
+  public static <T extends Validateable<T>> DisplayablyValid<T> getDisaplayablyValid(T validatedObject) {
+    ValidationBundle validation = validatedObject.getValidationBundle();
+    if (validation.getStatus().isValid()) {
+      switch(validation.getLevel()) {
+        case DISPLAYABLE: return new DisplayablyValid<>(validatedObject);
+        case SEMANTIC:    return new SemanticallyValid<>(validatedObject);
+        case RUNNABLE:    return new RunnableObj<>(validatedObject);
         default: /* drop through to exception */
       }
     }
@@ -70,10 +98,10 @@ public class ValidObjectFactory {
    */
   public static <T extends Validateable<T>> SemanticallyValid<T> getSemanticallyValid(T validatedObject) {
     ValidationBundle validation = validatedObject.getValidationBundle();
-    if (validation.getStatus().equals(ValidationStatus.VALID)) {
+    if (validation.getStatus().isValid()) {
       switch(validation.getLevel()) {
-        case SEMANTIC:  return new SemanticallyValid<>(validatedObject);
-        case RUNNABLE:  return new RunnableObj<>(validatedObject);
+        case SEMANTIC: return new SemanticallyValid<>(validatedObject);
+        case RUNNABLE: return new RunnableObj<>(validatedObject);
         default: /* drop through to exception */
       }
     }
@@ -90,7 +118,7 @@ public class ValidObjectFactory {
    */
   public static <T extends Validateable<T>> RunnableObj<T> getRunnable(T validatedObject) {
     ValidationBundle validation = validatedObject.getValidationBundle();
-    if (validation.getStatus().equals(ValidationStatus.VALID) &&
+    if (validation.getStatus().isValid() &&
         validation.getLevel().equals(ValidationLevel.RUNNABLE)) {
       return new RunnableObj<>(validatedObject);
     }

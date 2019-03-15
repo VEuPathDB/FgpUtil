@@ -1,7 +1,8 @@
 package org.gusdb.fgputil.validation;
 
 /**
- * The level of validation requested or performed.
+ * The level of validation requested or performed.  Note the order of these
+ * levels is important since we often compare via ordinals.
  * 
  * @author rdoherty
  */
@@ -13,17 +14,17 @@ public enum ValidationLevel {
   NONE,
 
   /**
-   * Validation level is unknown; typically this is used when the calling code does not know what level of
-   * validation the called code is going to perform.  The called code is responsible for choosing a validation
-   * level and setting the validation bundle's status accordingly.
-   */
-  UNSPECIFIED,
-
-  /**
    * Syntactic validation is typically "cheap" to perform (i.e. in-memory only).  Named so since it usually
    * involves only analyzing the structure of an object and perhaps perform simple regex or range validations.
    */
   SYNTACTIC,
+
+  /**
+   * Tells whether or not a value or set of values are valid enough to be displayed (e.g. in a form).
+   * Typically this is a lower level of validation than even SYNTACTIC since e.g. a string that does not
+   * conform to a specified regex can still be displayed in textbox.
+   */
+  DISPLAYABLE,
 
   /**
    * Semantic validation includes syntactic validation but adds validation that is typically more expensive
@@ -45,5 +46,13 @@ public enum ValidationLevel {
    */
   public boolean isNone() {
     return equals(NONE);
+  }
+
+  public boolean isLessThanOrEqualTo(ValidationLevel level) {
+    return ordinal() <= level.ordinal();
+  }
+
+  public boolean isGreaterThanOrEqualTo(ValidationLevel level) {
+    return ordinal() >= level.ordinal();
   }
 }

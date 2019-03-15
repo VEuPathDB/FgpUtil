@@ -5,7 +5,7 @@ import java.util.function.Function;
 import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.validation.ValidObjectFactory.Valid;
 
-public class OptionallyInvalid<T extends Validateable<T>, S extends Valid<T>> extends Either<S, T> {
+public class OptionallyInvalid<S extends Valid<T>, T extends Validateable<T>> extends Either<S, T> {
 
   public OptionallyInvalid(S successValue, T value) {
     super(successValue, value);
