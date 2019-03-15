@@ -53,7 +53,7 @@ public class CliUtil {
 		// PrintWriter stderr = new PrintWriter(System.err);
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.printHelp(75, cmdlineSyntax, header, options, NL);
-		System.out.println(usageNotes);
+		System.err.println(usageNotes);
 		System.exit(1);
 	}
 }
