@@ -121,6 +121,7 @@ public class ValidationBundle {
     return !_errors.isEmpty() || !_keyedErrors.isEmpty();
   }
 
+  // using JSON here just for convenience; not meant to be part of a public API
   private JSONObject toJson() {
     return new JSONObject()
         .put("validationLevel", getLevel().toString())
