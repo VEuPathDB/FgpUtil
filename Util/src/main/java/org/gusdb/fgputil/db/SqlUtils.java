@@ -621,7 +621,7 @@ public final class SqlUtils {
    * Performs all the passed procedures in a single transaction on the passed connection.  If any of the
    * passed procedures throw exception, the connection will be rolled back; otherwise all updates will be
    * committed together.  There is no guarantee of rollback of any other connections that may appear in
-   * the passed procedures.
+   * the passed procedures.  Auto-commit will be reset back to its original value once this method completes.
    * 
    * @param conn connection on which to perform operations
    * @param procedures set of procedures containing operations (presumably against the passed connection)
@@ -629,6 +629,7 @@ public final class SqlUtils {
    */
   @SafeVarargs
   public static void performInTransaction(Connection conn, ConsumerWithException<Connection>... procedures) throws Exception {
+    boolean origAutoCommit = conn.getAutoCommit();
     try {
       conn.setAutoCommit(false);
       for (ConsumerWithException<Connection> proc : procedures) {
@@ -648,15 +649,11 @@ public final class SqlUtils {
       throw e;
     }
     finally {
-      boolean successfullyResetAutoCommit = false;
       try {
-        conn.setAutoCommit(true);
-        successfullyResetAutoCommit = true;
-        conn.close();
+        conn.setAutoCommit(origAutoCommit);
       }
       catch (Exception e) {
-        logger.error(successfullyResetAutoCommit ?
-            "Error closing connection" : "Error resetting auto-commit = true", e);
+        logger.error("Error resetting auto-commit to " + origAutoCommit, e);
       }
     }
   }
