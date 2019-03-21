@@ -19,7 +19,7 @@ public class ListBuilder<T> {
    * Creates a typed list from a single object.  A slightly more efficient and convenient
    * function than calling:
    * 
-   * new ListBuilder<T>().add(obj).toList();
+   * new ListBuilder().add(obj).toList();
    * 
    * Note that the returned list is a mutable ArrayList.
    * 

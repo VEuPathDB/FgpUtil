@@ -62,7 +62,7 @@ public class ManagedMap<S,T> extends InMemoryCache<S,T> implements Map<S,T> {
   }
 
   /**
-   * @param possible key to value in the map
+   * @param key possible key to value in the map
    * @return true if the passed key represents a value in the map, else false
    */
   @SuppressWarnings("unchecked")
@@ -80,7 +80,7 @@ public class ManagedMap<S,T> extends InMemoryCache<S,T> implements Map<S,T> {
   /**
    * Returns the value associated with the passed key
    * 
-   * @param possible key to value in the map
+   * @param key possible key to value in the map
    * @return the value associated with the passed key, or null if that key does not exist
    */
   @SuppressWarnings("unchecked")
@@ -124,7 +124,7 @@ public class ManagedMap<S,T> extends InMemoryCache<S,T> implements Map<S,T> {
   /**
    * Removes the entry associated with the passed key
    * 
-   * @param possible key to item in the map
+   * @param key possible key to item in the map
    * @return previous value associated with the passed key if one exists, else null
    */
   @SuppressWarnings("unchecked")

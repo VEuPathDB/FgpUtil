@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 /**
  * Provides an implementation of List for AutoCloseables that is AutoCloseable itself and
  * closes all its members on close.  It can be used as a normal list (ArrayList implementation)
- * or you can construct as needed from any existing Collection<AutoCloseable>.
+ * or you can construct as needed from any existing Collection of AutoCloseable.
  * 
  * @author rdoherty
  */
