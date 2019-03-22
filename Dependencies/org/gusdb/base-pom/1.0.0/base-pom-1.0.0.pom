@@ -631,46 +631,15 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.4</version>
-        <configuration>
-          <reportPlugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-project-info-reports-plugin</artifactId>
-              <version>2.7</version>
-              <configuration>
-                <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-                <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-              </configuration>
-              <reports>
-                <report>index</report>
-                <report>summary</report>
-                <report>modules</report>
-                <report>dependency-management</report>
-                <report>dependencies</report>
-                <report>dependency-info</report>
-                <report>dependency-convergence</report>
-                <report>scm</report>
-                <report>issue-tracking</report>
-                <report>cim</report>
-                <report>project-team</report>
-                <report>help</report>
-                <!-- TODO: figure out how to invoke these reports
-                <report>changelog</report>
-                <report>checkstyle</report>
-                <report>jxr</report>
-                <report>surefire-report</report>
-                <report>pmd</report>
-                -->
-              </reports>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-javadoc-plugin</artifactId>
-              <version>2.10.4</version>
-            </plugin>
-          </reportPlugins>
-        </configuration>
+        <version>3.7.1</version>
+        <executions>
+          <execution>
+            <id>attach-descriptor</id>
+            <goals>
+              <goal>attach-descriptor</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -769,4 +738,47 @@
     </pluginManagement>
   </build>
 
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>2.7</version>
+        <configuration>
+          <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>index</report>
+              <report>summary</report>
+              <report>modules</report>
+              <report>dependency-management</report>
+              <report>dependencies</report>
+              <report>dependency-info</report>
+              <report>dependency-convergence</report>
+              <report>scm</report>
+              <report>issue-tracking</report>
+              <report>cim</report>
+              <report>project-team</report>
+              <report>help</report>
+              <!-- TODO: figure out how to invoke these reports
+              <report>changelog</report>
+              <report>checkstyle</report>
+              <report>jxr</report>
+              <report>surefire-report</report>
+              <report>pmd</report>
+              -->
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.0.1</version>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>
