@@ -1,11 +1,13 @@
 package org.gusdb.fgputil.db;
 
 import java.sql.Types;
+import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Defines a set of basic column types and a mapping from JDBC SQL type to
  * those column types.
- * 
+ *
  * @author rdoherty
  */
 public enum SqlColumnType {
@@ -13,6 +15,13 @@ public enum SqlColumnType {
   NUMBER,
   DATE,
   OTHER;
+
+  public static Optional<SqlColumnType> fromString(final String val) {
+    final String test = val.toUpperCase();
+    return Arrays.stream(values())
+      .filter(e -> e.name().equals(test))
+      .findFirst();
+  }
 
   public static SqlColumnType getFromSqlType(int sqlType) {
     switch(sqlType) {
@@ -37,7 +46,7 @@ public enum SqlColumnType {
       case Types.CLOB:
       case Types.NCLOB:
         return STRING;
-      
+
       case Types.DATE:
       case Types.TIMESTAMP:
       case Types.TIMESTAMP_WITH_TIMEZONE:

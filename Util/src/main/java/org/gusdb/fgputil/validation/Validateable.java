@@ -10,75 +10,74 @@ import org.gusdb.fgputil.validation.ValidObjectFactory.Valid;
 /**
  * Simple interface to add to classes that use this validation package to demonstrate
  * whether they have been validated or not and that validation status.
- * 
+ *
  * @author rdoherty
  */
 public interface Validateable<T extends Validateable<T>> {
 
   /**
    * Returns a validation bundle containing validation information about this object
-   * 
+   *
    * @return a validation bundle containing validation information about this object
    */
-  public ValidationBundle getValidationBundle();
+  ValidationBundle getValidationBundle();
 
   /**
    * By default, returns the response of the validation bundle's status's isValid()
-   * 
+   *
    * @return whether this object is valid
    */
-  public default boolean isValid() {
+  default boolean isValid() {
     return getValidationBundle().getStatus().isValid();
   }
 
-  public default boolean isValidAtLevelGreaterThanOrEqualTo(ValidationLevel targetLevel) {
+  default boolean isValidAtLevelGreaterThanOrEqualTo(ValidationLevel targetLevel) {
     return isValid() && getValidationBundle().getLevel().isGreaterThanOrEqualTo(targetLevel);
   }
 
-  public default boolean isDisplayablyValid() {
+  default boolean isDisplayablyValid() {
     return isValidAtLevelGreaterThanOrEqualTo(ValidationLevel.DISPLAYABLE);
   }
 
-  public default boolean isSyntacticallyValid() {
+  default boolean isSyntacticallyValid() {
     return isValidAtLevelGreaterThanOrEqualTo(ValidationLevel.SYNTACTIC);
   }
 
-  public default boolean isSemanticallyValid() {
+  default boolean isSemanticallyValid() {
     return isValidAtLevelGreaterThanOrEqualTo(ValidationLevel.SEMANTIC);
   }
 
-  public default boolean isRunnable() {
+  default boolean isRunnable() {
     return isValidAtLevelGreaterThanOrEqualTo(ValidationLevel.RUNNABLE);
   }
 
   @SuppressWarnings("unchecked")
-  public default OptionallyInvalid<DisplayablyValid<T>, T> getDisplayablyValid() {
-    return optionallyValidOnException((T)this, value -> ValidObjectFactory.getDisaplayablyValid(value));
+  default OptionallyInvalid<DisplayablyValid<T>, T> getDisplayablyValid() {
+    return optionallyValidOnException((T)this, ValidObjectFactory::getDisaplayablyValid);
   }
 
   @SuppressWarnings("unchecked")
-  public default OptionallyInvalid<SyntacticallyValid<T>, T> getSyntacticallyValid() {
-    return optionallyValidOnException((T)this, value -> ValidObjectFactory.getSyntacticallyValid(value));
+  default OptionallyInvalid<SyntacticallyValid<T>, T> getSyntacticallyValid() {
+    return optionallyValidOnException((T)this, ValidObjectFactory::getSyntacticallyValid);
   }
 
   @SuppressWarnings("unchecked")
-  public default OptionallyInvalid<SemanticallyValid<T>, T> getSemanticallyValid() {
-    return optionallyValidOnException((T)this, value -> ValidObjectFactory.getSemanticallyValid(value));
+  default OptionallyInvalid<SemanticallyValid<T>, T> getSemanticallyValid() {
+    return optionallyValidOnException((T)this, ValidObjectFactory::getSemanticallyValid);
   }
 
   @SuppressWarnings("unchecked")
-  public default OptionallyInvalid<RunnableObj<T>, T> getRunnable() {
-    return optionallyValidOnException((T)this, value -> ValidObjectFactory.getRunnable(value));
+  default OptionallyInvalid<RunnableObj<T>, T> getRunnable() {
+    return optionallyValidOnException((T)this, ValidObjectFactory::getRunnable);
   }
 
   static <S extends Valid<T>, T extends Validateable<T>> OptionallyInvalid<S,T>
   optionallyValidOnException(T value, FunctionWithException<T,S> converter) {
     try {
-      S wrappedValue = converter.apply(value);
-      return new OptionallyInvalid<S,T>(wrappedValue, null);
+      return new OptionallyInvalid<>(converter.apply(value), null);
     }
     catch (Exception e) {
-      return new OptionallyInvalid<S,T>(null, value);
+      return new OptionallyInvalid<>(null, value);
     }
   }
 }
