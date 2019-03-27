@@ -47,7 +47,7 @@ public class EncryptionUtil {
    * is not compatible with md5
    **/
   public static String md5(String str) {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     for (byte code : newMd5Digester().digest(str.getBytes())) {
       buffer.append(Integer.toString((code & 0xff) + 0x100, 16).substring(1));
     }
@@ -62,6 +62,18 @@ public class EncryptionUtil {
     return encrypt(data, false);
   }
 
+  /**
+   * Encrypt produces an MD5 hash of the given string.
+   *
+   * @param data Data that will be hashed.
+   * @param shortDigest A boolean flag which determines if the full hash should
+   *                    be returned or just the first 8 bytes (will return less
+   *                    if the MD5 hash is shorter than 8 bytes).
+   * @return Either a full MD5 hash string or a short digest <= 8 bytes in
+   * length.
+   * @throws IllegalArgumentException when the input data is either null or an
+   * empty string.
+   */
   public static String encrypt(String data, boolean shortDigest) {
     // cannot encrypt null value
     if (data == null || data.length() == 0)
@@ -78,7 +90,7 @@ public class EncryptionUtil {
   }
 
   // pattern to check validity of incoming ID names (non-empty alpha-numeric string + '_')
-  private static final Pattern VALID_ID_PATTERN = Pattern.compile("[\\.\\-_a-zA-Z0-9]+");
+  private static final Pattern VALID_ID_PATTERN = Pattern.compile("[.\\-_a-zA-Z0-9]+");
 
   public static String encodeMap(Map<String,String> map) {
     return printBase64Binary(getUtf8EncodedBytes(join(mapToList(map.entrySet(), entry ->
@@ -100,7 +112,7 @@ public class EncryptionUtil {
       if (tokens.length != 2) {
         throw new IllegalArgumentException("Value '" + encodedMap + "' cannot be decoded.");
       }
-      return new TwoTuple<String,String>(tokens[0], tokens[1]);
+      return new TwoTuple<>(tokens[0], tokens[1]);
     });
   }
 }

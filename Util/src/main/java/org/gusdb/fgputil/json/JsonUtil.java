@@ -1,13 +1,7 @@
 package org.gusdb.fgputil.json;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
@@ -78,6 +72,13 @@ public class JsonUtil {
     return result;
   }
 
+  /**
+   * Creates a JSON object from a map of string keys to string values
+   * @param map Value to convert to a JSON object
+   * @return JSON object containing the data present in the input map
+   * @deprecated use {@link JSONObject#JSONObject(Map)}
+   */
+  @Deprecated
   public static JSONObject toJsonObject(Map<String,String> map) {
     JSONObject json = new JSONObject();
     for (Entry<String,String> entry : map.entrySet()) {
@@ -86,6 +87,13 @@ public class JsonUtil {
     return json;
   }
 
+  /**
+   * Creates a JSON array from an array of strings.
+   * @param strings value to convert to a JSON array
+   * @return JSON array containing the strings present in the input array
+   * @deprecated use {@link JSONArray#JSONArray(Object)}
+   */
+  @Deprecated
   public static JSONArray toJsonStringArray(String[] strings) {
     JSONArray json = new JSONArray();
     for (String s : strings) {
@@ -133,7 +141,7 @@ public class JsonUtil {
   public static Set<String> getKeys(JSONObject obj) {
     String[] keys = JSONObject.getNames(obj);
     return (keys == null ? Collections.emptySet() :
-      new HashSet<String>(Arrays.asList(keys)));
+      new HashSet<>(Arrays.asList(keys)));
   }
 
   /**
@@ -147,7 +155,6 @@ public class JsonUtil {
    *
    * @param jsonObj the JSON object
    * @param out string builder to write to
-   * @throws JSONException
    */
   // NOTE: this method was taken and modified from json.org's JSONObject
   private static void write(JSONObject jsonObj, StringBuilder out) throws JSONException {
@@ -183,7 +190,6 @@ public class JsonUtil {
    *
    * @param jsonArr the JSON array
    * @param out string builder to write to
-   * @throws JSONException
    */
   // NOTE: this method was taken and modified from json.org's JSONArray
   private static void write(JSONArray jsonArr, StringBuilder out) throws JSONException {
@@ -207,7 +213,7 @@ public class JsonUtil {
 
   // NOTE: this method was taken and modified from json.org's JSONObject
   private static void writeValue(Object value, StringBuilder out) throws JSONException {
-    if (value == null || value.equals(null)) {
+    if (value == null) {
       out.append("null");
     }
     else if (value instanceof JSONObject) {
@@ -271,7 +277,7 @@ public class JsonUtil {
    * Creates a deep clone of the passed JSON array and returns it.  Currently this implementation is rather
    * expensive since it serializes the array and then parses it again.  TODO: make more efficient
    *
-   * @param json arrat to clone
+   * @param json array to clone
    * @return clone
    */
   public static JSONArray clone(JSONArray json) {
