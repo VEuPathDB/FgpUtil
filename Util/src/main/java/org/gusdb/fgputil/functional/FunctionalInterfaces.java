@@ -4,7 +4,7 @@ import java.util.function.Predicate;
 
 /**
  * Static class provides basic functional interfaces and true and false predicates
- * 
+ *
  * @author rdoherty
  */
 public class FunctionalInterfaces {
@@ -13,7 +13,7 @@ public class FunctionalInterfaces {
 
   /**
    * Defines a single-argument function that may throw an exception
-   * 
+   *
    * @param <S> type of function input
    * @param <T> type of function output
    */
@@ -21,17 +21,17 @@ public class FunctionalInterfaces {
   public interface FunctionWithException<S,T> {
     /**
      * Applies the function to the given input and returns output
-     * 
+     *
      * @param obj input to function
      * @return result of function
      * @throws Exception as needed
      */
-    public T apply(S obj) throws Exception;
+    T apply(S obj) throws Exception;
   }
 
   /**
    * Defines a two-argument function that may throw an exception
-   * 
+   *
    * @param <R> type of first function input
    * @param <S> type of second function input
    * @param <T> type of function output
@@ -40,18 +40,18 @@ public class FunctionalInterfaces {
   public interface BiFunctionWithException<R,S,T> {
     /**
      * Applies the function to the given input and returns output
-     * 
+     *
      * @param obj1 input to function
      * @param obj2 input to function
      * @return result of function
      * @throws Exception as needed
      */
-    public T apply(R obj1, S obj2) throws Exception;
+    T apply(R obj1, S obj2) throws Exception;
   }
 
   /**
    * Defines a three-argument function
-   * 
+   *
    * @param <R> type of first function input
    * @param <S> type of second function input
    * @param <T> type of third function input
@@ -61,13 +61,13 @@ public class FunctionalInterfaces {
   public interface TriFunction<R,S,T,U> {
     /**
      * Applies the function to the given input and returns output
-     * 
+     *
      * @param obj1 input to function
      * @param obj2 input to function
      * @param obj3 input to function
      * @return result of function
      */
-    public U apply(R obj1, S obj2, T obj3);
+    U apply(R obj1, S obj2, T obj3);
   }
 
   /**
@@ -79,26 +79,37 @@ public class FunctionalInterfaces {
   public interface SupplierWithException<T> {
     /**
      * Applies the function to produce an object of type T
-     * 
+     *
      * @return result of function
      * @throws Exception if something goes wrong
      */
-    public T get() throws Exception;
+    T get() throws Exception;
+  }
+
+  /**
+   * Defines a no-argument function that may throw a defined exception
+   *
+   * @param <E> type of the expected checked exception
+   * @param <T> type of function output
+   */
+  @FunctionalInterface
+  public interface CheckedSupplier<E extends Throwable, T> {
+    T get() throws E;
   }
 
   /**
    * Defines a consumer that may throw an exception
-   * 
+   *
    * @param <T> type of object being consumed
    */
   public interface ConsumerWithException<T> {
     /**
      * Consumes an object of type T
-     * 
+     *
      * @param obj object to consume
      * @throws Exception if something goes wrong
      */
-    public void accept(T obj) throws Exception;
+    void accept(T obj) throws Exception;
   }
 
   /**
@@ -111,11 +122,11 @@ public class FunctionalInterfaces {
     /**
      * Tests the given input against the predicate and returns whether the
      * passed input passes the test.
-     * 
+     *
      * @param obj object to test
      * @return true if object passes, else false
      */
-    public boolean test(T obj) throws Exception;
+    boolean test(T obj) throws Exception;
   }
 
   /**
@@ -129,12 +140,12 @@ public class FunctionalInterfaces {
     /**
      * Returns an aggregate result by combining the incoming value with that
      * produced by evaluating the passed object
-     * 
+     *
      * @param accumulator previous result value
      * @param next object to evaluate
      * @return revised result
      */
-    public T reduce(T accumulator, S next);
+    T reduce(T accumulator, S next);
   }
 
   /**
@@ -148,12 +159,12 @@ public class FunctionalInterfaces {
     /**
      * Returns an aggregate result by combining the incoming value with that
      * produced by evaluating the passed object
-     * 
+     *
      * @param accumulator previous result value
      * @param next object to evaluate
      * @return revised result
      */
-    public T reduce(T accumulator, S next) throws Exception;
+    T reduce(T accumulator, S next) throws Exception;
   }
 
   /**
@@ -161,7 +172,7 @@ public class FunctionalInterfaces {
    */
   @FunctionalInterface
   public interface Procedure {
-    public void perform();
+    void perform();
   }
 
   /**
@@ -176,31 +187,23 @@ public class FunctionalInterfaces {
   /**
    * Returns a predicate that tests whether an object is equal to
    * the passed object using the object's equal() method.
-   * 
+   *
    * @param obj object
    * @return predicate to test equality to passed object
    */
   public static <T> Predicate<T> equalTo(final T obj) {
-    return new Predicate<T>() {
-      @Override public boolean test(T candidate) {
-        return obj.equals(candidate);
-      }
-    };
+    return obj::equals;
   }
 
   /**
    * Returns a predicate that negates the result of the passed predicate
    * for each input (i.e. if the passed predicate's test method returns
    * true, the returned predicate returns false, and vice versa).
-   * 
+   *
    * @param predicate any predicate
    * @return predicate that negates results of the passed predicate
    */
   public static <T> Predicate<T> negate(final Predicate<T> predicate) {
-    return new Predicate<T>() {
-      @Override public boolean test(T candidate) {
-        return !predicate.test(candidate);
-      }
-    };
+    return candidate -> !predicate.test(candidate);
   }
 }

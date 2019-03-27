@@ -1,8 +1,11 @@
 package org.gusdb.fgputil.functional;
 
+import org.gusdb.fgputil.functional.FunctionalInterfaces.CheckedSupplier;
+
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -24,7 +27,7 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
    * @throws IllegalArgumentException if both params are non-null or if both
    *         params are null
    */
-  public Result(E error, V value) {
+  public Result(final E error, final V value) {
     super(error, value);
   }
 
@@ -65,6 +68,20 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
   }
 
   /**
+   * @return whether or not this result is an error.
+   */
+  public boolean isError() {
+    return isLeft();
+  }
+
+  /**
+   * @return whether or not this result is a value.
+   */
+  public boolean isValue() {
+    return isRight();
+  }
+
+  /**
    * Returns the success value if present, or throws the exception supplied by
    * the given function.
    *
@@ -75,7 +92,8 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
    *
    * @throws NE if this is not a right either.
    */
-  public <NE extends Throwable> V valueOrElseThrow(Supplier<NE> fn) throws NE {
+  public <NE extends Throwable> V valueOrElseThrow(final Supplier<NE> fn)
+  throws NE {
     return super.rightOrElseThrow(fn);
   }
 
@@ -90,7 +108,8 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
    *
    * @throws NE if this is not a right either.
    */
-  public <NE extends Throwable> V valueOrElseThrow(Function<E, NE> fn) throws NE {
+  public <NE extends Throwable> V valueOrElseThrow(final Function<E, NE> fn)
+  throws NE {
     return super.rightOrElseThrow(() -> fn.apply(getLeft()));
   }
 
@@ -102,7 +121,64 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
    * @throws E the wrapped exception if value is not present.
    */
   public V valueOrElseThrow() throws E {
-    return right().orElseThrow(() -> getLeft());
+    return right().orElseThrow(this::getLeft);
+  }
+
+  /**
+   * Map the wrapped exception of type {@link E} (if that error exists) to type
+   * {@code N}.
+   *
+   * @param fn mapping function
+   * @param <N> new error type
+   *
+   * @return a new result of either the existing value or the new error type.
+   */
+  public <N extends Throwable> Result<N, V> mapError(final Function<E, N> fn) {
+    return (Result<N, V>) super.mapLeft(fn);
+  }
+
+  /**
+   * Map the wrapped value of type {@link V} (if that value exists) to type
+   * {@code N}.
+   *
+   * @param fn mapping function
+   * @param <N> new value type
+   *
+   * @return a new result of either the existing error or the new value type.
+   */
+  public <N> Result<E, N> mapValue(final Function<V, N> fn) {
+    return (Result<E, N>) super.mapRight(fn);
+  }
+
+  /**
+   * Flat map over the wrapped value of type {@link V} (if a value exists) and
+   * map it to a result of type {@link N}.
+   *
+   * @param fn mapping function
+   * @param <N> new value type
+   *
+   * @return A result wrapping the existing error or the new value result of
+   * {@code fn};
+   */
+  public <N> Result<E, N> flatMapValue(
+    final Function<V, Result<E, N>> fn
+  ) {
+    return isValue()
+      ? fn.apply(getValue())
+      : Result.error(getError());
+  }
+
+  /**
+   * Performs the given action on the wrapped value if that value exists.
+   *
+   * @param fn action to perform on the wrapped value
+   *
+   * @return this {@code Result}
+   */
+  public Result<E, V> withValue(final Consumer<V> fn) {
+    if (isValue())
+      fn.accept(getValue());
+    return this;
   }
 
   /**
@@ -116,7 +192,7 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
    *
    * @throws NullPointerException if val is null.
    */
-  public static < L extends Throwable, R > Result < L, R > error(L val) {
+  public static < L extends Throwable, R > Result < L, R > error(final L val) {
     return new Result<>(Objects.requireNonNull(val), null);
   }
 
@@ -131,7 +207,27 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
    *
    * @throws NullPointerException if val is null.
    */
-  public static < L extends Throwable, R > Result < L, R > value(R val) {
+  public static < L extends Throwable, R > Result < L, R > value(final R val) {
     return new Result<>(null, Objects.requireNonNull(val));
+  }
+
+  /**
+   * Executes and wraps the result of function that will produce a value of type
+   * {@code R} and may throw an exception of type {@link L}.
+   *
+   * @param fn value supplier
+   * @param <L> Exception value type
+   * @param <R> Success value type
+   *
+   * @return the wrapped result of the execution of the given function.
+   */
+  public static < L extends Throwable, R > Result < L, R > of(
+    final CheckedSupplier< L, R > fn
+  ) {
+    try {
+      return value(fn.get());
+    } catch (Throwable e) {
+      return error((L) e);
+    }
   }
 }
