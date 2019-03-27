@@ -36,7 +36,7 @@ public class FormatUtil {
   private FormatUtil() {}
 
   private static class CurrentStackTrace extends Throwable { }
-  
+
   public static String getCurrentStackTrace() {
     return getStackTrace(new CurrentStackTrace());
   }
@@ -129,12 +129,12 @@ public class FormatUtil {
       throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
     }
   }
-  
+
   /**
    * Attempts to convert the given text into HTML, replacing special characters
    * with their HTML equivalents.
    * TODO: this method should be improved!
-   * 
+   *
    * @param str string to convert
    * @return converted string
    */
@@ -200,7 +200,7 @@ public class FormatUtil {
     }
     return sb.toString();
   }
-  
+
   public static String arrayToString(Object[] array) {
     return arrayToString(array, ", ");
   }
@@ -253,23 +253,23 @@ public class FormatUtil {
     }
     return newStr.toString();
   }
-  
+
   public static boolean isInteger(String s) {
     try { Integer.parseInt(s); return true; }
     catch (NumberFormatException e) { return false; }
   }
 
-  public static enum Style {
+  public enum Style {
     SINGLE_LINE(" ", "", ", ", " "),
     MULTI_LINE(NL, "   ", ","+NL, NL);
-    
+
     public final String introDelimiter;
     public final String recordIndent;
     public final String mapArrow = " => ";
     public final String recordDelimiter;
     public final String endDelimiter;
-    
-    private Style(String id, String ri, String rd, String ed) {
+
+    Style(String id, String ri, String rd, String ed) {
       introDelimiter = id; recordIndent = ri;
       recordDelimiter = rd; endDelimiter = ed;
     }
@@ -278,7 +278,7 @@ public class FormatUtil {
   /**
    * Returns a "pretty" string representation of the passed map using
    * <code>Style.SINGLE_LINE</code>.
-   * 
+   *
    * @param map map to print
    * @return pretty string value of map
    */
@@ -289,7 +289,7 @@ public class FormatUtil {
   /**
    * Returns a "pretty" string representation of the passed map using
    * the passed format style and the value's toString() method.
-   * 
+   *
    * @param map map to print
    * @return pretty string value of map
    */
@@ -300,7 +300,7 @@ public class FormatUtil {
   /**
    * Returns a "pretty" string representation of the passed map using
    * the passed format style.
-   * 
+   *
    * @param map map to print
    * @param style formatting style
    * @param toString function to convert the map values to strings
@@ -334,7 +334,7 @@ public class FormatUtil {
   }
 
  /* Algorithm for the method below
-  * 
+  *
   * if lower or underscore
   *   print this
   * else (upper)
@@ -379,7 +379,7 @@ public class FormatUtil {
    * returns "package.InnerClass$OuterClass", which is not referenceable by
    * the name attribute of a logger tag in log4j.xml.  This function gives a
    * name usable by both.
-   * 
+   *
    * @param clazz inner class name
    * @return the "code-style" inner class name
    */
