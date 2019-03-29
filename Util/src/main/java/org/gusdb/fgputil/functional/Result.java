@@ -221,12 +221,14 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
    *
    * @return the wrapped result of the execution of the given function.
    */
+  @SuppressWarnings("unchecked") // TODO: address runtime exceptions thrown by value()
   public static < L extends Throwable, R > Result < L, R > of(
     final CheckedSupplier< L, R > fn
   ) {
     try {
       return value(fn.get());
-    } catch (Throwable e) {
+    }
+    catch (Throwable e) {
       return error((L) e);
     }
   }
