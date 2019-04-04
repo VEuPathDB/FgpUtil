@@ -1,6 +1,6 @@
 package org.gusdb.fgputil.functional;
 
-import org.gusdb.fgputil.functional.FunctionalInterfaces.CheckedSupplier;
+import io.vulpine.lib.jcfie.ExtensibleCheckedSupplier;
 
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -114,7 +114,7 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
   }
 
   /**
-   * Returns the sucess value if present, or else throws the wrapped error.
+   * Returns the success value if present, or else throws the wrapped error.
    *
    * @return the wrapped success value if present.
    *
@@ -185,14 +185,14 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
    * Construct an error result.
    *
    * @param val Exception value
-   * @param <L> Exception value type
-   * @param <R> Success value type
+   * @param <E> Exception value type
+   * @param <V> Success value type
    *
    * @return A Result wrapping val.
    *
    * @throws NullPointerException if val is null.
    */
-  public static < L extends Throwable, R > Result < L, R > error(final L val) {
+  public static <E extends Throwable, V> Result <E, V> error(final E val) {
     return new Result<>(Objects.requireNonNull(val), null);
   }
 
@@ -200,41 +200,41 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
    * Construct a success result.
    *
    * @param val success value
-   * @param <L> Exception value type
-   * @param <R> Success value type
+   * @param <E> Exception value type
+   * @param <V> Success value type
    *
    * @return A Result wrapping val.
    *
    * @throws NullPointerException if val is null.
    */
-  public static < L extends Throwable, R > Result < L, R > value(final R val) {
+  public static <E extends Throwable, V> Result <E, V> value(final V val) {
     return new Result<>(null, Objects.requireNonNull(val));
   }
 
   /**
    * Executes and wraps the result of function that will produce a value of type
-   * {@code R} and may throw an exception of type {@link L}.
+   * {@link V} and may throw an exception of type {@link E}.
    *
    * @param fn value supplier
-   * @param <L> Exception value type
-   * @param <R> Success value type
+   * @param <E> Exception value type
+   * @param <V> Success value type
    *
    * @return the wrapped result of the execution of the given function.
    */
   @SuppressWarnings("unchecked")
-  public static < L extends Throwable, R > Result < L, R > of(
-    final CheckedSupplier< L, R > fn
+  public static <E extends Throwable, V> Result < E, V > of(
+    final ExtensibleCheckedSupplier<V, E> fn
   ) {
     try {
       return value(fn.get());
     } catch (RuntimeException e) {
       try {
-        return error((L) e);
+        return error((E) e);
       } catch (ClassCastException unused) {
         throw e;
       }
     } catch (Throwable e) {
-      return error((L) e);
+      return error((E) e);
     }
   }
 }

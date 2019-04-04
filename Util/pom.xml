@@ -126,6 +126,11 @@
       <artifactId>jackson-datatype-json-org</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>io.vulpine.lib</groupId>
+      <artifactId>Jackfish</artifactId>
+    </dependency>
+
   </dependencies>
 
 </project>

@@ -87,17 +87,6 @@ public class FunctionalInterfaces {
   }
 
   /**
-   * Defines a no-argument function that may throw a defined exception
-   *
-   * @param <E> type of the expected checked exception
-   * @param <T> type of function output
-   */
-  @FunctionalInterface
-  public interface CheckedSupplier<E extends Throwable, T> {
-    T get() throws E;
-  }
-
-  /**
    * Defines a consumer that may throw an exception
    *
    * @param <T> type of object being consumed
