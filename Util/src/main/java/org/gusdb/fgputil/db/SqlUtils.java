@@ -24,7 +24,9 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
+import org.gusdb.fgputil.db.stream.BlobValueInputStream;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;
 import org.gusdb.fgputil.iterator.Cursor;
 
 /**
@@ -507,7 +509,7 @@ public final class SqlUtils {
    * <li>{@link java.sql.PreparedStatement}</li>
    * <li>{@link java.sql.ResultSet}</li>
    * <li>{@link java.sql.Statement}</li>
-   * <li>{@link org.gusdb.fgputil.db.DatabaseResultStream}</li>
+   * <li>{@link org.gusdb.fgputil.db.stream.BlobValueInputStream}</li>
    * <li>{@link org.gusdb.fgputil.db.pool.DatabaseInstance}</li>
    * </ul>
    * 
@@ -522,8 +524,8 @@ public final class SqlUtils {
           if (wrap instanceof DatabaseInstance) {
             ((DatabaseInstance) wrap).close();
           }
-          if (wrap instanceof DatabaseResultStream) {
-            ((DatabaseResultStream) wrap).close();
+          if (wrap instanceof BlobValueInputStream) {
+            ((BlobValueInputStream) wrap).close();
           }
           if (wrap instanceof ResultSet) {
             if (!((ResultSet) wrap).isClosed()) ((ResultSet) wrap).close();
