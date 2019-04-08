@@ -84,7 +84,7 @@ public class ResultSetInputStream extends InputStream implements Wrapper {
 
   @Override
   public int read() throws IOException {
-    if (_rowBufferIndex >= _rowBuffer.length) {
+    while (_rowBufferIndex >= _rowBuffer.length) {
       // buffer "empty"; load next value
       _rowBufferIndex = 0;
       switch(_currentValueType) {
