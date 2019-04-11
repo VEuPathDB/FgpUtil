@@ -124,7 +124,7 @@ public class ResultSetInputStream extends InputStream implements Wrapper {
           return -1;
       }
     }
-    return _rowBuffer[_rowBufferIndex++];
+    return Byte.toUnsignedInt(_rowBuffer[_rowBufferIndex++]);
   }
 
   /**
