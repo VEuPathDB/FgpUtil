@@ -92,9 +92,7 @@ public class IteratingInputStream extends InputStream {
           return -1;
       }
     }
-    byte nextByte = _rowBuffer[_rowBufferIndex++];
-    LOG.info("Returning " + (char)nextByte);
-    return Byte.toUnsignedInt(nextByte);
+    return Byte.toUnsignedInt(_rowBuffer[_rowBufferIndex++]);
   }
 
 }
