@@ -1,16 +1,22 @@
 package org.gusdb.fgputil.iterator;
 
+import static org.gusdb.fgputil.AlphabetUtils.ALPHABET;
+import static org.gusdb.fgputil.AlphabetUtils.NUM_ALPHABET_REPEATS;
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.gusdb.fgputil.AlphabetUtils.AlphabetDataProvider;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.ListBuilder;
-import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class IterablesTest {
 
@@ -39,5 +45,14 @@ public class IterablesTest {
       index++;
     }
     assertEquals(CASE_1_DESIRED.length, index);
+  }
+
+  @Test
+  public void testIteratingStream() throws IOException {
+    InputStream in = new IteratingInputStream(new AlphabetDataProvider(NUM_ALPHABET_REPEATS));
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    IoUtil.transferStream(out, in);
+    byte[] written = out.toByteArray();
+    assertEquals(ALPHABET.length * NUM_ALPHABET_REPEATS, written.length);
   }
 }

@@ -11,10 +11,10 @@ import java.util.Date;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.DbColumnType;
-import org.gusdb.fgputil.db.stream.ResultSetInputStream.ResultSetToBytesConverter;
+import org.gusdb.fgputil.db.stream.ResultSetInputStream.ResultSetRowConverter;
 import org.json.JSONObject;
 
-public class ResultSetToJsonConverter implements ResultSetToBytesConverter {
+public class ResultSetToJsonConverter implements ResultSetRowConverter {
 
   @Override
   public byte[] getHeader() {

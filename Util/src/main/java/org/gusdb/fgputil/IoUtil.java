@@ -195,10 +195,14 @@ public class IoUtil {
       throws IOException {
     try {
       byte[] buffer = new byte[1024]; // send 1kb at a time
-      int bytesRead;
-      while ((bytesRead = inputStream.read(buffer)) != -1) {
+      int bytesRead = inputStream.read(buffer);
+      while (bytesRead != -1) {
         outputStream.write(buffer, 0, bytesRead);
+        bytesRead = inputStream.read(buffer);
+        LOG.info("Loaded " + bytesRead + " into buffer.");
+        LOG.info("Buffer contents: " + new String(buffer));
       }
+      outputStream.flush();
     }
     finally {
       // only close input stream; container will close output stream

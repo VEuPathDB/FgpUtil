@@ -1,7 +1,6 @@
 package org.gusdb.fgputil.db.stream;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,38 +14,29 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.iterator.IteratingInputStream;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 
-public class ResultSetInputStream extends InputStream implements Wrapper {
+public class ResultSetInputStream extends IteratingInputStream implements Wrapper {
 
-  public interface ResultSetToBytesConverter {
+  public interface ResultSetRowConverter {
 
     byte[] getHeader();
 
     byte[] getRowDelimiter();
 
-    byte[] getRow(ResultSet rs, ResultSetColumnInfo meta) throws SQLException;
+    byte[] getRow(ResultSet resultSet, ResultSetColumnInfo meta) throws SQLException;
 
     byte[] getFooter();
-  }
 
-  private enum CurrentValueType {
-    BEGIN, HEADER, ROW_DELIMETER, ROW, FOOTER, END
   }
 
   private final ResultSet _rs;
   private final Statement _stmt;
   private final Connection _conn;
-  private final ResultSetToBytesConverter _resultConverter;
-  private final ResultSetColumnInfo _columnInfo;
-  private final Iterator<byte[]> _rsIterator;
-
-  private CurrentValueType _currentValueType = CurrentValueType.BEGIN;
-  private byte[] _rowBuffer = new byte[0];
-  private int _rowBufferIndex = 0;
 
   public static ResultSetInputStream getResultSetStream(String sql, String queryName,
-      DataSource ds, ResultSetToBytesConverter converter) throws SQLException {
+      DataSource ds, ResultSetRowConverter converter) throws SQLException {
     boolean closeDbObjects = false;
     Connection conn = null;
     PreparedStatement stmt = null;
@@ -70,61 +60,31 @@ public class ResultSetInputStream extends InputStream implements Wrapper {
   }
 
   public ResultSetInputStream(ResultSet resultSet, Statement statement, Connection connection,
-      ResultSetToBytesConverter resultConverter) throws SQLException {
+      ResultSetRowConverter resultConverter) throws SQLException {
+    super(buildDataProvider(resultSet, resultConverter));
     _rs = resultSet;
     _stmt = statement;
     _conn = connection;
-    _resultConverter = resultConverter;
-    _columnInfo = new ResultSetColumnInfo(resultSet);
-    _rsIterator = IteratorUtil.toIterator(SqlUtils.toCursor(
-        resultSet, rs -> Functions.mapException(
-            () -> resultConverter.getRow(rs, _columnInfo),
-            sqle -> new RuntimeException(sqle))));
   }
 
-  @Override
-  public int read() throws IOException {
-    while (_rowBufferIndex >= _rowBuffer.length) {
-      // buffer "empty"; load next value
-      _rowBufferIndex = 0;
-      switch(_currentValueType) {
-        case BEGIN:
-          _rowBuffer = _resultConverter.getHeader();
-          _currentValueType = CurrentValueType.HEADER;
-          break;
-        case HEADER:
-          if (_rsIterator.hasNext()) {
-            _rowBuffer = _rsIterator.next();
-            _currentValueType = CurrentValueType.ROW;
-          }
-          else {
-            _rowBuffer = _resultConverter.getFooter();
-            _currentValueType = CurrentValueType.FOOTER;
-          }
-          break;
-        case ROW_DELIMETER:
-          _rowBuffer = _rsIterator.next();
-          _currentValueType = CurrentValueType.ROW;
-          break;
-        case ROW:
-          if (_rsIterator.hasNext()) {
-            _rowBuffer = _resultConverter.getRowDelimiter();
-            _currentValueType = CurrentValueType.ROW_DELIMETER;
-          }
-          else {
-            _rowBuffer = _resultConverter.getFooter();
-            _currentValueType = CurrentValueType.FOOTER;
-          }
-          break;
-        case FOOTER:
-          _rowBuffer = new byte[0];
-          _currentValueType = CurrentValueType.END;
-          break;
-        case END:
-          return -1;
+  private static DataProvider buildDataProvider(ResultSet resultSet,
+      ResultSetRowConverter resultConverter) throws SQLException {
+    ResultSetColumnInfo columnInfo = new ResultSetColumnInfo(resultSet);
+    return new DataProvider() {
+
+      // pass through methods
+      @Override public byte[] getHeader() { return resultConverter.getHeader(); }
+      @Override public byte[] getRowDelimiter() { return resultConverter.getRowDelimiter(); }
+      @Override public byte[] getFooter() { return resultConverter.getFooter(); }
+
+      @Override
+      public Iterator<byte[]> getRowIterator() {
+        return IteratorUtil.toIterator(SqlUtils.toCursor(
+            resultSet, rs -> Functions.mapException(
+                () -> resultConverter.getRow(rs, columnInfo),
+                sqle -> new RuntimeException(sqle))));
       }
-    }
-    return Byte.toUnsignedInt(_rowBuffer[_rowBufferIndex++]);
+    };
   }
 
   /**
