@@ -11,6 +11,7 @@ import java.util.Iterator;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.ResultSetColumnInfo;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.functional.Functions;
@@ -30,10 +31,6 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
     byte[] getFooter();
 
   }
-
-  private final ResultSet _rs;
-  private final Statement _stmt;
-  private final Connection _conn;
 
   public static ResultSetInputStream getResultSetStream(String sql, String queryName,
       DataSource ds, ResultSetRowConverter converter) throws SQLException {
@@ -59,6 +56,10 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
     }
   }
 
+  private final ResultSet _rs;
+  private final Statement _stmt;
+  private final Connection _conn;
+
   public ResultSetInputStream(ResultSet resultSet, Statement statement, Connection connection,
       ResultSetRowConverter resultConverter) throws SQLException {
     super(buildDataProvider(resultSet, resultConverter));
@@ -82,7 +83,7 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
         return IteratorUtil.toIterator(SqlUtils.toCursor(
             resultSet, rs -> Functions.mapException(
                 () -> resultConverter.getRow(rs, columnInfo),
-                sqle -> new RuntimeException(sqle))));
+                e -> new RuntimeException(e))));
       }
     };
   }

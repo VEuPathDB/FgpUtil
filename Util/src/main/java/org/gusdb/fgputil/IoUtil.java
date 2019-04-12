@@ -27,6 +27,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -196,17 +197,27 @@ public class IoUtil {
     try {
       byte[] buffer = new byte[1024]; // send 1kb at a time
       int bytesRead = inputStream.read(buffer);
+      logBuffer(buffer, bytesRead);
       while (bytesRead != -1) {
         outputStream.write(buffer, 0, bytesRead);
         bytesRead = inputStream.read(buffer);
-        LOG.info("Loaded " + bytesRead + " into buffer.");
-        LOG.info("Buffer contents: " + new String(buffer));
+        logBuffer(buffer, bytesRead);
       }
       outputStream.flush();
     }
     finally {
       // only close input stream; container will close output stream
       inputStream.close();
+    }
+  }
+
+  private static void logBuffer(byte[] buffer, int bytesRead) {
+    if (bytesRead == -1) {
+      LOG.info("End of stream");
+    }
+    else {
+      LOG.info("Loaded " + bytesRead + " into buffer.");
+      LOG.info("Buffer contents: " + new String(Arrays.copyOf(buffer, bytesRead)));
     }
   }
 

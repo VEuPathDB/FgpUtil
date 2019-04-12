@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.db.stream;
+package org.gusdb.fgputil.db;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,6 +8,13 @@ import java.util.ArrayList;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 
+/**
+ * Caches DB column index, name, and type from ResultSetMetaData.  Useful if
+ * this information need to be retained after the providing ResultSet or
+ * PreparedStatement must be closed.  Additional data may be added in the future.
+ * 
+ * @author rdoherty
+ */
 public class ResultSetColumnInfo extends ArrayList<TwoTuple<String, Integer>> {
 
   public ResultSetColumnInfo(ResultSet rs) throws SQLException {

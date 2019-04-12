@@ -11,6 +11,7 @@ import java.util.Date;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.DbColumnType;
+import org.gusdb.fgputil.db.ResultSetColumnInfo;
 import org.gusdb.fgputil.db.stream.ResultSetInputStream.ResultSetRowConverter;
 import org.json.JSONObject;
 
