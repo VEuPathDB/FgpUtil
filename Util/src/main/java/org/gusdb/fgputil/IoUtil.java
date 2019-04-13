@@ -195,7 +195,7 @@ public class IoUtil {
   public static void transferStream(OutputStream outputStream, InputStream inputStream)
       throws IOException {
     try {
-      byte[] buffer = new byte[1024]; // send 1kb at a time
+      byte[] buffer = new byte[10240]; // send 10kb at a time
       int bytesRead = inputStream.read(buffer);
       while (bytesRead != -1) {
         LOG.info("About to write. bytesRead=" + bytesRead);
@@ -231,7 +231,7 @@ public class IoUtil {
    */
   public static void transferStream(Writer writer, Reader reader) throws IOException {
     try {
-      char[] buffer = new char[1024]; // send 1kb at a time
+      char[] buffer = new char[10240]; // send 10kb at a time (depending on encoding)
       int bytesRead;
       while ((bytesRead = reader.read(buffer)) != -1) {
         writer.write(buffer, 0, bytesRead);
