@@ -197,6 +197,7 @@ public class IoUtil {
     try {
       byte[] buffer = new byte[10240]; // send 10kb at a time
       int bytesRead = inputStream.read(buffer);
+      logBuffer(buffer, bytesRead);
       while (bytesRead != -1) {
         LOG.info("About to write. bytesRead=" + bytesRead);
         outputStream.write(buffer, 0, bytesRead);
