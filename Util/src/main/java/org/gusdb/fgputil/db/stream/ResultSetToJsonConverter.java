@@ -33,13 +33,15 @@ public class ResultSetToJsonConverter implements ResultSetRowConverter {
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       DbColumnType colType = DbColumnType.getFromSqlType(meta.getColumnType(i));
       Object value = colType.getObject(rs, i, colType);
-      if (colType.equals(DbColumnType.BINARY_DATA) ||
-          colType.equals(DbColumnType.OTHER)) {
+      if (value == null) {
+        value = JSONObject.NULL;
+      }
+      else if (colType.equals(DbColumnType.BINARY_DATA) ||
+               colType.equals(DbColumnType.OTHER)) {
         throw new IllegalArgumentException("This converter cannot process BLOB or OTHER column types.");
       }
       else if (colType.equals(DbColumnType.DATE_TIME)) {
         value = new SimpleDateFormat(FormatUtil.STANDARD_DATETIME_FORMAT_DASH).format((Date)value);
-        //value = FormatUtil.formatDateTime((Date)value);
       }
       else if (colType.equals(DbColumnType.CLOB)) {
         try {
