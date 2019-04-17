@@ -197,12 +197,11 @@ public class IoUtil {
     try {
       byte[] buffer = new byte[10240]; // send 10kb at a time
       int bytesRead = inputStream.read(buffer);
-      logBuffer(buffer, bytesRead);
+      if (LOG.isDebugEnabled()) logBuffer(buffer, bytesRead);
       while (bytesRead != -1) {
-        LOG.info("About to write. bytesRead=" + bytesRead);
         outputStream.write(buffer, 0, bytesRead);
         bytesRead = inputStream.read(buffer);
-        logBuffer(buffer, bytesRead);
+        if (LOG.isDebugEnabled()) logBuffer(buffer, bytesRead);
       }
       outputStream.flush();
     }
@@ -214,11 +213,11 @@ public class IoUtil {
 
   private static void logBuffer(byte[] buffer, int bytesRead) {
     if (bytesRead == -1) {
-      LOG.info("End of stream");
+      LOG.debug("End of stream");
     }
     else {
-      LOG.info("Loaded " + bytesRead + " into buffer.");
-      LOG.info("Buffer contents: " + new String(Arrays.copyOf(buffer, bytesRead)));
+      LOG.debug("Loaded " + bytesRead + " into buffer.");
+      LOG.trace("Buffer contents: " + new String(Arrays.copyOf(buffer, bytesRead)));
     }
   }
 
