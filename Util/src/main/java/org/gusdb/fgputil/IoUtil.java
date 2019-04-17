@@ -27,6 +27,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -194,15 +195,29 @@ public class IoUtil {
   public static void transferStream(OutputStream outputStream, InputStream inputStream)
       throws IOException {
     try {
-      byte[] buffer = new byte[1024]; // send 1kb at a time
-      int bytesRead;
-      while ((bytesRead = inputStream.read(buffer)) != -1) {
+      byte[] buffer = new byte[10240]; // send 10kb at a time
+      int bytesRead = inputStream.read(buffer);
+      if (LOG.isDebugEnabled()) logBuffer(buffer, bytesRead);
+      while (bytesRead != -1) {
         outputStream.write(buffer, 0, bytesRead);
+        bytesRead = inputStream.read(buffer);
+        if (LOG.isDebugEnabled()) logBuffer(buffer, bytesRead);
       }
+      outputStream.flush();
     }
     finally {
       // only close input stream; container will close output stream
       inputStream.close();
+    }
+  }
+
+  private static void logBuffer(byte[] buffer, int bytesRead) {
+    if (bytesRead == -1) {
+      LOG.debug("End of stream");
+    }
+    else {
+      LOG.debug("Loaded " + bytesRead + " into buffer.");
+      LOG.trace("Buffer contents: " + new String(Arrays.copyOf(buffer, bytesRead)));
     }
   }
 
@@ -216,7 +231,7 @@ public class IoUtil {
    */
   public static void transferStream(Writer writer, Reader reader) throws IOException {
     try {
-      char[] buffer = new char[1024]; // send 1kb at a time
+      char[] buffer = new char[10240]; // send 10kb at a time (depending on encoding)
       int bytesRead;
       while ((bytesRead = reader.read(buffer)) != -1) {
         writer.write(buffer, 0, bytesRead);

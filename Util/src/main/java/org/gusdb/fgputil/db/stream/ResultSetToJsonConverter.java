@@ -10,10 +10,11 @@ import java.util.Date;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.DbColumnType;
-import org.gusdb.fgputil.db.stream.ResultSetInputStream.ResultSetToBytesConverter;
+import org.gusdb.fgputil.db.ResultSetColumnInfo;
+import org.gusdb.fgputil.db.stream.ResultSetInputStream.ResultSetRowConverter;
 import org.json.JSONObject;
 
-public class ResultSetToJsonConverter implements ResultSetToBytesConverter {
+public class ResultSetToJsonConverter implements ResultSetRowConverter {
 
   @Override
   public byte[] getHeader() {
@@ -31,8 +32,11 @@ public class ResultSetToJsonConverter implements ResultSetToBytesConverter {
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       DbColumnType colType = DbColumnType.getFromSqlType(meta.getColumnType(i));
       Object value = colType.getObject(rs, i, colType);
-      if (colType.equals(DbColumnType.BINARY_DATA) ||
-          colType.equals(DbColumnType.OTHER)) {
+      if (value == null) {
+        value = JSONObject.NULL;
+      }
+      else if (colType.equals(DbColumnType.BINARY_DATA) ||
+               colType.equals(DbColumnType.OTHER)) {
         throw new IllegalArgumentException("This converter cannot process BLOB or OTHER column types.");
       }
       else if (colType.equals(DbColumnType.DATE_TIME)) {

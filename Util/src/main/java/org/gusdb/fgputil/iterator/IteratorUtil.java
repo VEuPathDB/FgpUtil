@@ -100,8 +100,10 @@ public class IteratorUtil {
    * @return a read-only iterator facade over the passed cursor
    */
   public static <T> ReadOnlyIterator<T> toIterator(final Cursor<T> cursor) {
+
     final Wrapper<Boolean> storedItemPresent = new Wrapper<Boolean>().set(cursor.next());
     final Wrapper<T> storedItem = new Wrapper<T>().set(storedItemPresent.get() ? cursor.get() : null);
+
     return new ReadOnlyIterator<T>() {
       @Override
       public boolean hasNext() {
