@@ -55,11 +55,11 @@ public class AlphabetUtils {
     }
 
     @Override public byte[] getHeader() { return EMPTY_BYTES; }
-    @Override public byte[] getRowDelimiter() { return EMPTY_BYTES; }
+    @Override public byte[] getRecordDelimiter() { return EMPTY_BYTES; }
     @Override public byte[] getFooter() { return EMPTY_BYTES; }
 
     @Override
-    public Iterator<byte[]> getRowIterator() {
+    public Iterator<byte[]> getRecordIterator() {
       AtomicInteger numRemaining = new AtomicInteger(_numRepeats);
       return new Iterator<byte[]>() {
 

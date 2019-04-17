@@ -74,12 +74,12 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
     return new DataProvider() {
 
       // pass through methods
-      @Override public byte[] getHeader() { return resultConverter.getHeader(); }
-      @Override public byte[] getRowDelimiter() { return resultConverter.getRowDelimiter(); }
-      @Override public byte[] getFooter() { return resultConverter.getFooter(); }
+      @Override public byte[] getHeader()          { return resultConverter.getHeader(); }
+      @Override public byte[] getRecordDelimiter() { return resultConverter.getRowDelimiter(); }
+      @Override public byte[] getFooter()          { return resultConverter.getFooter(); }
 
       @Override
-      public Iterator<byte[]> getRowIterator() {
+      public Iterator<byte[]> getRecordIterator() {
         return IteratorUtil.toIterator(SqlUtils.toCursor(
             resultSet, rs -> Functions.mapException(
                 () -> resultConverter.getRow(rs, columnInfo),

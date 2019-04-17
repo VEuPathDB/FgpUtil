@@ -14,85 +14,118 @@ public class IteratingInputStream extends InputStream {
 
     byte[] getHeader();
 
-    byte[] getRowDelimiter();
+    byte[] getRecordDelimiter();
 
-    Iterator<byte[]> getRowIterator();
+    Iterator<byte[]> getRecordIterator();
 
     byte[] getFooter();
 
   }
 
   private enum CurrentValueType {
-    BEGIN, HEADER, ROW_DELIMETER, ROW, FOOTER, END
+    BEGIN, HEADER, RECORD_DELIMETER, RECORD, FOOTER, END
   }
 
   private final byte[] _header;
   private final byte[] _footer;
-  private final Iterator<byte[]> _rowIterator;
-  private final byte[] _rowDelimiter;
+  private final Iterator<byte[]> _recordIterator;
+  private final byte[] _recordDelimiter;
 
-  // current result row (0 until a row is being returned); will remain the
-  // 1-based index of the row until the next row is loaded into the buffer.
-  private int _rowNum = 0;
+  // current record (0 until a record is being returned); will remain the
+  // 1-based index of the record until the next record is loaded into the buffer.
+  private int _recordNum = 0;
 
   private CurrentValueType _currentValueType = CurrentValueType.BEGIN;
-  private byte[] _rowBuffer = new byte[0];
-  private int _rowBufferIndex = 0;
+  private byte[] _recordBuffer = new byte[0];
+  private int _recordBufferIndex = 0;
 
   public IteratingInputStream(DataProvider dataProvider) {
     _header = dataProvider.getHeader();
     _footer = dataProvider.getFooter();
-    _rowDelimiter = dataProvider.getRowDelimiter();
-    _rowIterator = dataProvider.getRowIterator();
+    _recordDelimiter = dataProvider.getRecordDelimiter();
+    _recordIterator = dataProvider.getRecordIterator();
   }
 
   @Override
   public int read() throws IOException {
-    while (_rowBufferIndex >= _rowBuffer.length) {
+    while (_recordBufferIndex >= _recordBuffer.length) {
       // buffer "empty"; load next value
-      _rowBufferIndex = 0;
+      _recordBufferIndex = 0;
       switch(_currentValueType) {
         case BEGIN:
-          _rowBuffer = _header;
+          _recordBuffer = _header;
           _currentValueType = CurrentValueType.HEADER;
           break;
         case HEADER:
-          if (_rowIterator.hasNext()) {
-            _rowBuffer = _rowIterator.next();
-            _currentValueType = CurrentValueType.ROW;
-            _rowNum++;
-            if ((_rowNum > 44350)) LOG.info("Loaded row " + _rowNum + ": " + new String(_rowBuffer));
+          if (_recordIterator.hasNext()) {
+            _recordBuffer = _recordIterator.next();
+            _currentValueType = CurrentValueType.RECORD;
+            _recordNum++;
           }
           else {
-            _rowBuffer = _footer;
+            _recordBuffer = _footer;
             _currentValueType = CurrentValueType.FOOTER;
           }
           break;
-        case ROW_DELIMETER:
-          _rowBuffer = _rowIterator.next();
-          _currentValueType = CurrentValueType.ROW;
-          _rowNum++;
-          if ((_rowNum > 44350)) LOG.info("Loaded row " + _rowNum + ": " + new String(_rowBuffer));
+        case RECORD_DELIMETER:
+          _recordBuffer = _recordIterator.next();
+          _currentValueType = CurrentValueType.RECORD;
+          _recordNum++;
           break;
-        case ROW:
-          if (_rowIterator.hasNext()) {
-            _rowBuffer = _rowDelimiter;
-            _currentValueType = CurrentValueType.ROW_DELIMETER;
+        case RECORD:
+          if (_recordIterator.hasNext()) {
+            _recordBuffer = _recordDelimiter;
+            _currentValueType = CurrentValueType.RECORD_DELIMETER;
           }
           else {
-            _rowBuffer = _footer;
+            LOG.info("Out of rows. Using footer.");
+            _recordBuffer = _footer;
             _currentValueType = CurrentValueType.FOOTER;
           }
           break;
         case FOOTER:
-          _rowBuffer = new byte[0];
+          _recordBuffer = new byte[0];
           _currentValueType = CurrentValueType.END;
           break;
         case END:
+          LOG.info("Streamed " + _recordNum + " records.");
           return -1;
       }
     }
-    return Byte.toUnsignedInt(_rowBuffer[_rowBufferIndex++]);
+    return Byte.toUnsignedInt(_recordBuffer[_recordBufferIndex++]);
   }
 
+  /*
+  @Override
+  public int read(byte b[], int off, int len) throws IOException {
+    if (b == null) {
+        throw new NullPointerException();
+    } else if (off < 0 || len < 0 || len > b.length - off) {
+        throw new IndexOutOfBoundsException();
+    } else if (len == 0) {
+        return 0;
+    }
+
+    int c = read();
+    if (c == -1) {
+        return -1;
+    }
+    b[off] = (byte)c;
+
+    int i = 1;
+    try {
+        for (; i < len ; i++) {
+            c = read();
+            if (c == -1) {
+                break;
+            }
+            b[off + i] = (byte)c;
+        }
+    }
+    catch (IOException ee) {
+      LOG.error("Problem reading", ee);
+    }
+    return i;
+  }
+  */
 }
