@@ -253,7 +253,7 @@ public class IoUtil {
   public static byte[] serialize(Serializable obj) throws IOException {
     try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
          ObjectOutputStream objStream = new ObjectOutputStream(byteStream)) {
-      objStream.writeObject(obj);
+      objStream.writeUnshared(obj);
       return byteStream.toByteArray();
     }
   }
@@ -270,7 +270,7 @@ public class IoUtil {
   public static Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
     try (ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
          ObjectInputStream objStream = new ObjectInputStream(byteStream)) {
-      return objStream.readObject();
+      return objStream.readUnshared();
     }
   }
 
