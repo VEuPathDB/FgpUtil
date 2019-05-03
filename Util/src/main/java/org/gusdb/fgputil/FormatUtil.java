@@ -347,7 +347,6 @@ public class FormatUtil {
     return builder.toString();
   }
 
-
   /**
    * Log4j only accepts logger names using dot delimiters, but Class.getName()
    * returns "package.InnerClass$OuterClass", which is not referenceable by
