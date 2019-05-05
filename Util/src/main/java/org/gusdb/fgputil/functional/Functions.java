@@ -520,4 +520,15 @@ public class Functions {
       return Optional.empty();
     }
   }
+
+  /**
+   * Calls the passed function with the passed value and returns true if no exception is thrown, else false.
+   * 
+   * @param function function to be called
+   * @param inputValue value to pass to the function
+   * @return false if exception thrown, else true
+   */
+  public static <T> boolean executesWithoutException(Function<T, ?> function, T inputValue) {
+    try { function.apply(inputValue); return true; } catch(Exception e) { return false; }
+  }
 }
