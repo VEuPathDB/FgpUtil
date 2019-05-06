@@ -6,10 +6,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.Functions;
@@ -347,7 +349,6 @@ public class FormatUtil {
     return builder.toString();
   }
 
-
   /**
    * Log4j only accepts logger names using dot delimiters, but Class.getName()
    * returns "package.InnerClass$OuterClass", which is not referenceable by
@@ -359,5 +360,13 @@ public class FormatUtil {
    */
   public static String getInnerClassLog4jName(Class<?> clazz) {
     return clazz.getName().replace("$", ".");
+  }
+
+  /**
+   * @param values an array of enum values
+   * @return readable array-style display of the values
+   */
+  public static <T extends Enum<T>> String enumValuesAsString(T[] values) {
+    return "[ " + Arrays.stream(values).map(Enum::name).collect(Collectors.joining(", ")) + " ]";
   }
 }
