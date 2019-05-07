@@ -301,14 +301,6 @@
         <artifactId>commons-dbcp2</artifactId>
         <version>2.2.0</version>
       </dependency>
-      <!-- Might need this in ApiCommon when we convert to maven
-      <dependency>
-        <groupId>com.oracle</groupId>
-        <artifactId>ojdbc6</artifactId>
-        <version>11.2.0.4</version>
-        <scope>provided</scope>
-      </dependency>
-      -->
 
       <!-- JAX-RS / RESTful Web Services -->
       <dependency>
