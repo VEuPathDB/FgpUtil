@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.db;
+package org.gusdb.fgputil.db.stream;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Wrapper;
 
+import org.gusdb.fgputil.db.SqlUtils;
+
 /**
  * Convenience class to wrap a binary data field in an input stream.  Doing so
  * enables the caller to stream a field of a result set to a destination using
@@ -16,7 +18,7 @@ import java.sql.Wrapper;
  * 
  * @author rdoherty
  */
-public class DatabaseResultStream extends InputStream implements Wrapper {
+public class BlobValueInputStream extends InputStream implements Wrapper {
 
   private Connection _connection;
   private Statement _statement;
@@ -33,7 +35,7 @@ public class DatabaseResultStream extends InputStream implements Wrapper {
    * @param dataFieldName name of field containing binary data
    * @throws SQLException if column name is invalid or other DB problem occurs
    */
-  public DatabaseResultStream(Connection connection, Statement statement, ResultSet resultSet, String dataFieldName)
+  public BlobValueInputStream(Connection connection, Statement statement, ResultSet resultSet, String dataFieldName)
       throws SQLException {
     _connection = connection;
     _statement = statement;

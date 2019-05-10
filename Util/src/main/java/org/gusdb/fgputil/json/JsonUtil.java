@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -71,22 +70,6 @@ public class JsonUtil {
     return result;
   }
 
-  public static JSONObject toJsonObject(Map<String,String> map) {
-    JSONObject json = new JSONObject();
-    for (Entry<String,String> entry : map.entrySet()) {
-      json.put(entry.getKey(), entry.getValue());
-    }
-    return json;
-  }
-
-  public static JSONArray toJsonStringArray(String[] strings) {
-    JSONArray json = new JSONArray();
-    for (String s : strings) {
-      json.put(s);
-    }
-    return json;
-  }
-
   /**
    * Serializes the contents of the JSONObject to a String.  Unlike the
    * toString() method of JSONObject, this function will output JSONObjects in
@@ -126,7 +109,7 @@ public class JsonUtil {
   public static Set<String> getKeys(JSONObject obj) {
     String[] keys = JSONObject.getNames(obj);
     return (keys == null ? Collections.emptySet() :
-      new HashSet<String>(Arrays.asList(keys)));
+      new HashSet<>(Arrays.asList(keys)));
   }
 
   /**
@@ -140,7 +123,6 @@ public class JsonUtil {
    *
    * @param jsonObj the JSON object
    * @param out string builder to write to
-   * @throws JSONException
    */
   // NOTE: this method was taken and modified from json.org's JSONObject
   private static void write(JSONObject jsonObj, StringBuilder out) throws JSONException {
@@ -176,7 +158,6 @@ public class JsonUtil {
    *
    * @param jsonArr the JSON array
    * @param out string builder to write to
-   * @throws JSONException
    */
   // NOTE: this method was taken and modified from json.org's JSONArray
   private static void write(JSONArray jsonArr, StringBuilder out) throws JSONException {
@@ -200,7 +181,7 @@ public class JsonUtil {
 
   // NOTE: this method was taken and modified from json.org's JSONObject
   private static void writeValue(Object value, StringBuilder out) throws JSONException {
-    if (value == null || value.equals(null)) {
+    if (value == null) {
       out.append("null");
     }
     else if (value instanceof JSONObject) {
@@ -264,7 +245,7 @@ public class JsonUtil {
    * Creates a deep clone of the passed JSON array and returns it.  Currently this implementation is rather
    * expensive since it serializes the array and then parses it again.  TODO: make more efficient
    * 
-   * @param json arrat to clone
+   * @param json array to clone
    * @return clone
    */
   public static JSONArray clone(JSONArray json) {
