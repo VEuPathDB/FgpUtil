@@ -156,8 +156,6 @@ public abstract class DBPlatform {
     
     public abstract String getNvlFunctionName();
 
-    public abstract boolean shouldPerformPreCloseCommit(boolean connectionAutoCommitValue);
-
     //#########################################################################
     // Common methods are platform independent
     //#########################################################################
