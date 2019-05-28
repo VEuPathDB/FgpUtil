@@ -61,7 +61,13 @@ public class ConnectionWrapper implements Connection {
     }
 
     // committing will cause op completion on the DB side (e.g. of in-use DB links)
-    if (_underlyingPlatform.shouldPerformPreCloseCommit(_underlyingConnection.getAutoCommit())) {
+    if (_underlyingConnection.getAutoCommit()) {
+      // must turn auto-commit off to explicitly commit per JDBC spec
+      _underlyingConnection.setAutoCommit(false);
+      _underlyingConnection.commit();
+      _underlyingConnection.setAutoCommit(true);
+    }
+    else {
       _underlyingConnection.commit();
     }
 
