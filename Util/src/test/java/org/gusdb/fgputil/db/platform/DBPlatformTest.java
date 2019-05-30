@@ -18,6 +18,7 @@ public class DBPlatformTest {
     @Override public short getMaxIdle() { return 20; }
     @Override public short getMinIdle() { return 5; }
     @Override public long getMaxWait() { return 2000; }
+    @Override public int getDefaultFetchSize() { return 0; }
     @Override public boolean isShowConnections() { return true; }
     @Override public long getShowConnectionsInterval() { return 5; }
     @Override public long getShowConnectionsDuration() { return 30; }

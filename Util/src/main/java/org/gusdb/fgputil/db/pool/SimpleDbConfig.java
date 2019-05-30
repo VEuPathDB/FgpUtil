@@ -28,9 +28,10 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
         final String username, final String password) {
       return create(dbType, connectionUrl, username, password, (short)1);
     }
-    
+
     /**
-     * Creates a simple database configuration for a connection pool of the desired size.
+     * Creates a simple database configuration for a connection pool of the
+     * desired size and the standard default fetch size (JDBC driver will decide).
      * 
      * @param dbType platform of the DB to connect to
      * @param connectionUrl connection URL
@@ -41,12 +42,30 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
      */
     public static SimpleDbConfig create(final SupportedPlatform dbType, final String connectionUrl,
         final String username, final String password, final short connectionPoolSize) {
+      return create(dbType, connectionUrl, username, password, connectionPoolSize, 0);
+    }
+
+    /**
+     * Creates a simple database configuration for a connection pool of the
+     * desired size with a desired default fetch size.
+     * 
+     * @param dbType platform of the DB to connect to
+     * @param connectionUrl connection URL
+     * @param username login name
+     * @param password login password
+     * @param connectionPoolSize size of connection pool
+     * @param defaultFetchSize fetch size "hint" to apply to statements when created
+     * @return configuration to create a database instance
+     */
+    public static SimpleDbConfig create(final SupportedPlatform dbType, final String connectionUrl,
+        final String username, final String password, final short connectionPoolSize, final int defaultFetchSize) {
       return new SimpleDbConfig() {
         @Override public SupportedPlatform getPlatformEnum() { return dbType; }
         @Override public short getConnectionPoolSize()       { return connectionPoolSize; }
         @Override public String getLogin()                   { return username; }
         @Override public String getPassword()                { return password; }
         @Override public String getConnectionUrl()           { return connectionUrl; }
+        @Override public int getDefaultFetchSize()           { return defaultFetchSize; }
       };
     }
   
