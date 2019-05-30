@@ -6,7 +6,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.Tuples.ThreeTuple;
 
 /**
  * Caches DB column index, name, and type from ResultSetMetaData.  Useful if
@@ -15,7 +15,7 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
  * 
  * @author rdoherty
  */
-public class ResultSetColumnInfo extends ArrayList<TwoTuple<String, Integer>> {
+public class ResultSetColumnInfo extends ArrayList<ThreeTuple<String, Integer, Integer>> {
 
   public ResultSetColumnInfo(ResultSet rs) throws SQLException {
     init(rs.getMetaData());
@@ -27,12 +27,47 @@ public class ResultSetColumnInfo extends ArrayList<TwoTuple<String, Integer>> {
 
   private void init(ResultSetMetaData metaData) throws SQLException {
     for (int i = 1; i <= metaData.getColumnCount(); i++) {
-      add(new TwoTuple<>(metaData.getColumnLabel(i), metaData.getColumnType(i)));
+      add(new ThreeTuple<>(metaData.getColumnLabel(i), metaData.getColumnType(i), metaData.getPrecision(i)));
     }
   }
 
   public int getColumnCount() {
     return size();
+  }
+
+  /**
+   * @param columnIndex index of column for which size is needed
+   * @return estimated size in bytes of the column referred to by the passed index
+   */
+  public int getEstimatedColumnSize(int columnIndex) {
+    switch(DbColumnType.getFromSqlType(getColumnType(columnIndex))) {
+      case BINARY_DATA:
+        return getPrecision(columnIndex); // number of bytes of binary data
+      case BOOLEAN:
+        return 1; // booleans are little
+      case CLOB:
+        return 1; // CLOBs will likely be streamed separately
+      case DATE_TIME:
+        return getPrecision(columnIndex) * 2; // number of chars of string representation
+      case DOUBLE:
+        return 8; // eight bytes per double
+      case LONG_INT:
+        return 8; // eight bytes per long; assume value fits in long
+      case OTHER:
+        return 1; // ??
+      case STRING:
+        return getPrecision(columnIndex) * 2; // number of chars allowed in string
+      default:
+        return 1; // ??
+    }
+  }
+
+  public int getEstimatedRowSize() {
+    return stream().map(col -> col.getThird()).mapToInt(Integer::intValue).sum();
+  }
+
+  private int getPrecision(int columnIndex) {
+    return get(columnIndex - 1).getThird();
   }
 
   public int getColumnType(int columnIndex) {
