@@ -33,7 +33,7 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
   }
 
   public static ResultSetInputStream getResultSetStream(String sql, String queryName,
-      DataSource ds, ResultSetRowConverter converter) throws SQLException {
+      DataSource ds, int fetchSize, ResultSetRowConverter converter) throws SQLException {
     boolean closeDbObjects = false;
     Connection conn = null;
     PreparedStatement stmt = null;
@@ -41,6 +41,7 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
       long startTime = System.currentTimeMillis();
       conn = ds.getConnection();
       stmt = conn.prepareStatement(sql);
+      stmt.setFetchSize(fetchSize);
       ResultSet rs = stmt.executeQuery();
       QueryLogger.logStartResultsProcessing(sql, queryName, startTime, rs);
       return new ResultSetInputStream(rs, stmt, conn, converter);
@@ -93,6 +94,7 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
    */
   @Override
   public void close() throws IOException {
+    QueryLogger.logEndResultsProcessing(_rs);
     SqlUtils.closeQuietly(_rs, _stmt, _conn);
   }
 
