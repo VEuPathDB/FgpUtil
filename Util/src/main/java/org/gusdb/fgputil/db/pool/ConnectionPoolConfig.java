@@ -13,6 +13,7 @@ public interface ConnectionPoolConfig {
 
   public boolean getDefaultAutoCommit();
   public boolean getDefaultReadOnly();
+  public int getDefaultFetchSize();
   
   public short getMaxActive();
   public short getMaxIdle();
