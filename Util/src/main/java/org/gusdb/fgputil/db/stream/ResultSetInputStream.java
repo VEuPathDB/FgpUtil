@@ -61,7 +61,7 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
   private final Statement _stmt;
   private final Connection _conn;
 
-  public ResultSetInputStream(ResultSet resultSet, Statement statement, Connection connection,
+  private ResultSetInputStream(ResultSet resultSet, Statement statement, Connection connection,
       ResultSetRowConverter resultConverter) throws SQLException {
     super(buildDataProvider(resultSet, resultConverter));
     _rs = resultSet;
