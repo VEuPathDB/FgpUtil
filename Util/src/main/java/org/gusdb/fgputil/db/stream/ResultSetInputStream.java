@@ -32,6 +32,20 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
 
   }
 
+  /**
+   * Creates a ResultSetInputStream by running the passed SQL (uses queryName as
+   * name of this query in SQLLogger) against the passed data source and
+   * transforming the result using the passed row converter.  If fetchSize
+   * passed is greater than zero, applies it to the statement before execution.
+   * 
+   * @param sql SQL query to run
+   * @param queryName name of query (applied in SQLLogger)
+   * @param ds data source against which to run query
+   * @param fetchSize fetch size to apply (ignored if value is <=0)
+   * @param converter row converter to transform data to bytes
+   * @return the created stream
+   * @throws SQLException if unable to establish connection or run query
+   */
   public static ResultSetInputStream getResultSetStream(String sql, String queryName,
       DataSource ds, int fetchSize, ResultSetRowConverter converter) throws SQLException {
     boolean closeDbObjects = false;
@@ -41,7 +55,9 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
       long startTime = System.currentTimeMillis();
       conn = ds.getConnection();
       stmt = conn.prepareStatement(sql);
-      stmt.setFetchSize(fetchSize);
+      if (fetchSize > 0) {
+        stmt.setFetchSize(fetchSize);
+      }
       ResultSet rs = stmt.executeQuery();
       QueryLogger.logStartResultsProcessing(sql, queryName, startTime, rs);
       return new ResultSetInputStream(rs, stmt, conn, converter);
