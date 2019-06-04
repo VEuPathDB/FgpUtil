@@ -13,7 +13,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 /**
  * Provides a base class for DB-vendor-specific interfaces.  This allows calling
  * code to make requests of the database without knowing the underlying vendor.
- * 
+ *
  * @author Jerric Gao
  * @author Ryan Doherty
  */
@@ -27,18 +27,18 @@ public abstract class DBPlatform {
     //#########################################################################
     // Platform-related static helper functions
     //#########################################################################
-    
+
     /**
      * Normalize the schema name.  If not empty, a dot will be appended to the
      * end of it.
-     * 
+     *
      * @param schema schema name
      * @return normalized schema
      */
     public static String normalizeSchema(String schema) {
         if (schema == null) return "";
         schema = schema.trim().toLowerCase();
-        if (schema.length() > 0 && !schema.endsWith(".")) schema += ".";
+        if (!schema.isEmpty() && !schema.endsWith(".")) schema += ".";
         return schema;
     }
 
@@ -67,16 +67,16 @@ public abstract class DBPlatform {
     public abstract String getBlobDataType();
 
     public abstract int getBlobSqlType();
-    
+
     public abstract String getDateDataType();
 
     public abstract String getMinusOperator();
-    
+
     public abstract int getBooleanType();
 
     public abstract void createSequence(DataSource dataSource, String sequence, int start,
             int increment) throws SQLException;
-    
+
     public abstract String getClobData(ResultSet rs, String columnName)
             throws SQLException;
 
@@ -86,7 +86,7 @@ public abstract class DBPlatform {
      * 1-based (i.e. first index is 1) and the query will select the records
      * inclusively; thus the range is [startIndex, endIndex].  If all remaining
      * records are desired, pass a negative value for endIndex.
-     * 
+     *
      * @param sql SQL to wrap
      * @param startIndex 1-based start index (inclusive)
      * @param endIndex end index (inclusive), or a negative value for all records
@@ -96,7 +96,7 @@ public abstract class DBPlatform {
 
     /**
      * Returns whether the given table exists
-     * 
+     *
      * @param dataSource data source to query
      * @param schema schema to check
      * @param tableName name of table to check
@@ -112,17 +112,17 @@ public abstract class DBPlatform {
             throws SQLException;
 
     public abstract void disableStatistics(DataSource dataSource, String schema, String tableName) throws SQLException;
-    
+
     public abstract void computeThenLockStatistics(DataSource dataSource, String schema, String tableName) throws SQLException;
 
     public abstract String getDriverClassName();
-    
+
     public abstract String getValidationQuery();
 
     /**
      * This method consults the database and checks whether any insert, update, or delete
      * statements have been executed on this transaction but not yet committed.
-     * 
+     *
      * @param c connection to check
      * @return true if uncommitted operations have been performed; else false
      * @throws SQLException if error occurs while attempting determination (also if permission denied)
@@ -132,8 +132,8 @@ public abstract class DBPlatform {
         throws SQLException, UnsupportedOperationException;
 
     /**
-     * 
-     * 
+     *
+     *
      * @param dataSource data source to use
      * @param schema schema name. The schema cannot be empty. If you are searching
      *        in a local schema, the login user name should be used.
@@ -143,17 +143,17 @@ public abstract class DBPlatform {
      */
     public abstract String[] queryTableNames(DataSource dataSource, String schema, String pattern)
             throws SQLException;
-    
+
     public abstract String getDummyTable();
 
     public abstract String getResizeColumnSql(String tableName, String column, int size);
-    
+
     public abstract String getDefaultSchema(String login);
-    
+
     public abstract String getRowNumberColumn();
-    
+
     public abstract String prepareExpressionList(String[] values);
-    
+
     public abstract String getNvlFunctionName();
 
     //#########################################################################

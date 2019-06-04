@@ -6,7 +6,7 @@ import org.json.JSONObject;
 
 public class JsonType {
 
-  public static enum ValueType {
+  public enum ValueType {
     OBJECT,
     ARRAY,
     STRING,
@@ -15,7 +15,7 @@ public class JsonType {
     NULL;
   }
 
-  public static enum NumberSubtype {
+  public enum NumberSubtype {
     LONG,
     DOUBLE,
     NAN;
@@ -23,7 +23,7 @@ public class JsonType {
 
   private static final String PARSE_ERROR_MSG = "Passed string is not parsable into a JSON value: ";
 
-  private Object _object = null;
+  private Object _object;
   private ValueType _type;
   private NumberSubtype _numberSubtype;
 

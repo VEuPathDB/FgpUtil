@@ -1,27 +1,32 @@
 package org.gusdb.fgputil.json;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.gusdb.fgputil.functional.Result;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONString;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
+import java.util.*;
 
 public class JsonUtil {
 
   // Singular configurable instance of jackson's object <-> json mapper.
   public static final ObjectMapper Jackson = new ObjectMapper()
-      .registerModule(new JsonOrgModule());
+    // Auto-mapping constructor param names to json props
+    .registerModule(new ParameterNamesModule())
+    // Optional type support
+    .registerModule(new Jdk8Module())
+    // JSR-310 date support
+    .registerModule(new JavaTimeModule())
+    // org.json compatibility
+    .registerModule(new JsonOrgModule());
 
   private JsonUtil() {}
 
@@ -280,6 +285,15 @@ public class JsonUtil {
     }
   }
 
+  public static <T> Result<Exception, T> jsonToGeneric(JSONArray json,
+      TypeReference<T> type) {
+    try {
+      return Result.value(Jackson.convertValue(json, type));
+    } catch (Exception e) {
+      return Result.error(e);
+    }
+  }
+
   /**
    * Attempt to represent an arbitrary object as a JSON string.
    *
@@ -302,9 +316,10 @@ public class JsonUtil {
    *
    * @param any Object to convert to JSON
    *
-   * @return A Result containing either the JSONObject representation of the
-   *         given object, or if the object could not be convrted, the Exception
-   *         that was thrown when attempting the conversion.
+   * @return
+   *   A Result containing either the JSONObject representation of the given
+   *   object, or if the object could not be converted, the Exception that was
+   *   thrown when attempting the conversion.
    */
   public static Result<Exception, JSONObject> toJSONObject(Object any) {
     try {
@@ -312,5 +327,9 @@ public class JsonUtil {
     } catch (Exception e) {
       return Result.error(e);
     }
+  }
+
+  public static JsonNode toJsonNode(Object any) {
+    return Jackson.convertValue(any, JsonNode.class);
   }
 }

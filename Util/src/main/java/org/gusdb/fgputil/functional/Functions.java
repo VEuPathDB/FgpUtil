@@ -10,10 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
@@ -523,7 +520,7 @@ public class Functions {
 
   /**
    * Calls the passed function with the passed value and returns true if no exception is thrown, else false.
-   * 
+   *
    * @param function function to be called
    * @param inputValue value to pass to the function
    * @return false if exception thrown, else true

@@ -39,11 +39,6 @@ public class PostgreSQL extends DBPlatform {
     return "SELECT 'ok'";
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#createSequence(java.lang.String, int, int)
-   */
   @Override
   public void createSequence(DataSource dataSource, String sequence, int start, int increment)
       throws SQLException {
@@ -56,31 +51,16 @@ public class PostgreSQL extends DBPlatform {
     SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-create-sequence");
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getBooleanDataType()
-   */
   @Override
   public String getBooleanDataType() {
     return "boolean";
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getClobData(java.sql.ResultSet, java.lang.String)
-   */
   @Override
   public String getClobData(ResultSet rs, String columnName) throws SQLException {
     return rs.getString(columnName);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getClobDataType()
-   */
   @Override
   public String getClobDataType() {
     return "text";
@@ -96,21 +76,11 @@ public class PostgreSQL extends DBPlatform {
     return Types.LONGVARBINARY;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getMinusOperator()
-   */
   @Override
   public String getMinusOperator() {
     return "EXCEPT";
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String, java.lang.String)
-   */
   @Override
   public long getNextId(DataSource dataSource, String schema, String table) throws SQLException {
     schema = normalizeSchema(schema);
@@ -121,11 +91,6 @@ public class PostgreSQL extends DBPlatform {
     return id;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String, java.lang.String)
-   */
   @Override
   public String getNextIdSqlExpression(String schema, String table) {
     schema = normalizeSchema(schema);
@@ -136,21 +101,11 @@ public class PostgreSQL extends DBPlatform {
     return sql.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getNumberDataType(int)
-   */
   @Override
   public String getNumberDataType(int size) {
     return "NUMERIC(" + size + ")";
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String, int, int)
-   */
   @Override
   public String getPagedSql(String sql, int startIndex, int endIndex, boolean includeRowIndex) {
     String rowIndex = includeRowIndex? ", " + getRowNumberColumn() + " as row_index " : "";
@@ -163,11 +118,6 @@ public class PostgreSQL extends DBPlatform {
     return buffer.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getStringDataType(int)
-   */
   @Override
   public String getStringDataType(int size) {
     return "VARCHAR(" + size + ")";
@@ -193,41 +143,21 @@ public class PostgreSQL extends DBPlatform {
     return (count > 0);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getDateDataType()
-   */
   @Override
   public String getDateDataType() {
     return "TIMESTAMP";
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getFloatDataType(int)
-   */
   @Override
   public String getFloatDataType(int size) {
     return "FLOAT(" + size + ")";
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#convertBoolean(boolean)
-   */
   @Override
   public Boolean convertBoolean(boolean value) {
     return value;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#dropTable(java.lang.String, java.lang.String)
-   */
   @Override
   public void dropTable(DataSource dataSource, String schema, String table, boolean purge)
       throws SQLException {
@@ -239,11 +169,6 @@ public class PostgreSQL extends DBPlatform {
     SqlUtils.executeUpdate(dataSource, sql, "wdk-drop-table" + table);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String, java.lang.String)
-   */
   @Override
   public void disableStatistics(DataSource dataSource, String schema, String tableName) {
     // do nothing in PSQL.
@@ -255,11 +180,6 @@ public class PostgreSQL extends DBPlatform {
   }
 
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getTables(java.lang.String, java.lang.String)
-   */
   @Override
   public String[] queryTableNames(DataSource dataSource, String schema, String pattern) throws SQLException {
     String sql = "SELECT tablename FROM pg_tables WHERE schemaname = '" + schema + "' AND tablename LIKE '" +

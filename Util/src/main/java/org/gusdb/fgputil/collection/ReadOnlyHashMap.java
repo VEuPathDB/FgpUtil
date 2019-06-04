@@ -73,5 +73,4 @@ public class ReadOnlyHashMap<K,V> implements ReadOnlyMap<K,V> {
   public V get(Object key) {
     return _map.get(key);
   }
-
 }

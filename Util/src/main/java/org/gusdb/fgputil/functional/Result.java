@@ -134,7 +134,10 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
    * @return a new result of either the existing value or the new error type.
    */
   public <N extends Throwable> Result<N, V> mapError(final Function<E, N> fn) {
-    return (Result<N, V>) super.mapLeft(fn);
+    return isError()
+      ? Result.error(fn.apply(getLeft()))
+      : Result.value(getRight());
+
   }
 
   /**
@@ -147,7 +150,9 @@ public class Result <E extends Throwable, V> extends Either <E, V> {
    * @return a new result of either the existing error or the new value type.
    */
   public <N> Result<E, N> mapValue(final Function<V, N> fn) {
-    return (Result<E, N>) super.mapRight(fn);
+    return isValue()
+      ? Result.value(fn.apply(getRight()))
+      : Result.error(getLeft());
   }
 
   /**
