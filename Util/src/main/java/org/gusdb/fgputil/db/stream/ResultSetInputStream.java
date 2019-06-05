@@ -32,8 +32,22 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
 
   }
 
+  /**
+   * Creates a ResultSetInputStream by running the passed SQL (uses queryName as
+   * name of this query in SQLLogger) against the passed data source and
+   * transforming the result using the passed row converter.  If fetchSize
+   * passed is greater than zero, applies it to the statement before execution.
+   * 
+   * @param sql SQL query to run
+   * @param queryName name of query (applied in SQLLogger)
+   * @param ds data source against which to run query
+   * @param fetchSize fetch size to apply (ignored if value is <=0)
+   * @param converter row converter to transform data to bytes
+   * @return the created stream
+   * @throws SQLException if unable to establish connection or run query
+   */
   public static ResultSetInputStream getResultSetStream(String sql, String queryName,
-      DataSource ds, ResultSetRowConverter converter) throws SQLException {
+      DataSource ds, int fetchSize, ResultSetRowConverter converter) throws SQLException {
     boolean closeDbObjects = false;
     Connection conn = null;
     PreparedStatement stmt = null;
@@ -41,6 +55,9 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
       long startTime = System.currentTimeMillis();
       conn = ds.getConnection();
       stmt = conn.prepareStatement(sql);
+      if (fetchSize > 0) {
+        stmt.setFetchSize(fetchSize);
+      }
       ResultSet rs = stmt.executeQuery();
       QueryLogger.logStartResultsProcessing(sql, queryName, startTime, rs);
       return new ResultSetInputStream(rs, stmt, conn, converter);
@@ -60,7 +77,7 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
   private final Statement _stmt;
   private final Connection _conn;
 
-  public ResultSetInputStream(ResultSet resultSet, Statement statement, Connection connection,
+  private ResultSetInputStream(ResultSet resultSet, Statement statement, Connection connection,
       ResultSetRowConverter resultConverter) throws SQLException {
     super(buildDataProvider(resultSet, resultConverter));
     _rs = resultSet;
@@ -93,6 +110,7 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
    */
   @Override
   public void close() throws IOException {
+    QueryLogger.logEndResultsProcessing(_rs);
     SqlUtils.closeQuietly(_rs, _stmt, _conn);
   }
 

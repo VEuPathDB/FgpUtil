@@ -32,8 +32,6 @@ import org.gusdb.fgputil.iterator.Cursor;
  * @author Jerric Gao
  */
 public final class SqlUtils {
-  
-  public static final int DEFAULT_FETCH_SIZE = 100;
 
   private static final Logger logger = Logger.getLogger(SqlUtils.class.getName());
 
@@ -135,14 +133,12 @@ public final class SqlUtils {
 
     try {
       connection = ConnectionMapping.getConnection(dataSource);
-      ps = connection.prepareStatement(sql);
-      ps.setFetchSize(100);
-      return ps;
+      return connection.prepareStatement(sql);
     }
     catch (SQLException ex) {
       closeStatement(ps);
 
-      if (ps == null && connection != null) 
+      if (connection != null) 
         SqlUtils.closeQuietly(connection);
   
       throw new SQLException("Failed to prepare query: \n" + sql + getUrlAndUser(connection), ex);
@@ -313,7 +309,7 @@ public final class SqlUtils {
    *           if problem running query
    */
   public static ResultSet executeQuery(DataSource dataSource, String sql, String name) throws SQLException {
-    return executeQuery(dataSource, sql, name, DEFAULT_FETCH_SIZE, false);
+    return executeQuery(dataSource, sql, name, 0, false);
   }
 
   /**
@@ -366,7 +362,9 @@ public final class SqlUtils {
       connection = ConnectionMapping.getConnection(dataSource);
       long start = System.currentTimeMillis();
       stmt = connection.createStatement();
-      stmt.setFetchSize(fetchSize);
+      if (fetchSize > 0) {
+        stmt.setFetchSize(fetchSize);
+      }
       resultSet = stmt.executeQuery(sql);
       QueryLogger.logStartResultsProcessing(sql, name, start, resultSet);
       return resultSet;

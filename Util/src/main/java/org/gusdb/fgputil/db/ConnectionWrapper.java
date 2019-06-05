@@ -61,7 +61,13 @@ public class ConnectionWrapper implements Connection {
     }
 
     // committing will cause op completion on the DB side (e.g. of in-use DB links)
-    if (_underlyingPlatform.shouldPerformPreCloseCommit(_underlyingConnection.getAutoCommit())) {
+    if (_underlyingConnection.getAutoCommit()) {
+      // must turn auto-commit off to explicitly commit per JDBC spec
+      _underlyingConnection.setAutoCommit(false);
+      _underlyingConnection.commit();
+      _underlyingConnection.setAutoCommit(true);
+    }
+    else {
       _underlyingConnection.commit();
     }
 
@@ -100,6 +106,30 @@ public class ConnectionWrapper implements Connection {
     return uncommittedChangesPresent;
   }
 
+  /********* Statement factories that apply configured fetch size *********/
+
+  @Override
+  public Statement createStatement() throws SQLException {
+    Statement statement = _underlyingConnection.createStatement();
+    statement.setFetchSize(_dbConfig.getDefaultFetchSize());
+    return statement;
+  }
+
+  @Override
+  public PreparedStatement prepareStatement(String sql) throws SQLException {
+    PreparedStatement statement = _underlyingConnection.prepareStatement(sql);
+    statement.setFetchSize(_dbConfig.getDefaultFetchSize());
+    return statement;
+    
+  }
+
+  @Override
+  public CallableStatement prepareCall(String sql) throws SQLException {
+    CallableStatement statement = _underlyingConnection.prepareCall(sql);
+    statement.setFetchSize(_dbConfig.getDefaultFetchSize());
+    return statement;
+  }
+
   /************ ALL METHODS BELOW THIS LINE ARE SIMPLE WRAPPERS ************/
 
   @Override
@@ -110,21 +140,6 @@ public class ConnectionWrapper implements Connection {
   @Override
   public boolean isWrapperFor(Class<?> iface) throws SQLException {
     return _underlyingConnection.isWrapperFor(iface);
-  }
-
-  @Override
-  public Statement createStatement() throws SQLException {
-    return _underlyingConnection.createStatement();
-  }
-
-  @Override
-  public PreparedStatement prepareStatement(String sql) throws SQLException {
-    return _underlyingConnection.prepareStatement(sql);
-  }
-
-  @Override
-  public CallableStatement prepareCall(String sql) throws SQLException {
-    return _underlyingConnection.prepareCall(sql);
   }
 
   @Override
