@@ -67,7 +67,12 @@
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
     </dependency>
+
 <!-- Not sure if we need for Java 11; keep commented until shown we do
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-core</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
@@ -81,6 +86,7 @@
       <artifactId>activation</artifactId>
     </dependency>
 -->
+
     <dependency>
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
