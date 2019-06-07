@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.DataSourceWrapper;
 import org.gusdb.fgputil.db.SqlUtils;
@@ -194,10 +194,10 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
     connectionPool.setDefaultAutoCommit(dbConfig.getDefaultAutoCommit());
 
     // configure the connection pool
-    connectionPool.setMaxWait(dbConfig.getMaxWait());
+    connectionPool.setMaxWaitMillis(dbConfig.getMaxWait());
     connectionPool.setMaxIdle(dbConfig.getMaxIdle());
     connectionPool.setMinIdle(dbConfig.getMinIdle());
-    connectionPool.setMaxActive(dbConfig.getMaxActive());
+    connectionPool.setMaxTotal(dbConfig.getMaxActive());
 
     // configure validationQuery tests
     connectionPool.setValidationQuery(platform.getValidationQuery());
