@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db.platform;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,9 +18,10 @@ public enum SupportedPlatform {
   
   public DBPlatform getPlatformInstance() {
     try {
-      return _platformClass.newInstance();
+      return _platformClass.getDeclaredConstructor().newInstance();
     }
-    catch (IllegalAccessException | InstantiationException e) {
+    catch (IllegalAccessException | InstantiationException | IllegalArgumentException |
+        InvocationTargetException | NoSuchMethodException | SecurityException e) {
       throw new UnsupportedPlatformException("Unable to instantiate platform class " + _platformClass.getName(), e);
     }
   }
