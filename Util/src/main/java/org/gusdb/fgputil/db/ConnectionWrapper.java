@@ -48,38 +48,46 @@ public class ConnectionWrapper implements Connection {
 
   @Override
   public void close() throws SQLException {
-
-    _parentDataSource.unregisterClosedConnection(_underlyingConnection);
-
-    // check to see if uncommitted changes are present in this connection
-    boolean uncommittedChangesPresent =
-        PERFORM_UNCOMMITTED_CHANGES_CHECK ? checkForUncommittedChanges() : false;
-
-    // roll back any changes before returning connection to pool
-    if (uncommittedChangesPresent) {
-      SqlUtils.attemptRollback(_underlyingConnection);
+    boolean uncommittedChangesPresent = false;
+    try {
+      _parentDataSource.unregisterClosedConnection(_underlyingConnection);
+  
+      // check to see if uncommitted changes are present in this connection
+      uncommittedChangesPresent =
+          PERFORM_UNCOMMITTED_CHANGES_CHECK ? checkForUncommittedChanges() : false;
+  
+      // roll back any changes before returning connection to pool
+      if (uncommittedChangesPresent) {
+        SqlUtils.attemptRollback(_underlyingConnection);
+      }
+  
+      // committing will cause op completion on the DB side (e.g. of in-use DB links)
+      if (_underlyingConnection.getAutoCommit()) {
+        // must turn auto-commit off to explicitly commit per JDBC spec
+        _underlyingConnection.setAutoCommit(false);
+        _underlyingConnection.commit();
+        _underlyingConnection.setAutoCommit(true);
+      }
+      else {
+        _underlyingConnection.commit();
+      }
+  
+      // reset connection-specific values back to default in case client code changed them
+      _underlyingConnection.setAutoCommit(_dbConfig.getDefaultAutoCommit());
+      _underlyingConnection.setReadOnly(_dbConfig.getDefaultReadOnly());
+  
     }
-
-    // committing will cause op completion on the DB side (e.g. of in-use DB links)
-    if (_underlyingConnection.getAutoCommit()) {
-      // must turn auto-commit off to explicitly commit per JDBC spec
-      _underlyingConnection.setAutoCommit(false);
-      _underlyingConnection.commit();
-      _underlyingConnection.setAutoCommit(true);
+    catch (Exception e) {
+      LOG.error("Error during pre-close logic for DB connections", e);
+      throw e;
     }
-    else {
-      _underlyingConnection.commit();
+    finally {
+      // close the underlying connection using possibly custom logic
+      ConnectionPoolConfig dbConfig = _parentDataSource.getDbConfig();
+      DbDriverInitializer dbManager = DbDriverInitializer.getInstance(dbConfig.getDriverInitClass());
+      dbManager.closeConnection(_underlyingConnection, dbConfig);
     }
-
-    // reset connection-specific values back to default in case client code changed them
-    _underlyingConnection.setAutoCommit(_dbConfig.getDefaultAutoCommit());
-    _underlyingConnection.setReadOnly(_dbConfig.getDefaultReadOnly());
-
-    // close the underlying connection using possibly custom logic
-    ConnectionPoolConfig dbConfig = _parentDataSource.getDbConfig();
-    DbDriverInitializer dbManager = DbDriverInitializer.getInstance(dbConfig.getDriverInitClass());
-    dbManager.closeConnection(_underlyingConnection, dbConfig);
-
+  
     if (uncommittedChangesPresent) {
       throw new UncommittedChangesException("Connection returned to pool with active transaction and uncommitted changes.");
     }
