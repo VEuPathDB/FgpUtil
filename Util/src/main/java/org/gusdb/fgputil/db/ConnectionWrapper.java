@@ -83,7 +83,6 @@ public class ConnectionWrapper implements Connection {
       // close the underlying connection using possibly custom logic
       ConnectionPoolConfig dbConfig = _parentDataSource.getDbConfig();
       DbDriverInitializer dbManager = DbDriverInitializer.getInstance(dbConfig.getDriverInitClass());
-      LOG.info("Closing connection using " + dbManager.getClass().getName());
       dbManager.closeConnection(_underlyingConnection, dbConfig);
     }
     if (uncommittedChangesPresent) {
