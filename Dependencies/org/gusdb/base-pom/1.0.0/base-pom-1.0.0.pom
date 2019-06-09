@@ -420,27 +420,7 @@
         <version>4.0.6.RELEASE</version>
       </dependency>
 
-      <!-- Struts and MVC/Action Support -->
-      <dependency>
-        <groupId>org.apache.struts</groupId>
-        <artifactId>struts-core</artifactId>
-        <version>1.3.10</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.struts</groupId>
-        <artifactId>struts-taglib</artifactId>
-        <version>1.3.10</version>
-      </dependency>
+      <!-- File Upload Support -->
       <dependency>
         <groupId>commons-fileupload</groupId>
         <artifactId>commons-fileupload</artifactId>
