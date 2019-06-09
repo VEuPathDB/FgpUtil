@@ -8,6 +8,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
@@ -23,7 +26,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLFilter;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * @author Jerric
@@ -44,7 +46,9 @@ public class XmlTransformer {
     XMLFilter xmlFilter;
     try {
       xmlFilter = saxTFactory.newXMLFilter(new StreamSource(xslStream));
-      XMLReader reader = XMLReaderFactory.createXMLReader();
+      SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+      SAXParser parser = parserFactory.newSAXParser();
+      XMLReader reader = parser.getXMLReader();
       xmlFilter.setParent(reader);
 
       Properties xmlProps = OutputPropertiesFactory.getDefaultMethodProperties("xml");
@@ -56,7 +60,8 @@ public class XmlTransformer {
 
       xmlFilter.parse(new InputSource(inStream));
     }
-    catch (TransformerConfigurationException | SAXException | IOException ex) {
+    catch (TransformerConfigurationException | SAXException |
+           IOException | ParserConfigurationException ex) {
       throw new TransformException(failureMessage, ex);
     }
   }
