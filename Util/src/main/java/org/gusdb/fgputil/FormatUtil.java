@@ -142,19 +142,19 @@ public class FormatUtil {
    */
   public static String escapeHtml(String str) {
     return str
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll("&", "&amp;")
-        .replaceAll("\n", "<br/>\n");
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll("&", "&amp;")
+      .replaceAll("\n", "<br/>\n");
   }
 
   public static String splitCamelCase(String s) {
     return s.replaceAll(
-            String.format("%s|%s|%s",
-                      "(?<=[A-Z])(?=[A-Z][a-z])",
-                      "(?<=[^A-Z])(?=[A-Z])",
-                      "(?<=[A-Za-z])(?=[^A-Za-z])"),
-            " ");
+      String.format("%s|%s|%s",
+        "(?<=[A-Z])(?=[A-Z][a-z])",
+        "(?<=[^A-Z])(?=[A-Z])",
+        "(?<=[A-Za-z])(?=[^A-Za-z])"),
+      " ");
   }
 
   public static String multiLineFormat(String str, int maxCharsPerLine) {
@@ -226,12 +226,9 @@ public class FormatUtil {
   }
 
   public static String printArray(String[][] array) {
-    String newline = System.getProperty("line.separator");
     StringBuilder sb = new StringBuilder();
-    for (String[] parts : array) {
-        sb.append(printArray(parts));
-        sb.append(newline);
-    }
+    for (String[] parts : array)
+      sb.append(printArray(parts)).append(NL);
     return sb.toString();
   }
 
@@ -377,11 +374,13 @@ public class FormatUtil {
 
   /**
    * Log4j only accepts logger names using dot delimiters, but Class.getName()
-   * returns "package.InnerClass$OuterClass", which is not referenceable by
-   * the name attribute of a logger tag in log4j.xml.  This function gives a
-   * name usable by both.
+   * returns "package.InnerClass$OuterClass", which is not referenceable by the
+   * name attribute of a logger tag in log4j.xml.  This function gives a name
+   * usable by both.
    *
-   * @param clazz inner class name
+   * @param clazz
+   *   inner class name
+   *
    * @return the "code-style" inner class name
    */
   public static String getInnerClassLog4jName(Class<?> clazz) {
@@ -389,7 +388,9 @@ public class FormatUtil {
   }
 
   /**
-   * @param values an array of enum values
+   * @param values
+   *   an array of enum values
+   *
    * @return readable array-style display of the values
    */
   public static <T extends Enum<T>> String enumValuesAsString(T[] values) {
