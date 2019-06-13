@@ -233,11 +233,12 @@
         <groupId>xalan</groupId>
         <artifactId>serializer</artifactId>
         <version>2.7.1</version>
-      </dependency>
-      <dependency>
-        <groupId>xml-apis</groupId>
-        <artifactId>xml-apis</artifactId>
-        <version>1.4.01</version>
+        <exclusions>
+          <exclusion>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>net.sf.saxon</groupId>
@@ -253,6 +254,10 @@
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
 
@@ -261,6 +266,12 @@
         <groupId>com.lowagie</groupId>
         <artifactId>itext</artifactId>
         <version>4.2.1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <!-- Ontology Support -->
@@ -534,6 +545,12 @@
         <groupId>net.sourceforge.htmlunit</groupId>
         <artifactId>htmlunit</artifactId>
         <version>2.29</version>
+        <exclusions>
+          <exclusion>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.testng</groupId>
@@ -570,6 +587,12 @@
         <groupId>org.reflections</groupId>
         <artifactId>reflections</artifactId>
         <version>0.9.9-RC1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <!--  Miscellany -->
