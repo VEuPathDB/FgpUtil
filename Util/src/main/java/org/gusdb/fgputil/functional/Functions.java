@@ -276,12 +276,15 @@ public class Functions {
   }
 
   /**
-   * Takes a predicate that may or may not have checked exceptions and returns a new predicate that performs
-   * the same operation but "swallows" any checked exception by wrapping it in a RuntimeException and
-   * throwing that instead.  If calling code wishes to inspect the underlying exception it must catch the
-   * RuntimeException and use getCause().
+   * Takes a predicate that may or may not have checked exceptions and returns a
+   * new predicate that performs the same operation but "swallows" any checked
+   * exception by wrapping it in a RuntimeException and throwing that instead.
+   * If calling code wishes to inspect the underlying exception it must catch
+   * the RuntimeException and use getCause().
    *
-   * @param f predicate to wrap
+   * @param f
+   *   predicate to wrap
+   *
    * @return a new predicate that swallows checked exceptions
    */
   public static <T> Predicate<T> pSwallow(PredicateWithException<T> f) {
