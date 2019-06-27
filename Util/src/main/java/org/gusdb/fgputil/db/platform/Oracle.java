@@ -166,25 +166,21 @@ public class Oracle extends DBPlatform {
     return messageClob.getSubString(1, (int) messageClob.length());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.dbms.DBPlatform#getPagedSql(java.lang.String, int, int)
-   */
   @Override
   public String getPagedSql(String sql, int startIndex, int endIndex, boolean includeRowIndex) {
 
-    String rowIndex = includeRowIndex? ", " + getRowNumberColumn() + " as row_index " : "";
+    String rowNumColumn = getRowNumberColumn();
+    String rowIndex = includeRowIndex? ", " + rowNumColumn + " as row_index " : "";
 
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     // construct the outer query
     buffer.append("SELECT lb.*" + rowIndex + " FROM (");
     // construct the inner nested query
-    buffer.append("SELECT ub.*, rownum AS row_index FROM (");
+    buffer.append("SELECT ub.*, " + rowNumColumn + " AS row_index FROM (");
     buffer.append(sql);
     buffer.append(") ub");
     if (endIndex > -1) {
-      buffer.append(" WHERE rownum <= ").append(endIndex);
+      buffer.append(" WHERE " + rowNumColumn + " <= ").append(endIndex);
     }
     buffer.append(") lb WHERE lb.row_index >= ").append(startIndex);
     return buffer.toString();
