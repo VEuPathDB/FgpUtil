@@ -169,21 +169,24 @@ public class Oracle extends DBPlatform {
   @Override
   public String getPagedSql(String sql, int startIndex, int endIndex, boolean includeRowIndex) {
 
-    String rowNumColumn = getRowNumberColumn();
-    String rowIndex = includeRowIndex? ", " + rowNumColumn + " as row_index " : "";
+    String rowIndex = includeRowIndex? ", " + getRowNumberColumn() + " as row_index " : "";
+    int offset = (startIndex <= 0 ? 0 : startIndex - 1);
+    int fetchSize =
+        endIndex < 0 ? -1 :      // all rows
+        endIndex <= offset ? 0 : // no rows
+        endIndex - offset;       // some rows
+    String fetchClause = (fetchSize < 0 ? "" :
+      " FETCH NEXT " + fetchSize + " ROWS ONLY");
 
-    StringBuilder buffer = new StringBuilder();
-    // construct the outer query
-    buffer.append("SELECT lb.*" + rowIndex + " FROM (");
-    // construct the inner nested query
-    buffer.append("SELECT ub.*, " + rowNumColumn + " AS row_index FROM (");
-    buffer.append(sql);
-    buffer.append(") ub");
-    if (endIndex > -1) {
-      buffer.append(" WHERE " + rowNumColumn + " <= ").append(endIndex);
-    }
-    buffer.append(") lb WHERE lb.row_index >= ").append(startIndex);
-    return buffer.toString();
+    return new StringBuilder()
+        .append("SELECT a.*")
+        .append(rowIndex)
+        .append(" FROM ( ")
+        .append(sql)
+        .append(" ) a")
+        .append(" OFFSET ").append(offset).append(" ROWS")
+        .append(fetchClause)
+        .toString();
   }
 
   @Override
