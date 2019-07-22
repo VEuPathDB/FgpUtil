@@ -110,10 +110,10 @@ public class FormatTest {
     Date d0 = new Date();
     String s0 = FormatUtil.formatDate(d0);
     String s1 = FormatUtil.formatDateTime(d0);
-    Date d1 = FormatUtil.parseDate(s0);
+    Date d1 = FormatUtil.toDate(FormatUtil.parseDate(s0));
     //Date d2 = FormatUtil.parseDateTime(s0);
     //Date d3 = FormatUtil.parseDate(s1);
-    Date d4 = FormatUtil.parseDateTime(s1);
+    Date d4 = FormatUtil.toDate(FormatUtil.parseDateTime(s1));
     String s2 = FormatUtil.formatDate(d1);
     String s3 = FormatUtil.formatDateTime(d1);
     //String s4 = FormatUtil.formatDate(d2);

@@ -49,19 +49,20 @@ public class FormatUtil {
     return str.toString();
   }
 
-  public static Date parseDate(String date) throws DateTimeParseException {
-    return Date.from(LocalDate
-        .parse(date, STANDARD_DATE_FORMAT)
-        .atStartOfDay()
-        .atZone(ZoneId.systemDefault())
-        .toInstant());
+  public static Date toDate(LocalDate date) {
+    return toDate(date.atStartOfDay());
   }
 
-  public static Date parseDateTime(String dateTime) throws DateTimeParseException {
-    return Date.from(LocalDateTime
-        .parse(dateTime, STANDARD_DATE_TIME_FORMAT)
-        .atZone(ZoneId.systemDefault())
-        .toInstant());
+  public static LocalDate parseDate(String date) throws DateTimeParseException {
+    return LocalDate.parse(date, STANDARD_DATE_FORMAT);
+  }
+
+  public static Date toDate(LocalDateTime dateTime) {
+    return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+  }
+
+  public static LocalDateTime parseDateTime(String dateTime) throws DateTimeParseException {
+    return LocalDateTime.parse(dateTime, STANDARD_DATE_TIME_FORMAT);
   }
 
   public static String formatDate(Date date) {
