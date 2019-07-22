@@ -48,8 +48,9 @@ public class ExpressionNodeTest {
 
   @Test
   public void doSqlFormatTest() {
-    System.out.println(new ExpressionNode(TEST_JSON_OBJ, ValueType.NUMBER, "op", "value")
-        .toSqlExpression(TEST_COLUMN_NAME, json -> json.toString(), true));
+    ExpressionNode node = new ExpressionNode(TEST_JSON_OBJ, ValueType.NUMBER, "op", "value");
+    System.out.println(node.toSqlExpression(TEST_COLUMN_NAME, json -> json.toString(), true));
+    System.out.println(node.toJson().toString(2));
   }
 
   @Test
