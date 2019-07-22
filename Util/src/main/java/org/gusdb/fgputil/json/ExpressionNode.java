@@ -50,13 +50,13 @@ public class ExpressionNode {
   };
 
   public static String toStringSqlExpression(JSONObject json, String columnName) {
-    return new ExpressionNode(json, ValueType.STRING).toSqlExpression(columnName, STRING_CONVERTER);
+    return new ExpressionNode(json, ValueType.STRING).toSqlExpression(columnName, STRING_CONVERTER, true);
   }
   public static String toNumberSqlExpression(JSONObject json, String columnName) {
-    return new ExpressionNode(json, ValueType.NUMBER).toSqlExpression(columnName, NUMBER_CONVERTER);
+    return new ExpressionNode(json, ValueType.NUMBER).toSqlExpression(columnName, NUMBER_CONVERTER, true);
   }
   public static String toDateSqlExpression(JSONObject json, String columnName) {
-    return new ExpressionNode(json, ValueType.STRING).toSqlExpression(columnName, DATE_CONVERTER);
+    return new ExpressionNode(json, ValueType.STRING).toSqlExpression(columnName, DATE_CONVERTER, false);
   }
 
   private enum OperatorType {
@@ -106,6 +106,9 @@ public class ExpressionNode {
 
   public ExpressionNode(JSONObject json, ValueType expectedValueType, String operatorKey, String valueKey) throws JSONException {
     Objects.nonNull(json);
+    if (!expectedValueType.isTerminal()) {
+      throw new IllegalArgumentException("Passed expected value type must be a terminal type.");
+    }
     String operatorStr = null;
     try {
       _operatorKey = operatorKey;
@@ -148,19 +151,42 @@ public class ExpressionNode {
     }
   }
 
-  public String toSqlExpression(String column, Function<JsonType,String> valueConverter) {
+  public String toSqlExpression(String column, Function<JsonType,String> valueConverter, boolean optimizeWithInStatement) {
     switch(_operator.getType()) {
       case UNARY_OPERATOR:
         return column + " " + _operator.getSqlOperator();
       case BINARY_OPERATOR:
         return column + " " + _operator.getSqlOperator() + " " + valueConverter.apply(_rawValue);
       case COMBINER:
-        return "( " + _children.stream()
-            .map(child -> child.toSqlExpression(column, valueConverter))
-            .collect(Collectors.joining(" " + _operator.getSqlOperator() + " ")) + " )";
+        return optimizable(_operator, _children) ? getInStatement(column, _children, valueConverter) :
+          "( " +
+            _children.stream()
+              .map(child -> child.toSqlExpression(column, valueConverter, optimizeWithInStatement))
+              .collect(Collectors.joining(" " + _operator.getSqlOperator() + " ")) +
+          " )";
       default:
         throw new JSONException("Unsupported operator type: " + _operator.getType());
     }
+  }
+
+  // already confirmed that all child ops are equals, so just collect the values
+  private String getInStatement(String column, List<ExpressionNode> children, Function<JsonType,String> valueConverter) {
+    return column + " IN ( " +
+      children.stream()
+        .map(child -> valueConverter.apply(child._rawValue))
+        .collect(Collectors.joining(", ")) +
+    " )";
+  }
+
+  private boolean optimizable(Operator operator, List<ExpressionNode> nodes) {
+    if (!operator.equals(Operator.OR)) {
+      return false;
+    }
+    for (ExpressionNode node : nodes) {
+      if (!node._operator.equals(Operator.EQ))
+        return false;
+    }
+    return true;
   }
 
   public JSONObject toJson() {

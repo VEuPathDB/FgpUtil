@@ -27,11 +27,22 @@ public class ExpressionNodeTest {
              .put("op","le")
              .put("value",6))
            .put(new JSONObject()
-             .put("op", "is_not_null")))));
+             .put("op", "is_not_null"))))
+       .put(new JSONObject()
+         .put("op","or")
+         .put("value", new JSONArray()
+           .put(new JSONObject()
+             .put("op","eq")
+             .put("value",13))
+           .put(new JSONObject()
+             .put("op","eq")
+             .put("value",17))
+           .put(new JSONObject()
+             .put("op","eq")
+             .put("value",19)))));
 
-  
   @Test
   public void doTest() {
-    System.out.println(new ExpressionNode(TEST_JSON, ValueType.NUMBER, "op", "value").toSqlExpression("value", json -> json.toString()));
+    System.out.println(new ExpressionNode(TEST_JSON, ValueType.NUMBER, "op", "value").toSqlExpression("my_column_val", json -> json.toString(), true));
   }
 }

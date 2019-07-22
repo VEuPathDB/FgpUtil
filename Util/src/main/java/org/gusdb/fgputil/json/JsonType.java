@@ -7,12 +7,22 @@ import org.json.JSONObject;
 public class JsonType {
 
   public enum ValueType {
-    OBJECT,
-    ARRAY,
-    STRING,
-    NUMBER,
-    BOOLEAN,
-    NULL;
+    OBJECT(false),
+    ARRAY(false),
+    STRING(true),
+    NUMBER(true),
+    BOOLEAN(true),
+    NULL(true);
+
+    private final boolean _isTerminal;
+
+    private ValueType(boolean isTerminal) {
+      _isTerminal = isTerminal;
+    }
+
+    public boolean isTerminal() {
+      return _isTerminal;
+    }
   }
 
   public enum NumberSubtype {
