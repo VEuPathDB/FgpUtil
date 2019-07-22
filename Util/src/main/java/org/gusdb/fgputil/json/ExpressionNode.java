@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonType.ValueType;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,11 +53,29 @@ public class ExpressionNode {
   public static String toStringSqlExpression(JSONObject json, String columnName) {
     return new ExpressionNode(json, ValueType.STRING).toSqlExpression(columnName, STRING_CONVERTER, true);
   }
+
   public static String toNumberSqlExpression(JSONObject json, String columnName) {
     return new ExpressionNode(json, ValueType.NUMBER).toSqlExpression(columnName, NUMBER_CONVERTER, true);
   }
+
   public static String toDateSqlExpression(JSONObject json, String columnName) {
     return new ExpressionNode(json, ValueType.STRING).toSqlExpression(columnName, DATE_CONVERTER, false);
+  }
+
+  public static JSONObject transformToFlatEnumExpression(JSONArray json, String operatorKey, String valueKey) {
+    JSONArray subExpressions = new JSONArray();
+    for (JsonType value : JsonIterators.arrayIterable(json)) {
+      if (!value.getType().isTerminal()) {
+        throw new JSONException("Array constructor called with tree depth > 1");
+      }
+      subExpressions.put(new JSONObject()
+        .put(operatorKey, Operator.EQ.name().toLowerCase())
+        .put(valueKey, value.get())
+      );
+    }
+    return new JSONObject()
+      .put(operatorKey, Operator.OR.name().toLowerCase())
+      .put(valueKey, subExpressions);
   }
 
   private enum OperatorType {

@@ -7,7 +7,9 @@ import org.junit.Test;
 
 public class ExpressionNodeTest {
 
-  private static final JSONObject TEST_JSON =
+  private static final String TEST_COLUMN_NAME = "my_column_val";
+
+  private static final JSONObject TEST_JSON_OBJ =
     new JSONObject()
      .put("op","or")
      .put("value", new JSONArray()
@@ -41,8 +43,21 @@ public class ExpressionNodeTest {
              .put("op","eq")
              .put("value",19)))));
 
+  private static final JSONArray TEST_JSON_ARRAY =
+    new JSONArray().put(1).put(2).put(3).put(4).put(5);
+
   @Test
-  public void doTest() {
-    System.out.println(new ExpressionNode(TEST_JSON, ValueType.NUMBER, "op", "value").toSqlExpression("my_column_val", json -> json.toString(), true));
+  public void doSqlFormatTest() {
+    System.out.println(new ExpressionNode(TEST_JSON_OBJ, ValueType.NUMBER, "op", "value")
+        .toSqlExpression(TEST_COLUMN_NAME, json -> json.toString(), true));
+  }
+
+  @Test
+  public void doArrayConversionTest() {
+    System.out.println(TEST_JSON_ARRAY);
+    JSONObject objVersion = ExpressionNode.transformToFlatEnumExpression(
+        TEST_JSON_ARRAY, ExpressionNode.DEFAULT_OPERATOR_KEY, ExpressionNode.DEFAULT_VALUE_KEY);
+    System.out.println(objVersion);
+    System.out.println(ExpressionNode.toNumberSqlExpression(objVersion, TEST_COLUMN_NAME));
   }
 }
