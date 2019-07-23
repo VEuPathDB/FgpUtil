@@ -1,16 +1,15 @@
 package org.gusdb.fgputil.json;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonType.ValueType;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,72 +35,37 @@ public class ExpressionNode {
   public static final String DEFAULT_OPERATOR_KEY = "operator";
   public static final String DEFAULT_VALUE_KEY = "value";
 
-  public static final Function<JsonType,String> STRING_CONVERTER = val -> "'" + val.getString() + "'";
-  public static final Function<JsonType,String> NUMBER_CONVERTER = val -> val.get().toString();
-
-  private static final String
-    SQL_TODATE_FORMAT  = "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"",
-    JAVA_TODATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-
-  public static final Function<JsonType,String> DATE_CONVERTER = val -> {
-    String dateStr = val.getString();
-    LocalDateTime d = (dateStr.length() <= 10 ? FormatUtil.parseDate(dateStr).atStartOfDay() : FormatUtil.parseDateTime(dateStr));
-    String sqlDate = d.format(DateTimeFormatter.ofPattern(JAVA_TODATE_FORMAT));
-    return "to_date('" + sqlDate + "', '" + SQL_TODATE_FORMAT + "')";
-  };
-
-  public static String toStringSqlExpression(JSONObject json, String columnName) {
-    return new ExpressionNode(json, ValueType.STRING).toSqlExpression(columnName, STRING_CONVERTER, true);
-  }
-
-  public static String toNumberSqlExpression(JSONObject json, String columnName) {
-    return new ExpressionNode(json, ValueType.NUMBER).toSqlExpression(columnName, NUMBER_CONVERTER, true);
-  }
-
-  public static String toDateSqlExpression(JSONObject json, String columnName) {
-    return new ExpressionNode(json, ValueType.STRING).toSqlExpression(columnName, DATE_CONVERTER, false);
-  }
-
-  public static JSONObject transformToFlatEnumExpression(JSONArray json, String operatorKey, String valueKey) {
-    JSONArray subExpressions = new JSONArray();
-    for (JsonType value : JsonIterators.arrayIterable(json)) {
-      if (!value.getType().isTerminal()) {
-        throw new JSONException("Array constructor called with tree depth > 1");
-      }
-      subExpressions.put(new JSONObject()
-        .put(operatorKey, Operator.EQ.name().toLowerCase())
-        .put(valueKey, value.get())
-      );
-    }
-    return new JSONObject()
-      .put(operatorKey, Operator.OR.name().toLowerCase())
-      .put(valueKey, subExpressions);
-  }
-
   private enum OperatorType {
     COMBINER,
     UNARY_OPERATOR,
     BINARY_OPERATOR;
   }
 
-  private enum Operator {
-    AND("AND", OperatorType.COMBINER),
-    OR("OR", OperatorType.COMBINER),
-    IS_NULL("IS NULL", OperatorType.UNARY_OPERATOR),
-    IS_NOT_NULL("IS NOT NULL", OperatorType.UNARY_OPERATOR),
-    EQ("=", OperatorType.BINARY_OPERATOR),
-    NE("!=", OperatorType.BINARY_OPERATOR),
-    GT(">", OperatorType.BINARY_OPERATOR),
-    GE(">=", OperatorType.BINARY_OPERATOR),
-    LT("<", OperatorType.BINARY_OPERATOR),
-    LE("<=", OperatorType.BINARY_OPERATOR);
+  private static final ValueType[] ALL_TYPES = {};
+  private static final ValueType[] STRING_ONLY = { ValueType.STRING };
+
+  public enum Operator {
+
+    AND("AND", OperatorType.COMBINER, ALL_TYPES),
+    OR("OR", OperatorType.COMBINER, ALL_TYPES),
+    IS_NULL("IS NULL", OperatorType.UNARY_OPERATOR, ALL_TYPES),
+    IS_NOT_NULL("IS NOT NULL", OperatorType.UNARY_OPERATOR, ALL_TYPES),
+    EQ("=", OperatorType.BINARY_OPERATOR, ALL_TYPES),
+    NE("!=", OperatorType.BINARY_OPERATOR, ALL_TYPES),
+    GT(">", OperatorType.BINARY_OPERATOR, ALL_TYPES),
+    GE(">=", OperatorType.BINARY_OPERATOR, ALL_TYPES),
+    LT("<", OperatorType.BINARY_OPERATOR, ALL_TYPES),
+    LE("<=", OperatorType.BINARY_OPERATOR, ALL_TYPES),
+    LIKE("LIKE", OperatorType.BINARY_OPERATOR, STRING_ONLY);
 
     private final String _sqlOperator;
     private final OperatorType _type;
+    private final Set<ValueType> _allowedValueTypes;
 
-    private Operator(String sqlOperator, OperatorType type) {
+    private Operator(String sqlOperator, OperatorType type, ValueType[] allowedValueTypes) {
       _sqlOperator = sqlOperator;
       _type = type;
+      _allowedValueTypes = new HashSet<>(Arrays.asList(allowedValueTypes));
     }
 
     public OperatorType getType() {
@@ -110,6 +74,10 @@ public class ExpressionNode {
 
     public String getSqlOperator() {
       return _sqlOperator;
+    }
+
+    public boolean supports(ValueType type) {
+      return _allowedValueTypes.isEmpty() ? true : _allowedValueTypes.contains(type);
     }
   }
 
@@ -134,6 +102,9 @@ public class ExpressionNode {
       _valueKey = valueKey;
       operatorStr = json.getString(operatorKey);
       _operator = Operator.valueOf(operatorStr.toUpperCase());
+      if (!_operator.supports(expectedValueType)) {
+        throw new JSONException("Operator " + _operator + " does not support data of type " + expectedValueType);
+      }
       _rawValue = _operator.getType().equals(OperatorType.UNARY_OPERATOR) ?
           null : new JsonType(json.get(valueKey));
       switch(_operator.getType()) {
@@ -170,29 +141,43 @@ public class ExpressionNode {
     }
   }
 
-  public String toSqlExpression(String column, Function<JsonType,String> valueConverter, boolean optimizeWithInStatement) {
-    switch(_operator.getType()) {
+  public String toSqlExpression(String column, boolean optimizeWithInStatement,
+      BiFunction<JsonType, Operator, String> valueConverter) {
+    return toSqlExpression(column, optimizeWithInStatement, valueConverter, (type,op) -> op);
+  }
+
+  public String toSqlExpression(String column, boolean optimizeWithInStatement,
+      BiFunction<JsonType, Operator, String> valueConverter,
+      BiFunction<JsonType, Operator, Operator> operatorConverter) {
+    Operator operator = operatorConverter.apply(_rawValue, _operator);
+    if (!operator.getType().equals(_operator.getType())) {
+      throw new IllegalArgumentException("Operator converter function cannot " +
+          "change the type of the operator.  Tried to change from " + _operator +
+          " (" + _operator.getType() + ") to " + operator + " (" + operator.getType() + ").");
+    }
+    switch(operator.getType()) {
       case UNARY_OPERATOR:
-        return column + " " + _operator.getSqlOperator();
+        return column + " " + operator.getSqlOperator();
       case BINARY_OPERATOR:
-        return column + " " + _operator.getSqlOperator() + " " + valueConverter.apply(_rawValue);
+        return column + " " + operator.getSqlOperator() + " " + valueConverter.apply(_rawValue, operator);
       case COMBINER:
-        return optimizable(_operator, _children) ? getInStatement(column, _children, valueConverter) :
+        return optimizable(operator, _children) ? getInStatement(column, _children, valueConverter) :
           "( " +
             _children.stream()
-              .map(child -> child.toSqlExpression(column, valueConverter, optimizeWithInStatement))
-              .collect(Collectors.joining(" " + _operator.getSqlOperator() + " ")) +
+              .map(child -> child.toSqlExpression(column, optimizeWithInStatement, valueConverter, operatorConverter))
+              .collect(Collectors.joining(" " + operator.getSqlOperator() + " ")) +
           " )";
       default:
-        throw new JSONException("Unsupported operator type: " + _operator.getType());
+        throw new JSONException("Unsupported operator type: " + operator.getType());
     }
   }
 
   // already confirmed that all child ops are equals, so just collect the values
-  private String getInStatement(String column, List<ExpressionNode> children, Function<JsonType,String> valueConverter) {
+  private String getInStatement(String column, List<ExpressionNode> children,
+      BiFunction<JsonType, Operator, String> valueConverter) {
     return column + " IN ( " +
       children.stream()
-        .map(child -> valueConverter.apply(child._rawValue))
+        .map(child -> valueConverter.apply(child._rawValue, child._operator))
         .collect(Collectors.joining(", ")) +
     " )";
   }
