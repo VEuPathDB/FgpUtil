@@ -51,7 +51,7 @@ public class ExpressionNode {
     IS_NULL("IS NULL", OperatorType.UNARY_OPERATOR, ALL_TYPES),
     IS_NOT_NULL("IS NOT NULL", OperatorType.UNARY_OPERATOR, ALL_TYPES),
     EQ("=", OperatorType.BINARY_OPERATOR, ALL_TYPES),
-    NE("!=", OperatorType.BINARY_OPERATOR, ALL_TYPES),
+    NE("<>", OperatorType.BINARY_OPERATOR, ALL_TYPES),
     GT(">", OperatorType.BINARY_OPERATOR, ALL_TYPES),
     GE(">=", OperatorType.BINARY_OPERATOR, ALL_TYPES),
     LT("<", OperatorType.BINARY_OPERATOR, ALL_TYPES),
