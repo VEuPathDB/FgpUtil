@@ -59,7 +59,7 @@ public class ExpressionNodeHelpers {
     JSONArray subExpressions = new JSONArray();
     for (JsonType value : JsonIterators.arrayIterable(json)) {
       if (!value.getType().isTerminal()) {
-        throw new JSONException("Array constructor called with tree depth > 1");
+        throw new JSONException("Cannot transform JSON array with depth > 1 to enum expression.");
       }
       subExpressions.put(new JSONObject()
         .put(operatorKey, Operator.EQ.name().toLowerCase())
