@@ -137,7 +137,7 @@ public class ExpressionNode {
       }
     }
     catch (IllegalArgumentException e) {
-      throw new JSONException("Unsupported operator '" + operatorStr + "'.");
+      throw new JSONException("Unsupported operator '" + operatorStr + "'.", e);
     }
   }
 

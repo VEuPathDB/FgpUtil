@@ -56,6 +56,15 @@ public class ExpressionNodeTest {
       .put("operator", "like")
       .put("value", "abcdef");
 
+  private static final JSONObject SAMPLE_RANGE_JSON =
+    new JSONObject()
+      .put("min", new JSONObject()
+        .put("value", 3)
+        .put("isInclusive", true))
+      .put("max", new JSONObject()
+        .put("value", 8)
+        .put("isInclusive", false));
+
   @Test
   public void doSqlFormatTest() {
     System.out.println("\n*** Format Test ***\n");
@@ -68,10 +77,10 @@ public class ExpressionNodeTest {
   public void doArrayConversionTest() {
     System.out.println("\n*** Array Conversion Test ***\n");
     System.out.println(TEST_JSON_ARRAY);
-    JSONObject objVersion = ExpressionNodeHelpers.transformToFlatEnumExpression(
+    JSONObject expressionNodeObj = ExpressionNodeHelpers.transformFlatEnumConfig(
         TEST_JSON_ARRAY, ExpressionNode.DEFAULT_OPERATOR_KEY, ExpressionNode.DEFAULT_VALUE_KEY);
-    System.out.println(objVersion);
-    System.out.println(ExpressionNodeHelpers.toNumberSqlExpression(objVersion, TEST_COLUMN_NAME));
+    System.out.println(expressionNodeObj);
+    System.out.println(ExpressionNodeHelpers.toNumberSqlExpression(expressionNodeObj, TEST_COLUMN_NAME));
   }
 
   @Test
@@ -83,4 +92,22 @@ public class ExpressionNodeTest {
     System.out.println(ExpressionNodeHelpers.toStringSqlExpression(TEST_LIKE_WITHOUT_WILDCARDS_JSON, TEST_COLUMN_NAME));
   }
 
+  @Test
+  public void doRangeTest() {
+    System.out.println("\n*** Range Test ***\n");
+    System.out.println(SAMPLE_RANGE_JSON);
+    JSONObject expressionNodeObj = ExpressionNodeHelpers.transformRangeConfig(SAMPLE_RANGE_JSON,
+        ExpressionNode.DEFAULT_OPERATOR_KEY, ExpressionNode.DEFAULT_VALUE_KEY);
+    System.out.println(expressionNodeObj);
+    System.out.println(ExpressionNodeHelpers.toNumberSqlExpression(expressionNodeObj, TEST_COLUMN_NAME));
+  }
+
+  @Test
+  public void doPatternTest() {
+    System.out.println("\n*** Pattern Test ***\n");
+    JSONObject expressionNodeObj = ExpressionNodeHelpers.transformPatternConfig("abc*def",
+        ExpressionNode.DEFAULT_OPERATOR_KEY, ExpressionNode.DEFAULT_VALUE_KEY);
+    System.out.println(expressionNodeObj);
+    System.out.println(ExpressionNodeHelpers.toStringSqlExpression(expressionNodeObj, TEST_COLUMN_NAME));
+  }
 }
