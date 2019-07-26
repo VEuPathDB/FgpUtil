@@ -36,6 +36,7 @@ public class FormatUtil {
 
   private FormatUtil() {}
 
+  @SuppressWarnings("serial")
   private static class CurrentStackTrace extends Throwable { }
   
   public static String getCurrentStackTrace() {

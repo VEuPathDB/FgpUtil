@@ -17,6 +17,8 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
  */
 public class ResultSetColumnInfo extends ArrayList<TwoTuple<String, Integer>> {
 
+  private static final long serialVersionUID = 1L;
+
   public ResultSetColumnInfo(ResultSet rs) throws SQLException {
     init(rs.getMetaData());
   }
