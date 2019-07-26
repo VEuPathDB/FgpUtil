@@ -20,12 +20,12 @@ public class PagedSqlTest {
     "select 13 as a, 14 as b, 15 as c " + platform.getDummyTable();
 
   @Test
-  public void testOracle() throws Exception {
+  public void testOracle() {
     doTests(SupportedPlatform.ORACLE);
   }
 
   @Test
-  public void testPostgres() throws Exception {
+  public void testPostgres() {
     doTests(SupportedPlatform.POSTGRESQL);
   }
 
