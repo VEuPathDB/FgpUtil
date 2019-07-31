@@ -131,6 +131,9 @@ public class ExpressionNode {
             }
             _children.add(new ExpressionNode(subExpression.getJSONObject(), expectedValueType, operatorKey, valueKey));
           }
+          if (_children.size() < 2) {
+            throw new JSONException("Combiner operation '" + _operator + "' must have at least two operands.");
+          }
           break;
         default:
           throw new JSONException("Unsupported operator type: " + _operator.getType());
