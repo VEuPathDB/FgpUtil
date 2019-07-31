@@ -14,6 +14,8 @@ import org.json.JSONObject;
 
 public class ExpressionNodeHelpers {
 
+  private ExpressionNodeHelpers(){} // cannot instantiate
+
   public static final char INCOMING_WILDCARD_CHARACTER = '*';
   
   public static final BiFunction<JsonType,Operator,String> NUMBER_CONVERTER =
@@ -56,6 +58,10 @@ public class ExpressionNodeHelpers {
     return new ExpressionNode(json, ValueType.STRING).toSqlExpression(columnName, false, DATE_CONVERTER);
   }
 
+  public static JSONObject transformFlatEnumConfig(JSONArray json) {
+    return transformFlatEnumConfig(json, ExpressionNode.DEFAULT_OPERATOR_KEY, ExpressionNode.DEFAULT_VALUE_KEY);
+  }
+
   /**
    * Transforms enumerated values JSON array into standard expression node syntax, e.g.
    * 
@@ -80,6 +86,10 @@ public class ExpressionNodeHelpers {
     return new JSONObject()
       .put(operatorKey, Operator.OR.name().toLowerCase())
       .put(valueKey, subExpressions);
+  }
+
+  public static JSONObject transformRangeConfig(JSONObject json) {
+    return transformRangeConfig(json, ExpressionNode.DEFAULT_OPERATOR_KEY, ExpressionNode.DEFAULT_VALUE_KEY);
   }
 
   /**
@@ -116,6 +126,10 @@ public class ExpressionNodeHelpers {
     return Optional.of(new JSONObject()
         .put(operatorKey, op.name().toLowerCase())
         .put(valueKey, boundaryJson.get("value")));
+  }
+
+  public static JSONObject transformPatternConfig(String value) {
+    return transformPatternConfig(value, ExpressionNode.DEFAULT_OPERATOR_KEY, ExpressionNode.DEFAULT_VALUE_KEY);
   }
 
   /**
