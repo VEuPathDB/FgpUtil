@@ -29,10 +29,9 @@ public class ExpressionNodeHelpers {
     };
 
   public static final BiFunction<JsonType, Operator, Operator> LIKE_CONVERTER =
-    (val, op) -> {
-      boolean hasWildcards = val.getString().indexOf(INCOMING_WILDCARD_CHARACTER) > -1;
-      return (op.equals(Operator.LIKE) && !hasWildcards) ? Operator.EQ : op;
-    };
+    (val, op) -> !op.equals(Operator.LIKE) ? op // only apply if op is LIKE
+      : val.getString().indexOf(INCOMING_WILDCARD_CHARACTER) < 0 // if no wildcards...
+      ? Operator.EQ : Operator.LIKE; // then convert to EQ; else keep LIKE
 
   private static final String
     SQL_TODATE_FORMAT  = "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"",
