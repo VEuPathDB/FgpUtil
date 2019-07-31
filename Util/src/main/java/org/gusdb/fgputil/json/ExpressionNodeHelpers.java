@@ -73,19 +73,28 @@ public class ExpressionNodeHelpers {
    * @return expression node syntax for enumerated values
    */
   public static JSONObject transformFlatEnumConfig(JSONArray json, String operatorKey, String valueKey) throws JSONException {
-    JSONArray subExpressions = new JSONArray();
-    for (JsonType value : JsonIterators.arrayIterable(json)) {
-      if (!value.getType().isTerminal()) {
-        throw new JSONException("Cannot transform JSON array with depth > 1 to enum expression.");
-      }
-      subExpressions.put(new JSONObject()
-        .put(operatorKey, Operator.EQ.name().toLowerCase())
-        .put(valueKey, value.get())
-      );
+    switch (json.length()) {
+      case 0:
+        throw new JSONException("Cannot transform JSON Array with zero values.");
+      case 1:
+        return new JSONObject()
+            .put(operatorKey, Operator.EQ.name())
+            .put(valueKey, json.get(0));
+      default:
+        JSONArray subExpressions = new JSONArray();
+        for (JsonType value : JsonIterators.arrayIterable(json)) {
+          if (!value.getType().isTerminal()) {
+            throw new JSONException("Cannot transform JSON array with depth > 1 to enum expression.");
+          }
+          subExpressions.put(new JSONObject()
+            .put(operatorKey, Operator.EQ.name().toLowerCase())
+            .put(valueKey, value.get())
+          );
+        }
+        return new JSONObject()
+          .put(operatorKey, Operator.OR.name().toLowerCase())
+          .put(valueKey, subExpressions);
     }
-    return new JSONObject()
-      .put(operatorKey, Operator.OR.name().toLowerCase())
-      .put(valueKey, subExpressions);
   }
 
   public static JSONObject transformRangeConfig(JSONObject json) {
