@@ -531,4 +531,8 @@ public class Functions {
   public static <T> boolean executesWithoutException(Function<T, ?> function, T inputValue) {
     try { function.apply(inputValue); return true; } catch(Exception e) { return false; }
   }
+
+  public static <T,E extends Throwable> T doThrow(Supplier<E> exceptionSupplier) throws E {
+    throw exceptionSupplier.get();
+  }
 }
