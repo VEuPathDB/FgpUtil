@@ -6,9 +6,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
@@ -66,17 +68,23 @@ public class FormatUtil {
   }
 
   public static String formatDate(Date date) {
-    return STANDARD_DATE_FORMAT.format(date
-        .toInstant()
+    return STANDARD_DATE_FORMAT.format(getInstant(date)
         .atZone(ZoneId.systemDefault())
         .toLocalDate());
   }
 
   public static String formatDateTime(Date date) {
-    return STANDARD_DATE_TIME_FORMAT.format(date
-        .toInstant()
+    return STANDARD_DATE_TIME_FORMAT.format(getInstant(date)
         .atZone(ZoneId.systemDefault())
         .toLocalDateTime());
+  }
+
+  private static Instant getInstant(Date date) {
+    // Handle java.sql.Date, which does not support the toInstant() method.  For explanation, see:
+    //   https://stackoverflow.com/questions/36435492/unsupportedoperationexception-why-cant-you-call-toinstant-on-a-java-sql-dat
+    return (date instanceof java.sql.Date)
+      ? ((java.sql.Date)date).toLocalDate().atStartOfDay().toInstant(ZoneOffset.UTC)
+      : date.toInstant();
   }
 
   public static String shrinkUtf8String(String str, int maxBytes) {
