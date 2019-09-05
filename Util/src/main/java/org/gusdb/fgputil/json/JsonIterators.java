@@ -2,6 +2,8 @@ package org.gusdb.fgputil.json;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,8 +16,16 @@ public class JsonIterators {
     return new JsonArrayIterable(array);
   }
 
+  public static Stream<JsonType> arrayStream(JSONArray array) {
+    return StreamSupport.stream(new JsonArrayIterable(array).spliterator(), false);
+  }
+
   public static Iterable<Entry<String, JsonType>> objectIterable(JSONObject obj) {
     return new JsonObjectIterable(obj);
+  }
+
+  public static Stream<Entry<String, JsonType>> objectStream(JSONObject obj) {
+    return StreamSupport.stream(new JsonObjectIterable(obj).spliterator(), false);
   }
 
   private static class JsonArrayIterable implements Iterable<JsonType> {
