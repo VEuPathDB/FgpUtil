@@ -224,7 +224,7 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
       return initClassInstance.initializeDriver(driverClassName, connectionUrl, props);
     }
     catch (ClassNotFoundException e) {
-      throw new InitializationException("Unable to instantiate configured DB driver class.");
+      throw new InitializationException("Unable to instantiate configured DB driver class '" + driverInitClassName + "'.", e);
     }
   }
 
