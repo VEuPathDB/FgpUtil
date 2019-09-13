@@ -1,0 +1,34 @@
+#!/usr/bin/perl
+
+use lib "$ENV{GUS_HOME}/lib/perl";
+
+use FgpUtil::Util::CommandHelper;
+
+my $GUS_HOME = $ENV{GUS_HOME};
+my $PROJECT_HOME = $ENV{PROJECT_HOME};
+my $CLASSPATH = &FgpUtil::Util::CommandHelper::getJavaClasspath($GUS_HOME);
+my $sysProps = &FgpUtil::Util::CommandHelper::getSystemProps($GUS_HOME, 'fgpUnitTest');
+
+sub main {
+    @args = @_;
+    $javaClass = $args[0];
+    $cmd = "java $sysProps -classpath $CLASSPATH org.junit.runner.JUnitCore $javaClass";
+    #printf "$cmd\n";
+    my $err = system($cmd);
+    return $err >> 8;
+}
+
+sub printUsageAndDie { # no arguments
+    printf(STDERR "\nUSAGE: fgpUnitTest <unitTestClass>\n\n");
+    printf(STDERR "   unitTestClass: Java class containing annotated @Test methods\n\n");
+    exit 1;
+}
+
+################### Parse args and call main sub ###################
+
+if ($#ARGV != 0) {
+    # only 1 argument allowed
+    printUsageAndDie();
+}
+
+exit(main(@ARGV));

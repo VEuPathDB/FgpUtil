@@ -1,0 +1,10 @@
+# Ensure the destination directories mentioned in the cohort's
+# template.yml are present before copying templates in later tasks.
+#
+
+- name: ensure destination directories
+  file:
+    dest: "{{ templates[item]['dest'] | dirname }}"
+    state: directory
+  with_items: 
+    - "{{ templates.keys() }}"

@@ -1,0 +1,9 @@
+# dump current vars to file
+
+- name: log to conifer_vars_{{ tag }}.yml
+  template:
+    src: Conifer/conifer_vars_log.j2
+    dest: "{{ gus_home }}/lib/conifer/log/conifer_vars_{{ tag }}.yml"
+    mode: 0600
+  changed_when: false
+  when: conifer_log_vars is defined and conifer_log_vars == 'true'
