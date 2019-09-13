@@ -1,0 +1,30 @@
+#!/usr/bin/perl
+
+use lib "$ENV{GUS_HOME}/lib/perl";
+
+use FgpUtil::Util::CommandHelper;
+
+my $gusHome = $ENV{GUS_HOME};
+my $classpath = &FgpUtil::Util::CommandHelper::getJavaClasspath($gusHome);
+my $sysProps = &FgpUtil::Util::CommandHelper::getSystemProps($gusHome, 'fgpJava');
+
+sub main {
+    @args = @_;
+    $cmd = "java $sysProps -classpath $classpath @args";
+    my $err = system($cmd);
+    return $err >> 8;
+}
+
+sub printUsageAndDie { # no arguments
+    printf(STDERR "\nUSAGE: fgpJava <java_class> [<arg1> <arg2> ...]\n\n");
+    exit 1;
+}
+
+################### Parse args and call main sub ###################
+
+if ($#ARGV < 0) {
+    # fewer than 1 arg
+    printUsageAndDie();
+}
+
+exit(main(@ARGV));

@@ -1,0 +1,106 @@
+#
+# Parse YAML files for variables and place them into the `conifer`
+# namespace. Afterwards, the `copy_extra_vars` callback plugin collects
+# any `--extra-vars` passed to the playbook and adds them to the
+# `conifer` dictionary, overriding any earlier assignments..
+#
+
+# This loads in to the 'global' namespace (not 'conifer' namespace).
+- name: load bootstrap values to global namespace
+  include_vars:
+    dir: 'vars'
+    depth: 1
+    files_matching: '^{{ item }}$'
+  with_items:
+    - bootstrap.yml
+
+- include: log_vars.yml
+  vars:
+    tag: load_bootstrap_values_1_global_ns
+
+- name: load user values to global namespace
+  include_vars:
+    dir: 'vars'
+    depth: 1
+    files_matching: '{{ item }}'
+  with_items:
+    - '{{ site_vars }}'
+  when: site_vars is defined
+
+- include: log_vars.yml
+  vars:
+    tag: load_user_values_1_global_ns
+
+- name: load default values
+  include_vars:
+    name: conifer
+    dir: 'vars'
+    depth: 1
+    files_matching: '^{{ item }}$'
+  with_items:
+    - default.yml
+
+- include: log_vars.yml
+  vars:
+    tag: load_default_values_1_conifer_ns
+
+- name: load cohort values
+  include_vars:
+    name: conifer
+    dir: 'vars/{{ cohort }}'
+    depth: 1
+    files_matching: '^{{ item }}$'
+  with_items:
+    - default.yml
+    - '{{ project }}.yml'
+
+# The env value, if set, might be in Ansible's top-level dictionary (if
+# passed in as an --extra-vars commandline arg) or in the conifer
+# dictionary (if read from the site_vars or other file by the
+# include_vars tasks). The commandline arg takes precedent.
+- name: load environment values
+  include_vars:
+    name: conifer
+    dir: 'vars/{{ cohort }}/{{ (env is defined)|ternary(env, vars.conifer.env) }}'
+    depth: 1
+    files_matching: '{{ item }}'
+  with_items:
+    - default.yml
+    - '{{ project }}.yml'
+  when: env is defined or vars.conifer.env is defined
+
+- include: log_vars.yml
+  vars:
+    tag: load_env_values_conifer_ns
+
+- name: load bootstrap values to conifer namespace
+  include_vars:
+    name: conifer
+    dir: 'vars'
+    depth: 1
+    files_matching: '^{{ item }}$'
+  with_items:
+    - bootstrap.yml
+
+- include: log_vars.yml
+  vars:
+    tag: load_bootstrap_values_2_conifer_ns
+
+- name: load user values to conifer namespace
+  include_vars:
+    name: conifer
+    dir: 'vars'
+    depth: 1
+    files_matching: '{{ item }}'
+  with_items:
+    - '{{ site_vars }}'
+  when: site_vars is defined
+
+- include: log_vars.yml
+  vars:
+    tag: load_user_values_2_conifer_ns
+
+# Be aware that the `copy_extra_vars` callback plugin collects any
+# `--extra-vars` passed to the playbook and adds them to the `conifer`
+# dictionary after all the `include_vars` have run, overriding any
+# earlier assignments.

@@ -1,0 +1,8 @@
+- name: provision configurations from templates
+  template_with_vars:
+    src: "{{ templates[item]['src'] }}"
+    dest: "{{ templates[item]['dest'] }}"
+    vars: "{{ vars.conifer|conifer_scrub('=c=') }}"
+    backup: "{{ vars.conifer.conifer_backup|default('yes') }}"
+  with_items: 
+    - "{{ templates.keys() }}"

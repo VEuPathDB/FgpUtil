@@ -1,0 +1,6 @@
+
+gus_home: '{{ derived_gus_home }}'
+cohort: '{{ derived_cohort }}'
+project: '{{ derived_project }}'
+hostname: '{{ derived_hostname|default("") }}'
+webapp_ctx: '{{ derived_webapp_ctx|default("") }}'

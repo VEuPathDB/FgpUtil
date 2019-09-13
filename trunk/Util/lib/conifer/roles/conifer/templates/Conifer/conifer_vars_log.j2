@@ -1,0 +1,28 @@
+{#
+vars.project
+{{ vars.project|default('NULL') }}
+vars.cohort
+{{ vars.cohort|default('NULL') }}
+
+vars.conifer.project
+{{ vars.conifer.project|default('NULL') }}
+vars.conifer.cohort
+{{ vars.conifer.cohort|default('NULL') }}
+
+vars.hostvars.localhost.project
+{{ vars.hostvars.localhost.project|default('NULL') }}
+vars.hostvars.localhost.cohort
+{{ vars.hostvars.localhost.cohort|default('NULL') }}
+
+vars.hostvars.localhost.conifer.project
+{{ vars.hostvars.localhost.conifer.project|default('NULL') }}
+vars.hostvars.localhost.conifer.cohort
+{{ vars.hostvars.localhost.conifer.cohort|default('NULL') }}
+
+#}
+vars.hostvars.localhost:
+{{ vars.hostvars.localhost|default('NULL')|to_nice_yaml(indent=2)|indent(width=2, indentfirst=true) }}
+
+
+vars.hostvars.localhost.conifer:
+{{ vars.hostvars.localhost.conifer|default('NULL')|to_nice_yaml(indent=2)|indent(width=2, indentfirst=true) }}
