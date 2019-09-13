@@ -1,0 +1,21 @@
+# Required vars
+#     gus_home 
+#     cohort
+#     project
+#     env
+#     conifer_site_vars_seed_dest
+#
+# site_vars is not required (because that's what this playbook
+# is reporting)
+
+- hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+
+  tasks:
+
+    - name: Run tasks/other.yml instead of 'main'
+      include_role:
+        name: conifer
+        tasks_from: mk_site_vars.yml
