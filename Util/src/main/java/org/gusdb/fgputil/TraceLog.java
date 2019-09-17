@@ -47,7 +47,7 @@ public class TraceLog {
 
   private static final Map<Long, Stack<String>> CALL_STACKS = new HashMap<>();
 
-  private final Class target;
+  private final Class<?> target;
 
   /**
    * Controls whether or not the trace logger will do anything when called.
@@ -58,7 +58,7 @@ public class TraceLog {
 
   private final Logger log;
 
-  public TraceLog(final Class target) {
+  public TraceLog(final Class<?> target) {
     this.target = target;
     this.log = Logger.getLogger(target);
 
