@@ -7,7 +7,8 @@
 
   <target name="FgpUtil-Installation" depends="FgpUtil-MavenInstallation,
                                                FgpUtil/Util-Installation,
-                                               FgpUtil/AccountDB-Installation">
+                                               FgpUtil/AccountDB-Installation,
+                                               FgpUtil/Server-Installation">
     <ant target="defaultProjectInstall">
       <property name="project" value="FgpUtil"/>
     </ant>
@@ -60,19 +61,11 @@
     </ant>
   </target>
 
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooooo  Release  ooooooooooooooooooooooooooooo -->
-  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
-
-  <target name="FgpUtil-Release">
-
-    <ant target="defaultProjectRelease">
-      <property name="tag" value="v1-4-0"/>
-      <property name="cvsroot" value="/files/cbil/cvs/cvsroot"/>
+  <target name="FgpUtil/Server-Installation">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="FgpUtil"/>
+      <property name="component" value="Server"/>
     </ant>
   </target>
 
-
 </project>
-
-

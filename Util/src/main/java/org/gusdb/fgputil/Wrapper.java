@@ -43,4 +43,8 @@ public class Wrapper<T> {
       _lock.readLock().unlock();
     }
   }
+
+  public boolean hasObject() {
+    return _obj != null;
+  }
 }
