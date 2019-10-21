@@ -10,9 +10,7 @@
   <modules>
     <module>Util</module>
     <module>AccountDB</module>
-    <!-- Comment until we find how this is breaking WDK
     <module>Server</module>
-    -->
   </modules>
 
   <parent>

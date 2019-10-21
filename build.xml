@@ -62,12 +62,10 @@
   </target>
 
   <target name="FgpUtil/Server-Installation">
-    <!-- comment until we find how this is breaking WDK
     <ant target="defaultComponentInstall">
       <property name="project" value="FgpUtil"/>
       <property name="component" value="Server"/>
     </ant>
-    -->
   </target>
 
 </project>
