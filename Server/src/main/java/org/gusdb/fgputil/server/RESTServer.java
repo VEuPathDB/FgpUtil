@@ -3,11 +3,9 @@ package org.gusdb.fgputil.server;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.IoUtil.closeQuietly;
 
-import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -16,27 +14,35 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
-import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.Wrapper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * General use Jersey-based REST server that provides hooks for startup and
+ * creation/closing of application-scoped resources, and graceful shutdown.
+ * 
+ * @author rdoherty
+ */
 public abstract class RESTServer {
 
-  public static abstract class ApplicationScope extends HashMap<String,Object> implements Closeable {}
-
   protected abstract ResourceConfig getResourceConfig();
-  protected abstract ApplicationScope createApplicationScope(JSONObject config);
+  protected abstract ApplicationContext createApplicationContext(JSONObject config);
 
-  private static ApplicationScope _applicationScope;
+  private static ApplicationContext _applicationContext;
 
   private final int _port;
   private final JSONObject _config;
 
-  public static ApplicationScope getApplicationScope() {
-    return _applicationScope;
+  public static ApplicationContext getApplicationContext() {
+    return _applicationContext;
   }
 
+  /**
+   * Creates a REST server superclass with the passed args.  Args should be:
+   * @param commandLineArgs
+   */
   public RESTServer(String[] commandLineArgs) {
     // parse command line args into desired port and server config
     TwoTuple<Integer, JSONObject> parsedArgs = parseConfig(commandLineArgs);
@@ -46,7 +52,7 @@ public abstract class RESTServer {
 
   public void start() {
 
-    Wrapper<ApplicationScope> applicationScope = new Wrapper<>();
+    Wrapper<ApplicationContext> applicationContext = new Wrapper<>();
     Wrapper<HttpServer> server = new Wrapper<>();
 
     try {
@@ -58,12 +64,12 @@ public abstract class RESTServer {
           .build();
 
       // create runtime environment (application-scoped data)
-      applicationScope.set(createApplicationScope(_config));
+      applicationContext.set(createApplicationContext(_config));
       synchronized(RESTServer.class) {
-        if (_applicationScope != null) {
+        if (_applicationContext != null) {
           throw new RuntimeException("Only one RESTServer can be used per application.");
         }
-        _applicationScope = applicationScope.get();
+        _applicationContext = applicationContext.get();
       }
 
       // build Grizzly server
@@ -72,7 +78,7 @@ public abstract class RESTServer {
       // add hook to shut down resources if JVM is asked to shut down
       Runtime.getRuntime().addShutdownHook(new Thread(() -> {
         server.get().shutdownNow();
-        closeQuietly(_applicationScope);
+        closeQuietly(_applicationContext);
       }));
 
       // start the server
@@ -89,20 +95,26 @@ public abstract class RESTServer {
     }
     finally {
       if (server.hasObject()) server.get().shutdown();
-      if (applicationScope.hasObject()) closeQuietly(applicationScope.get());
+      if (applicationContext.hasObject()) closeQuietly(applicationContext.get());
     }
   }
 
   private TwoTuple<Integer, JSONObject> parseConfig(String[] args) {
-    if (args.length != 2 || !FormatUtil.isInteger(args[0])) {
-      System.err.println("USAGE: fgpJava " + getClass().getName() + " <port> <config-file>");
+    if (args.length < 1 || args.length > 2 || !FormatUtil.isInteger(args[0])) {
+      System.err.println("USAGE: fgpJava " + getClass().getName() + " <port> [<config-file>]");
       System.exit(1);
     }
-    try (FileReader in = new FileReader(args[1])) {
-      return new TwoTuple<>(Integer.parseInt(args[0]), new JSONObject(IoUtil.readAllChars(in)));
+    int port = Integer.parseInt(args[0]);
+    JSONObject config = new JSONObject(args.length == 1 ? "{}" : readConfigFile(args[1]));
+    return new TwoTuple<>(port, config);
+  }
+
+  private String readConfigFile(String fileName) {
+    try (FileReader in = new FileReader(fileName)) {
+      return IoUtil.readAllChars(in);
     }
     catch (IOException | JSONException e) {
-      System.err.println("Error: Unable to read JSON config file " + args[1] + ":" + NL + e.getMessage());
+      System.err.println("Error: Unable to read JSON config file " + fileName + ":" + NL + e.getMessage());
       System.exit(2);
       return null;
     }
