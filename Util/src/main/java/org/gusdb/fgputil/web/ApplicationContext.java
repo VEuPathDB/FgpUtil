@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.server;
+package org.gusdb.fgputil.web;
 
 import java.io.Closeable;
 import java.util.Map;

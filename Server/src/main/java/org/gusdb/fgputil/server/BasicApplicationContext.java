@@ -3,6 +3,8 @@ package org.gusdb.fgputil.server;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gusdb.fgputil.web.ApplicationContext;
+
 public abstract class BasicApplicationContext extends HashMap<String,Object> implements ApplicationContext {
 
   private final Map<String,String> _params;

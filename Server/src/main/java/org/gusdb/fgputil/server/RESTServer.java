@@ -14,7 +14,8 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
-import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.Tuples.ThreeTuple;
+import org.gusdb.fgputil.web.ApplicationContext;
 import org.gusdb.fgputil.Wrapper;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,6 +33,7 @@ public abstract class RESTServer {
 
   private static ApplicationContext _applicationContext;
 
+  private final String _baseUri;
   private final int _port;
   private final JSONObject _config;
 
@@ -45,9 +47,10 @@ public abstract class RESTServer {
    */
   public RESTServer(String[] commandLineArgs) {
     // parse command line args into desired port and server config
-    TwoTuple<Integer, JSONObject> parsedArgs = parseConfig(commandLineArgs);
-    _port = parsedArgs.getFirst();
-    _config = parsedArgs.getSecond();
+    ThreeTuple<String, Integer, JSONObject> parsedArgs = parseConfig(commandLineArgs);
+    _baseUri = parsedArgs.getFirst();
+    _port = parsedArgs.getSecond();
+    _config = parsedArgs.getThird();
   }
 
   public void start() {
@@ -59,7 +62,7 @@ public abstract class RESTServer {
 
       // create base URI for server
       URI baseUri = UriBuilder
-          .fromUri("http://localhost/")
+          .fromUri(_baseUri)
           .port(_port)
           .build();
 
@@ -99,14 +102,15 @@ public abstract class RESTServer {
     }
   }
 
-  private TwoTuple<Integer, JSONObject> parseConfig(String[] args) {
-    if (args.length < 1 || args.length > 2 || !FormatUtil.isInteger(args[0])) {
-      System.err.println("USAGE: fgpJava " + getClass().getName() + " <port> [<config-file>]");
+  private ThreeTuple<String, Integer, JSONObject> parseConfig(String[] args) {
+    if (args.length < 2 || args.length > 3 || !FormatUtil.isInteger(args[1])) {
+      System.err.println("USAGE: fgpJava " + getClass().getName() + " <baseUri> <port> [<config-file>]");
       System.exit(1);
     }
-    int port = Integer.parseInt(args[0]);
-    JSONObject config = new JSONObject(args.length == 1 ? "{}" : readConfigFile(args[1]));
-    return new TwoTuple<>(port, config);
+    String baseUri = args[0];
+    int port = Integer.parseInt(args[1]);
+    JSONObject config = new JSONObject(args.length < 3 ? "{}" : readConfigFile(args[2]));
+    return new ThreeTuple<>(baseUri, port, config);
   }
 
   private String readConfigFile(String fileName) {
