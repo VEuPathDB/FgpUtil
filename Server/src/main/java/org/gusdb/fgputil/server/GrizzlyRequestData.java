@@ -72,6 +72,11 @@ public class GrizzlyRequestData implements RequestData {
   }
 
   @Override
+  public void setAttribute(String name, Object value) {
+    _request.setAttribute(name, value);
+  }
+
+  @Override
   public String getUserAgent() {
     return _request.getHeader(Header.UserAgent);
   }

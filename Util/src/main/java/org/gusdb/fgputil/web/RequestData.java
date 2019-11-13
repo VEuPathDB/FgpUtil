@@ -57,6 +57,11 @@ public interface RequestData {
   Map<String, Object> getAttributeMap();
 
   /**
+   * Adds an attribute to the underlying request object
+   */
+  void setAttribute(String name, Object value);
+
+  /**
    * @return user-agent header value
    */
   String getUserAgent();
@@ -97,27 +102,4 @@ public interface RequestData {
       return "N/A";
     }
   }
-
-
-
-
-  /*
-  public String getRequestUri();
-  public String getNoContextUrl();
-  public String getWebAppBaseUrl();
-  public String getRequestUrl();
-  public String getQueryString();*/
-  /** returns the full request URL (including the query string) */
-  /*public String getFullRequestUrl();
-  public String getReferrer();
-  public String getIpAddress();
-  public Object getRequestAttribute(String key);
-  public String getRemoteHost();
-  public String getServerName();
-  public String getAppHostName();
-  public String getAppHostAddress();
-  public String getUserAgent();
-  public HttpMethod getMethod();
-  public Map<String, String[]> getTypedParamMap();
-  public String getContextUri();*/
 }

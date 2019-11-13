@@ -23,6 +23,10 @@ public class Wrapper<T> {
 
   public Wrapper() { }
 
+  public Wrapper(T obj) {
+    _obj = obj;
+  }
+
   public Wrapper<T> set(T obj) {
     try {
       _lock.writeLock().lock();
