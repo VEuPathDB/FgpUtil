@@ -6,7 +6,7 @@ import javax.ws.rs.core.NewCookie;
 public class CookieBuilder {
 
   private String _name;
-  private String _value;
+  private String _value = "";
   private int _maxAge = -1;
   private String _path = "/";
 
@@ -21,36 +21,32 @@ public class CookieBuilder {
     return _name;
   }
 
-  public CookieBuilder setName(String name) {
+  public void setName(String name) {
     _name = name;
-    return this;
   }
 
   public String getValue() {
     return _value;
   }
 
-  public CookieBuilder setValue(String value) {
+  public void setValue(String value) {
     _value = value;
-    return this;
   }
 
   public int getMaxAge() {
     return _maxAge;
   }
 
-  public CookieBuilder setMaxAge(int maxAge) {
+  public void setMaxAge(int maxAge) {
     _maxAge = maxAge;
-    return this;
   }
 
   public String getPath() {
     return _path;
   }
 
-  public CookieBuilder setPath(String path) {
+  public void setPath(String path) {
     _path = path;
-    return this;
   }
 
   public Cookie toHttpCookie() {
