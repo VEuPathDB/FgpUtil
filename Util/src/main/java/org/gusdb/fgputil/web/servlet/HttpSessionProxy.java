@@ -1,10 +1,12 @@
-package org.gusdb.fgputil.web;
+package org.gusdb.fgputil.web.servlet;
 
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpSession;
+
+import org.gusdb.fgputil.web.SessionProxy;
 
 public class HttpSessionProxy implements SessionProxy {
 

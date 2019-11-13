@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.web;
+package org.gusdb.fgputil.web.servlet;
 
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.gusdb.fgputil.web.HttpMethod;
+import org.gusdb.fgputil.web.RequestData;
+import org.gusdb.fgputil.web.SessionProxy;
 
 /**
  * Facade over HttpServletRequest that simplifies some common calls to and manipulations of
