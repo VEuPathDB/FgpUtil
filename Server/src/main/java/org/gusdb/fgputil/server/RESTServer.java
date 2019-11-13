@@ -55,8 +55,8 @@ public abstract class RESTServer {
 
   public void start() {
 
-    Wrapper<ApplicationContext> applicationContext = new Wrapper<>();
-    Wrapper<HttpServer> server = new Wrapper<>();
+    HttpServer server = null;
+    ApplicationContext applicationContext = null;
 
     try {
 
@@ -67,25 +67,27 @@ public abstract class RESTServer {
           .build();
 
       // create runtime environment (application-scoped data)
-      applicationContext.set(createApplicationContext(_config));
+      applicationContext = createApplicationContext(_config);
       synchronized(RESTServer.class) {
         if (_applicationContext != null) {
           throw new RuntimeException("Only one RESTServer can be used per application.");
         }
-        _applicationContext = applicationContext.get();
+        _applicationContext = applicationContext;
       }
 
       // build Grizzly server
-      server.set(GrizzlyHttpServerFactory.createHttpServer(baseUri, getResourceConfig()));
+      server = GrizzlyHttpServerFactory.createHttpServer(baseUri, getResourceConfig());
 
       // add hook to shut down resources if JVM is asked to shut down
+      Wrapper<HttpServer> serverWrapper = new Wrapper<>(server);
+      Wrapper<ApplicationContext> contextWrapper = new Wrapper<>(applicationContext);
       Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-        server.get().shutdownNow();
-        closeQuietly(_applicationContext);
+        serverWrapper.get().shutdownNow();
+        closeQuietly(contextWrapper.get());
       }));
 
       // start the server
-      server.get().start();
+      server.start();
 
       System.out.println("Server started on port " + _port + ". Stop the application using CTRL+C");
 
@@ -97,8 +99,8 @@ public abstract class RESTServer {
       System.exit(3);
     }
     finally {
-      if (server.hasObject()) server.get().shutdown();
-      if (applicationContext.hasObject()) closeQuietly(applicationContext.get());
+      if (server != null) server.shutdown();
+      if (applicationContext != null) closeQuietly(applicationContext);
     }
   }
 
