@@ -1,7 +1,5 @@
 package org.gusdb.fgputil.web;
 
-import java.util.Objects;
-
 import javax.servlet.http.Cookie;
 import javax.ws.rs.core.NewCookie;
 
@@ -51,7 +49,6 @@ public class CookieBuilder {
   }
 
   public CookieBuilder setPath(String path) {
-    Objects.requireNonNull(path);
     _path = path;
     return this;
   }
