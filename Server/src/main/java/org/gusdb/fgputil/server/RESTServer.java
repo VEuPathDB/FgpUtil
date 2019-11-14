@@ -114,6 +114,9 @@ public abstract class RESTServer {
       System.exit(1);
     }
     String baseUri = args[0];
+    if (baseUri.startsWith("/")) {
+      baseUri = "http://localhost" + baseUri;
+    }
     int port = Integer.parseInt(args[1]);
     JSONObject config = new JSONObject(args.length < 3 ? "{}" : readConfigFile(args[2]));
     return new ThreeTuple<>(baseUri, port, config);
