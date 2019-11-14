@@ -41,6 +41,8 @@ public abstract class RESTServer {
     return _applicationContext;
   }
 
+  protected abstract boolean requiresConfigFile();
+
   /**
    * Creates a REST server superclass with the passed args.  Args should be:
    * @param commandLineArgs
@@ -105,8 +107,10 @@ public abstract class RESTServer {
   }
 
   private ThreeTuple<String, Integer, JSONObject> parseConfig(String[] args) {
-    if (args.length < 2 || args.length > 3 || !FormatUtil.isInteger(args[1])) {
-      System.err.println("USAGE: fgpJava " + getClass().getName() + " <baseUri> <port> [<config-file>]");
+    int maxArgs = requiresConfigFile() ? 2 : 3;
+    if (args.length < 2 || args.length > maxArgs || !FormatUtil.isInteger(args[1])) {
+      String configFileOpt = requiresConfigFile() ? " [<config-file>]" : "";
+      System.err.println("USAGE: fgpJava " + getClass().getName() + " <baseUri> <port>" + configFileOpt);
       System.exit(1);
     }
     String baseUri = args[0];
