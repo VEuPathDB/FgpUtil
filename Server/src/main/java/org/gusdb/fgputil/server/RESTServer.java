@@ -107,7 +107,7 @@ public abstract class RESTServer {
   }
 
   private ThreeTuple<String, Integer, JSONObject> parseConfig(String[] args) {
-    int maxArgs = requiresConfigFile() ? 2 : 3;
+    int maxArgs = requiresConfigFile() ? 3 : 2;
     if (args.length < 2 || args.length > maxArgs || !FormatUtil.isInteger(args[1])) {
       String configFileOpt = requiresConfigFile() ? " [<config-file>]" : "";
       System.err.println("USAGE: fgpJava " + getClass().getName() + " <baseUri> <port>" + configFileOpt);
