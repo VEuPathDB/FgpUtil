@@ -41,8 +41,6 @@ public abstract class RESTServer {
     return _applicationContext;
   }
 
-  protected abstract boolean requiresConfigFile();
-
   /**
    * Creates a REST server superclass with the passed args.  Args should be:
    * @param commandLineArgs
@@ -53,6 +51,13 @@ public abstract class RESTServer {
     _baseUri = parsedArgs.getFirst();
     _port = parsedArgs.getSecond();
     _config = parsedArgs.getThird();
+  }
+
+  /**
+   * @return true by default; subclasses may override if they do not need a config file
+   */
+  protected boolean requiresConfigFile() {
+    return true;
   }
 
   public void start() {
@@ -91,7 +96,7 @@ public abstract class RESTServer {
       // start the server
       server.start();
 
-      System.out.println("Server started on port " + _port + ". Stop the application using CTRL+C");
+      System.out.println("Server started on port " + baseUri.getPort() + ", serving from " + baseUri + ". Stop the application using CTRL+C");
 
       Thread.currentThread().join();
     }
@@ -106,7 +111,7 @@ public abstract class RESTServer {
     }
   }
 
-  private ThreeTuple<String, Integer, JSONObject> parseConfig(String[] args) {
+  protected ThreeTuple<String, Integer, JSONObject> parseConfig(String[] args) {
     int maxArgs = requiresConfigFile() ? 3 : 2;
     if (args.length < 2 || args.length > maxArgs || !FormatUtil.isInteger(args[1])) {
       String configFileOpt = requiresConfigFile() ? " [<config-file>]" : "";
