@@ -16,4 +16,6 @@ public interface SessionProxy {
 
   void invalidate();
 
+  String getId();
+
 }

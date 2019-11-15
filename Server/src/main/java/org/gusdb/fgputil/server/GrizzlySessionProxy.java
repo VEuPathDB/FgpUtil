@@ -43,4 +43,9 @@ public class GrizzlySessionProxy implements SessionProxy {
     _session.setSessionTimeout(0);
   }
 
+  @Override
+  public String getId() {
+    return _session.getIdInternal();
+  }
+
 }

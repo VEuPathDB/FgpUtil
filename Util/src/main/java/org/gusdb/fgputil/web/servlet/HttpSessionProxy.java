@@ -52,4 +52,9 @@ public class HttpSessionProxy implements SessionProxy {
     _session.invalidate();
   }
 
+  @Override
+  public String getId() {
+    return _session.getId();
+  }
+
 }
