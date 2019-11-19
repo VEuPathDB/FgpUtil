@@ -29,7 +29,7 @@ import org.json.JSONObject;
 public abstract class RESTServer {
 
   protected abstract ResourceConfig getResourceConfig();
-  protected abstract ApplicationContext createApplicationContext(JSONObject config);
+  protected abstract ApplicationContext createApplicationContext(URI serviceUri, JSONObject config);
 
   private static ApplicationContext _applicationContext;
 
@@ -68,13 +68,13 @@ public abstract class RESTServer {
     try {
 
       // create base URI for server
-      URI baseUri = UriBuilder
+      URI serviceUri = UriBuilder
           .fromUri(_baseUri)
           .port(_port)
           .build();
 
       // create runtime environment (application-scoped data)
-      applicationContext = createApplicationContext(_config);
+      applicationContext = createApplicationContext(serviceUri, _config);
       synchronized(RESTServer.class) {
         if (_applicationContext != null) {
           throw new RuntimeException("Only one RESTServer can be used per application.");
@@ -83,7 +83,7 @@ public abstract class RESTServer {
       }
 
       // build Grizzly server
-      server = GrizzlyHttpServerFactory.createHttpServer(baseUri, getResourceConfig());
+      server = GrizzlyHttpServerFactory.createHttpServer(serviceUri, getResourceConfig());
 
       // add hook to shut down resources if JVM is asked to shut down
       Wrapper<HttpServer> serverWrapper = new Wrapper<>(server);
@@ -96,7 +96,7 @@ public abstract class RESTServer {
       // start the server
       server.start();
 
-      System.out.println("Server started on port " + baseUri.getPort() + ", serving from " + baseUri + ". Stop the application using CTRL+C");
+      System.out.println("Server started on port " + serviceUri.getPort() + ", serving from " + serviceUri + ". Stop the application using CTRL+C");
 
       Thread.currentThread().join();
     }
@@ -116,6 +116,7 @@ public abstract class RESTServer {
     if (args.length < 2 || args.length > maxArgs || !FormatUtil.isInteger(args[1])) {
       String configFileOpt = requiresConfigFile() ? " [<config-file>]" : "";
       System.err.println("USAGE: fgpJava " + getClass().getName() + " <baseUri> <port>" + configFileOpt);
+      System.err.println("\n     Note: baseUri argument should be a fully qualified URL to the service (e.g. http...) OR the service path beginning with a '/' (e.g. /my-service)\n");
       System.exit(1);
     }
     String baseUri = args[0];
