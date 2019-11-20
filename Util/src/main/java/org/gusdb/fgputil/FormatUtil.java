@@ -6,16 +6,23 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 import org.gusdb.fgputil.functional.Functions;
-import org.json.JSONArray;
 
 public class FormatUtil {
 
@@ -23,12 +30,8 @@ public class FormatUtil {
   public static final String TAB = "\t";
   public static final String UTF8_ENCODING = "UTF-8";
 
-  public static final String STANDARD_TIME_FORMAT = "HH:mm:ss";
-  public static final String STANDARD_DATE_FORMAT_SLASH = "yyyy/MM/dd";
-  public static final String STANDARD_DATETIME_FORMAT_SLASH = STANDARD_DATE_FORMAT_SLASH + " " + STANDARD_TIME_FORMAT;
-  public static final String STANDARD_DATE_FORMAT_DASH = "yyyy-MM-dd";
-  public static final String STANDARD_DATETIME_FORMAT_DASH = STANDARD_DATE_FORMAT_DASH + " " + STANDARD_TIME_FORMAT;
-  public static final String STANDARD_TIMESTAMP_FORMAT = STANDARD_DATETIME_FORMAT_DASH + ".SSS";
+  public static final DateTimeFormatter STANDARD_DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
+  public static final DateTimeFormatter STANDARD_DATE_TIME_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
   public interface MultiLineToString {
     public String toMultiLineString(String indentation);
@@ -46,6 +49,42 @@ public class FormatUtil {
     StringWriter str = new StringWriter(150);
     t.printStackTrace(new PrintWriter(str));
     return str.toString();
+  }
+
+  public static Date toDate(LocalDate date) {
+    return toDate(date.atStartOfDay());
+  }
+
+  public static LocalDate parseDate(String date) throws DateTimeParseException {
+    return LocalDate.parse(date, STANDARD_DATE_FORMAT);
+  }
+
+  public static Date toDate(LocalDateTime dateTime) {
+    return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+  }
+
+  public static LocalDateTime parseDateTime(String dateTime) throws DateTimeParseException {
+    return LocalDateTime.parse(dateTime, STANDARD_DATE_TIME_FORMAT);
+  }
+
+  public static String formatDate(Date date) {
+    return STANDARD_DATE_FORMAT.format(getInstant(date)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate());
+  }
+
+  public static String formatDateTime(Date date) {
+    return STANDARD_DATE_TIME_FORMAT.format(getInstant(date)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDateTime());
+  }
+
+  private static Instant getInstant(Date date) {
+    // Handle java.sql.Date, which does not support the toInstant() method.  For explanation, see:
+    //   https://stackoverflow.com/questions/36435492/unsupportedoperationexception-why-cant-you-call-toinstant-on-a-java-sql-dat
+    return (date instanceof java.sql.Date)
+      ? ((java.sql.Date)date).toLocalDate().atStartOfDay().toInstant(ZoneOffset.UTC)
+      : date.toInstant();
   }
 
   public static String shrinkUtf8String(String str, int maxBytes) {
@@ -101,30 +140,30 @@ public class FormatUtil {
       throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
     }
   }
-  
+
   /**
    * Attempts to convert the given text into HTML, replacing special characters
    * with their HTML equivalents.
    * TODO: this method should be improved!
-   * 
+   *
    * @param str string to convert
    * @return converted string
    */
   public static String escapeHtml(String str) {
     return str
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll("&", "&amp;")
-        .replaceAll("\n", "<br/>\n");
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll("&", "&amp;")
+      .replaceAll("\n", "<br/>\n");
   }
 
   public static String splitCamelCase(String s) {
     return s.replaceAll(
-            String.format("%s|%s|%s",
-                      "(?<=[A-Z])(?=[A-Z][a-z])",
-                      "(?<=[^A-Z])(?=[A-Z])",
-                      "(?<=[A-Za-z])(?=[^A-Za-z])"),
-            " ");
+      String.format("%s|%s|%s",
+        "(?<=[A-Z])(?=[A-Z][a-z])",
+        "(?<=[^A-Z])(?=[A-Z])",
+        "(?<=[A-Za-z])(?=[^A-Za-z])"),
+      " ");
   }
 
   public static String multiLineFormat(String str, int maxCharsPerLine) {
@@ -159,6 +198,10 @@ public class FormatUtil {
     return sb.toString();
   }
 
+  public static <T> String join(Stream<T> stream, String delim) {
+    return join((Iterable<T>)stream::iterator, delim);
+  }
+
   public static String join(Object[] array, String delim) {
     if (array == null || array.length == 0) return "";
     StringBuilder sb = new StringBuilder();
@@ -168,7 +211,7 @@ public class FormatUtil {
     }
     return sb.toString();
   }
-  
+
   public static String arrayToString(Object[] array) {
     return arrayToString(array, ", ");
   }
@@ -192,12 +235,9 @@ public class FormatUtil {
   }
 
   public static String printArray(String[][] array) {
-    String newline = System.getProperty("line.separator");
     StringBuilder sb = new StringBuilder();
-    for (String[] parts : array) {
-        sb.append(printArray(parts));
-        sb.append(newline);
-    }
+    for (String[] parts : array)
+      sb.append(printArray(parts)).append(NL);
     return sb.toString();
   }
 
@@ -221,23 +261,23 @@ public class FormatUtil {
     }
     return newStr.toString();
   }
-  
+
   public static boolean isInteger(String s) {
     try { Integer.parseInt(s); return true; }
     catch (NumberFormatException e) { return false; }
   }
 
-  public static enum Style {
+  public enum Style {
     SINGLE_LINE(" ", "", ", ", " "),
     MULTI_LINE(NL, "   ", ","+NL, NL);
-    
+
     public final String introDelimiter;
     public final String recordIndent;
     public final String mapArrow = " => ";
     public final String recordDelimiter;
     public final String endDelimiter;
-    
-    private Style(String id, String ri, String rd, String ed) {
+
+    Style(String id, String ri, String rd, String ed) {
       introDelimiter = id; recordIndent = ri;
       recordDelimiter = rd; endDelimiter = ed;
     }
@@ -246,7 +286,7 @@ public class FormatUtil {
   /**
    * Returns a "pretty" string representation of the passed map using
    * <code>Style.SINGLE_LINE</code>.
-   * 
+   *
    * @param map map to print
    * @return pretty string value of map
    */
@@ -257,7 +297,7 @@ public class FormatUtil {
   /**
    * Returns a "pretty" string representation of the passed map using
    * the passed format style and the value's toString() method.
-   * 
+   *
    * @param map map to print
    * @return pretty string value of map
    */
@@ -268,7 +308,7 @@ public class FormatUtil {
   /**
    * Returns a "pretty" string representation of the passed map using
    * the passed format style.
-   * 
+   *
    * @param map map to print
    * @param style formatting style
    * @param toString function to convert the map values to strings
@@ -301,16 +341,8 @@ public class FormatUtil {
     return str.append("}").append(NL).toString();
   }
 
-  public static JSONArray stringCollectionToJsonArray(Collection<String> strings) {
-    JSONArray array = new JSONArray();
-    for (String string : strings) {
-      array.put(string);
-    }
-    return array;
-  }
-
  /* Algorithm for the method below
-  * 
+  *
   * if lower or underscore
   *   print this
   * else (upper)
@@ -351,11 +383,13 @@ public class FormatUtil {
 
   /**
    * Log4j only accepts logger names using dot delimiters, but Class.getName()
-   * returns "package.InnerClass$OuterClass", which is not referenceable by
-   * the name attribute of a logger tag in log4j.xml.  This function gives a
-   * name usable by both.
-   * 
-   * @param clazz inner class name
+   * returns "package.InnerClass$OuterClass", which is not referenceable by the
+   * name attribute of a logger tag in log4j.xml.  This function gives a name
+   * usable by both.
+   *
+   * @param clazz
+   *   inner class name
+   *
    * @return the "code-style" inner class name
    */
   public static String getInnerClassLog4jName(Class<?> clazz) {
@@ -363,7 +397,9 @@ public class FormatUtil {
   }
 
   /**
-   * @param values an array of enum values
+   * @param values
+   *   an array of enum values
+   *
    * @return readable array-style display of the values
    */
   public static <T extends Enum<T>> String enumValuesAsString(T[] values) {

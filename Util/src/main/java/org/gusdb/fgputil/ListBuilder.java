@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Convenience class for building Lists.
@@ -18,7 +19,7 @@ public class ListBuilder<T> {
    * Creates a typed list from a single object.  A slightly more efficient and convenient
    * function than calling:
    * 
-   * new ListBuilder<T>().add(obj).toList();
+   * new ListBuilder().add(obj).toList();
    * 
    * Note that the returned list is a mutable ArrayList.
    * 
@@ -55,8 +56,15 @@ public class ListBuilder<T> {
     return this;
   }
 
-  public ListBuilder<T> addIf(boolean add, T obj) {
-    if (add) _list.add(obj);
+  public ListBuilder<T> addIf(Predicate<T> pred, T obj) {
+    if (pred.test(obj)) _list.add(obj);
+    return this;
+  }
+
+  public ListBuilder<T> addIf(Predicate<T> pred, Collection<? extends T> collection) {
+    for (T t : collection) {
+      if (pred.test(t)) _list.add(t);
+    }
     return this;
   }
 

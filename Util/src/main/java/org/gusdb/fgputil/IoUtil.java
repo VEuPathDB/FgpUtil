@@ -393,7 +393,7 @@ public class IoUtil {
    * do so after creating some, but not all, of the parent directories.
    * 
    * @param directory the directory to create
-   * @returns the directory
+   * @return the directory
    */
   public static Path createOpenPermsDirectories(Path directory) throws IOException {
     return Files.createDirectories(directory, getOpenPosixPermsAsFileAttribute());

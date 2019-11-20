@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db.pool;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -61,10 +62,12 @@ public interface DbDriverInitializer {
               "is not an implementation of " + DbDriverInitializer.class.getName());
         }
         // provided class is the correct type; instantiate and call initialize method
-        return ((Class<? extends DbDriverInitializer>)initClass).newInstance();
+        return ((Class<? extends DbDriverInitializer>)initClass).getDeclaredConstructor().newInstance();
       }
     }
-    catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+    catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+        IllegalArgumentException | InvocationTargetException |
+        NoSuchMethodException | SecurityException e) {
       throw new InitializationException("Unable to instantiate custom DB Driver Initializer " +
           "class with name " + driverInitClassName, e);
     }

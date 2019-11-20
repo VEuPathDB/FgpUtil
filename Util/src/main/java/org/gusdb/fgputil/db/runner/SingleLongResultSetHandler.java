@@ -2,6 +2,7 @@ package org.gusdb.fgputil.db.runner;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 
@@ -13,7 +14,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
  * 
  * @author rdoherty
  */
-public class SingleLongResultSetHandler implements ResultSetHandler {
+public class SingleLongResultSetHandler implements ResultSetHandler<Optional<Long>> {
 
   /** Status values for this handler */
   public static enum Status {
@@ -31,13 +32,14 @@ public class SingleLongResultSetHandler implements ResultSetHandler {
   private Long _value = null;
 
   @Override
-  public void handleResult(ResultSet rs) throws SQLException {
+  public Optional<Long> handleResult(ResultSet rs) throws SQLException {
 
     // check for existence of a row
     if (!rs.next()) {
       _status = Status.NO_ROW_RETURNED;
       _value = null;
-      return;
+      // TODO: decide whether to throw exception here; calling code probably has a bug
+      return Optional.empty();
     }
 
     // try to get Long value from result set
@@ -49,6 +51,8 @@ public class SingleLongResultSetHandler implements ResultSetHandler {
       _status = Status.NULL_VALUE;
       _value = null;
     }
+
+    return Optional.ofNullable(_value);
   }
 
   /**
@@ -57,6 +61,13 @@ public class SingleLongResultSetHandler implements ResultSetHandler {
    */
   public Status getStatus() {
     return _status;
+  }
+
+  /**
+   * @return true if current status is NON_NULL_VALUE, else false
+   */
+  public boolean containsValue() {
+    return _status.equals(Status.NON_NULL_VALUE);
   }
 
   /**

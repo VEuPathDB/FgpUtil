@@ -6,14 +6,14 @@ import java.util.Map.Entry;
 
 public interface ReadOnlyMap<K,V> {
 
-  public WriteableMap<K,V> toWriteableMap();
+  WriteableMap<K,V> toWriteableMap();
 
-  public int size();
-  public boolean isEmpty();
-  public boolean containsKey(Object key);
-  public Set<K> keySet();
-  public Collection<V> values();
-  public Set<Entry<K,V>> entrySet();
-  public V get(Object key);
+  int size();
+  boolean isEmpty();
+  boolean containsKey(Object key);
+  Set<K> keySet();
+  Collection<V> values();
+  Set<Entry<K,V>> entrySet();
+  V get(Object key);
 
 }

@@ -43,7 +43,7 @@ public class XmlParser {
   }
 
   /**
-   * Load XML Document from string content without validation & substitution.
+   * Load XML Document from string content without validation or substitution.
    * 
    * @param content XML content to be parsed
    * @return content parsed into document object

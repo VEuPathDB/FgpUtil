@@ -12,9 +12,11 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.BinaryFunction;
+import org.gusdb.fgputil.Named;
+import org.gusdb.fgputil.Named.NamedObject;
 import org.junit.Test;
 
 public class FunctionTests {
@@ -50,8 +52,8 @@ public class FunctionTests {
         { 1, 2, 3, 4, 5, 6 },
         { 1, 2, 3, 4, 5, 6, 7, 8, 9 }
     };
-    BinaryFunction<Character, Integer, String> zipper1 = (c, i) -> "" + c + i;
-    BinaryFunction<Integer, Character, String> zipper2 = (i, c) -> "" + c + i;
+    BiFunction<Character, Integer, String> zipper1 = (c, i) -> "" + c + i;
+    BiFunction<Integer, Character, String> zipper2 = (i, c) -> "" + c + i;
     List<List<String>> results = new ArrayList<>(4);
     for (Integer[] test : tests) {
       results.add(zipToList(CHARS, asList(test), zipper1, true));
@@ -71,4 +73,18 @@ public class FunctionTests {
     assertEquals(-1, findFirstIndex(CHARS, c -> c == 'z'));
     assertEquals(0, findFirstIndex(CHARS, c -> c > 'b'));
   }
+
+  private static class MyNamed implements NamedObject {
+    @Override
+    public String getName() {
+      return "myName";
+    }
+  }
+
+  @Test
+  public void testMapWithNamed() {
+    List<MyNamed> listOfNamedObj = new ArrayList<>();
+    Functions.mapToList(listOfNamedObj, Named.TO_NAME);
+  }
+ 
 }

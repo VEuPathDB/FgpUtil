@@ -1,17 +1,24 @@
 package org.gusdb.fgputil.functional;
 
+
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.gusdb.fgputil.FormatUtil.MultiLineToString;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Predicate;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
+
+import static java.util.function.Predicate.not;
 
 /**
  * This class provides a common implementation of tree structure and the ability
  * to operate on the tree using functional interfaces.
- * 
+ *
  * @author rdoherty
  */
 public class TreeNode<T> implements MultiLineToString {
@@ -19,48 +26,43 @@ public class TreeNode<T> implements MultiLineToString {
   /**
    * A typed predicate that returns true for leaf nodes
    */
-  public final Predicate<TreeNode<T>> LEAF_PREDICATE = new Predicate<TreeNode<T>>() {
-    @Override public boolean test(TreeNode<T> obj) { return obj.isLeaf(); } };
+  public final Predicate<TreeNode<T>> LEAF_PREDICATE = TreeNode::isLeaf;
 
   /**
    * A typed predicate that returns true for non-leaf nodes
    */
-  public final Predicate<TreeNode<T>> NONLEAF_PREDICATE = new Predicate<TreeNode<T>>() {
-    @Override public boolean test(TreeNode<T> obj) { return !obj.isLeaf(); } };
+  public final Predicate<TreeNode<T>> NONLEAF_PREDICATE = not(TreeNode::isLeaf);
 
   /**
    * Returns a predicate that takes a TreeNode that returns true its contents
    * pass the the passed predicate, else false.
-   * 
+   *
    * @param predicate predicate to operate on node contents
    * @return predicate to operate on node
    */
   public Predicate<TreeNode<T>> createNodePredicate(final Predicate<T> predicate) {
-    return new Predicate<TreeNode<T>>() {
-      @Override
-      public boolean test(TreeNode<T> obj) {
-        return predicate.test(obj.getContents());
-      }
-    };
+    return obj -> predicate.test(obj.getContents());
   }
 
   /**
    * An interface to model the mapping of this tree structure to some other
    * arbitrary tree structure.
-   * 
+   *
    * @param <T> The type of object stored in this tree
    * @param <S> The type of a single 'node' each node in this tree will be mapped to
    */
-  public static interface StructureMapper<T, S> {
+  @FunctionalInterface
+  public interface StructureMapper<T, S> extends BiFunction<T, List<S>, S> {
     /**
      * Maps the contents of a node, and its already-mapped children, to the
      * node type of the new structure.
-     * 
+     *
      * @param obj the contents of an individual node
      * @param mappedChildren the already-mapped children of this node
      * @return a mapped object incorporating this node's contents and its children
      */
-    public S map(T obj, List<S> mappedChildren);
+    @Override
+    S apply(T obj, List<S> mappedChildren);
   }
 
   protected T _nodeContents;
@@ -94,18 +96,18 @@ public class TreeNode<T> implements MultiLineToString {
   /**
    * Creates a new node containing the passed contents and appends it to
    * this node's list of children
-   * 
+   *
    * @param childContents contents of the new child node
    * @return this node
    */
   public TreeNode<T> addChild(T childContents) {
-    _childNodes.add(new TreeNode<T>(childContents));
+    _childNodes.add(new TreeNode<>(childContents));
     return this;
   }
 
   /**
    * Appends the passed node to the list of this node's children
-   * 
+   *
    * @param child child to append
    * @return this node
    */
@@ -116,17 +118,17 @@ public class TreeNode<T> implements MultiLineToString {
 
   /**
    * Appends all the passed nodes to the list of this node's children
-   * 
+   *
    * @param children children to append
    * @return this node
    */
   public TreeNode<T> addAllChildNodes(List<TreeNode<T>> children) {
-    return addChildNodes(children, new FunctionalInterfaces.TruePredicate<TreeNode<T>>());
+    return addChildNodes(children, new FunctionalInterfaces.TruePredicate<>());
   }
 
   /**
    * Appends all nodes that pass the given predicate to the list of this node's children
-   * 
+   *
    * @param potentialChildren potential children
    * @return this node
    */
@@ -154,7 +156,7 @@ public class TreeNode<T> implements MultiLineToString {
   /**
    * Finds first node in this tree whose contents match the passed predicate and
    * returns it.  Uses a depth-first search.
-   * 
+   *
    * @param pred predicate to test node contents against
    * @return found node or null if not found
    */
@@ -167,7 +169,7 @@ public class TreeNode<T> implements MultiLineToString {
    * whose contents match the generic predicate, and returns it.  Uses a
    * depth-first search.  Null can be passed as either predicate and evaluates
    * to 'true'.
-   * 
+   *
    * @param nodePred predicate to test nodes against
    * @param pred predicate to test node contents against
    * @return found node or null if not found
@@ -187,7 +189,7 @@ public class TreeNode<T> implements MultiLineToString {
   /**
    * Finds all nodes in this tree whose contents match the passed predicate and
    * returns them.  Uses a depth-first search.
-   * 
+   *
    * @param pred predicate to test node contents against
    * @return list of found nodes
    */
@@ -200,7 +202,7 @@ public class TreeNode<T> implements MultiLineToString {
    * whose contents match the generic predicate, and returns them.  Uses a
    * depth-first search.  Null can be passed as either predicate and evaluates
    * to 'true'.
-   * 
+   *
    * @param nodePred predicate to test nodes against
    * @param pred predicate to test node contents against
    * @return list of found nodes
@@ -224,7 +226,7 @@ public class TreeNode<T> implements MultiLineToString {
    * depth-first search.  Null can be passed as either predicate and evaluates
    * to 'true'.  Passing null for the mapper will result in a
    * NullPointerException.
-   * 
+   *
    * @param nodePred predicate to test nodes against
    * @param pred predicate to test node contents against
    * @param mapper transform to use to map the found nodes' contents into other
@@ -246,7 +248,7 @@ public class TreeNode<T> implements MultiLineToString {
   /**
    * Aggregates information in this tree into a single value, with behavior
    * defined by the passed Reducer.
-   * 
+   *
    * @param reducer reducer to use to aggregate information
    * @return result
    */
@@ -257,7 +259,7 @@ public class TreeNode<T> implements MultiLineToString {
   /**
    * Aggregates information in the nodes that pass the predicate into a single
    * value, with behavior defined by the passed Reducer.
-   * 
+   *
    * @param nodePred predicate to filter nodes that will contribute to the reduction
    * @param reducer reducer to use to aggregate information
    * @param initialValue initial value passed to the first call to the reducer's reduce method
@@ -276,7 +278,7 @@ public class TreeNode<T> implements MultiLineToString {
   /**
    * Enables a mapping of a TreeNode tree structure to an arbitrary tree
    * structure of a different type.
-   * 
+   *
    * @param mapper maps an individual node and its children to the new type
    * @return a mapped object
    */
@@ -287,7 +289,7 @@ public class TreeNode<T> implements MultiLineToString {
       mappedChildren.add(child.mapStructure(mapper));
     }
     // pass this object plus converted children to mapper
-    return mapper.map(_nodeContents, mappedChildren);
+    return mapper.apply(_nodeContents, mappedChildren);
   }
 
   /**
@@ -296,24 +298,21 @@ public class TreeNode<T> implements MultiLineToString {
    * cloned.  The objects referred to in the clone are the same as those
    * referred to in the original.  NOTE: this is simply a special case of
    * <code>mapStructure()</code>.
-   * 
+   *
    * @return clone of this tree
    */
   @Override
   public TreeNode<T> clone() {
-    return mapStructure(new StructureMapper<T,TreeNode<T>>() {
-      @Override
-      public TreeNode<T> map(T obj, List<TreeNode<T>> mappedChildren) {
-        TreeNode<T> copy = new TreeNode<T>(obj);
-        copy._childNodes = mappedChildren;
-        return copy;
-      }
+    return mapStructure((obj, mappedChildren) -> {
+      TreeNode<T> copy = new TreeNode<T>(obj);
+      copy._childNodes = mappedChildren;
+      return copy;
     });
   }
 
   /**
    * Removes any subtrees that pass the passed predicate
-   * 
+   *
    * @param pred predicate to test node contents against
    * @return number of subtrees removed
    */
@@ -334,7 +333,7 @@ public class TreeNode<T> implements MultiLineToString {
 
   /**
    * Removes any subtrees that pass the passed predicate
-   * 
+   *
    * @param pred predicate to test node contents against
    * @return number of subtrees removed
    */
@@ -355,7 +354,7 @@ public class TreeNode<T> implements MultiLineToString {
 
   /**
    * Replaces each node's contents with the result of the passed function
-   * 
+   *
    * @param function function to apply to each node
    */
   public void apply(Function<T, T> function) {
@@ -365,9 +364,9 @@ public class TreeNode<T> implements MultiLineToString {
   /**
    * Replaces each node's contents with the result of the passed function, but
    * only if that node's contents pass the passed predicate.
-   * 
-   * @param pred predicate to filter nodes to which the function should be
-   * applied
+   *
+   * @param pred     predicate to filter nodes to which the function should be
+   *                 applied
    * @param function function to apply
    */
   public void apply(Predicate<T> pred, Function<T, T> function) {
@@ -377,10 +376,10 @@ public class TreeNode<T> implements MultiLineToString {
   /**
    * Replaces each node's contents with the result of the passed function, but
    * only if that node passes the passed predicate.
-   * 
+   *
    * @param function function to apply
-   * @param pred predicate to filter nodes to which the function should be
-   * applied
+   * @param pred     predicate to filter nodes to which the function should be
+   *                 applied
    */
   public void apply(Function<T, T> function, Predicate<TreeNode<T>> pred) {
     apply(pred, null, function);
@@ -389,11 +388,11 @@ public class TreeNode<T> implements MultiLineToString {
   /**
    * Replaces each node's contents with the result of the passed function, but
    * only if that node passes both the passed predicates.
-   * 
+   *
    * @param nodePred predicate to filter nodes to which the function should be
-   * applied (tests node)
-   * @param pred predicate to filter nodes to which the function should be
-   * applied (tests node contents)
+   *                 applied (tests node)
+   * @param pred     predicate to filter nodes to which the function should be
+   *                 applied (tests node contents)
    * @param function function to apply
    */
   public void apply(Predicate<TreeNode<T>> nodePred, Predicate<T> pred, Function<T, T> function) {
@@ -405,10 +404,40 @@ public class TreeNode<T> implements MultiLineToString {
       node.apply(nodePred, pred, function);
     }
   }
-  
+
   public List<List<TreeNode<T>>> findCircularPaths() {
     // TODO: implement this
     throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @return The total count of nodes in this tree.
+   */
+  public int size() {
+    return 1 + _childNodes.stream().mapToInt(TreeNode::size).sum();
+  }
+
+  /**
+   * Flatten the tree into a Collection of it's contents.
+   *
+   * @return Collection of the contents of this tree node in order of depth.
+   */
+  public Collection<T> flatten() {
+    final int len = size();
+    final List<T> out = new ArrayList<>(len);
+    final Queue<TreeNode<T>> next = new LinkedList<>();
+
+    next.offer(this);
+
+    int pos = 0;
+
+    while(!next.isEmpty()) {
+      final TreeNode<T> cur = next.poll();
+      out.set(pos++, cur._nodeContents);
+      cur._childNodes.forEach(next::offer);
+    }
+
+    return out;
   }
 
   /**
@@ -416,34 +445,26 @@ public class TreeNode<T> implements MultiLineToString {
    */
   @Override
   public String toString() {
-    if (isLeaf()) {
-      return new StringBuilder().append("Leaf { ").append(_nodeContents).append(" }").toString();
-    }
-    return toMultiLineString("");
+    return isLeaf() ? "Leaf { " + _nodeContents + " }" : toMultiLineString("");
   }
 
   @Override
-  public String toMultiLineString(String indentation) {
-    String IND = indentation;
-    String NL = System.getProperty("line.separator");
+  public String toMultiLineString(String ind) {
+    String NL = System.lineSeparator();
+
     String nodeString = (!_hasMultiLineSupport ? _nodeContents.toString() :
-      ((MultiLineToString)_nodeContents).toMultiLineString(IND + "  "));
+      ((MultiLineToString)_nodeContents).toMultiLineString(ind + "  "));
     StringBuilder str = new StringBuilder()
-        .append(IND).append("TreeNode {").append(NL)
-        .append(IND).append("  ").append(nodeString).append(NL)
-        .append(IND).append("  Leaves:").append(NL);
-    for (TreeNode<T> node : _childNodes) {
-      if (node.isLeaf()) {
-        str.append(node.toMultiLineString(IND + "    ")).append(NL);
+        .append(ind).append("TreeNode {").append(NL)
+        .append(ind).append("  Contents: ").append(nodeString).append(NL);
+    if (!_childNodes.isEmpty()) {
+      str.append(ind).append("  Children: [").append(NL);
+      for (TreeNode<T> child : _childNodes) {
+        str.append(child.toMultiLineString(ind + "    "));
       }
+      str.append(ind).append("  ]").append(NL);
     }
-    str.append(IND).append("  Children {").append(NL);
-    for (TreeNode<T> child : _childNodes) {
-      if (!child.isLeaf()) {
-        str.append(child.toMultiLineString(IND + "    "));
-      }
-    }
-    str.append(IND).append("  }").append(NL).append(IND).append("}").append(NL);
+    str.append(ind).append("}").append(NL);
     return str.toString();
   }
 }

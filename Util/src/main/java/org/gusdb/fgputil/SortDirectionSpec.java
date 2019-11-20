@@ -39,7 +39,7 @@ public class SortDirectionSpec<T extends NamedObject> {
             SortDirection.getFromIsAscending(sortingAttribute.getValue())));
       }
       else {
-        LOG.warn("Sort attribute [ " + sortingAttribute.getKey() + "] passed in but not found in allowed values.  Skipping...");
+        LOG.trace("Sort attribute [ " + sortingAttribute.getKey() + "] passed in but not found in allowed values.  Skipping...");
       }
     }
     return sorting;

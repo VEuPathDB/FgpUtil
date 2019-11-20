@@ -3,7 +3,7 @@ package org.gusdb.fgputil;
 /**
  * Enumeration of sort directions. Also provides translation between legacy
  * sort direction indicators (booleans) and these values.
- * 
+ *
  * @author rdoherty
  */
 public enum SortDirection {
@@ -13,7 +13,7 @@ public enum SortDirection {
 
   private boolean _boolValue;
 
-  private SortDirection(boolean boolValue) {
+  SortDirection(boolean boolValue) {
     _boolValue = boolValue;
   }
 

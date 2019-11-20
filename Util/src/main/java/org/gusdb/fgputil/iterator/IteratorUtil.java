@@ -3,9 +3,11 @@ package org.gusdb.fgputil.iterator;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.gusdb.fgputil.Wrapper;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
 
 public class IteratorUtil {
 
@@ -170,5 +172,27 @@ public class IteratorUtil {
         return iterator;
       }
     };
+  }
+
+  /**
+   * Convenience method to convert an iterator to a stream
+   * 
+   * @param <T> type of objects streamed
+   * @param iterator input iterator
+   * @return stream of objects returned by the iterator
+   */
+  public static <T> Stream<T> toStream(final Iterator<T> iterator) {
+    return toStream(() -> iterator);
+  }
+
+  /**
+   * Convenience method to convert an iterable to a stream
+   * 
+   * @param <T> type of objects streamed
+   * @param iterable input iterable
+   * @return stream of objects returned by the iterable
+   */
+  public static <T> Stream<T> toStream(final Iterable<T> iterable) {
+    return StreamSupport.stream(iterable.spliterator(), false);
   }
 }

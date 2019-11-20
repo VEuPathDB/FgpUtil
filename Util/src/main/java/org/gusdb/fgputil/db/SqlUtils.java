@@ -17,6 +17,7 @@ import java.sql.Types;
 import java.sql.Wrapper;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.sql.DataSource;
 
@@ -24,8 +25,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.db.stream.BlobValueInputStream;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Procedure;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.iterator.Cursor;
 
 /**
@@ -33,7 +33,7 @@ import org.gusdb.fgputil.iterator.Cursor;
  */
 public final class SqlUtils {
 
-  private static final Logger logger = Logger.getLogger(SqlUtils.class.getName());
+  private static final Logger logger = Logger.getLogger(SqlUtils.class);
 
   /**
    * private constructor, make sure SqlUtils cannot be instanced.
@@ -620,17 +620,19 @@ public final class SqlUtils {
    * Performs all the passed procedures in a single transaction on the passed connection.  If any of the
    * passed procedures throw exception, the connection will be rolled back; otherwise all updates will be
    * committed together.  There is no guarantee of rollback of any other connections that may appear in
-   * the passed procedures.
+   * the passed procedures.  Auto-commit will be reset back to its original value once this method completes.
    * 
    * @param conn connection on which to perform operations
    * @param procedures set of procedures containing operations (presumably against the passed connection)
    * @throws Exception if any of the procedures fails
    */
-  public static void performInTransaction(Connection conn, Procedure... procedures) throws Exception {
+  @SafeVarargs
+  public static void performInTransaction(Connection conn, ConsumerWithException<Connection>... procedures) throws Exception {
+    boolean origAutoCommit = conn.getAutoCommit();
     try {
       conn.setAutoCommit(false);
-      for (Procedure proc : procedures) {
-        proc.perform();
+      for (ConsumerWithException<Connection> proc : procedures) {
+        proc.accept(conn);
       }
       // commit the transaction
       conn.commit();
@@ -646,15 +648,11 @@ public final class SqlUtils {
       throw e;
     }
     finally {
-      boolean successfullyResetAutoCommit = false;
       try {
-        conn.setAutoCommit(true);
-        successfullyResetAutoCommit = true;
-        conn.close();
+        conn.setAutoCommit(origAutoCommit);
       }
       catch (Exception e) {
-        logger.error(successfullyResetAutoCommit ?
-            "Error closing connection" : "Error resetting auto-commit = true", e);
+        logger.error("Error resetting auto-commit to " + origAutoCommit, e);
       }
     }
   }
@@ -673,17 +671,17 @@ public final class SqlUtils {
   }
 
   public static Long fetchNullableLong(ResultSet rs, String columnName, Long nullValue) throws SQLException {
-    long value = rs.getLong(columnName);
+    Long value = rs.getLong(columnName);
     return rs.wasNull() ? nullValue : value;
   }
 
   public static Integer fetchNullableInteger(ResultSet rs, String columnName, Integer nullValue) throws SQLException {
-    int value = rs.getInt(columnName);
+    Integer value = rs.getInt(columnName);
     return rs.wasNull() ? nullValue : value;
   }
 
   public static Boolean fetchNullableBoolean(ResultSet rs, String columnName, Boolean nullValue) throws SQLException {
-    boolean value = rs.getBoolean(columnName);
+    Boolean value = rs.getBoolean(columnName);
     return rs.wasNull() ? nullValue : value;
   }
 

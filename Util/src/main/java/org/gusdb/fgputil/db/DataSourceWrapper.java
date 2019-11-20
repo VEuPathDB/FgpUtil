@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,7 +63,7 @@ public class DataSourceWrapper implements DataSource {
     }
 
     public String getBasicInfo() {
-      String timeOpenedStr = new SimpleDateFormat(FormatUtil.STANDARD_TIMESTAMP_FORMAT).format(_timeOpened);
+      String timeOpenedStr = FormatUtil.formatDateTime(_timeOpened);
       double secondsOpen = ((double)(new Date().getTime() - _timeOpened.getTime())) / 1000;
       return new StringBuilder()
           .append("Connection to ").append(_dbName)

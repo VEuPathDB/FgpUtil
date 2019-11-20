@@ -5,7 +5,6 @@ import java.io.StringWriter;
 import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.gusdb.fgputil.FormatUtil;
@@ -41,7 +40,7 @@ public class ResultSetToJsonConverter implements ResultSetRowConverter {
         throw new IllegalArgumentException("This converter cannot process BLOB or OTHER column types.");
       }
       else if (colType.equals(DbColumnType.DATE_TIME)) {
-        value = new SimpleDateFormat(FormatUtil.STANDARD_DATETIME_FORMAT_DASH).format((Date)value);
+        value = FormatUtil.formatDateTime((Date)value);
       }
       else if (colType.equals(DbColumnType.CLOB)) {
         try {

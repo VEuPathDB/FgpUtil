@@ -8,7 +8,7 @@ import org.junit.Test;
 // TODO: write better tests... not much coverage here
 public class ValidationTest {
 
-  public static class Blah implements Validateable {
+  public static class Blah implements Validateable<Blah> {
 
     private final ValidationBundle _validationBundle;
 
@@ -30,7 +30,7 @@ public class ValidationTest {
     Blah blah = new Blah(ValidationLevel.SYNTACTIC);
     SyntacticallyValid<Blah> validBlah = ValidObjectFactory.getSyntacticallyValid(blah);
     doSyntacticThings(validBlah);
-    Blah blah2 = validBlah.getObject();
+    Blah blah2 = validBlah.get();
     Assert.assertTrue(blah == blah2);
   }
 
@@ -40,7 +40,7 @@ public class ValidationTest {
     SemanticallyValid<Blah> validBlah = ValidObjectFactory.getSemanticallyValid(blah);
     doSyntacticThings(validBlah);
     doSemanticThings(validBlah);
-    Blah blah2 = validBlah.getObject();
+    Blah blah2 = validBlah.get();
     Assert.assertTrue(blah == blah2);
   }
 

@@ -12,12 +12,19 @@ import org.gusdb.fgputil.MapBuilder;
 public class ReadOnlyHashMap<K,V> implements ReadOnlyMap<K,V> {
 
   public static class Builder<K,V> extends MapBuilder<K,V> {
+
+    public Builder() { }
+
+    public Builder(Map<K,V> initialMap) {
+      super(initialMap);
+    }
+
     public ReadOnlyHashMap<K,V> build() {
       return new ReadOnlyHashMap<>(toMap());
     }
   }
 
-  private Map<K,V> _map;
+  protected Map<K,V> _map;
 
   public static <K,V> Builder<K,V> builder() {
     return new Builder<>();
@@ -66,5 +73,4 @@ public class ReadOnlyHashMap<K,V> implements ReadOnlyMap<K,V> {
   public V get(Object key) {
     return _map.get(key);
   }
-
 }

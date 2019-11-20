@@ -3,9 +3,13 @@ package org.gusdb.fgputil;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-import org.gusdb.fgputil.functional.FunctionalInterfaces.Function;
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.Functions;
 
 /**
  * Convenience class for building Maps.
@@ -19,6 +23,12 @@ public class MapBuilder<S,T> {
 
   public static <S,T> Map<S,T> getMapFromEntries(Collection<Entry<S,T>> entries) {
     return new MapBuilder<S,T>().putAll(entries, entry -> entry).toMap();
+  }
+
+
+  public static Map<String,String> getStringMapFromProperties(Properties props) {
+    return Functions.getMapFromList(props.entrySet(), entry ->
+        new TwoTuple<String,String>(entry.getKey().toString(), entry.getValue().toString()));
   }
 
   private Map<S,T> _map;
@@ -41,6 +51,10 @@ public class MapBuilder<S,T> {
     return this;
   }
 
+  public MapBuilder<S,T> put(Entry<S, T> entry) {
+    return put(entry.getKey(), entry.getValue());
+  }
+
   public <R> MapBuilder<S,T> put(R obj, Function<R, Entry<S,T>> converter) {
     Entry<S,T> entry = converter.apply(obj);
     return put(entry.getKey(), entry.getValue());
@@ -54,6 +68,10 @@ public class MapBuilder<S,T> {
     return (put ? put(obj, converter) : this);
   }
 
+  public MapBuilder<S,T> putIf(boolean put, S key, Supplier<T> valueFactory) {
+    return (put ? put(key, valueFactory.get()) : this);
+  }
+
   public MapBuilder<S,T> putAll(Map<S,T> map) {
     _map.putAll(map);
     return this;
@@ -65,6 +83,14 @@ public class MapBuilder<S,T> {
       _map.put(entry.getKey(), entry.getValue());
     }
     return this;
+  }
+
+  public boolean containsKey(S key) {
+    return _map.containsKey(key);
+  }
+
+  public T get(S key) {
+    return _map.get(key);
   }
 
   public Map<S,T> toMap() {

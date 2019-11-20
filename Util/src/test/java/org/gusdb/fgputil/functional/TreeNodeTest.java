@@ -18,7 +18,7 @@ public class TreeNodeTest {
     TreeNode<Integer> root = buildTestTree();
     JSONObject result = root.mapStructure(new StructureMapper<Integer, JSONObject>(){
       @Override
-      public JSONObject map(Integer obj, List<JSONObject> mappedChildren) {
+      public JSONObject apply(Integer obj, List<JSONObject> mappedChildren) {
         JSONObject json = new JSONObject();
         json.put("value", obj);
         if (!mappedChildren.isEmpty()) {

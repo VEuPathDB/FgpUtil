@@ -15,7 +15,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
  * 
  * @author rdoherty
  */
-public class BasicResultSetHandler implements ResultSetHandler {
+public class BasicResultSetHandler implements ResultSetHandler<BasicResultSetHandler> {
 
   private List<String> _columnNames = new ArrayList<>();
   private List<Integer> _columnTypes = new ArrayList<>();
@@ -27,7 +27,7 @@ public class BasicResultSetHandler implements ResultSetHandler {
    * @param rs ResultSet to be handled
    */
   @Override
-  public void handleResult(ResultSet rs) throws SQLException {
+  public BasicResultSetHandler handleResult(ResultSet rs) throws SQLException {
     // clear data structures in case this object is being reused
     _columnNames.clear();
     _columnTypes.clear();
@@ -50,6 +50,7 @@ public class BasicResultSetHandler implements ResultSetHandler {
       }
       _results.add(row);
     }
+    return this;
   }
 
   /**

@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.validation;
 
+import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
 
 import java.util.ArrayList;
@@ -8,6 +9,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.gusdb.fgputil.ListBuilder;
+import org.json.JSONObject;
 
 /**
  * Immutable class representing the validation status of a Validated object.  To create, use the static
@@ -51,8 +56,8 @@ public class ValidationBundle {
       return !_errors.isEmpty() || !_keyedErrors.isEmpty();
     }
 
-    public ValidationBundleBuilder aggregateStatus(Validateable... objects) {
-      Arrays.asList(objects).stream().forEach(obj -> {
+    public ValidationBundleBuilder aggregateStatus(Validateable<?>... objects) {
+      Arrays.stream(objects).forEach(obj -> {
         ValidationBundle errors = obj.getValidationBundle();
         if (!errors.getLevel().equals(_level)) {
           throw new IllegalArgumentException("Can only aggregate status of objects with the same validation level.");
@@ -63,6 +68,10 @@ public class ValidationBundle {
         });
       });
       return this;
+    }
+
+    public ValidationLevel getLevel() {
+      return _level;
     }
   }
 
@@ -90,7 +99,7 @@ public class ValidationBundle {
     return _level;
   }
 
-  public List<String> getErrors() {
+  public List<String> getUnkeyedErrors() {
     return _errors;
   }
 
@@ -98,7 +107,35 @@ public class ValidationBundle {
     return _keyedErrors;
   }
 
+  public List<String> getAllErrors() {
+    return new ListBuilder<String>()
+        .addAll(_errors)
+        .addAll(_keyedErrors.entrySet().stream()
+            .map(entry -> entry.getKey() + ": [" + join(entry.getValue(), ", ") + "]")
+            .collect(Collectors.toList()))
+        .toList();
+    
+  }
+
   public boolean hasErrors() {
     return !_errors.isEmpty() || !_keyedErrors.isEmpty();
+  }
+
+  // using JSON here just for convenience; not meant to be part of a public API
+  private JSONObject toJson() {
+    return new JSONObject()
+        .put("validationLevel", getLevel().toString())
+        .put("validationStatus", getStatus().toString())
+        .put("errors", getUnkeyedErrors())
+        .put("keyedErrors", getKeyedErrors());
+  }
+
+  @Override
+  public String toString() {
+    return toJson().toString();
+  }
+
+  public String toString(int indentation) {
+    return toJson().toString(indentation);
   }
 }

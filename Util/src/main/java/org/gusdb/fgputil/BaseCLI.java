@@ -16,7 +16,6 @@ import org.apache.commons.cli.ParseException;
 
 /**
  * @author xingao
- * 
  */
 public abstract class BaseCLI {
 
@@ -33,7 +32,7 @@ public abstract class BaseCLI {
     _command = (command == null) ? getClass().getSimpleName() : command;
     _description = description;
     _options = new Options();
-    _defaults = new LinkedHashMap<String, Object>();
+    _defaults = new LinkedHashMap<>();
 
     declareOptions();
   }
@@ -68,10 +67,10 @@ public abstract class BaseCLI {
     StringBuffer syntax = new StringBuffer(_command);
 
     // group options by groups
-    Set<OptionGroup> requiredGroups = new HashSet<OptionGroup>();
-    Set<OptionGroup> optionalGroups = new HashSet<OptionGroup>();
-    Set<Option> requiredOptions = new HashSet<Option>();
-    Set<Option> optionalOptions = new HashSet<Option>();
+    Set<OptionGroup> requiredGroups = new HashSet<>();
+    Set<OptionGroup> optionalGroups = new HashSet<>();
+    Set<Option> requiredOptions = new HashSet<>();
+    Set<Option> optionalOptions = new HashSet<>();
     for (Object obj : _options.getOptions()) {
       Option option = (Option) obj;
       OptionGroup group = _options.getOptionGroup(option);
@@ -160,11 +159,14 @@ public abstract class BaseCLI {
   }
 
   /**
-   * @param name name of option to check
-   * @return If the option doesn't exist, a default value of the option will be returned. If the option
-   *         exists, and it doesn't require value, it will return true; if the option requires a single value,
-   *         the string of that value will be returned; if the option allows multiple value, a String[] will
-   *         be returned.
+   * @param name
+   *   name of option to check
+   *
+   * @return If the option doesn't exist, a default value of the option will be
+   *   returned. If the option exists, and it doesn't require value, it will
+   *   return true; if the option requires a single value, the string of that
+   *   value will be returned; if the option allows multiple value, a String[]
+   *   will be returned.
    */
   protected Object getOptionValue(String name) {
     if (!_commandLine.hasOption(name))

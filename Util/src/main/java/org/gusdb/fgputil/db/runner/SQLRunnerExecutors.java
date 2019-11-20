@@ -38,7 +38,7 @@ class SQLRunnerExecutors {
    * 
    * @author rdoherty
    */
-  static abstract class PreparedStatementExecutor {
+  static abstract class PreparedStatementExecutor<T> {
 
     protected Object[] _args;
     private Integer[] _types;
@@ -85,7 +85,7 @@ class SQLRunnerExecutors {
      * @throws SQLException if SQL-specific error occurs while handling result
      * @throws SQLRunnerException if another error occurs
      */
-    public void handleResult() throws SQLException, SQLRunnerException { }
+    public T handleResult() throws SQLException, SQLRunnerException { return null; }
 
     /**
      * Closes any resources this executor opened
@@ -122,7 +122,7 @@ class SQLRunnerExecutors {
    * 
    * @author rdoherty
    */
-  static class StatementExecutor extends PreparedStatementExecutor {
+  static class StatementExecutor extends PreparedStatementExecutor<Void> {
     public StatementExecutor(Object[] args, Integer[] types) { super(args, types); }
     @Override public void run(PreparedStatement stmt) throws SQLException { stmt.execute(); }
   }
@@ -133,11 +133,11 @@ class SQLRunnerExecutors {
    * 
    * @author rdoherty
    */
-  static class UpdateExecutor extends PreparedStatementExecutor {
+  static class UpdateExecutor extends PreparedStatementExecutor<Integer> {
     private int _numUpdates;
     public UpdateExecutor(Object[] args, Integer[] types) { super(args, types); }
     @Override public void run(PreparedStatement stmt) throws SQLException { _numUpdates = stmt.executeUpdate(); }
-    public int getNumUpdates() { return _numUpdates; }
+    @Override public Integer handleResult() throws SQLException, SQLRunnerException { return _numUpdates; }
   }
 
   /**
@@ -146,7 +146,7 @@ class SQLRunnerExecutors {
    * 
    * @author rdoherty
    */
-  static class BatchUpdateExecutor extends PreparedStatementExecutor {
+  static class BatchUpdateExecutor extends PreparedStatementExecutor<Integer> {
 
     private ArgumentBatch _argBatch;
     private int _numUpdates;
@@ -205,7 +205,7 @@ class SQLRunnerExecutors {
       }
     }
 
-    public int getNumUpdates() {
+    @Override public Integer handleResult() throws SQLException, SQLRunnerException {
       return _numUpdates;
     }
 
@@ -221,12 +221,12 @@ class SQLRunnerExecutors {
    * 
    * @author rdoherty
    */
-  static class QueryExecutor extends PreparedStatementExecutor {
+  static class QueryExecutor<T> extends PreparedStatementExecutor<T> {
 
-    private ResultSetHandler _handler;
+    private ResultSetHandler<T> _handler;
     private ResultSet _results;
 
-    public QueryExecutor(ResultSetHandler handler, Object[] args, Integer[] types) {
+    public QueryExecutor(ResultSetHandler<T> handler, Object[] args, Integer[] types) {
       super(args, types);
       _handler = handler;
     }
@@ -237,8 +237,8 @@ class SQLRunnerExecutors {
     }
 
     @Override
-    public void handleResult() throws SQLException, SQLRunnerException {
-      _handler.handleResult(_results);
+    public T handleResult() throws SQLException, SQLRunnerException {
+      return _handler.handleResult(_results);
     }
 
     @Override

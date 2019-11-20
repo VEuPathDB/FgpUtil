@@ -43,7 +43,7 @@ public final class InstanceManager {
       T instance = (T) projectMap.get(projectId);
       if (instance == null) {
         try {
-          instance = instanceClass.newInstance().getInstance(projectId, gusHome);
+          instance = instanceClass.getDeclaredConstructor().newInstance().getInstance(projectId, gusHome);
         }
         catch (InstantiationException | IllegalAccessException ex) {
           throw new UnfetchableInstanceException(
