@@ -1,8 +1,8 @@
 package org.gusdb.fgputil.server;
 
-import java.util.Map;
-
 import org.glassfish.grizzly.http.server.Session;
+import org.gusdb.fgputil.collection.ReadOnlyHashMap;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.web.SessionProxy;
 
 public class GrizzlySessionProxy implements SessionProxy {
@@ -19,8 +19,8 @@ public class GrizzlySessionProxy implements SessionProxy {
   }
 
   @Override
-  public Map<String, Object> getAttributeMap() {
-    return _session.attributes();
+  public ReadOnlyMap<String, Object> getAttributeMap() {
+    return new ReadOnlyHashMap<>(_session.attributes());
   }
 
   @Override

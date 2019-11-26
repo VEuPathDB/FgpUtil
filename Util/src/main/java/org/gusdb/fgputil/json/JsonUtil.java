@@ -73,7 +73,7 @@ public class JsonUtil {
     return map;
   }
 
-  public static String[] toStringArray(JSONArray json) {
+  public static String[] toStringArray(JSONArray json) throws JSONException {
     String[] result = new String[json.length()];
 
     for (int i = 0; i < result.length; i++) {

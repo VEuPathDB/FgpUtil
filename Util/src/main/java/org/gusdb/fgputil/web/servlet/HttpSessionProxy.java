@@ -1,11 +1,11 @@
 package org.gusdb.fgputil.web.servlet;
 
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import org.gusdb.fgputil.collection.ReadOnlyHashMap;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.web.SessionProxy;
 
 public class HttpSessionProxy implements SessionProxy {
@@ -22,14 +22,14 @@ public class HttpSessionProxy implements SessionProxy {
   }
 
   @Override
-  public Map<String, Object> getAttributeMap() {
-    Map<String,Object> map = new HashMap<>();
+  public ReadOnlyMap<String, Object> getAttributeMap() {
+    ReadOnlyHashMap.Builder<String, Object> map = ReadOnlyHashMap.builder();
     Enumeration<String> names = _session.getAttributeNames();
     while (names.hasMoreElements()) {
       String name = names.nextElement();
       map.put(name, _session.getAttribute(name));
     }
-    return map;
+    return map.build();
   }
 
   @Override

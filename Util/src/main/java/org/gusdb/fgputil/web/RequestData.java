@@ -13,6 +13,10 @@ import java.util.Map;
  */
 public interface RequestData {
 
+  default RequestSnapshot getSnapshot() {
+    return new RequestSnapshot(this);
+  }
+
   /**
    * @return fully qualified URI of the host/port, without an application context
    */

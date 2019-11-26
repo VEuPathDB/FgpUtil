@@ -1,12 +1,12 @@
 package org.gusdb.fgputil.web;
 
-import java.util.Map;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 
 public interface SessionProxy {
 
   Object getAttribute(String key);
 
-  Map<String, Object> getAttributeMap();
+  ReadOnlyMap<String, Object> getAttributeMap();
 
   void setAttribute(String key, Object value);
 
