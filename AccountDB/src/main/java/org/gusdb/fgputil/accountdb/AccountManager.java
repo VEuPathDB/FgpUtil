@@ -5,7 +5,6 @@ import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.mapToList;
 import static org.gusdb.fgputil.functional.Functions.pickKeys;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -251,14 +250,12 @@ public class AccountManager {
     final ArgumentBatch propertyBatch = getUserPropertyBatch(userId, profileProperties);
 
     // perform all inserts in a transaction
-    try(Connection connection = _accountDb.getDataSource().getConnection()) {
-      SqlUtils.performInTransaction(connection, conn -> {
-        // perform user row insert
-        new SQLRunner(conn, insertUserSql, "insert-user-row").executeStatement(params, INSERT_USER_PARAM_TYPES);
-        // perform property rows insert
-        new SQLRunner(conn, insertPropSql, "insert-user-prop-rows").executeStatementBatch(propertyBatch);
-      });
-    }
+    SqlUtils.performInTransaction(_accountDb.getDataSource(), conn -> {
+      // perform user row insert
+      new SQLRunner(conn, insertUserSql, "insert-user-row").executeStatement(params, INSERT_USER_PARAM_TYPES);
+      // perform property rows insert
+      new SQLRunner(conn, insertPropSql, "insert-user-prop-rows").executeStatementBatch(propertyBatch);
+    });
   }
 
   private long getNextUserId() throws DBStateException, SQLException {
@@ -362,14 +359,12 @@ public class AccountManager {
     final ArgumentBatch propertyBatch = getUserPropertyBatch(userId, profileProperties);
 
     // perform all property-related operations in a transaction
-    try(Connection connection = _accountDb.getDataSource().getConnection()) {
-      SqlUtils.performInTransaction(connection, conn -> {
-        // perform property rows delete
-        new SQLRunner(conn, removePropsSql, "remove-user-prop-rows").executeStatement(removePropsParams, REMOVE_PROPERTIES_PARAM_TYPES);
-        // perform property rows insert
-        new SQLRunner(conn, insertPropSql, "insert-user-prop-rows").executeStatementBatch(propertyBatch);
-      });
-    }
+    SqlUtils.performInTransaction(_accountDb.getDataSource(), conn -> {
+      // perform property rows delete
+      new SQLRunner(conn, removePropsSql, "remove-user-prop-rows").executeStatement(removePropsParams, REMOVE_PROPERTIES_PARAM_TYPES);
+      // perform property rows insert
+      new SQLRunner(conn, insertPropSql, "insert-user-prop-rows").executeStatementBatch(propertyBatch);
+    });
   }
 
   public static String getFlatPropertySql(List<UserPropertyName> propertyNames, String accountSchema, String accountDbLink) {

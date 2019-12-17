@@ -627,32 +627,34 @@ public final class SqlUtils {
    * @throws Exception if any of the procedures fails
    */
   @SafeVarargs
-  public static void performInTransaction(Connection conn, ConsumerWithException<Connection>... procedures) throws Exception {
-    boolean origAutoCommit = conn.getAutoCommit();
-    try {
-      conn.setAutoCommit(false);
-      for (ConsumerWithException<Connection> proc : procedures) {
-        proc.accept(conn);
-      }
-      // commit the transaction
-      conn.commit();
-    }
-    catch (Exception e) {
-      logger.error("Error attempting procedures in a transaction", e);
+  public static void performInTransaction(DataSource ds, ConsumerWithException<Connection>... procedures) throws Exception {
+    try(Connection conn = ds.getConnection()) {
+      boolean origAutoCommit = conn.getAutoCommit();
       try {
-        conn.rollback();
-      }
-      catch (Exception e2) {
-        logger.error("Error rolling back transaction", e2);
-      }
-      throw e;
-    }
-    finally {
-      try {
-        conn.setAutoCommit(origAutoCommit);
+        conn.setAutoCommit(false);
+        for (ConsumerWithException<Connection> proc : procedures) {
+          proc.accept(conn);
+        }
+        // commit the transaction
+        conn.commit();
       }
       catch (Exception e) {
-        logger.error("Error resetting auto-commit to " + origAutoCommit, e);
+        logger.error("Error attempting procedures in a transaction", e);
+        try {
+          conn.rollback();
+        }
+        catch (Exception e2) {
+          logger.error("Error rolling back transaction", e2);
+        }
+        throw e;
+      }
+      finally {
+        try {
+          conn.setAutoCommit(origAutoCommit);
+        }
+        catch (Exception e) {
+          logger.error("Error resetting auto-commit to " + origAutoCommit, e);
+        }
       }
     }
   }
