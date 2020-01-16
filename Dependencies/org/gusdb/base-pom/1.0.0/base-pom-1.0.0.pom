@@ -456,7 +456,7 @@
         </exclusions>
       </dependency>
 
-      <!-- IRODS Jargon -->
+      <!-- IRODS Client -->
       <dependency>
         <groupId>org.irods.jargon</groupId>
         <artifactId>jargon-core</artifactId>
@@ -467,6 +467,13 @@
             <artifactId>commons-codec</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+
+      <!-- SOLR Client -->
+      <dependency>
+        <groupId>org.apache.solr</groupId>
+        <artifactId>solr-solrj</artifactId>
+        <version>8.2.0</version>
       </dependency>
 
       <!-- CSV File Handling -->
