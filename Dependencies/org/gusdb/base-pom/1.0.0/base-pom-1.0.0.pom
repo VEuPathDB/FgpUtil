@@ -469,13 +469,6 @@
         </exclusions>
       </dependency>
 
-      <!-- SOLR Client -->
-      <dependency>
-        <groupId>org.apache.solr</groupId>
-        <artifactId>solr-solrj</artifactId>
-        <version>8.2.0</version>
-      </dependency>
-
       <!-- CSV File Handling -->
       <!-- https://mvnrepository.com/artifact/net.sf.opencsv/opencsv -->
       <dependency>
