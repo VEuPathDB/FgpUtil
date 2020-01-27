@@ -58,6 +58,10 @@ public class Solr {
         String responseBody = null;
         try {
           responseBody = IoUtil.readAllChars(new InputStreamReader((InputStream)response.getEntity()));
+          if (closeResponseOnExit) {
+            // only log if we think response will fit nicely into memory; don't want to blow out logs
+            LOG.info("Received response from SOLR: " + responseBody);
+          }
         }
         catch (IOException e) {
           LOG.error("Unable to read response body in SOLR response with error code " + response.getStatus());
