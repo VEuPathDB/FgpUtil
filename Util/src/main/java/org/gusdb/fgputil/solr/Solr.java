@@ -86,6 +86,7 @@ public class Solr {
   public static SolrResponse parseResponse(String requestSubpath, Response response) throws IOException {
     String data = IoUtil.readAllChars(new InputStreamReader((InputStream)response.getEntity()));
     JSONObject responseBody = new JSONObject(data);
+    LOG.info("Received response from SOLR: " + responseBody.toString(2));
     int responseStatus = responseBody.getJSONObject("responseHeader").getInt("status");
     if (responseStatus != 0) {
       throw handleError("SOLR response had non-zero embedded status (" + responseStatus + ")", requestSubpath, null);
