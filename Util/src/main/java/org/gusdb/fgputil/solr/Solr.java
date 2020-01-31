@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.client.Client;
@@ -91,6 +92,7 @@ public class Solr {
     if (responseStatus != 0) {
       throw handleError("SOLR response had non-zero embedded status (" + responseStatus + ")", requestSubpath, null);
     }
+    String nextCursorMark = responseBody.optString("nextCursorMark", null);
     JSONObject responseJson = responseBody.getJSONObject("response");
     int totalCount = responseJson.getInt("numFound");
     List<JSONObject> documents = arrayStream(responseJson.getJSONArray("docs"))
@@ -102,7 +104,8 @@ public class Solr {
         totalCount,
         documents,
         facetCounts,
-        highlighting
+        highlighting,
+        Optional.ofNullable(nextCursorMark)
     );
     return respObj;
   }
