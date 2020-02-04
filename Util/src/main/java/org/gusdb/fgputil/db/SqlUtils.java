@@ -253,7 +253,7 @@ public final class SqlUtils {
       return result;
     }
     catch (SQLException ex) {
-      throw new SQLException("Failed to run SQL:\n" + sql + getUrlAndUser(connection), ex);
+      throw new SQLException("Failed to run SQL (name=" + name + "):\n" + sql + getUrlAndUser(connection), ex);
     }
     finally {
       SqlUtils.closeQuietly(stmt, connection);
