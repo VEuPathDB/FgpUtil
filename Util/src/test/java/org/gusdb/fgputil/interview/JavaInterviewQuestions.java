@@ -49,15 +49,13 @@ public class JavaInterviewQuestions {
   }
 
   public void reverseFile(String inputFilePath, String reversedFilePath) {
-    BufferedReader reader = null;
-    BufferedWriter writer = null;
-    try {
+    try (BufferedReader reader = new BufferedReader(new FileReader(inputFilePath));
+         BufferedWriter writer = new BufferedWriter(new FileWriter(reversedFilePath))) {
       Stack<String> stack = new Stack<String>();
-      reader = new BufferedReader(new FileReader(inputFilePath));
-      while (reader.ready()) {
-        stack.push(reader.readLine());
+      String line;
+      while ((line = reader.readLine()) != null) {
+        stack.push(line);
       }
-      writer = new BufferedWriter(new FileWriter(reversedFilePath));
       while (!stack.isEmpty()) {
         writer.write(stack.pop());
         writer.newLine();
@@ -65,10 +63,6 @@ public class JavaInterviewQuestions {
     }
     catch (IOException ioe) {
       throw new RuntimeException("I/O Error reading and/or writing files", ioe);
-    }
-    finally {
-      IoUtil.closeQuietly(writer);
-      IoUtil.closeQuietly(reader);
     }
   }
 

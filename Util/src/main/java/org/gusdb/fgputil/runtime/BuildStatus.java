@@ -22,8 +22,9 @@ public class BuildStatus {
     List<Map<String,String>> records = new ArrayList<>();
     try (BufferedReader br = new BufferedReader(new FileReader(statusFile))) {
       Map<String,String> buildRecord = new LinkedHashMap<>();
-      while (br.ready()) {
-        String line = br.readLine().trim();
+      String line;
+      while ((line = br.readLine()) != null) {
+        line = line.trim();
         if (line.isEmpty()) {
           if (!buildRecord.isEmpty()) {
             records.add(buildRecord);

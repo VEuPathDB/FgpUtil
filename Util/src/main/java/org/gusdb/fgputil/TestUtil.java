@@ -30,22 +30,19 @@ public final class TestUtil {
   }
 
   public static void assertFilesEqual(String filePath1, String filePath2) throws IOException {
-    try (FileReader fr1 = new FileReader(filePath1);
-         BufferedReader br1 = new BufferedReader(fr1);
-         FileReader fr2 = new FileReader(filePath2);
-         BufferedReader br2 = new BufferedReader(fr2)) {
-      while (br1.ready()) {
-        if (!br2.ready()) {
+    try (BufferedReader br1 = new BufferedReader(new FileReader(filePath1));
+         BufferedReader br2 = new BufferedReader(new FileReader(filePath2))) {
+      String line1, line2;
+      while ((line1 = br1.readLine()) != null) {
+        if ((line2 = br2.readLine()) == null) {
           throw new AssertionError(filePath2 + " ended before " + filePath1);
         }
-        String line1 = br1.readLine();
-        String line2 = br2.readLine();
         // System.out.println("Comparing <" + line1 + "> with <" + line2 + ">.");
-        if ((line1 == null && line2 != null) || (line1 != null && !line1.equals(line2))) {
+        if (!line1.equals(line2)) {
           throw new AssertionError("Files differ.");
         }
       }
-      if (br2.ready()) {
+      if ((line2 = br2.readLine()) != null) {
         throw new AssertionError(filePath1 + " ended before " + filePath2);
       }
     }
