@@ -5,8 +5,9 @@ import static org.gusdb.fgputil.json.JsonIterators.arrayStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,6 +33,9 @@ import org.json.JSONObject;
 public class Solr {
 
   private static final Logger LOG = Logger.getLogger(Solr.class);
+
+  public static final class FacetCounts extends HashMap<String,Map<String,Integer>> { }
+  public static final class Highlighting extends HashMap<String,Map<String,List<String>>> { }
 
   private final String _solrUrl;
 
@@ -98,8 +103,8 @@ public class Solr {
     List<JSONObject> documents = arrayStream(responseJson.getJSONArray("docs"))
         .map(val -> val.getJSONObject())
         .collect(Collectors.toList());
-    Map<String,Map<String,Integer>> facetCounts = parseFacetCounts(responseBody);
-    Map<String,List<String>> highlighting = parseHighlighting(responseBody);
+    FacetCounts facetCounts = parseFacetCounts(responseBody);
+    Highlighting highlighting = parseHighlighting(responseBody);
     SolrResponse respObj = new SolrResponse(
         totalCount,
         documents,
@@ -110,16 +115,17 @@ public class Solr {
     return respObj;
   }
 
-  private static Map<String, List<String>> parseHighlighting(JSONObject responseBody) {
-    Map<String,List<String>> highlighting = new HashMap<>();
+  private static Highlighting parseHighlighting(JSONObject responseBody) {
+    Highlighting highlighting = new Highlighting();
     if (responseBody.has("highlighting")) {
       JSONObject highlights = responseBody.getJSONObject("highlighting");
       for (String documentId : highlights.keySet()) {
-        List<String> highlightedFields = new ArrayList<>();
+        Map<String,List<String>> highlightedFields = new LinkedHashMap<>();
         JSONObject fieldMap = highlights.getJSONObject(documentId);
         for (String fieldName : fieldMap.keySet()) {
-          if (fieldMap.getJSONArray(fieldName).length() > 0) {
-            highlightedFields.add(fieldName);
+          JSONArray matches = fieldMap.getJSONArray(fieldName);
+          if (matches.length() > 0) {
+            highlightedFields.put(fieldName, Arrays.asList(JsonUtil.toStringArray(matches)));
           }
         }
         highlighting.put(documentId, highlightedFields);
@@ -128,8 +134,8 @@ public class Solr {
     return highlighting;
   }
 
-  private static Map<String,Map<String, Integer>> parseFacetCounts(JSONObject responseBody) {
-    Map<String,Map<String,Integer>> facetCountMap = new HashMap<>();
+  private static FacetCounts parseFacetCounts(JSONObject responseBody) {
+    FacetCounts facetCountMap = new FacetCounts();
     if (!responseBody.has("facet_counts")) return facetCountMap;
     if (!responseBody.getJSONObject("facet_counts").has("facet_fields")) return facetCountMap;
     JSONObject facets = responseBody.getJSONObject("facet_counts").getJSONObject("facet_fields");
