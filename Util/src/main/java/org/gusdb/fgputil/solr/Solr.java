@@ -35,6 +35,7 @@ public class Solr {
   private static final Logger LOG = Logger.getLogger(Solr.class);
 
   public static final class FacetCounts extends HashMap<String,Map<String,Integer>> { }
+  public static final class FacetQueryResults extends HashMap<String,Integer> { }
   public static final class Highlighting extends HashMap<String,Map<String,List<String>>> { }
 
   private final String _solrUrl;
@@ -66,7 +67,7 @@ public class Solr {
           responseBody = IoUtil.readAllChars(new InputStreamReader((InputStream)response.getEntity()));
           if (closeResponseOnExit) {
             // only log if we think response will fit nicely into memory; don't want to blow out logs
-            LOG.info("Received response from SOLR: " + responseBody);
+            //LOG.info("Received response from SOLR: " + responseBody);
           }
         }
         catch (IOException e) {
@@ -104,11 +105,13 @@ public class Solr {
         .map(val -> val.getJSONObject())
         .collect(Collectors.toList());
     FacetCounts facetCounts = parseFacetCounts(responseBody);
+    FacetQueryResults facetQueries = parseFacetQueryResults(responseBody);
     Highlighting highlighting = parseHighlighting(responseBody);
     SolrResponse respObj = new SolrResponse(
         totalCount,
         documents,
         facetCounts,
+        facetQueries,
         highlighting,
         Optional.ofNullable(nextCursorMark)
     );
@@ -150,4 +153,14 @@ public class Solr {
     return facetCountMap;
   }
 
+  private static FacetQueryResults parseFacetQueryResults(JSONObject responseBody) {
+    FacetQueryResults results = new FacetQueryResults();
+    if (!responseBody.has("facet_counts")) return results;
+    if (!responseBody.getJSONObject("facet_counts").has("facet_queries")) return results;
+    JSONObject facets = responseBody.getJSONObject("facet_counts").getJSONObject("facet_queries");
+    for (String facetQueryText : facets.keySet()) {
+      results.put(facetQueryText, facets.getInt(facetQueryText));
+    }
+    return results;
+  }
 }
