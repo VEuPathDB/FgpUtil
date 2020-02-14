@@ -11,6 +11,9 @@ public class Tuples {
     private S _first;
     private T _second;
 
+    /** Constructor initializes both values to null */
+    public TwoTuple() { }
+
     public TwoTuple(S first, T second) {
       set(first, second);
     }
@@ -32,6 +35,9 @@ public class Tuples {
   public static class ThreeTuple<R,S,T> extends TwoTuple<R,S> {
 
     private T _third;
+
+    /** Constructor initializes all values to null */
+    public ThreeTuple() { }
 
     public ThreeTuple(R first, S second, T third) {
       super(first, second);
