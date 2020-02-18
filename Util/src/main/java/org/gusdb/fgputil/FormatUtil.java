@@ -15,9 +15,11 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -404,5 +406,24 @@ public class FormatUtil {
    */
   public static <T extends Enum<T>> String enumValuesAsString(T[] values) {
     return "[ " + Arrays.stream(values).map(Enum::name).collect(Collectors.joining(", ")) + " ]";
+  }
+
+  public static String escapeChars(String text, char[] charSet) {
+    // make sure we only escape each char once
+    Set<String> charsToEscape = new HashSet<>();
+    for (char c : charSet) {
+      charsToEscape.add(String.valueOf(c));
+    }
+    // replace backslashes first
+    if (charsToEscape.contains("\\")) {
+      text = text.replace("\\", "\\\\");
+    }
+    // escape non-backslash chars
+    for (String charToEscape : charsToEscape) {
+      if (!charToEscape.equals("\\")) {
+        text = text.replace(charToEscape, "\\" + charToEscape);
+      }
+    }
+    return text;
   }
 }

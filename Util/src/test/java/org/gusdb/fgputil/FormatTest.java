@@ -133,4 +133,17 @@ public class FormatTest {
     System.out.println("s8: " + s8);
     System.out.println("s9: " + s9);
   }
+
+  @Test
+  public void testEscapeChars() {
+    String[] tests = {
+      "test1",
+      "test*][",
+      "(te st\" \\&)"
+    };
+    char[] charsToReplace = "+-&|!(){}[]^\"~?:\\/".toCharArray();
+    for (String test : tests) {
+      System.out.println(test + " -> " + FormatUtil.escapeChars(test, charsToReplace));
+    }
+  }
 }
