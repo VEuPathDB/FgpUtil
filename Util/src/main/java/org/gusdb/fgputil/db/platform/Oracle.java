@@ -91,11 +91,24 @@ public class Oracle extends DBPlatform {
 
   @Override
   public long getNextId(DataSource dataSource, String schema, String table) throws SQLException {
-    StringBuilder sql = new StringBuilder("SELECT ");
-    sql.append(normalizeSchema(schema)).append(table).append(ID_SEQUENCE_SUFFIX);
-    sql.append(".nextval FROM dual");
-    BigDecimal id = (BigDecimal) SqlUtils.executeScalar(dataSource, sql.toString(), "select-next-id");
-    return id.longValue();
+    return getNextNIds(dataSource, schema, table, 1).get(0);
+  }
+
+  @Override
+  public List<Long> getNextNIds(DataSource dataSource, String schema, String table, int numIds) throws SQLException {
+    if (numIds <= 0) throw new IllegalArgumentException("Must request >0 IDs. " + numIds + " passed.");
+    String sql = new StringBuilder()
+      .append("SELECT ")
+      .append(getNextIdSqlExpression(schema, table))
+      .append(" FROM dual connect by level <= " + numIds)
+      .toString();
+    return new SQLRunner(dataSource, sql, "select-next-n-ids").executeQuery(rs -> {
+      List<Long> ids = new ArrayList<>();
+      while (rs.next()) {
+        ids.add(rs.getLong(1));
+      }
+      return ids;
+    });
   }
 
   @Override

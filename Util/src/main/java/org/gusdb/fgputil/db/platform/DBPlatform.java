@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -171,4 +173,22 @@ public abstract class DBPlatform {
       return (rs.wasNull() ? nullValue : value);
     }
 
+    /**
+     * Return a list of unique IDs fetched from the DB's next value mechanism
+     * TODO: make Postgres version as efficient as Oracle version
+     * 
+     * @param dataSource data source providing IDs
+     * @param schema schema containing sequence
+     * @param table table name (sequence name will match
+     * @param numIds number of IDs to fetch
+     * @return
+     * @throws SQLException
+     */
+    public List<Long> getNextNIds(DataSource dataSource, String schema, String table, int numIds) throws SQLException {
+      List<Long> ids = new ArrayList<>();
+      for (int i = 0; i < numIds; i++) {
+        ids.add(getNextId(dataSource, schema, table));
+      }
+      return ids;
+    }
 }
