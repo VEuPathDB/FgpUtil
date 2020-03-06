@@ -24,7 +24,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 
 public class FormatUtil {
 
@@ -304,7 +304,11 @@ public class FormatUtil {
    * @return pretty string value of map
    */
   public static <S,T> String prettyPrint(Map<S,T> map, Style style) {
-    return prettyPrint(map, style, new Functions.ToStringFunction<T>());
+    return prettyPrint(map, style, o -> o.toString());
+  }
+
+  public static <S,T> String prettyPrint(ReadOnlyMap<S,T> map, Style style) {
+    return prettyPrint(map, style, o -> o.toString());
   }
 
   /**
@@ -318,9 +322,18 @@ public class FormatUtil {
    */
   public static <S,T> String prettyPrint(Map<S,T> map, Style style, Function<T,String> toString) {
     if (map == null) return "null";
+    return prettyPrint(map.entrySet(), style, toString);
+  }
+
+  public static <S,T> String prettyPrint(ReadOnlyMap<S,T> map, Style style, Function<T,String> toString) {
+    if (map == null) return "null";
+    return prettyPrint(map.entrySet(), style, toString);
+  }
+
+  private static <S,T> String prettyPrint(Set<Entry<S,T>> entrySet, Style style, Function<T,String> toString) {
     StringBuilder sb = new StringBuilder("{").append(style.introDelimiter);
     boolean firstRecord = true;
-    for (Entry<S,T> entry : map.entrySet()) {
+    for (Entry<S,T> entry : entrySet) {
       sb.append(firstRecord ? "" : style.recordDelimiter).append(style.recordIndent)
         .append(entry.getKey().toString()).append(style.mapArrow)
         .append(entry.getValue() == null ? null : toString.apply(entry.getValue()));
