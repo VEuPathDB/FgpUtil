@@ -11,12 +11,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
@@ -34,6 +34,28 @@ public class Solr {
 
   private static final Logger LOG = Logger.getLogger(Solr.class);
 
+  public static final String DEFAULT_QUERY_ENDPOINT = "/select";
+
+  public enum HttpMethod {
+
+    GET ((url, params) -> getIb(url + "?" + params).get()),
+    POST ((url, params) -> getIb(url).post(Entity.entity(params, MediaType.APPLICATION_FORM_URLENCODED)));
+
+    private final BiFunction<String, String, Response> _invoker;
+
+    private HttpMethod(BiFunction<String, String, Response> invoker) {
+      _invoker = invoker;
+    }
+
+    private static Builder getIb(String requestUrl) {
+      return ClientBuilder.newClient().target(requestUrl).request(MediaType.APPLICATION_JSON);
+    }
+
+    public Response invokeRequest(String url, String queryParams) {
+      return _invoker.apply(url, queryParams);
+    }
+  }
+
   public static final class FacetCounts extends HashMap<String,Map<String,Integer>> { }
   public static final class FacetQueryResults extends HashMap<String,Integer> { }
   public static final class Highlighting extends HashMap<String,Map<String,List<String>>> { }
@@ -44,21 +66,23 @@ public class Solr {
     _solrUrl = solrUrl;
   }
 
-  public <T> T executeQuery(String urlSubpath, boolean closeResponseOnExit, FunctionWithException<Response, T> handler) {
+  public <T> T executeQuery(HttpMethod method, String queryParams, boolean closeResponseOnExit, FunctionWithException<Response, T> handler) {
+    return executeQuery(method, DEFAULT_QUERY_ENDPOINT, queryParams, closeResponseOnExit, handler);
+  }
+
+  public <T> T executeQuery(HttpMethod method, String queryEndpoint, String queryParams, boolean closeResponseOnExit, FunctionWithException<Response, T> handler) {
+    String absoluteUrl = _solrUrl + queryEndpoint;
+    String loggingInfo = absoluteUrl + " with params " + queryParams;
+    LOG.info("Querying SOLR at " + loggingInfo);
     Response response = null;
     try {
-      Client client = ClientBuilder.newClient();
-      String finalUrl = _solrUrl + urlSubpath;
-      LOG.info("Querying SOLR with: " + finalUrl);
-      WebTarget webTarget = client.target(finalUrl);
-      Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_JSON);
-      response = invocationBuilder.get();
+      response = method.invokeRequest(absoluteUrl, queryParams);
       if (response.getStatusInfo().getFamily().equals(Family.SUCCESSFUL)) {
         try {
           return handler.apply(response);
         }
         catch(Exception e) {
-          throw handleError("Unable to process SOLR response", urlSubpath, e);
+          throw handleError("Unable to process SOLR response", loggingInfo, e);
         }
       }
       else {
@@ -74,19 +98,19 @@ public class Solr {
           LOG.error("Unable to read response body in SOLR response with error code " + response.getStatus());
         }
         String bodyContent = responseBody == null ? "" : "; response body:\n" + responseBody;
-        throw handleError("SOLR request failed with code " + response.getStatus() + bodyContent, urlSubpath, null);
+        throw handleError("SOLR request failed with code " + response.getStatus() + bodyContent, loggingInfo, null);
       }
     }
     catch (JSONException e) {
-      throw handleError("SOLR response not valid JSON", urlSubpath, e);
+      throw handleError("SOLR response not valid JSON", loggingInfo, e);
     }
     finally {
       if (response != null && closeResponseOnExit) response.close();
     }
   }
 
-  private static SolrRuntimeException handleError(String message, String urlSubpath, Exception e) {
-    String runtimeMsg = "Error: " + message + FormatUtil.NL + "SOLR_REQUEST_URL: " + urlSubpath;
+  private static SolrRuntimeException handleError(String message, String requestInfo, Exception e) {
+    String runtimeMsg = "Error: " + message + FormatUtil.NL + "SOLR_REQUEST: " + requestInfo;
     return e == null ? new SolrRuntimeException(runtimeMsg) : new SolrRuntimeException(runtimeMsg, e);
   }
 
