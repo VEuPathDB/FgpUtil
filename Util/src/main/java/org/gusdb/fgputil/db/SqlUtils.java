@@ -42,7 +42,7 @@ public final class SqlUtils {
 
   /**
    * Close the resultSet and the underlying statement, connection. Log the query.
-   * 
+   *
    * @param resultSet
    *          result set to close
    */
@@ -74,7 +74,7 @@ public final class SqlUtils {
 
   /**
    * Close the resultSet but not its statement. Log the query.
-   * 
+   *
    * @param resultSet
    *          result set to close
    */
@@ -98,7 +98,7 @@ public final class SqlUtils {
 
   /**
    * Close the statement and underlying connection
-   * 
+   *
    * @param stmt
    *          statement to close
    */
@@ -138,16 +138,16 @@ public final class SqlUtils {
     catch (SQLException ex) {
       closeStatement(ps);
 
-      if (connection != null) 
+      if (connection != null)
         SqlUtils.closeQuietly(connection);
-  
+
       throw new SQLException("Failed to prepare query: \n" + sql + getUrlAndUser(connection), ex);
     }
   }
 
   /**
    * execute the update, and returns the number of rows affected.
-   * 
+   *
    * @param stmt
    *          statement to execute
    * @param sql
@@ -160,7 +160,7 @@ public final class SqlUtils {
    */
   public static boolean executePreparedStatement(PreparedStatement stmt, String sql, String name)
       throws SQLException {
-    
+
     Connection connection = stmt.getConnection();
 
     try {
@@ -173,10 +173,10 @@ public final class SqlUtils {
       throw new SQLException("Failed to execute statement: \n" + sql + getUrlAndUser(connection), ex);
     }
   }
-  
+
   /**
    * Executes a batch update; returns numbers of rows affected by each batch
-   * 
+   *
    * @param stmt
    *          PrepatedStatement to which batches were added
    * @param sql
@@ -190,7 +190,7 @@ public final class SqlUtils {
    */
   public static int[] executePreparedStatementBatch(PreparedStatement stmt, String sql, String name)
       throws SQLException {
-    
+
     Connection connection = stmt.getConnection();
 
     try {
@@ -206,7 +206,7 @@ public final class SqlUtils {
 
   /**
    * execute the update, and returns the number of rows affected.
-   * 
+   *
    * @param dataSource
    *          data source from which to get connection on which to execute update
    * @param sql
@@ -223,7 +223,7 @@ public final class SqlUtils {
 
   /**
    * execute the update, and returns the number of rows affected.
-   * 
+   *
    * @param dataSource
    *          data source from which to get connection on which to execute update
    * @param sql
@@ -243,7 +243,7 @@ public final class SqlUtils {
     logger.trace("running sql: " + name + "\n" + sql);
     Connection connection = null;
     Statement stmt = null;
-    
+
     try {
       long start = System.currentTimeMillis();
       connection = dataSource.getConnection();
@@ -263,7 +263,7 @@ public final class SqlUtils {
   /**
    * Executes the update using an open connection, and returns the number of rows affected. Use this if you
    * have a connection you want to use again such as one that is autocommit=false
-   * 
+   *
    * @param connection
    *          conneciton on which to execute the update
    * @param sql
@@ -297,7 +297,7 @@ public final class SqlUtils {
   /**
    * Run a query and returns a resultSet. the calling code is responsible for closing the resultSet using the
    * helper method in SqlUtils.
-   * 
+   *
    * @param dataSource
    *          data source from which to get connection on which to run query
    * @param sql
@@ -315,7 +315,7 @@ public final class SqlUtils {
   /**
    * Run a query and returns a resultSet. the calling code is responsible for closing the resultSet using the
    * helper method in SqlUtils.
-   * 
+   *
    * @param dataSource
    *          data source from which to get connection on which to run query
    * @param sql
@@ -335,7 +335,7 @@ public final class SqlUtils {
   /**
    * Run a query and returns a resultSet. the calling code is responsible for closing the resultSet using the
    * helper method in SqlUtils.
-   * 
+   *
    * @param dataSource
    *          data source from which to get connection on which to run query
    * @param sql
@@ -402,7 +402,7 @@ public final class SqlUtils {
    * Run the scalar value and returns a single value. If the query returns no rows or more than one row, a
    * WdkModelException will be thrown; if the query returns a single row with many columns, the value in the
    * first column will be returned.
-   * 
+   *
    * @param dataSource
    *          data source on which to run query
    * @param sql
@@ -440,7 +440,7 @@ public final class SqlUtils {
 
   /**
    * Escapes the input string for use in LIKE clauses to allow matching special chars
-   * 
+   *
    * @param value
    *          string on which to operate
    * @return the input value with special characters escaped
@@ -485,7 +485,7 @@ public final class SqlUtils {
     }
     else {
       ByteArrayInputStream inStream = new ByteArrayInputStream(content);
-      
+
       switch(binarySqlType) {
         case Types.BLOB:
           ps.setBlob(columnIndex, inStream, content.length);
@@ -509,7 +509,7 @@ public final class SqlUtils {
    * <li>{@link org.gusdb.fgputil.db.stream.BlobValueInputStream}</li>
    * <li>{@link org.gusdb.fgputil.db.pool.DatabaseInstance}</li>
    * </ul>
-   * 
+   *
    * @param wrappers
    *          varargs array of wrappers to be closed
    */
@@ -557,7 +557,7 @@ public final class SqlUtils {
   /**
    * Statically bind SQL params to the given statement. This method enables child classes to assign different
    * sets of params multiple times
-   * 
+   *
    * @param stmt
    *          statement on which to assign params
    * @param types
@@ -593,7 +593,7 @@ public final class SqlUtils {
   /**
    * Transforms a ResultSet into a Cursor over a stream of typed objects, each created by a row in the
    * ResultSet by the passed object creator
-   * 
+   *
    * @param rs ResultSet to iterate over
    * @param objCreator function that takes a ResultSet set to a row and creates an object from it
    * @return cursor over the produced objects
@@ -621,7 +621,7 @@ public final class SqlUtils {
    * passed procedures throw exception, the connection will be rolled back; otherwise all updates will be
    * committed together.  There is no guarantee of rollback of any other connections that may appear in
    * the passed procedures.  Auto-commit will be reset back to its original value once this method completes.
-   * 
+   *
    * @param conn connection on which to perform operations
    * @param procedures set of procedures containing operations (presumably against the passed connection)
    * @throws Exception if any of the procedures fails
