@@ -21,7 +21,7 @@ public class EncryptionUtil {
 
   private EncryptionUtil() {}
 
-  private static MessageDigest newMd5Digester() {
+  public static MessageDigest newMd5Digester() {
     try {
       return MessageDigest.getInstance("MD5");
     }
@@ -30,7 +30,7 @@ public class EncryptionUtil {
     }
   }
 
-  private static String convertToHex(byte[] bytes, boolean padZeroes) {
+  public static String convertToHex(byte[] bytes, boolean padZeroes) {
     StringBuilder buffer = new StringBuilder();
     for (byte b : bytes) {
       int code = (b & 0xFF);
