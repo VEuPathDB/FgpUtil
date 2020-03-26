@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 /**
  * Provides a RuntimeException wrapper around SQLException
- * 
+ *
  * @author rdoherty
  */
 public class SqlRuntimeException extends RuntimeException {
