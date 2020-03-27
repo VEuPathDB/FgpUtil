@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db.stream;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlRuntimeException;
 import org.gusdb.fgputil.db.SqlUtils;
 
@@ -36,6 +37,7 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   @Override
   public T next() {
     var out = next;
+    Logger.getLogger(getClass()).warn("ResultSetIterator::next()");
 
     try {
       while (rs.next()) {
