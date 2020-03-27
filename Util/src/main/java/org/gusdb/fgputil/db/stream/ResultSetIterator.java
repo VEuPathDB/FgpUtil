@@ -1,6 +1,5 @@
 package org.gusdb.fgputil.db.stream;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlRuntimeException;
 import org.gusdb.fgputil.db.SqlUtils;
 
@@ -18,8 +17,6 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   private final ResultSet rs;
 
   private final RowConverter<T> converter;
-
-  private int count = -1;
 
   private T next;
 
@@ -39,10 +36,6 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   @Override
   public T next() {
     var out = next;
-    count++;
-
-    if (count % 100 == 0)
-      Logger.getLogger(getClass()).warn("ResultSetIterator::next(): Processed 100 records");
 
     try {
       while (rs.next()) {
