@@ -19,6 +19,8 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
 
   private final RowConverter<T> converter;
 
+  private int count = -1;
+
   private T next;
 
   private boolean hasNext = true;
@@ -37,7 +39,10 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   @Override
   public T next() {
     var out = next;
-    Logger.getLogger(getClass()).warn("ResultSetIterator::next()");
+    count++;
+
+    if (count % 100 == 0)
+      Logger.getLogger(getClass()).warn("ResultSetIterator::next(): Processed 100 records");
 
     try {
       while (rs.next()) {
