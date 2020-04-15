@@ -1,7 +1,0 @@
-string string
-int int
-boolean boolean
-float float
-double double
-
-and then some
