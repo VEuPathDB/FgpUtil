@@ -1,5 +1,7 @@
 package org.gusdb.fgputil;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -99,6 +101,10 @@ public class FormatUtil {
       str = str.substring(0, str.length()-1);
     }
     return str;
+  }
+
+  public static void writeUtf8(OutputStream out, Object o) throws IOException {
+    out.write(getUtf8EncodedBytes(o.toString()));
   }
 
   public static byte[] getUtf8EncodedBytes(String s) {
