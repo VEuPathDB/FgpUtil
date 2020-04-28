@@ -194,7 +194,7 @@ public class JsonUtil {
 
   // NOTE: this method was taken and modified from json.org's JSONObject
   private static void writeValue(Object value, StringBuilder out) throws JSONException {
-    if (value == null) {
+    if (value == null || value == JSONObject.NULL) {
       out.append("null");
     }
     else if (value instanceof JSONObject) {
