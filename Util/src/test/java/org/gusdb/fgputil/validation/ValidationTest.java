@@ -2,8 +2,8 @@ package org.gusdb.fgputil.validation;
 
 import org.gusdb.fgputil.validation.ValidObjectFactory.SemanticallyValid;
 import org.gusdb.fgputil.validation.ValidObjectFactory.SyntacticallyValid;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 // TODO: write better tests... not much coverage here
 public class ValidationTest {
@@ -31,7 +31,7 @@ public class ValidationTest {
     SyntacticallyValid<Blah> validBlah = ValidObjectFactory.getSyntacticallyValid(blah);
     doSyntacticThings(validBlah);
     Blah blah2 = validBlah.get();
-    Assert.assertTrue(blah == blah2);
+    Assertions.assertSame(blah, blah2);
   }
 
   @Test
@@ -41,7 +41,7 @@ public class ValidationTest {
     doSyntacticThings(validBlah);
     doSemanticThings(validBlah);
     Blah blah2 = validBlah.get();
-    Assert.assertTrue(blah == blah2);
+    Assertions.assertSame(blah, blah2);
   }
 
 }

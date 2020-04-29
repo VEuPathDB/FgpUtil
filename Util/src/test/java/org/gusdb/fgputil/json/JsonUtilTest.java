@@ -6,22 +6,22 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Timer;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 public class JsonUtilTest {
 
   @Test
-  public void testJsonStuff() throws Exception {
+  public void testJsonStuff() {
     JSONObject json = new JSONObject();
-    Function<String,String> f = str -> str.toLowerCase();
+    Function<String,String> f = String::toLowerCase;
     json.put("f", f);
     System.out.println(json);
   }
 
   @Test
-  public void testSerialization() throws Exception {
+  public void testSerialization() {
     JSONObject json = new JSONObject();
     json.put("bool", true);
     json.put("str1", "blah");
@@ -41,6 +41,6 @@ public class JsonUtilTest {
     long check2 = t.getElapsed();
     System.out.println(check1 + " " + toStringStr);
     System.out.println(check2 + " " + serializedStr);
-    Assert.assertEquals(toStringStr.length(), serializedStr.length());
+    Assertions.assertEquals(toStringStr.length(), serializedStr.length());
   }
 }

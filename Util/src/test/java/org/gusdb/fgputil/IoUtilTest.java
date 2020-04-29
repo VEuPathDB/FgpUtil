@@ -2,7 +2,7 @@ package org.gusdb.fgputil;
 
 import static org.gusdb.fgputil.AlphabetUtils.ALPHABET;
 import static org.gusdb.fgputil.AlphabetUtils.NUM_ALPHABET_REPEATS;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.AlphabetUtils.AlphabetStream;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class IoUtilTest {
 

@@ -1,12 +1,11 @@
 package org.gusdb.fgputil.json;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonType.ValueType;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class JsonTypeTest {
 
@@ -23,7 +22,7 @@ public class JsonTypeTest {
   }
 
   @Test
-  public void booleanTest() throws Exception {
+  public void booleanTest() {
     String value = "true";
     JsonType json = JsonType.parse(value);
     assertEquals(ValueType.BOOLEAN, json.getType());
@@ -35,7 +34,7 @@ public class JsonTypeTest {
   }
 
   @Test
-  public void doubleTest() throws Exception {
+  public void doubleTest() {
     String value = "123.123";
     JsonType json = JsonType.parse(value);
     assertEquals(ValueType.NUMBER, json.getType());
@@ -43,7 +42,7 @@ public class JsonTypeTest {
   }
 
   @Test
-  public void stringTest() throws Exception {
+  public void stringTest() {
     String value = "\"123.123\"";
     JsonType json = JsonType.parse(value);
     assertEquals(ValueType.STRING, json.getType());
@@ -51,7 +50,7 @@ public class JsonTypeTest {
   }
 
   @Test
-  public void arrayTest() throws Exception {
+  public void arrayTest() {
     String value = "[ \"123.123\", true, null ]";
     JsonType json = JsonType.parse(value);
     assertEquals(ValueType.ARRAY, json.getType());
@@ -59,7 +58,7 @@ public class JsonTypeTest {
   }
 
   @Test
-  public void objectTest() throws Exception {
+  public void objectTest() {
     String value = "{ \"item1\": \"123.123\", \"item2\": true, \"item3\": null }";
     JsonType json = JsonType.parse(value);
     assertEquals(ValueType.OBJECT, json.getType());
@@ -69,7 +68,7 @@ public class JsonTypeTest {
   // XXX: FYI this code SHOULD fail in many places, but org.json is NOT a strict parser and
   //   accepts raw strings, both in objects and arrays
   @Test
-  public void failureTest() throws Exception {
+  public void failureTest() {
     String value = "abc";
     JsonType json = JsonType.parse(value);
     assertEquals(ValueType.STRING, json.getType());

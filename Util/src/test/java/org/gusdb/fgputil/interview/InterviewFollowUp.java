@@ -9,13 +9,13 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Follow-up interview questions just in case we need them after the tech interview
- * 
+ *
  * @author rdoherty
  */
 public class InterviewFollowUp {
@@ -41,23 +41,23 @@ public class InterviewFollowUp {
   /**
    * Takes a node of a tree and returns a clone of tree where the nodes are
    * reversed (i.e. left and right children are swapped).
-   * 
+   *
    * For example, given a tree that looks like:
-   * 
+   *
    *                3
    *               / \
    *              2   5
    *             /   / \
    *            1   4   6
-   * 
+   *
    * This function will return a new tree that looks like:
-   * 
+   *
    *                3
    *               / \
    *              5   2
    *             / \   \
    *            6   4   1
-   * 
+   *
    * @param root root node of a tree
    * @return a new tree where left and right children are swapped
    */
@@ -75,7 +75,7 @@ public class InterviewFollowUp {
   /**
    * Writes the lines of the (text) file referred to by inFile to outFile,
    * reversing the lines (delimited by '\n').
-   * 
+   *
    * @param inFile location of file to read
    * @param outFile location to write reversed lines
    */
@@ -107,8 +107,8 @@ public class InterviewFollowUp {
    * functions traverses the tree bottom up, reducing children first and passing the
    * results as a list to their parent.  Finally the root of the tree is reduced using
    * its value and the reductions of its direct children.
-   * 
-   * @param root tree node 
+   *
+   * @param root tree node
    * @param reducer function to reduce each node and its children to a new value
    * @return reduction of the tree
    */
@@ -159,7 +159,7 @@ public class InterviewFollowUp {
 
   public static int countNodesWithStream(Node2<?> root) {
     return reduceTree(root, (currentNode, convertedChildren) ->
-      convertedChildren.stream().reduce(0, (a, b) -> a + b) + 1);
+      convertedChildren.stream().reduce(0, Integer::sum) + 1);
   }
 
   public static <T> int countNodes(Node2<T> root, Predicate<Node2<T>> condition) {
@@ -175,17 +175,17 @@ public class InterviewFollowUp {
   @Test
   public void testCountNodes() {
     // count all nodes
-    Assert.assertEquals(7, countNodesNoStream(integerTree));
+    Assertions.assertEquals(7, countNodesNoStream(integerTree));
     // count all nodes
-    Assert.assertEquals(7, countNodesWithStream(integerTree));
+    Assertions.assertEquals(7, countNodesWithStream(integerTree));
     // count all nodes
-    Assert.assertEquals(7, countNodes(integerTree, node -> true));
+    Assertions.assertEquals(7, countNodes(integerTree, node -> true));
     // count nodes where content > 4
-    Assert.assertEquals(3, countNodes(integerTree, node -> node.content > 4));
+    Assertions.assertEquals(3, countNodes(integerTree, node -> node.content > 4));
     // count nodes where content is odd
-    Assert.assertEquals(4, countNodes(integerTree, node -> node.content % 2 == 1));
+    Assertions.assertEquals(4, countNodes(integerTree, node -> node.content % 2 == 1));
     // count leaf nodes
-    Assert.assertEquals(4, countNodes(integerTree, node -> node.children.isEmpty()));
+    Assertions.assertEquals(4, countNodes(integerTree, node -> node.children.isEmpty()));
   }
 
   //=======================================================
@@ -193,7 +193,7 @@ public class InterviewFollowUp {
   //=======================================================
 
   private static <T> Node2<T> node(T i) {
-    return new Node2<T>(i, Collections.EMPTY_LIST);
+    return new Node2<>(i, Collections.emptyList());
   }
 
   private static <T> Node2<T> node(T i, List<Node2<T>> children) {
@@ -204,5 +204,4 @@ public class InterviewFollowUp {
   private static <T> List<Node2<T>> children(Node2<T>... nodes) {
     return Arrays.asList(nodes);
   }
-
 }

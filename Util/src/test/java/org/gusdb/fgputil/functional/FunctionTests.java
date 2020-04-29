@@ -7,7 +7,7 @@ import static org.gusdb.fgputil.functional.Functions.mapToListWithIndex;
 import static org.gusdb.fgputil.functional.Functions.reduce;
 import static org.gusdb.fgputil.functional.Functions.reduceWithIndex;
 import static org.gusdb.fgputil.functional.Functions.zipToList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,11 +17,12 @@ import java.util.function.BiFunction;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named;
 import org.gusdb.fgputil.Named.NamedObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class FunctionTests {
 
-  private static final List<Character> CHARS = Arrays.asList(new Character[]{ 'x', 'a', 'b', 'c', 'd', 'e' });
+  private static final List<Character> CHARS = Arrays.asList('x', 'a', 'b', 'c',
+    'd', 'e');
 
   @Test
   public void testMapWithIndexes() {
@@ -86,5 +87,5 @@ public class FunctionTests {
     List<MyNamed> listOfNamedObj = new ArrayList<>();
     Functions.mapToList(listOfNamedObj, Named.TO_NAME);
   }
- 
+
 }

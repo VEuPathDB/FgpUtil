@@ -1,11 +1,10 @@
 package org.gusdb.fgputil.events;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.ListenerStatus.Status;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class EventsTest implements EventListener {
 
@@ -17,7 +16,7 @@ public class EventsTest implements EventListener {
 
     public static final String TEST_EVENT_CODE = "__test_event_code__";
 
-    private String _details;
+    private final String _details;
 
     public TestEvent(String details) {
       super(TEST_EVENT_CODE);
@@ -38,11 +37,10 @@ public class EventsTest implements EventListener {
       // subscribe to events
       Events.subscribe(this, TestEvent.TEST_EVENT_CODE);
       Events.subscribe(this, ListenerExceptionEvent.class);
-      Events.subscribe(new EventListener() {
-        @Override public void eventTriggered(Event event) throws Exception {
-          totalEventsReceived++;
-          System.out.println("Event submitted with code: " + event.getEventCode());
-        }}, Event.class);
+      Events.subscribe(event -> {
+        totalEventsReceived++;
+        System.out.println("Event submitted with code: " + event.getEventCode());
+      }, Event.class);
 
       // trigger an event where we expect all listeners to succeed
       Status status = getStatusWhenSubmitting("some message");
@@ -58,13 +56,13 @@ public class EventsTest implements EventListener {
         assertTrue(true);
       }
       catch(Exception e) {
-        assertTrue(false);
+        fail();
       }
 
       // trigger an event were we expect all listeners to succed using triggerAndWait()
       try {
         Events.triggerAndWait(new TestEvent(THROW_ERROR), new Exception("failed!"));
-        assertTrue(false);
+        fail();
       }
       catch(Exception e) {
         assertTrue(true);
@@ -116,6 +114,6 @@ public class EventsTest implements EventListener {
   }
 
   private void sleep(int ms) {
-    try { Thread.sleep(ms); } catch (InterruptedException e) {}
+    try { Thread.sleep(ms); } catch (InterruptedException ignored) {}
   }
 }

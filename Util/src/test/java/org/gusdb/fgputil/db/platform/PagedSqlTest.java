@@ -4,7 +4,7 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.util.function.Function;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PagedSqlTest {
 
@@ -43,10 +43,11 @@ public class PagedSqlTest {
 
     // test with various page sizes (includeRowIndex = false)
     int[] indexes = new int[]{ -1, 0, 1, 4, 6 };
-    for (int i = 0; i < indexes.length; i++) {
-      for (int j = 0; j < indexes.length; j++) {
-        System.out.println("-- Paged SQL (" + indexes[i] + ", " + indexes[j] + "): " + NL +
-            platform.getPagedSql(NL + testSql + NL, indexes[i], indexes[j], false) + ";");
+    for (int index : indexes) {
+      for (int i : indexes) {
+        System.out.println("-- Paged SQL ("
+          + index + ", " + i + "): " + NL
+          + platform.getPagedSql(NL + testSql + NL, index, i, false) + ";");
       }
     }
   }

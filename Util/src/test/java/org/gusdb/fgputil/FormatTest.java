@@ -9,16 +9,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil.Style;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class FormatTest {
 
   @Test
   public void testIterableJoin() {
-    List<String> list = Arrays.asList(new String[]{ "a", "b", "c" });
+    List<String> list = Arrays.asList("a", "b", "c");
     String joined = FormatUtil.join(list, "|");
-    Assert.assertEquals("a|b|c", joined);
+    Assertions.assertEquals("a|b|c", joined);
   }
 
   @Test
@@ -26,20 +26,18 @@ public class FormatTest {
     String[] sample = { "a", "b", "c", "d" };
     System.out.println(FormatUtil.arrayToString(sample));
   }
-  
+
   @Test
   public void testPrettyPrint() {
     Map<Integer,String> emptyMap = new HashMap<>();
     Map<Integer,String> fullMap = new MapBuilder<>(1, "One").put(2, "Two")
         .put(3, "Three").put(4, "Four").put(5, "Five").toMap();
-    System.out.println(new StringBuilder()
-        .append(FormatUtil.prettyPrint(emptyMap, Style.SINGLE_LINE)).append(NL)
-        .append(FormatUtil.prettyPrint(emptyMap, Style.MULTI_LINE)).append(NL)
-        .append(FormatUtil.prettyPrint(fullMap, Style.SINGLE_LINE)).append(NL)
-        .append(FormatUtil.prettyPrint(fullMap, Style.MULTI_LINE)).append(NL)
-        .toString());
+    System.out.println(FormatUtil.prettyPrint(emptyMap, Style.SINGLE_LINE) + NL
+      + FormatUtil.prettyPrint(emptyMap, Style.MULTI_LINE) + NL
+      + FormatUtil.prettyPrint(fullMap, Style.SINGLE_LINE) + NL
+      + FormatUtil.prettyPrint(fullMap, Style.MULTI_LINE) + NL);
   }
-    
+
   @Test
   public void testPercentFormat() {
     Integer[][] cases = new Integer[][]{
@@ -54,7 +52,7 @@ public class FormatTest {
           FormatUtil.getPctFromRatio(cas[0], cas[1]));
     }
   }
-  
+
   @Test
   public void testExceptionToString() {
     Exception orig = new Exception("Nested Exception");
@@ -63,7 +61,7 @@ public class FormatTest {
     System.out.println(stackTrace);
   }
 
-  private static String[][] UNDERSCORE_TEST_CASES = {
+  private static final String[][] UNDERSCORE_TEST_CASES = {
     { "name", "name" },
     { "displayName", "display_name" },
     { "whoIsInThere", "who_is_in_there" },
@@ -78,11 +76,11 @@ public class FormatTest {
   @Test
   public void testUnderscoreFormatter() {
     for (String[] testCase : UNDERSCORE_TEST_CASES) {
-      Assert.assertEquals(testCase[1], FormatUtil.toUnderscoreFormat(testCase[0]));
+      Assertions.assertEquals(testCase[1], FormatUtil.toUnderscoreFormat(testCase[0]));
     }
   }
 
-  private static String[][] TYPICAL_USE = {
+  private static final String[][] TYPICAL_USE = {
     { "uid", "2452345234" },
     { "dsid", "24352345234" },
     { "file", "someWeirdoFileForGbrowse.bed" }

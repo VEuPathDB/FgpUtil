@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AutoCloseableListTest {
 
-  private static Logger LOG = Logger.getLogger(AutoCloseableListTest.class);
+  private static final Logger LOG = Logger.getLogger(AutoCloseableListTest.class);
 
   private static class CloseLogger implements AutoCloseable {
     @Override
-    public void close() throws Exception {
+    public void close() {
       LOG.info("Closing me!!");
     }
   }
@@ -24,7 +24,8 @@ public class AutoCloseableListTest {
     for (int i = 0; i < 5; i++) {
       list.add(new CloseLogger());
     }
-    try (AutoCloseableList<CloseLogger> tester = list) {
+    //noinspection EmptyTryBlock
+    try (AutoCloseableList<CloseLogger> ignored = list) {
       // do nothing; just testing close
     }
   }
@@ -36,7 +37,8 @@ public class AutoCloseableListTest {
     for (int i = 0; i < 5; i++) {
       list.add(new CloseLogger());
     }
-    try (AutoCloseableList<CloseLogger> tester = new AutoCloseableList<>(list)) {
+    //noinspection EmptyTryBlock
+    try (AutoCloseableList<CloseLogger> ignored = new AutoCloseableList<>(list)) {
       // do nothing; just testing close
     }
   }

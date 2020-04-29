@@ -3,7 +3,7 @@ package org.gusdb.fgputil.json;
 import org.gusdb.fgputil.json.JsonType.ValueType;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ExpressionNodeTest {
 

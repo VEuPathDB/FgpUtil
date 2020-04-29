@@ -1,6 +1,6 @@
 package org.gusdb.fgputil.cache;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.Vector;
@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CacheTest {
 
@@ -26,14 +26,14 @@ public class CacheTest {
     }
 
     @Override
-    public String getNewValue(Integer itemId) throws ValueProductionException {
+    public String getNewValue(Integer itemId) {
       if (LOG_ON) LOG.info("Fetching item " + itemId);
       _opOrder.add("b" + itemId);
       return String.valueOf(itemId);
     }
   }
 
-  private class Worker implements Runnable {
+  private static class Worker implements Runnable {
 
     private final InMemoryCache<Integer, String> _cache;
     private final List<String> _opOrder;
@@ -79,14 +79,16 @@ public class CacheTest {
     InMemoryCache<Integer,String> cache = new InMemoryCache<>(5, 3);
     List<String> opOrder = new Vector<>();
     AtomicInteger completedCount = new AtomicInteger(0);
-    Executors.newSingleThreadExecutor().execute(new Worker(cache, opOrder, completedCount));
+    Executors.newSingleThreadExecutor().execute(
+      new Worker(cache, opOrder, completedCount));
+    //noinspection StatementWithEmptyBody
     while (completedCount.get() < 1) {}
     String expected = "[ a1,b1,s1,a3,b3,s2,a5,b5,s3,a3,s3,a4,b4,s4,s3,a1,s3,a5,s3,a2,b2,s4,a3,b3,s5,a1,s5,a7,b7,s3,a6,b6,s4,a3,s4 ]";
     String actual = FormatUtil.arrayToString(opOrder.toArray(), ",");
     LOG.info("Result: " + actual);
     assertEquals(expected, actual);
   }
-  
+
   @Test
   public void multiThreadTest() {
     LOG.info("Starting multi-thread test");
@@ -98,6 +100,7 @@ public class CacheTest {
     for (int i = 0; i < numThreads; i++) {
       exec.execute(new Worker(cache, opOrder, completedCount));
     }
+    //noinspection StatementWithEmptyBody
     while (completedCount.get() < numThreads) {}
     LOG.info("Number of ops: " + opOrder.size());
   }

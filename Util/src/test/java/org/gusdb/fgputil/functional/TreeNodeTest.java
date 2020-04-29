@@ -1,35 +1,29 @@
 package org.gusdb.fgputil.functional;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-
-import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TreeNodeTest {
 
-  private static Integer[] childVals = { 2, 5, 8 };
+  private static final Integer[] childVals = { 2, 5, 8 };
 
   @Test
   public void testStructureMap() {
     TreeNode<Integer> root = buildTestTree();
-    JSONObject result = root.mapStructure(new StructureMapper<Integer, JSONObject>(){
-      @Override
-      public JSONObject apply(Integer obj, List<JSONObject> mappedChildren) {
-        JSONObject json = new JSONObject();
-        json.put("value", obj);
-        if (!mappedChildren.isEmpty()) {
-          JSONArray children = new JSONArray();
-          for (JSONObject child : mappedChildren) {
-            children.put(child);
-          }
-          json.put("children", children);
+    JSONObject result = root.mapStructure((obj, mappedChildren) -> {
+      JSONObject json = new JSONObject();
+      json.put("value", obj);
+      if (!mappedChildren.isEmpty()) {
+        JSONArray children = new JSONArray();
+        for (JSONObject child : mappedChildren) {
+          children.put(child);
         }
-        return json;
+        json.put("children", children);
       }
+      return json;
     });
     // since JSON toString() may produce hash values in an inconsistent order, need to build string ourselves
     JSONObject expected = buildExpectedJson();

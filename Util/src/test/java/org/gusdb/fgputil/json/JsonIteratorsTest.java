@@ -1,22 +1,20 @@
 package org.gusdb.fgputil.json;
 
-import static org.junit.Assert.assertEquals;
+import org.gusdb.fgputil.FormatUtil;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.json.JsonIterators;
-import org.gusdb.fgputil.json.JsonType;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JsonIteratorsTest {
 
   @Test
-  public void testArrayIter() throws Exception {
+  public void testArrayIter() {
     JSONArray array = new JSONArray("[]");
     testCount(array, 0);
     array = new JSONArray("[ 2, null, true, 'blah' ]");
@@ -35,7 +33,7 @@ public class JsonIteratorsTest {
   }
 
   @Test
-  public void testObjectIter() throws Exception {
+  public void testObjectIter() {
     JSONObject obj = new JSONObject("{}");
     testCount(obj, 0);
     obj = new JSONObject("{ 1: b, blah: null, a: true, 4: 6.78E34, true: false, null: [], []: {}, {}: [] }");

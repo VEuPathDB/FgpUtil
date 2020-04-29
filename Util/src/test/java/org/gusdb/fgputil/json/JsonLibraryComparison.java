@@ -10,7 +10,7 @@ import javax.json.JsonObject;
 import javax.json.stream.JsonGenerator;
 
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class JsonLibraryComparison {
 
@@ -21,7 +21,7 @@ public class JsonLibraryComparison {
   private static JSONObject parseOrgJson(String json) {
     return new JSONObject(json);
   }
-  
+
   private static String prettyPrintOrgJson(JSONObject json) {
     return json.toString(2);
   }
@@ -32,7 +32,7 @@ public class JsonLibraryComparison {
 
   private static String prettyPrintJavaxJson(JsonObject json) {
     StringWriter stringWriter = new StringWriter();
-    Map<String, Object> properties = new HashMap<String, Object>(1);
+    Map<String, Object> properties = new HashMap<>(1);
     properties.put(JsonGenerator.PRETTY_PRINTING, true);
     Json.createWriterFactory(properties).createWriter(stringWriter).writeObject(json);
     return stringWriter.toString();
@@ -42,15 +42,15 @@ public class JsonLibraryComparison {
   public void jsonPerformanceTest() {
     String json = "{ \"stuff1\": { \"a\": 1, \"b\": true, \"c\": [] }, \"stuff2\": { \"a\": { \"b\": { \"c\": true } } } }";
     compareJsonLibs(json);
-    String bigJson = "{ \"0\": " + json;
+    StringBuilder bigJson = new StringBuilder("{ \"0\": " + json);
     for (int i = 1; i < 1000; i++) {
-      bigJson += ", \"" + i + "\":" + json;
-      
+      bigJson.append(", \"").append(i).append("\":").append(json);
+
     }
-    bigJson += "}";
-    compareJsonLibs(bigJson);
+    bigJson.append("}");
+    compareJsonLibs(bigJson.toString());
   }
-    
+
   public void compareJsonLibs(String origJson) {
 
     long startOrg = System.currentTimeMillis();
@@ -65,18 +65,16 @@ public class JsonLibraryComparison {
 
     long end = System.currentTimeMillis();
 
-    String result = new StringBuilder()
-        .append("===== org.json =====").append(NL)
-        .append("Parse: ").append(printOrg - startOrg).append("ms").append(NL)
-        .append("Print: ").append(startJavax - printOrg).append("ms").append(NL)
-        .append("Result: ").append(SHOW_JSON_OUTPUT ? resultOrg : "").append(NL)
-        .append(NL)
-        .append("===== javax.json =====").append(NL)
-        .append("Parse: ").append(printJavax - startJavax).append("ms").append(NL)
-        .append("Print: ").append(end - printJavax).append("ms").append(NL)
-        .append("Result: ").append(SHOW_JSON_OUTPUT ? resultJavax : "").append(NL)
-        .append(NL)
-        .toString();
+    String result = "===== org.json =====" + NL
+      + "Parse: " + (printOrg - startOrg) + "ms" + NL
+      + "Print: " + (startJavax - printOrg) + "ms" + NL
+      + "Result: " + (SHOW_JSON_OUTPUT ? resultOrg : "") + NL
+      + NL
+      + "===== javax.json =====" + NL
+      + "Parse: " + (printJavax - startJavax) + "ms" + NL
+      + "Print: " + (end - printJavax) + "ms" + NL
+      + "Result: " + (SHOW_JSON_OUTPUT ? resultJavax : "") + NL
+      + NL;
 
     System.out.println(result);
   }

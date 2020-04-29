@@ -28,12 +28,12 @@ import org.gusdb.fgputil.db.runner.SQLRunnerException;
  *   <li>byte[] readAllBytes(InputStream)</li>
  * </ul>
  * It also tests the ability of SQLRunner to handle LOB column types.
- * 
+ *
  * Note: this class was moved to the test artifact since we didn't want to
  * compile it with the regular code; we do this knowing that makes it relatively
  * hard to run as a stand-alone program.  At this point it's mostly meant to
  * serve as an example of how to use the above methods.
- * 
+ *
  * @author rdoherty
  */
 public class TestLobAccess {
@@ -65,7 +65,7 @@ public class TestLobAccess {
     }
   }
 
-  
+
   public TestLobAccess(DataSource ds) {
     _ds = ds;
   }
@@ -131,6 +131,7 @@ public class TestLobAccess {
     new SQLRunner(_ds, Row.DROP_TABLE_SQL).executeStatement();
   }
 
+  @SuppressWarnings("SqlNoDataSourceInspection")
   private static class Row implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -153,15 +154,15 @@ public class TestLobAccess {
     private static final String DROP_TABLE_SQL =
         "drop table lob_test_table";
 
-    private static Integer[] TYPES = {
+    private static final Integer[] TYPES = {
       Types.INTEGER, Types.VARCHAR, Types.BIT, Types.CLOB, Types.BLOB
     };
 
-    private int _intVal;
-    private String _strVal;
-    private boolean _boolVal;
-    private String _charData;
-    private Row _obj;
+    private final int _intVal;
+    private final String _strVal;
+    private final boolean _boolVal;
+    private final String _charData;
+    private final Row _obj;
 
     public Row(int intVal, String strVal, boolean boolVal, String charData, Row obj) {
       _intVal = intVal; _strVal = strVal; _boolVal = boolVal; _charData = charData; _obj = obj;

@@ -2,7 +2,7 @@ package org.gusdb.fgputil.iterator;
 
 import static org.gusdb.fgputil.AlphabetUtils.ALPHABET;
 import static org.gusdb.fgputil.AlphabetUtils.NUM_ALPHABET_REPEATS;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,19 +16,19 @@ import java.util.List;
 import org.gusdb.fgputil.AlphabetUtils.AlphabetDataProvider;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.ListBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class IterablesTest {
 
   List<Collection<Integer>> TEST_CASE_1 = new ListBuilder<Collection<Integer>>()
       .add(Collections.emptyList())
-      .add(Arrays.asList(new Integer[]{ 0,1,2,3,4,5 }))
+      .add(Arrays.asList(0,1,2,3,4,5))
       .add(Collections.emptyList())
-      .add(Arrays.asList(new Integer[]{ 6,7,8 }))
-      .add(Arrays.asList(new Integer[]{ 9 }))
-      .add(Arrays.asList(new Integer[]{ }))
-      .add(Arrays.asList(new Integer[]{ 10,11 }))
-      .add(Arrays.asList(new Integer[]{ 12 }))
+      .add(Arrays.asList(6,7,8))
+      .add(Collections.singletonList(9))
+      .add(Collections.emptyList())
+      .add(Arrays.asList(10,11))
+      .add(Collections.singletonList(12))
       .add(Collections.emptyList())
       .toList();
 
