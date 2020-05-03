@@ -15,9 +15,9 @@ public interface ConnectionPoolConfig {
   public boolean getDefaultReadOnly();
   public int getDefaultFetchSize();
   
-  public short getMaxActive();
-  public short getMaxIdle();
-  public short getMinIdle();
+  public int getMaxActive();
+  public int getMaxIdle();
+  public int getMinIdle();
   public long getMaxWait();
 
   public boolean isShowConnections();

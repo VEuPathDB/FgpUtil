@@ -87,6 +87,11 @@ public class HttpRequestData implements RequestData {
   }
 
   @Override
+  public String getHeader(String name) {
+    return _request.getHeader(name);
+  }
+
+  @Override
   public String getServerName() {
     return _request.getServerName();
   }

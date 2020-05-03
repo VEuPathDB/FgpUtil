@@ -75,6 +75,8 @@ public interface RequestData {
    */
   String getReferrer();
 
+  String getHeader(String name);
+
   String getServerName();
 
   String getRemoteHost();

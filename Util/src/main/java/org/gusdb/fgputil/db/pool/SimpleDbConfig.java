@@ -41,7 +41,7 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
      * @return configuration to create a database instance
      */
     public static SimpleDbConfig create(final SupportedPlatform dbType, final String connectionUrl,
-        final String username, final String password, final short connectionPoolSize) {
+        final String username, final String password, final int connectionPoolSize) {
       return create(dbType, connectionUrl, username, password, connectionPoolSize, 0);
     }
 
@@ -58,10 +58,10 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
      * @return configuration to create a database instance
      */
     public static SimpleDbConfig create(final SupportedPlatform dbType, final String connectionUrl,
-        final String username, final String password, final short connectionPoolSize, final int defaultFetchSize) {
+        final String username, final String password, final int connectionPoolSize, final int defaultFetchSize) {
       return new SimpleDbConfig() {
         @Override public SupportedPlatform getPlatformEnum() { return dbType; }
-        @Override public short getConnectionPoolSize()       { return connectionPoolSize; }
+        @Override public int getConnectionPoolSize()         { return connectionPoolSize; }
         @Override public String getLogin()                   { return username; }
         @Override public String getPassword()                { return password; }
         @Override public String getConnectionUrl()           { return connectionUrl; }
@@ -69,7 +69,7 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
       };
     }
   
-    public abstract short getConnectionPoolSize();
+    public abstract int getConnectionPoolSize();
     
     @Override
     public String getDriverInitClass() {
@@ -77,17 +77,17 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
     }
 
     @Override
-    public short getMaxActive() {
+    public int getMaxActive() {
         return getConnectionPoolSize();
     }
 
     @Override
-    public short getMaxIdle() {
+    public int getMaxIdle() {
         return getConnectionPoolSize();
     }
 
     @Override
-    public short getMinIdle() {
+    public int getMinIdle() {
         return 1;
     }
 
