@@ -10,6 +10,7 @@ import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.pool.SimpleDbConfig;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class UserAwareContext extends BasicApplicationContext {
@@ -48,7 +49,9 @@ public class UserAwareContext extends BasicApplicationContext {
 
   private void handleInitException(Exception e) {
     closeAccountDb();
-    throw new RuntimeException("Unable to initialize application", e);
+    throw new RuntimeException("Unable to initialize application.  " +
+        "Config file JSON must have the following properties: " +
+        getConfigFileHelp().toString(2), e);
   }
 
   private void closeAccountDb() {
@@ -90,5 +93,41 @@ public class UserAwareContext extends BasicApplicationContext {
   @Override
   public void close() {
     closeAccountDb();
+  }
+
+  public JSONArray getConfigFileHelp() {
+    return new JSONArray()
+      .put(new JSONObject()
+        .put("name", ACCOUNT_DB_CONNECTION_URL)
+        .put("type", "string")
+        .put("description", "Connection URL to account DB")
+        .put("isRequired", true))
+      .put(new JSONObject()
+        .put("name", ACCOUNT_DB_USERNAME)
+        .put("type", "string")
+        .put("description", "Username used to access account DB")
+        .put("isRequired", true))
+      .put(new JSONObject()
+        .put("name", ACCOUNT_DB_PASSWORD)
+        .put("type", "string")
+        .put("description", "Password used to access account DB")
+        .put("isRequired", true))
+      .put(new JSONObject()
+        .put("name", ACCOUNT_DB_POOL_SIZE)
+        .put("type", "positive integer")
+        .put("description", "Size of account DB connection pool")
+        .put("isRequired", false)
+        .put("defaultIfOmitted", DEFAULT_POOL_SIZE))
+      .put(new JSONObject()
+        .put("name", ACCOUNT_DB_PLATFORM)
+        .put("type", "string")
+        .put("description", "Platform of account DB")
+        .put("isRequired", false)
+        .put("defaultIfOmitted", DEFAULT_PLATFORM))
+      .put(new JSONObject()
+        .put("name", SECRET_KEY_FILE)
+        .put("type", "string")
+        .put("description", "Path to secret key file used to decode user auth keys")
+        .put("isRequired", true));
   }
 }
