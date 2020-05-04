@@ -12,6 +12,7 @@ import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.Request;
 import org.gusdb.fgputil.accountdb.AccountManager;
 import org.gusdb.fgputil.accountdb.UserProfile;
@@ -22,6 +23,8 @@ import org.gusdb.fgputil.web.RequestData;
 @PreMatching
 @Priority(200)
 public class AuthenticationFilter implements ContainerRequestFilter {
+
+  private static final Logger LOG = Logger.getLogger(AuthenticationFilter.class);
 
   private static final String AUTH_HEADER_KEY = "Auth_Key";
   private static final String USER_PROFILE_KEY = "User_Profile";
@@ -34,12 +37,20 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     UserAwareContext context = (UserAwareContext)RESTServer.getApplicationContext();
     RequestData request = new GrizzlyRequestData(_request.get());
     String authKey = request.getHeader(AUTH_HEADER_KEY);
-    LoginCookieParts parsedAuthKey = LoginCookieFactory.parseCookieValue(authKey);
-    if (!new LoginCookieFactory(context.getSecretKey()).isValidCookie(parsedAuthKey)) {
+    LOG.debug("Read auth key from caller: " + authKey);
+    LoginCookieParts parsedAuthKey;
+    try {
+      parsedAuthKey = LoginCookieFactory.parseCookieValue(authKey);
+      if (!new LoginCookieFactory(context.getSecretKey()).isValidCookie(parsedAuthKey)) {
+        throw new IllegalArgumentException();
+      }
+    }
+    catch (IllegalArgumentException e) {
       requestContext.abortWith(Response
           .status(Status.UNAUTHORIZED)
           .entity("Request must contain header '" + AUTH_HEADER_KEY + "', containing a valid auth key.")
           .build());
+      return;
     }
     String userEmail = parsedAuthKey.getUsername();
     AccountManager accountMgr = new AccountManager(context.getAccountDb(), "useraccounts.", Collections.emptyList());
