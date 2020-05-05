@@ -22,13 +22,13 @@ public class LoggingExceptionMapper implements ExceptionMapper<Exception> {
     try { throw(e); }
 
     catch (NotFoundException | PathParamException e404) {
-      return logResponse(e, Response.status(Status.NOT_FOUND)
-          .type(MediaType.TEXT_PLAIN).entity(e404.getMessage()).build());
+      return Response.status(Status.NOT_FOUND)
+          .type(MediaType.TEXT_PLAIN).entity(e404.getMessage()).build();
     }
 
     catch (ForbiddenException e403) {
-      return logResponse(e, Response.status(Status.FORBIDDEN)
-          .type(MediaType.TEXT_PLAIN).entity(e403.getMessage()).build());
+      return Response.status(Status.FORBIDDEN)
+          .type(MediaType.TEXT_PLAIN).entity(e403.getMessage()).build();
     }
 
     catch (BadRequestException e400) {
@@ -46,7 +46,6 @@ public class LoggingExceptionMapper implements ExceptionMapper<Exception> {
       }
     }
 
-    // Some other exception that must be handled by the application; send error event
     catch (Exception other) {
       return logResponse(e, Response.status(Status.INTERNAL_SERVER_ERROR)
           .type(MediaType.TEXT_PLAIN).entity(other.getMessage()).build());
