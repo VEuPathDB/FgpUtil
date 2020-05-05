@@ -5,13 +5,12 @@ import org.gusdb.fgputil.FormatUtil;
 
 /**
  * Generates, parses, and validates login cookies.  When a user logs into
- * a site, a cookie is set on the browser containing the username (email),
- * whether to remember the user (i.e. until logout), and a checksum to help
- * ensure the cookies are not used for malicious purposes.  The cookie is of
- * the form:
- *             emailAddr[-remember]-checksum
+ * a site, a cookie is set on the browser containing the username (email)
+ * and a checksum to help ensure the cookies are not used for malicious
+ * purposes.  The cookie is of the form:
+ *             emailAddr-checksum
  * For example:
- *             rdoherty@pcbi.upenn.edu-d50806e5be4399b643ee2aa56a9fa3b1
+ *             rdoherty@upenn.edu-d50806e5be4299b643he2aa56a9fa3b1
  * 
  * @author rdoherty
  */
@@ -19,7 +18,6 @@ public class LoginCookieFactory {
 
   // package protected for unit test access
   public static final String WDK_LOGIN_COOKIE_NAME = "wdk_check_auth";
-  private static final String REMEMBER_SUFFIX = "-remember";
 
   /**
    * A simple container for the various parts of a WDK login cookie value
@@ -28,21 +26,19 @@ public class LoginCookieFactory {
    */
   public static class LoginCookieParts {
     private String _username;
-    private boolean _remember;
     private String _checksum;
-    public LoginCookieParts(String username, boolean remember, String checksum) {
-      _username = username; _remember = remember; _checksum = checksum;
+    public LoginCookieParts(String username, String checksum) {
+      _username = username; _checksum = checksum;
     }
     public String getUsername() { return _username; }
-    public boolean isRemember() { return _remember; }
     public String getChecksum() { return _checksum; }
 
     @Override
-    public String toString() { return "{ " + _username + ", " + _remember + ", " + _checksum + " }"; }
+    public String toString() { return "{ " + _username + ", " + _checksum + " }"; }
   }
-  
+
   private String _secretKey;
-  
+
   /**
    * Creates a factory with the given secret key.  All parsing and generation
    * of cookies will use this key.
@@ -52,7 +48,7 @@ public class LoginCookieFactory {
   public LoginCookieFactory(String secretKey) {
     _secretKey = secretKey;
   }
-  
+
   /**
    * Creates a new login cookie using the given username and whether to
    * remember the user after the session expires.
@@ -61,11 +57,11 @@ public class LoginCookieFactory {
    * @param remember whether to remember the user after session expires
    * @return new login cookie
    */
-  public CookieBuilder createLoginCookie(String username, boolean remember) {
+  public CookieBuilder createLoginCookie(String username) {
     CookieBuilder loginCookie = new CookieBuilder(WDK_LOGIN_COOKIE_NAME, "");
     loginCookie. setPath("/"); // set cookie for whole site, not just webapp
-    loginCookie.setMaxAge(remember ? getDefaultMaxAge() : -1);
-    loginCookie.setValue(FormatUtil.urlEncodeUtf8(getCookieValue(username, remember)));
+    loginCookie.setMaxAge(getDefaultMaxAge());
+    loginCookie.setValue(FormatUtil.urlEncodeUtf8(username + "-" + getCookieHash(username)));
     return loginCookie;
   }
 
@@ -81,11 +77,11 @@ public class LoginCookieFactory {
    * @return new login cookie
    */
   public CookieBuilder createLoginCookie(String username, int maxAge) {
-    CookieBuilder loginCookie = createLoginCookie(username, false);
+    CookieBuilder loginCookie = createLoginCookie(username);
     loginCookie.setMaxAge(maxAge);
     return loginCookie;
   }
-  
+
   /**
    * Creates a logout cookie.  This is a login cookie that expires immediately
    * (i.e. the browser will delete the cookie when it receives it).
@@ -98,7 +94,7 @@ public class LoginCookieFactory {
     cookie.setPath("/");
     return cookie;
   }
-  
+
   /**
    * Parses the cookie value into username/email, remember flag, and checksum.
    * Does NOT check the validity of the checksum.  Use
@@ -116,17 +112,12 @@ public class LoginCookieFactory {
     if (hashDashIndex == -1) throw new IllegalArgumentException(errorMsg);
     String checksum = cookieValue.substring(hashDashIndex + 1);
     String name = cookieValue.substring(0, hashDashIndex);
-    boolean remember = false;
-    if (name.endsWith(REMEMBER_SUFFIX)) {
-      name = name.substring(0, name.length() - REMEMBER_SUFFIX.length());
-      remember = true;
-    }
     if (name.isEmpty() || checksum.isEmpty()) {
       throw new IllegalArgumentException(errorMsg);
     }
-    return new LoginCookieParts(name, remember, checksum);
+    return new LoginCookieParts(name, checksum);
   }
-  
+
   /**
    * Returns true if the cookie value represented by the parameter is valid.
    * This means it will ensure the checksum is valid against the other two
@@ -138,23 +129,12 @@ public class LoginCookieFactory {
    * @return true if value is valid as defined above, else false
    */
   public boolean isValidCookie(LoginCookieParts cookieParts) {
-    String hashInput = addRemember(cookieParts.getUsername(), cookieParts.isRemember());
-    String secretValue = getCookieHash(hashInput);
+    String secretValue = getCookieHash(cookieParts.getUsername());
     return secretValue.equals(cookieParts.getChecksum());
-  }
-
-  private String getCookieValue(String username, boolean remember) {
-    String uncodedCookieValue = addRemember(username, remember);
-    uncodedCookieValue += "-" + getCookieHash(uncodedCookieValue);
-    return uncodedCookieValue;
   }
 
   private String getCookieHash(String hashInput) {
     return EncryptionUtil.md5(hashInput + _secretKey);
-  }
-  
-  private static String addRemember(String orig, boolean remember) {
-    return orig + (remember ? REMEMBER_SUFFIX : "");
   }
 
 }

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.Reader;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
@@ -83,7 +84,7 @@ public class UserAwareContext extends BasicApplicationContext {
   public String getSecretKey() {
     String fileName = (String)get(SECRET_KEY_FILE);
     try (Reader in = new FileReader(fileName)) {
-      return IoUtil.readAllChars(in).strip();
+      return EncryptionUtil.md5(IoUtil.readAllChars(in).strip());
     }
     catch (IOException e) {
       throw new RuntimeException("Could not read secret key from file: " + fileName, e);
