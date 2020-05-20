@@ -96,12 +96,67 @@
       <!-- FGP Utilities -->
       <dependency>
         <groupId>org.gusdb</groupId>
-        <artifactId>fgputil-util</artifactId>
+        <artifactId>fgputil-accountdb</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gusdb</groupId>
-        <artifactId>fgputil-accountdb</artifactId>
+        <artifactId>fgputil-cache</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-cli</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-db</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-events</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-json</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-server</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-servlet</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-solr</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-test</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-web</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-xml</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -222,17 +277,22 @@
         <artifactId>msg-simple</artifactId>
         <version>1.2-EUPATHDB</version>
       </dependency>
+      <dependency>
+        <groupId>com.github.fge</groupId>
+        <artifactId>btf</artifactId>
+        <version>1.2</version>
+      </dependency>
 
       <!-- XML Parsing and Validation -->
       <dependency>
-        <groupId>commons-digester</groupId>
-        <artifactId>commons-digester</artifactId>
-        <version>1.8.1</version>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-digester3</artifactId>
+        <version>3.2</version>
       </dependency>
       <dependency>
         <groupId>xalan</groupId>
         <artifactId>serializer</artifactId>
-        <version>2.7.1</version>
+        <version>2.7.2</version>
         <exclusions>
           <exclusion>
             <groupId>xml-apis</groupId>
@@ -486,6 +546,7 @@
       </dependency>
 
       <!-- JSP Tag Libraries -->
+      <!--
       <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>jsp-api</artifactId>
@@ -541,6 +602,7 @@
         <artifactId>wheninrome</artifactId>
         <version>1.0</version>
       </dependency>
+      -->
 
       <!-- Unit Test Support -->
       <dependency>
@@ -577,28 +639,21 @@
 
       <!-- Logging -->
       <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>1.7.10</version>
-        <scope>compile</scope>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>2.13.3</version>
       </dependency>
       <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>1.7.10</version>
-        <scope>runtime</scope>
-      </dependency>
-      <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.17</version>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-1.2-api</artifactId>
+        <version>2.13.3</version>
       </dependency>
 
       <!--  Reflections -->
       <dependency>
         <groupId>org.reflections</groupId>
         <artifactId>reflections</artifactId>
-        <version>0.9.9-RC1</version>
+        <version>0.9.12</version>
         <exclusions>
           <exclusion>
             <groupId>xml-apis</groupId>
@@ -654,6 +709,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
         <configuration>
+          <forceJavacCompilerUse>true</forceJavacCompilerUse>
           <source>${java.version}</source>
           <target>${java.version}</target>
         </configuration>

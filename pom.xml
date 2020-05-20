@@ -8,7 +8,17 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>Util</module>
+    <module>Test</module>
+    <module>Core</module>
+    <module>Events</module>
+    <module>Cache</module>
+    <module>Cli</module>
+    <module>Xml</module>
+    <module>Json</module>
+    <module>Solr</module>
+    <module>Web</module>
+    <module>Servlet</module>
+    <module>Db</module>
     <module>AccountDB</module>
     <module>Server</module>
   </modules>
