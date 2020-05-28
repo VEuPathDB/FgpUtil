@@ -1,6 +1,6 @@
 ## Dependencies
 
-**This directory acts as a VEuPathDB Maven repository for jars not generally available in Maven Central**
+**This directory acts as a VEuPathDB Maven repository for needed jars not generally available in Maven Central**
 
 Base pom of all VEuPathDB projects
 - base-pom
