@@ -332,4 +332,10 @@ public class JsonUtil {
   public static JsonNode toJsonNode(Object any) {
     return Jackson.convertValue(any, JsonNode.class);
   }
+
+  public static void clear(JSONObject obj) {
+    for (String key : obj.keySet()) {
+      obj.remove(key);
+    }
+  }
 }
