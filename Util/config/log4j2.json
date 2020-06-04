@@ -1,0 +1,32 @@
+{
+  "Configuration": {
+    "Appenders": {
+      "appender": [{
+        "type": "Console",
+        "name": "STDOUT",
+        "target": "SYSTEM_OUT",
+        "Encoding": "UTF-8",
+        "PatternLayout": { "pattern": "%-4r [%-5p] %C:%L - %m%n" }
+      }]
+    },
+    "Loggers": {
+      "logger": [{
+        "name": "org.gusdb",
+        "level": "debug"
+      },{
+        "name": "org.eupathdb",
+        "level": "debug"
+      },{
+        "name": "org.apidb",
+        "level": "debug"
+      },{
+        "name": "org.orthomcl",
+        "level": "debug"
+      }],
+      "root" : {
+        "level": "warn",
+        "AppenderRef": { "ref": "STDOUT" }
+      }
+    }
+  }
+}
