@@ -334,7 +334,8 @@ public class JsonUtil {
   }
 
   public static void clear(JSONObject obj) {
-    for (String key : obj.keySet()) {
+    List<String> keys = new ArrayList<>(obj.keySet());
+    for (String key : keys) {
       obj.remove(key);
     }
   }
