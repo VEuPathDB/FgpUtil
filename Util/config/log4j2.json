@@ -5,7 +5,6 @@
         "type": "Console",
         "name": "STDOUT",
         "target": "SYSTEM_OUT",
-        "Encoding": "UTF-8",
         "PatternLayout": { "pattern": "%-4r [%-5p] %C:%L - %m%n" }
       }]
     },
