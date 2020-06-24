@@ -516,11 +516,17 @@
       </dependency>
 
       <!-- IRODS Client -->
+      <!-- Note: to use IRODS you must also depend explicitly on either -->
+      <!--       log4j 1.2 or log4j2 and its 1.2 bridge (see below)     -->
       <dependency>
         <groupId>org.irods.jargon</groupId>
         <artifactId>jargon-core</artifactId>
         <version>4.3.0.1-RELEASE</version>
         <exclusions>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
           <exclusion>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
