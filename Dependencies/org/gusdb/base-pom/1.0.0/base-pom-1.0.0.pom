@@ -523,10 +523,10 @@
         <artifactId>jargon-core</artifactId>
         <version>4.3.0.1-RELEASE</version>
         <exclusions>
-          <exclusion>
+          <!--<exclusion>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-          </exclusion>
+          </exclusion>-->
           <exclusion>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
