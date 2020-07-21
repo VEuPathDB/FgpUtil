@@ -27,8 +27,9 @@ public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentB
     return _batchSize;
   }
 
-  public void setBatchSize(int batchSize) {
+  public BasicArgumentBatch setBatchSize(int batchSize) {
     _batchSize = batchSize;
+    return this;
   }
 
   @Override
@@ -36,8 +37,9 @@ public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentB
     return _types;
   }
 
-  public void setParameterTypes(Integer[] types) {
+  public BasicArgumentBatch setParameterTypes(Integer[] types) {
     _types = types;
+    return this;
   }
 
   @Override

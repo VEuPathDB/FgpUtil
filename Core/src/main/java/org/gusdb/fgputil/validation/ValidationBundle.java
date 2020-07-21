@@ -4,7 +4,6 @@ import static org.gusdb.fgputil.FormatUtil.join;
 import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -57,16 +56,22 @@ public class ValidationBundle {
     }
 
     public ValidationBundleBuilder aggregateStatus(Validateable<?>... objects) {
-      Arrays.stream(objects).forEach(obj -> {
-        ValidationBundle errors = obj.getValidationBundle();
-        if (!errors.getLevel().equals(_level)) {
-          throw new IllegalArgumentException("Can only aggregate status of objects with the same validation level.");
+      for (Validateable<?> obj : objects) {
+        aggregateStatus(obj.getValidationBundle());
+      }
+      return this;
+    }
+
+    public ValidationBundleBuilder aggregateStatus(ValidationBundle... bundles) {
+      for (ValidationBundle errors : bundles) {
+        if (!errors.getLevel().isGreaterThanOrEqualTo(_level)) {
+          throw new IllegalArgumentException("Can only aggregate status of objects with the same or higher validation level.");
         }
         errors._errors.stream().forEach(error -> addError(error));
         errors._keyedErrors.entrySet().stream().forEach(entry -> {
           entry.getValue().stream().forEach(value -> { addError(entry.getKey(), value); });
         });
-      });
+      }
       return this;
     }
 
