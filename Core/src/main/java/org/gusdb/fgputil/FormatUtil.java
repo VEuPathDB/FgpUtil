@@ -275,6 +275,11 @@ public class FormatUtil {
     catch (NumberFormatException e) { return false; }
   }
 
+  public static boolean isLong(String s) {
+    try { Long.parseLong(s); return true; }
+    catch (NumberFormatException e) { return false; }
+  }
+
   public enum Style {
     SINGLE_LINE(" ", "", ", ", " "),
     MULTI_LINE(NL, "   ", ","+NL, NL);
