@@ -2,6 +2,7 @@ package org.gusdb.fgputil;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -145,5 +146,12 @@ public class FormatTest {
     for (String test : tests) {
       System.out.println(test + " -> " + FormatUtil.escapeChars(test, charsToReplace));
     }
+  }
+
+  @Test
+  public void testDateConversionTimeZoneBug() throws Exception {
+    Date date = new SimpleDateFormat("yyyy-MM-dd").parse("1900-01-01");
+    System.out.println("formatDate    : " + FormatUtil.formatDate(date));
+    System.out.println("formatDateTime: " + FormatUtil.formatDateTime(date));
   }
 }

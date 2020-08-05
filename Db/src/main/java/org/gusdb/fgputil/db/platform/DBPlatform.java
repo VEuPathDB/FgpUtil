@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db.platform;
 
+import java.io.Reader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -168,6 +169,19 @@ public abstract class DBPlatform {
       return (commit ? ps.executeUpdate() : 0);
     }
 
+    /**
+     * Always use setCharacterStream method when streaming data from a reader
+     * to a clob; postgres does NOT support setClob and will fail at runtime.
+     * 
+     * @param ps
+     * @param columnIndex
+     * @param content
+     * @throws SQLException
+     */
+    public void setClob(PreparedStatement ps, int columnIndex, Reader content) throws SQLException {
+      ps.setCharacterStream(columnIndex, content);
+    }
+
     public Boolean getBooleanValue(ResultSet rs, String columnName, Boolean nullValue) throws SQLException {
       Boolean value = rs.getBoolean(columnName);
       return (rs.wasNull() ? nullValue : value);
@@ -175,7 +189,7 @@ public abstract class DBPlatform {
 
     /**
      * Return a list of unique IDs fetched from the DB's next value mechanism
-     * TODO: make Postgres version as efficient as Oracle version
+     * TODO: make Postgres version as efficient as Oracle version and make this method abstract
      * 
      * @param dataSource data source providing IDs
      * @param schema schema containing sequence
@@ -191,4 +205,5 @@ public abstract class DBPlatform {
       }
       return ids;
     }
+
 }
