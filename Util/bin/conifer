@@ -159,7 +159,7 @@ Available commands:
     args = parser.parse_args(sys.argv[1:2])
     self.command = args.command
     if not hasattr(self, self.command):
-      print 'Unrecognized command'
+      print('Unrecognized command')
       parser.print_help()
       exit(1)
 
