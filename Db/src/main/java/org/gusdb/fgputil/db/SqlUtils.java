@@ -617,10 +617,19 @@ public final class SqlUtils {
   }
 
   /**
-   * Performs all the passed procedures in a single transaction on the passed connection.  If any of the
-   * passed procedures throw exception, the connection will be rolled back; otherwise all updates will be
-   * committed together.  There is no guarantee of rollback of any other connections that may appear in
-   * the passed procedures.  Auto-commit will be reset back to its original value once this method completes.
+   * Performs all the passed procedures in a single transaction on the passed
+   * connection.  If any of the passed procedures throw exception, the
+   * connection will be rolled back; otherwise all updates will be committed
+   * together.  There is no guarantee of rollback of any other connections that
+   * may appear in the passed procedures.  Auto-commit will be reset back to its
+   * original value once this method completes.
+   *
+   * Note: This function will set all deferrable constraint checks to be
+   * DEFERRED until the end of the transaction.  This is more often handy than
+   * not handy since changes performed by the procedures may interfere with each
+   * other until all are written.  Only then can constraints be effectively
+   * checked.  However, many constraints may need to be set deferrable at table
+   * creation time.
    *
    * @param conn connection on which to perform operations
    * @param procedures set of procedures containing operations (presumably against the passed connection)
@@ -632,6 +641,7 @@ public final class SqlUtils {
       boolean origAutoCommit = conn.getAutoCommit();
       try {
         conn.setAutoCommit(false);
+        conn.createStatement().executeUpdate("SET CONSTRAINTS ALL DEFERRED");
         for (ConsumerWithException<Connection> proc : procedures) {
           proc.accept(conn);
         }
