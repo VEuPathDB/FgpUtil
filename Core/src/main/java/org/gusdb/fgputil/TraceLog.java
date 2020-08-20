@@ -24,6 +24,7 @@ public class TraceLog {
    *
    * All subpackages of the packages in this list will be included.
    */
+  @SuppressWarnings("MismatchedReadAndWriteOfArray")
   private static final String[] packages = {
   };
 
@@ -33,6 +34,7 @@ public class TraceLog {
    * Array inputs should be the full name of the class as output by {@link
    * Class#getName()}
    */
+  @SuppressWarnings("MismatchedReadAndWriteOfArray")
   private static final String[] classes = {
   };
 
@@ -228,10 +230,7 @@ public class TraceLog {
     if (n == 0)
       return "";
 
-    final StringBuilder out = new StringBuilder(CONTINUATION_PREFIX);
-    for (int i = 1; i < n; i++)
-      out.append(CONTINUATION_PREFIX);
-    return out.toString();
+    return CONTINUATION_PREFIX.repeat(Math.max(0, n));
   }
 
   private static String stringArgs(Object[] args) {
