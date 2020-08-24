@@ -712,6 +712,20 @@
     </dependencies>
   </dependencyManagement>
 
+  <profiles>
+    <profile>
+      <id>alternateBuildDir</id>
+      <activation>
+        <property>
+          <name>alt.build.dir</name>
+        </property>
+      </activation>
+      <build>
+        <directory>${alt.build.dir}</directory>
+      </build>
+    </profile>
+  </profiles>
+
   <build>
     <plugins>
       <plugin>
