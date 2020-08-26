@@ -1,18 +1,10 @@
 package org.gusdb.fgputil.interview;
 
-<<<<<<< HEAD:Util/src/test/java/org/gusdb/fgputil/interview/JavaInterviewQuestionsTester.java
-import static org.gusdb.fgputil.TestUtil.assertFilesEqual;
-import static org.gusdb.fgputil.TestUtil.getResourceFilePath;
+import static org.gusdb.fgputil.test.TestUtil.assertFilesEqual;
+import static org.gusdb.fgputil.test.TestUtil.getResourceFilePath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-=======
-import static org.gusdb.fgputil.test.TestUtil.assertFilesEqual;
-import static org.gusdb.fgputil.test.TestUtil.getResourceFilePath;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
->>>>>>> master:Core/src/test/java/org/gusdb/fgputil/interview/JavaInterviewQuestionsTester.java
 
 import java.io.File;
 import java.io.IOException;
