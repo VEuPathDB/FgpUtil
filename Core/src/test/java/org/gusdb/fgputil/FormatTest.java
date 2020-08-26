@@ -17,7 +17,7 @@ public class FormatTest {
 
   @Test
   public void testIterableJoin() {
-    List<String> list = Arrays.asList("a", "b", "c");
+    List<String> list = Arrays.asList(new String[]{ "a", "b", "c" });
     String joined = FormatUtil.join(list, "|");
     Assertions.assertEquals("a|b|c", joined);
   }
@@ -33,10 +33,12 @@ public class FormatTest {
     Map<Integer,String> emptyMap = new HashMap<>();
     Map<Integer,String> fullMap = new MapBuilder<>(1, "One").put(2, "Two")
         .put(3, "Three").put(4, "Four").put(5, "Five").toMap();
-    System.out.println(FormatUtil.prettyPrint(emptyMap, Style.SINGLE_LINE) + NL
-      + FormatUtil.prettyPrint(emptyMap, Style.MULTI_LINE) + NL
-      + FormatUtil.prettyPrint(fullMap, Style.SINGLE_LINE) + NL
-      + FormatUtil.prettyPrint(fullMap, Style.MULTI_LINE) + NL);
+    System.out.println(new StringBuilder()
+        .append(FormatUtil.prettyPrint(emptyMap, Style.SINGLE_LINE)).append(NL)
+        .append(FormatUtil.prettyPrint(emptyMap, Style.MULTI_LINE)).append(NL)
+        .append(FormatUtil.prettyPrint(fullMap, Style.SINGLE_LINE)).append(NL)
+        .append(FormatUtil.prettyPrint(fullMap, Style.MULTI_LINE)).append(NL)
+        .toString());
   }
 
   @Test
@@ -62,7 +64,7 @@ public class FormatTest {
     System.out.println(stackTrace);
   }
 
-  private static final String[][] UNDERSCORE_TEST_CASES = {
+  private static String[][] UNDERSCORE_TEST_CASES = {
     { "name", "name" },
     { "displayName", "display_name" },
     { "whoIsInThere", "who_is_in_there" },
@@ -81,7 +83,7 @@ public class FormatTest {
     }
   }
 
-  private static final String[][] TYPICAL_USE = {
+  private static String[][] TYPICAL_USE = {
     { "uid", "2452345234" },
     { "dsid", "24352345234" },
     { "file", "someWeirdoFileForGbrowse.bed" }
