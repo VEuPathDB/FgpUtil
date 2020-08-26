@@ -1,11 +1,12 @@
 package org.gusdb.fgputil;
 
-import org.apache.log4j.Logger;
-import org.gusdb.fgputil.iterator.IteratingInputStream.DataProvider;
-
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.iterator.IteratingInputStream.DataProvider;
 
 public class AlphabetUtils {
 
@@ -25,7 +26,7 @@ public class AlphabetUtils {
     }
 
     @Override
-    public int read() {
+    public int read() throws IOException {
       if (_index == ALPHABET.length) {
         if (_repeatsRemaining == 0) {
           return -1;
@@ -46,7 +47,7 @@ public class AlphabetUtils {
 
     private static final byte[] EMPTY_BYTES = new byte[0];
 
-    private final int _numRepeats;
+    private int _numRepeats;
 
     public AlphabetDataProvider(int numRepeats) {
       assert(numRepeats > 0);
@@ -60,7 +61,7 @@ public class AlphabetUtils {
     @Override
     public Iterator<byte[]> getRecordIterator() {
       AtomicInteger numRemaining = new AtomicInteger(_numRepeats);
-      return new Iterator<>() {
+      return new Iterator<byte[]>() {
 
         @Override
         public boolean hasNext() {
