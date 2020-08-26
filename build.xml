@@ -1,4 +1,4 @@
-<project name="FgpUtil" default="Installation" basedir=".">
+<project name="FgpUtil" default="FgpUtil-Installation" basedir=".">
 
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
@@ -6,9 +6,7 @@
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
   <target name="FgpUtil-Installation" depends="FgpUtil-MavenInstallation,
-                                               FgpUtil/Util-Installation,
-                                               FgpUtil/AccountDB-Installation,
-                                               FgpUtil/Server-Installation">
+                                               FgpUtil/Util-Installation">
     <ant target="defaultProjectInstall">
       <property name="project" value="FgpUtil"/>
     </ant>
@@ -44,28 +42,15 @@
     </ant>
 
     <!-- post installation process -->
-    <!-- use default log4j.properties, if it does not exist -->
+    <!-- use default log4j.properties, if it does not exist
     <available file="${targetDir}/config/log4j.properties" property="log4j.config.exist" />
     <available file="${targetDir}/config/log4j.xml" property="log4j.config.exist" />
     <antcall target="copyLog4jConfig" />
+    -->
   </target>
-
+  <!--
   <target name="copyLog4jConfig" unless="log4j.config.exist">
     <copy file="${targetDir}/config/log4j.properties.sample" toFile="${targetDir}/config/log4j.properties"/>
   </target>
-
-  <target name="FgpUtil/AccountDB-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="FgpUtil"/>
-      <property name="component" value="AccountDB"/>
-    </ant>
-  </target>
-
-  <target name="FgpUtil/Server-Installation">
-    <ant target="defaultComponentInstall">
-      <property name="project" value="FgpUtil"/>
-      <property name="component" value="Server"/>
-    </ant>
-  </target>
-
+  -->
 </project>
