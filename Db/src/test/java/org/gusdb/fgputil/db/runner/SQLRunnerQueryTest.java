@@ -7,7 +7,8 @@ import java.util.Collection;
 
 import javax.sql.DataSource;
 
-import org.gusdb.fgputil.TestUtil;
+import org.gusdb.fgputil.db.SqlScriptRunner;
+import org.gusdb.fgputil.test.TestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
