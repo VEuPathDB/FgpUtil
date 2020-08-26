@@ -15,12 +15,12 @@ import org.junit.jupiter.api.Test;
  */
 public class ArrayTest {
 
-  private final String[] S_EMPTY = new String[]{};
-  private final String[] S_SINGLE = new String[]{ "a" };
-  private final String[] S_SOME = new String[]{ "b", "c", "d", "e" };
-  private final String[] S_NULLS = new String[]{ null, null };
+  private String[] S_EMPTY = new String[]{};
+  private String[] S_SINGLE = new String[]{ "a" };
+  private String[] S_SOME = new String[]{ "b", "c", "d", "e" };
+  private String[] S_NULLS = new String[]{ null, null };
 
-  private final String[][] S_CASES = new String[][]{ S_EMPTY, S_SINGLE, S_SOME, S_NULLS };
+  private String[][] S_CASES = new String[][]{ S_EMPTY, S_SINGLE, S_SOME, S_NULLS };
 
   @Test
   public void testStrAppend() {
@@ -34,13 +34,12 @@ public class ArrayTest {
 
   @Test
   public void testStrConcatenate() {
-    for (String[] caseI : S_CASES) {
-      testStrCase(ArrayUtil.concatenate(caseI), caseI);
-      for (String[] caseJ : S_CASES) {
-        testStrCase(ArrayUtil.concatenate(caseI, caseJ), caseI, caseJ);
-        for (String[] caseK : S_CASES) {
-          testStrCase(ArrayUtil.concatenate(caseI, caseJ, caseK), caseI,
-            caseJ, caseK);
+    for (int i = 0; i < S_CASES.length; i++) {
+      testStrCase(ArrayUtil.concatenate(S_CASES[i]), S_CASES[i]);
+      for (int j = 0; j < S_CASES.length; j++) {
+        testStrCase(ArrayUtil.concatenate(S_CASES[i], S_CASES[j]), S_CASES[i], S_CASES[j]);
+        for (int k = 0; k < S_CASES.length; k++) {
+          testStrCase(ArrayUtil.concatenate(S_CASES[i], S_CASES[j], S_CASES[k]), S_CASES[i], S_CASES[j], S_CASES[k]);
         }
       }
     }
@@ -73,11 +72,11 @@ public class ArrayTest {
 
   /****************************************************************************/
 
-  private final Integer[] I_EMPTY = new Integer[]{};
-  private final Integer[] I_SINGLE = new Integer[]{ 1 };
-  private final Integer[] I_SOME = new Integer[]{ 2, 3, 4, 5 };
+  private Integer[] I_EMPTY = new Integer[]{};
+  private Integer[] I_SINGLE = new Integer[]{ 1 };
+  private Integer[] I_SOME = new Integer[]{ 2, 3, 4, 5 };
 
-  private final Integer[][] I_CASES = new Integer[][]{ I_EMPTY, I_SINGLE, I_SOME };
+  private Integer[][] I_CASES = new Integer[][]{ I_EMPTY, I_SINGLE, I_SOME };
 
   @Test
   public void testIntAppend() {
@@ -90,13 +89,12 @@ public class ArrayTest {
 
   @Test
   public void testIntConcatenate() {
-    for (Integer[] caseI : I_CASES) {
-      testIntCase(ArrayUtil.concatenate(caseI), caseI);
-      for (Integer[] caseJ : I_CASES) {
-        testIntCase(ArrayUtil.concatenate(caseI, caseJ), caseI, caseJ);
-        for (Integer[] caseK : I_CASES) {
-          testIntCase(ArrayUtil.concatenate(caseI, caseJ, caseK), caseI,
-            caseJ, caseK);
+    for (int i = 0; i < I_CASES.length; i++) {
+      testIntCase(ArrayUtil.concatenate(I_CASES[i]), I_CASES[i]);
+      for (int j = 0; j < I_CASES.length; j++) {
+        testIntCase(ArrayUtil.concatenate(I_CASES[i], I_CASES[j]), I_CASES[i], I_CASES[j]);
+        for (int k = 0; k < I_CASES.length; k++) {
+          testIntCase(ArrayUtil.concatenate(I_CASES[i], I_CASES[j], I_CASES[k]), I_CASES[i], I_CASES[j], I_CASES[k]);
         }
       }
     }
@@ -136,16 +134,14 @@ public class ArrayTest {
       new int[]{ 5, 50, 500, 5000, 50000, 500000, 5000000 };
 
   private interface ArrayCombiner {
-    @SuppressWarnings("UnusedReturnValue")
-    <T> T[] combine(T[] arr1, T[] arr2);
+    public <T> T[] combine(T[] arr1, T[] arr2);
   }
 
   private static class CombineArraysWithListBuilder implements ArrayCombiner {
     @SuppressWarnings("unchecked")
     @Override public <T> T[] combine(T[] arr1, T[] arr2) {
-      //noinspection SuspiciousToArrayCall
       return (T[]) new ListBuilder<T>().addAll(Arrays.asList(arr1))
-          .addAll(Arrays.asList(arr2)).toList().toArray(new Object[0]);
+          .addAll(Arrays.asList(arr2)).toList().toArray(new Object[arr1.length+arr2.length]);
     }
   }
 
@@ -192,13 +188,12 @@ public class ArrayTest {
         time = System.currentTimeMillis();
         @SuppressWarnings("unused")
         String[] combined1 = new ListBuilder<String>().addAll(Arrays.asList(arr1))
-          .addAll(Arrays.asList(arr2)).toList().toArray(new String[arr1.length+arr2.length]);
+            .addAll(Arrays.asList(arr2)).toList().toArray(new String[arr1.length+arr2.length]);
         time = System.currentTimeMillis() - time;
         if (DISPLAY_TIMES) System.err.println(runTitle + " took " + time + "ms");
         break;
       case Arraycopy:
         time = System.currentTimeMillis();
-        //noinspection MismatchedReadAndWriteOfArray
         String[] combined2 = new String[arr1.length + arr2.length];
         System.arraycopy(arr1, 0, combined2, 0, arr1.length);
         System.arraycopy(arr2, 0, combined2, arr1.length, arr2.length);
