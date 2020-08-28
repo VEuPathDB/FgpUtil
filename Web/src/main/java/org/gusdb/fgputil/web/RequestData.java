@@ -83,6 +83,11 @@ public interface RequestData {
 
   String getRemoteIpAddress();
 
+  default String getRealRemoteIpAddress() {
+    String ipAddr = getHeader("X-Real-IP");
+    return ipAddr == null ? getRemoteIpAddress() : ipAddr;
+  }
+
   /**
    * name of host running application (this might be different from
    * any proxy webserver the terminal client is talking to)
