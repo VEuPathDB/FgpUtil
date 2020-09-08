@@ -631,7 +631,7 @@ public final class SqlUtils {
    * checked.  However, many constraints may need to be set deferrable at table
    * creation time.
    *
-   * @param conn connection on which to perform operations
+   * @param ds source of connection on which to perform operations
    * @param procedures set of procedures containing operations (presumably against the passed connection)
    * @throws Exception if any of the procedures fails
    */

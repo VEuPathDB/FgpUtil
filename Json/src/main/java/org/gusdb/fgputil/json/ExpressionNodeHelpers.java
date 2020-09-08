@@ -64,7 +64,7 @@ public class ExpressionNodeHelpers {
   /**
    * Transforms enumerated values JSON array into standard expression node syntax, e.g.
    * 
-   * [ a, b ] => { "op": "or", "val": [ { "op": "eq", "val": a }, { "op": "eq", "val": b } ] }
+   * [ a, b ] =&gt; { "op": "or", "val": [ { "op": "eq", "val": a }, { "op": "eq", "val": b } ] }
    * 
    * @param json enumerated values JSON array
    * @param operatorKey key to which operators should be assigned
@@ -143,7 +143,7 @@ public class ExpressionNodeHelpers {
   /**
    * Transforms passed pattern into standard expression syntax for a LIKE restraint, e.g.
    * 
-   *  "value" -> { "op": "like", "val": "value" }
+   *  "value" -&gt; { "op": "like", "val": "value" }
    * 
    * @param value pattern sent in pattern request
    * @param operatorKey key to which operators should be assigned

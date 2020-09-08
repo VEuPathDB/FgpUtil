@@ -69,7 +69,7 @@ public class EncryptionUtil {
    * @param shortDigest A boolean flag which determines if the full hash should
    *                    be returned or just the first 8 bytes (will return less
    *                    if the MD5 hash is shorter than 8 bytes).
-   * @return Either a full MD5 hash string or a short digest <= 8 bytes in
+   * @return Either a full MD5 hash string or a short digest &lt;= 8 bytes in
    * length.
    * @throws IllegalArgumentException when the input data is either null or an
    * empty string.

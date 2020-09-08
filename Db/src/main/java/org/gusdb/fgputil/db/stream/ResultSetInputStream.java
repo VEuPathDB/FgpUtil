@@ -41,7 +41,7 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
    * @param sql SQL query to run
    * @param queryName name of query (applied in SQLLogger)
    * @param ds data source against which to run query
-   * @param fetchSize fetch size to apply (ignored if value is <=0)
+   * @param fetchSize fetch size to apply (ignored if value is &lt;=0)
    * @param converter row converter to transform data to bytes
    * @return the created stream
    * @throws SQLException if unable to establish connection or run query

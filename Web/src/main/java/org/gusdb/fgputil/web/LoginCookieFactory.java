@@ -54,7 +54,6 @@ public class LoginCookieFactory {
    * remember the user after the session expires.
    * 
    * @param username user name (email address)
-   * @param remember whether to remember the user after session expires
    * @return new login cookie
    */
   public CookieBuilder createLoginCookie(String username) {
