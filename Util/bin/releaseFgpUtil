@@ -30,7 +30,8 @@
 ##
 ## AFTER:
 ##   11. Inspect the new artifacts in the master FgpUtil checkout
-##   12. If OK, commit and push.  FgpUtil is released.
+##   12. If OK, commit and push; FgpUtil is released
+##   13. Revert or remove the modified release branch
 ##
 #########################################################################
 
@@ -53,7 +54,8 @@ cp Dependencies/org/gusdb/base-pom/1.0.0/base-pom-1.0.0.pom ~/.m2/repository/org
 
 # copy new base pom from local repo to master version checkout
 echo "Copying new base-pom to master version checkout"
-cp -r ~/.m2/repository/org/gusdb/base-pom/$releaseVersion $masterCheckoutLocation/Dependencies/org/gusdb/base-pom
+mkdir -p $masterCheckoutLocation/Dependencies/org/gusdb/base-pom/$releaseVersion
+cp ~/.m2/repository/org/gusdb/base-pom/$releaseVersion/base-pom-$releaseVersion.pom $masterCheckoutLocation/Dependencies/org/gusdb/base-pom/$releaseVersion
 
 # change component poms to use new parent pom version
 echo "Changing parent pom version in:"
