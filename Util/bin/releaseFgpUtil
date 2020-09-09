@@ -13,12 +13,12 @@
 ## BEFORE:
 ##   1. Check out the release branch of FgpUtil you wish to make artifacts for
 ##   2. Ensure the javadoc:jar command completes successfully in each component
-##   3. Change the version of the base-pom to the new release version
+##   3. Change the version of base-pom-1.0.0.pom to the new release version
 ##   4. Visit the primary FgpUtil pom.xml and do the following:
 ##     a. change the version of base-pom inside the <parentPom> tag to the new version
 ##     b. comment out the <relativePath> tag and its contents
 ##   5. Change the $releaseVersion constant in this file
-##   6. Check and change the $masterCheckoutLocation constant in this file if necessary
+##   6. Check and change the $masterCheckoutLocation constant in this file, if necessary
 ##
 ## Run this script from the FgpUtil directory.  It will:
 ##   7. Create a new base-pom artifact in the local repository
@@ -69,11 +69,11 @@ done
 
 # perform build commands at the project level
 echo "Cleaning target dirs"
-mvn clean >& $logFile
+mvn clean > $logFile
 echo "Building and installing artifacts"
-mvn install -DcreateChecksum=true >>& $logFile
+mvn install -DcreateChecksum=true >> $logFile
 echo "Building source jars"
-mvn source:jar >>& $logFile
+mvn source:jar >> $logFile
 
 # perform build commands at the component level
 echo "Component-level work:"
@@ -82,14 +82,15 @@ for component in $(ls); do
 
     # visit component and determine component's artifact name
     echo "  $component"
-    cd $component
-    componentName=`ls *-sources.jar | sed 's/-48\.0-sources\.jar//'`
-    echo "    Set artifactId to '$componentName'"
+    cd $component/target
+    componentName=`ls *-sources.jar | sed "s/-$sedVersion-sources\.jar//"`
+    echo "    Set artifactId to $componentName"
     
     # run javadoc maven plugin and build jars with the proper name
     #  (does not work at the project level of a multi-module project)
     echo "    Generating JavaDoc"
-    mvn javadoc:jar
+    cd .. # back to component
+    mvn javadoc:jar >& $logFile
     echo "    Building JavaDoc JAR"
     cd target
     javadocJarName=`ls *-sources.jar | sed 's/sources/javadoc/'`
@@ -98,11 +99,11 @@ for component in $(ls); do
     cd ../.. # move back to target/
 
     # copy sources and javadoc jars to local maven repo (regular jar already there via install target)
-    echo "Copying sources and javadoc jars to local repo"
+    echo "    Copying sources and javadoc jars to local repo"
     cp *-sources.jar *-javadoc.jar ~/.m2/repository/org/gusdb/$componentName/$releaseVersion
 
     # copy generated artifacts for this component to master version checkout
-    echo "Copying all artifacts to master version checkout"
+    echo "    Copying all artifacts to master version checkout"
     mkdir -p $masterCheckoutLocation/Dependencies/org/gusdb/$componentName/$releaseVersion
     cp ~/.m2/repository/org/gusdb/$componentName/$releaseVersion/fgputil-* $masterCheckoutLocation/Dependencies/org/gusdb/$componentName/$releaseVersion
 
@@ -110,3 +111,9 @@ for component in $(ls); do
   fi
 done
 
+# copy FgpUtil primary pom, the parent of all the components, to master version checkout
+echo "Copying FgpUtil parent pom to master version checkout"
+mkdir -p $masterCheckoutLocation/Dependencies/org/gusdb/fgputil/$releaseVersion
+cp ~/.m2/repository/org/gusdb/fgputil/$releaseVersion/fgputil* $masterCheckoutLocation/Dependencies/org/gusdb/fgputil/$releaseVersion
+
+echo "Done."
