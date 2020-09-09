@@ -1,0 +1,112 @@
+#!/bin/bash
+#########################################################################
+##
+## Helper script to release FgpUtil.
+##
+## How it works: This script should operate on an already released branch of
+##     FgpUtil, but will not commit anything to that branch.  All commits
+##     should be done in the master branch of FgpUtil (our psuedo maven
+##     repository) after artifacts have been generated.
+##
+## You need to do a number of things before and after running this script.
+##
+## BEFORE:
+##   1. Check out the release branch of FgpUtil you wish to make artifacts for
+##   2. Ensure the javadoc:jar command completes successfully in each component
+##   3. Change the version of the base-pom to the new release version
+##   4. Visit the primary FgpUtil pom.xml and do the following:
+##     a. change the version of base-pom inside the <parentPom> tag to the new version
+##     b. comment out the <relativePath> tag and its contents
+##   5. Change the $releaseVersion constant in this file
+##   6. Check and change the $masterCheckoutLocation constant in this file if necessary
+##
+## Run this script from the FgpUtil directory.  It will:
+##   7. Create a new base-pom artifact in the local repository
+##   8. Create jar and checksum files, sources jar, and javadoc jars for
+##      each component in FgpUtil and place them in the local repository
+##   9. Copy the new files from the local repo to the Dependencies dir
+##      of the master FgpUtil location specified below
+##   10. It will NOT commit those changes
+##
+## AFTER:
+##   11. Inspect the new artifacts in the master FgpUtil checkout
+##   12. If OK, commit and push.  FgpUtil is released.
+##
+#########################################################################
+
+releaseVersion=48.0
+masterCheckoutLocation=~/work/master/FgpUtil
+
+#########################################################################
+
+if [ "$(basename $(pwd))" != "FgpUtil" ]; then
+  echo "Must be in the FgpUtil base directory to run this script."
+  exit 1
+fi
+
+logFile="fgputil.release.${releaseVersion}.log"
+
+# copy new base-pom to the local repository
+echo "Copying new base-pom to local repo"
+mkdir -p ~/.m2/repository/org/gusdb/base-pom/$releaseVersion
+cp Dependencies/org/gusdb/base-pom/1.0.0/base-pom-1.0.0.pom ~/.m2/repository/org/gusdb/base-pom/$releaseVersion/base-pom-${releaseVersion}.pom
+
+# copy new base pom from local repo to master version checkout
+echo "Copying new base-pom to master version checkout"
+cp -r ~/.m2/repository/org/gusdb/base-pom/$releaseVersion $masterCheckoutLocation/Dependencies/org/gusdb/base-pom
+
+# change component poms to use new parent pom version
+echo "Changing parent pom version in:"
+sedVersion=`echo $releaseVersion | sed 's/\./\\\./g'`
+for component in $(ls); do
+  if [ -e $component/pom.xml ]; then
+    echo "  $component"
+    cd $component
+    sed "s/1\.0\.0/$sedVersion/" pom.xml > pom.xml.tmp && mv pom.xml.tmp pom.xml
+    cd ..
+  fi
+done
+
+# perform build commands at the project level
+echo "Cleaning target dirs"
+mvn clean >& $logFile
+echo "Building and installing artifacts"
+mvn install -DcreateChecksum=true >>& $logFile
+echo "Building source jars"
+mvn source:jar >>& $logFile
+
+# perform build commands at the component level
+echo "Component-level work:"
+for component in $(ls); do
+  if [ -e $component/pom.xml ]; then
+
+    # visit component and determine component's artifact name
+    echo "  $component"
+    cd $component
+    componentName=`ls *-sources.jar | sed 's/-48\.0-sources\.jar//'`
+    echo "    Set artifactId to '$componentName'"
+    
+    # run javadoc maven plugin and build jars with the proper name
+    #  (does not work at the project level of a multi-module project)
+    echo "    Generating JavaDoc"
+    mvn javadoc:jar
+    echo "    Building JavaDoc JAR"
+    cd target
+    javadocJarName=`ls *-sources.jar | sed 's/sources/javadoc/'`
+    cd site/javadocs
+    jar cvf ../../$javadocJarName *
+    cd ../.. # move back to target/
+
+    # copy sources and javadoc jars to local maven repo (regular jar already there via install target)
+    echo "Copying sources and javadoc jars to local repo"
+    cp *-sources.jar *-javadoc.jar ~/.m2/repository/org/gusdb/$componentName/$releaseVersion
+
+    # copy generated artifacts for this component to master version checkout
+    echo "Copying all artifacts to master version checkout"
+    mkdir -p $masterCheckoutLocation/Dependencies/org/gusdb/$componentName/$releaseVersion
+    cp ~/.m2/repository/org/gusdb/$componentName/$releaseVersion/fgputil-* $masterCheckoutLocation/Dependencies/org/gusdb/$componentName/$releaseVersion
+
+    cd ../.. # move back to FgpUtil/
+  fi
+done
+
