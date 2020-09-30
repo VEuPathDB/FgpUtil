@@ -5,7 +5,7 @@ package org.gusdb.fgputil.runtime;
  * three ways:
  * 
  * 1. Via Java system property (set by passing the -DGUS_HOME=your_path option to the JVM) 2. If the system
- * property is not set, the GUS_HOME environment variable will be used 3. The {@link #webInit(ServletContext)}
+ * property is not set, the GUS_HOME environment variable will be used 3. The {@link #overrideWith(String)}
  * method is called with a ServletContext containing a GUS_HOME initialization parameter. This call will
  * override either of the two values above.
  * 

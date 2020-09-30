@@ -16,6 +16,7 @@ import java.util.function.BiFunction;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Named;
+import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.Named.NamedObject;
 import org.junit.Test;
 
@@ -86,5 +87,10 @@ public class FunctionTests {
     List<MyNamed> listOfNamedObj = new ArrayList<>();
     Functions.mapToList(listOfNamedObj, Named.TO_NAME);
   }
- 
+
+  @Test
+  public void testBinning() {
+    String[] words = { "a", "bee", "adam", "best", "cat", "better", "critter", "apple" };
+    System.out.println(FormatUtil.prettyPrint(Functions.binItems(Arrays.asList(words), word -> word.charAt(0), w -> true),Style.MULTI_LINE));
+  }
 }

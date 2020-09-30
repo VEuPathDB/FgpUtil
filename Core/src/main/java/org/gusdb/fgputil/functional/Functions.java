@@ -3,6 +3,7 @@ package org.gusdb.fgputil.functional;
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -526,5 +527,36 @@ public class Functions {
 
   public static <T,E extends Throwable> T doThrow(Supplier<E> exceptionSupplier) throws E {
     throw exceptionSupplier.get();
+  }
+
+  /**
+   * Given a collection of items, bins the items by a characteristic value
+   * pulled from each item using a function.  Skips items that fail the passed
+   * predicate.
+   *
+   * @param <S> type of the characteristic (i.e. of the keys in the resulting map)
+   * @param <T> type of the items being binned
+   * @param items collection of items
+   * @param getCharacteristicFunction given an item, returns the characteristic
+   * determining the bin into which the item will be placed
+   * @param test predicate called with each item; if an item fails the
+   * predicate, it is not added to any bin
+   * @return map containing the original items (minus any that failed the
+   * optional predicate) divided into lists identified by a characteristic value
+   */
+  public static <S,T> Map<S,List<T>> binItems(Collection<T> items,
+      Function<T,S> getCharacteristicFunction, Predicate<T> test) {
+    return Functions.reduce(items, (acc, next) -> {
+      if (test.test(next)) {
+        S key = getCharacteristicFunction.apply(next);
+        List<T> bin = acc.get(key);
+        if (bin == null) {
+          bin = new ArrayList<>();
+          acc.put(key, bin);
+        }
+        bin.add(next);
+      }
+      return acc;
+    }, new LinkedHashMap<S,List<T>>());
   }
 }

@@ -1,6 +1,9 @@
 package org.gusdb.fgputil.functional;
 
 
+import static java.util.function.Predicate.not;
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -12,8 +15,6 @@ import java.util.function.Predicate;
 
 import org.gusdb.fgputil.FormatUtil.MultiLineToString;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
-
-import static java.util.function.Predicate.not;
 
 /**
  * This class provides a common implementation of tree structure and the ability
@@ -448,8 +449,6 @@ public class TreeNode<T> implements MultiLineToString {
 
   @Override
   public String toMultiLineString(String ind) {
-    String NL = System.lineSeparator();
-
     String nodeString = (!_hasMultiLineSupport ? _nodeContents.toString() :
       ((MultiLineToString)_nodeContents).toMultiLineString(ind + "  "));
     StringBuilder str = new StringBuilder()

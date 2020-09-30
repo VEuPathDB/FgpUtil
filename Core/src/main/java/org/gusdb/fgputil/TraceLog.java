@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
  * <pre>
  * MyClass#someMethod("abc", 1)
  *   |- MyClass#otherMethod(1)
- *   |    |- OtherClass#getProp(1) -> "def"
- *   |- MyClass#otherMethod() -> "def"
- * MyClass#someMethod() -> "def"
+ *   |    |- OtherClass#getProp(1) -&gt; "def"
+ *   |- MyClass#otherMethod() -&gt; "def"
+ * MyClass#someMethod() -&gt; "def"
  * </pre>
  */
 public class TraceLog {

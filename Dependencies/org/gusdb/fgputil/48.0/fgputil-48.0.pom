@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <name>Functional Genomics Platform</name>
+  <url>http://gusdb.org</url>
+  <artifactId>fgputil</artifactId>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>Test</module>
+    <module>Core</module>
+    <module>Events</module>
+    <module>Cache</module>
+    <module>Cli</module>
+    <module>Xml</module>
+    <module>Json</module>
+    <module>Solr</module>
+    <module>Web</module>
+    <module>Servlet</module>
+    <module>Db</module>
+    <module>AccountDB</module>
+    <module>Server</module>
+  </modules>
+
+  <parent>
+    <groupId>org.gusdb</groupId>
+    <artifactId>base-pom</artifactId>
+    <version>48.0</version>
+    <!--<relativePath>Dependencies/org/gusdb/base-pom/1.0.0/base-pom-1.0.0.pom</relativePath>-->
+  </parent>
+
+  <repositories>
+    <repository>
+      <id>eupathdb</id>
+      <name>EuPathDB Project Dependencies</name>
+      <layout>default</layout>
+      <url>https://raw.githubusercontent.com/VEuPathDB/FgpUtil/master/Dependencies/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+</project>
