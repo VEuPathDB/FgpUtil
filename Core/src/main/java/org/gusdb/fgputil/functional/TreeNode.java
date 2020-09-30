@@ -429,11 +429,9 @@ public class TreeNode<T> implements MultiLineToString {
 
     next.offer(this);
 
-    int pos = 0;
-
     while(!next.isEmpty()) {
       final TreeNode<T> cur = next.poll();
-      out.set(pos++, cur._nodeContents);
+      out.add(cur._nodeContents);
       cur._childNodes.forEach(next::offer);
     }
 
