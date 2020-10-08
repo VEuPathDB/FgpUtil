@@ -1,0 +1,19 @@
+CREATE TABLE RECORDS (
+  ID INTEGER NOT NULL,
+  GROUP_ID VARCHAR(25) NOT NULL,
+  NAME VARCHAR(25),
+  PRIMARY KEY (ID)
+);
+
+INSERT INTO RECORDS VALUES (1, 'infra', 'ryan');
+INSERT INTO RECORDS VALUES (2, 'infra', 'ellie');
+INSERT INTO RECORDS VALUES (3, 'infra', 'steve');
+INSERT INTO RECORDS VALUES (4, 'ui', 'dave');
+INSERT INTO RECORDS VALUES (5, 'ui', 'jamie');
+INSERT INTO RECORDS VALUES (6, 'ui', 'cristina');
+INSERT INTO RECORDS VALUES (7, 'dd', 'johnb');
+INSERT INTO RECORDS VALUES (8, 'dd', 'bindu');
+INSERT INTO RECORDS VALUES (9, 'dd', 'haiming');
+INSERT INTO RECORDS VALUES (10, 'outreach', 'brian');
+INSERT INTO RECORDS VALUES (11, 'outreach', 'omar');
+INSERT INTO RECORDS VALUES (12, 'outreach', 'suzanne');
