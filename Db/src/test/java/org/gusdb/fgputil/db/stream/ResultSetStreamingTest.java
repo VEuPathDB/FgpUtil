@@ -54,7 +54,7 @@ public class ResultSetStreamingTest {
   }
 
   @Test
-  public void streamingTest() throws IOException {
+  public void streamingTest() {
 
     // create an output stream to capture the output from our streamer
     ByteArrayOutputStream capturedOutput = new ByteArrayOutputStream();
@@ -75,7 +75,7 @@ public class ResultSetStreamingTest {
     }
   }
 
-  private static void writeAggregatedData(DataSource ds, OutputStream out) throws IOException {
+  private static void writeAggregatedData(DataSource ds, OutputStream out) {
 
     // SQL to get rows from our test DB
     String sql = "select * from records";
@@ -84,29 +84,29 @@ public class ResultSetStreamingTest {
     Function<List<Person>,String> formatter = people -> people.get(0).getGroup() +
       ": [ " + people.stream().map(Person::getName).collect(Collectors.joining(", ")) + " ]";
 
-    try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out))) {
-      new SQLRunner(ds, sql).executeQuery(rs -> {
-        try {
-          // construct an iterator over objects constructed by the rows returned by the query
-          Iterator<Person> people = new ResultSetIterator<>(rs,
-              row -> Optional.of(new Person(row.getInt(1), row.getString(2), row.getString(3))));
+    // run SQL, process output, format and write aggregated records to output stream
+    new SQLRunner(ds, sql).executeQuery(rs -> {
+      try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out))) {
 
-          // group the objects by a common value
-          Iterator<List<Person>> groups = new GroupingIterator<Person>(people,
-              (p1, p2) -> p1.getGroup().equals(p2.getGroup()));
+        // construct an iterator over objects constructed by the rows returned by the query
+        Iterator<Person> people = new ResultSetIterator<>(rs,
+            row -> Optional.of(new Person(row.getInt(1), row.getString(2), row.getString(3))));
 
-          // iterate through groups and format into strings to be written to stream
-          for (List<Person> group : IteratorUtil.toIterable(groups)) {
-            writer.write(formatter.apply(group) + NL);
-          }
+        // group the objects by a common value
+        Iterator<List<Person>> groups = new GroupingIterator<Person>(people,
+            (p1, p2) -> p1.getGroup().equals(p2.getGroup()));
 
-          writer.flush();
-          return null;
+        // iterate through groups and format into strings to be written to stream
+        for (List<Person> group : IteratorUtil.toIterable(groups)) {
+          writer.write(formatter.apply(group) + NL);
         }
-        catch (IOException e) {
-          throw new RuntimeException("Unable to write to output stream", e);
-        }
-      });
-    }
+
+        writer.flush();
+        return null;
+      }
+      catch (IOException e) {
+        throw new RuntimeException("Unable to write to output stream", e);
+      }
+    });
   }
 }
