@@ -2,7 +2,6 @@ package org.gusdb.fgputil.json;
 
 import static org.junit.Assert.assertEquals;
 
-import org.gusdb.fgputil.json.JsonType;
 import org.gusdb.fgputil.json.JsonType.ValueType;
 import org.json.JSONArray;
 import org.json.JSONObject;

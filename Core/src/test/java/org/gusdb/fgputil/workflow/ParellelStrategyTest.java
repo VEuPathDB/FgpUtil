@@ -1,6 +1,5 @@
 package org.gusdb.fgputil.workflow;
 
-import org.gusdb.fgputil.workflow.Node;
 import org.junit.Test;
 
 public class ParellelStrategyTest {

@@ -4,7 +4,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.workflow.Node;
 
 public class TestNode extends Node {
 

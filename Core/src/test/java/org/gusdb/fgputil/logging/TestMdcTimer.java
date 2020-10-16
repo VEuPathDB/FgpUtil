@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import org.apache.log4j.Logger;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.gusdb.fgputil.logging.MDCUtil;
 import org.junit.Test;
 
 
