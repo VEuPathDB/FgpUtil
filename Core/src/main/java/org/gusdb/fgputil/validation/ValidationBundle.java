@@ -126,6 +126,18 @@ public class ValidationBundle {
     return !_errors.isEmpty() || !_keyedErrors.isEmpty();
   }
 
+  /**
+   * Throws a ValidationException containing this instance if the instance
+   * contains errors; otherwise does nothing
+   *
+   * @throws ValidationException
+   */
+  public void throwIfInvalid() throws ValidationException {
+    if (hasErrors()) {
+      throw new ValidationException(this);
+    }
+  }
+
   // using JSON here just for convenience; not meant to be part of a public API
   private JSONObject toJson() {
     return new JSONObject()
