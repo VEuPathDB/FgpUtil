@@ -383,7 +383,7 @@ public class SQLRunner {
       }
       // if SQLRunnerException is thrown, propogate it; otherwise wrap in new SQLRunnerException
       throw (e instanceof SQLRunnerException ? (SQLRunnerException)e :
-        new SQLRunnerException("Unable to run SQL <" + _sql + "> with args " + exec.getParamsToString(), e));
+        new SQLRunnerException("Error executing SQL or processing result. SQL: <" + _sql + "> with args " + exec.getParamsToString(), e));
     }
     finally {
       exec.closeQuietly();
