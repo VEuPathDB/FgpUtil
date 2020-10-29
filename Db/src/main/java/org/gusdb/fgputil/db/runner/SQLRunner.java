@@ -346,6 +346,7 @@ public class SQLRunner {
     Connection conn = null;
     PreparedStatement stmt = null;
     boolean connectionSuccessful = false;
+    boolean sqlExecutionSuccessful = false;
     SqlTimer timer = new SqlTimer(_sql, _sqlName);
     try {
       conn = getConnection();
@@ -363,6 +364,7 @@ public class SQLRunner {
       // run SQL
       exec.runWithTimer(stmt);
       timer.sqlExecuted();
+      sqlExecutionSuccessful = true;
 
       // handle result of SQL
       T result = exec.handleResult();
@@ -381,9 +383,10 @@ public class SQLRunner {
       if (connectionSuccessful) {
         attemptRollback(conn);
       }
-      // if SQLRunnerException is thrown, propogate it; otherwise wrap in new SQLRunnerException
+      // if SQLRunnerException is thrown, propagate it; otherwise wrap in new SQLRunnerException
       throw (e instanceof SQLRunnerException ? (SQLRunnerException)e :
-        new SQLRunnerException("Error executing SQL or processing result. SQL: <" + _sql + "> with args " + exec.getParamsToString(), e));
+        new SQLRunnerException("Unable to " + (sqlExecutionSuccessful ? "process result of" : "run") +
+            " SQL <" + _sql + "> with args " + exec.getParamsToString(), e));
     }
     finally {
       exec.closeQuietly();
