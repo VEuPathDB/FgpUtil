@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -20,6 +21,7 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.PredicateWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
@@ -261,6 +263,29 @@ public class Functions {
     return x -> {
       try {
         return f.apply(x);
+      }
+      catch (Exception e) {
+        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
+      }
+    };
+  }
+
+  /**
+   * Takes a consumer that may or may not have checked exceptions and returns a
+   * new consumer that performs the same operation but "swallows" any checked
+   * exception by wrapping it in a RuntimeException and throwing that instead.
+   * If calling code wishes to inspect the underlying exception it must catch
+   * the RuntimeException and use getCause().
+   *
+   * @param c
+   *   consumer to wrap
+   *
+   * @return a new consumer that swallows checked exceptions
+   */
+  public static <T> Consumer<T> cSwallow(ConsumerWithException<T> c) {
+    return x -> {
+      try {
+        c.accept(x);
       }
       catch (Exception e) {
         throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
