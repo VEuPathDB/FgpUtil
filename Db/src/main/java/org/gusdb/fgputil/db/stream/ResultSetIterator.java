@@ -40,16 +40,16 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
     try {
       while (rs.next()) {
         var tmp = converter.convert(rs);
-        if (tmp.isEmpty())
-          continue;
-
-        next = tmp.get();
-        return out;
+        if (tmp.isPresent()) {
+          next = tmp.get();
+          return out;
+        }
       }
 
       hasNext = false;
       return out;
-    } catch (SQLException e) {
+    }
+    catch (SQLException e) {
       throw new SqlRuntimeException(e);
     }
   }
