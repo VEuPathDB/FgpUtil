@@ -1,24 +1,41 @@
 package org.gusdb.fgputil.db.stream;
 
-import org.gusdb.fgputil.db.SqlRuntimeException;
-import org.gusdb.fgputil.db.stream.ResultSetIterator.RowConverter;
+import static java.util.Spliterator.IMMUTABLE;
+import static java.util.Spliterator.ORDERED;
+import static java.util.Spliterator.SORTED;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
+import java.util.stream.Collector;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-import static java.util.Spliterator.*;
+import org.gusdb.fgputil.db.stream.ResultSetIterator.RowConverter;
 
 public class ResultSetStream<T> implements Stream<T> {
 
-  private final ResultSet rs;
-  private final ResultSetIterator<T> it;
+  private final ResultSetIterator<T> _iterator;
 
   public ResultSetStream(ResultSet rs, RowConverter<T> converter) {
-    this.rs = rs;
-    this.it = new ResultSetIterator<>(rs, converter);
+    _iterator = new ResultSetIterator<>(rs, converter);
   }
 
   @Override
@@ -106,12 +123,12 @@ public class ResultSetStream<T> implements Stream<T> {
 
   @Override
   public void forEach(Consumer<? super T> action) {
-    it.forEachRemaining(action);
+    _iterator.forEachRemaining(action);
   }
 
   @Override
   public void forEachOrdered(Consumer<? super T> action) {
-    it.forEachRemaining(action);
+    _iterator.forEachRemaining(action);
   }
 
   @Override
@@ -174,14 +191,7 @@ public class ResultSetStream<T> implements Stream<T> {
 
   @Override
   public long count() {
-    var i = 0L;
-    try {
-      while (rs.next())
-        i++;
-    } catch (SQLException e) {
-      throw new SqlRuntimeException(e);
-    }
-    return i;
+    return _iterator.numRemaining();
   }
 
   @Override
@@ -214,13 +224,13 @@ public class ResultSetStream<T> implements Stream<T> {
   @Override
   @SuppressWarnings("NullableProblems")
   public Iterator<T> iterator() {
-    return it;
+    return _iterator;
   }
 
   @Override
   @SuppressWarnings("NullableProblems")
   public Spliterator<T> spliterator() {
-    return Spliterators.spliteratorUnknownSize(it, SORTED | ORDERED | IMMUTABLE);
+    return Spliterators.spliteratorUnknownSize(_iterator, SORTED | ORDERED | IMMUTABLE);
   }
 
   @Override
@@ -256,15 +266,16 @@ public class ResultSetStream<T> implements Stream<T> {
 
   @Override
   public void close() {
-    try {
-      rs.close();
-    } catch (SQLException e) {
-      throw new SqlRuntimeException(e);
-    }
+    _iterator.close();
   }
 
   private Stream<T> subStream() {
     return StreamSupport.stream(spliterator(), false)
       .onClose(this::close);
+  }
+
+  public ResultSetStream<T> setResponsibleForConnection(boolean isResponsibleForConnection) {
+    _iterator.setResponsibleForConnection(isResponsibleForConnection);
+    return this;
   }
 }

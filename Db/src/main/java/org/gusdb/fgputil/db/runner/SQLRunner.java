@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.db.runner;
 
+import static java.util.Objects.requireNonNull;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -104,7 +106,8 @@ public class SQLRunner {
   private String _sql;
   private String _sqlName;
   private TxStrategy _txStrategy;
-  private boolean _responsibleForConnection;
+  private boolean _responsibleForClosingStatementAndResultSet = true;
+  private boolean _responsibleForClosingConnection;
   private long _lastExecutionTime = 0L;
 
   /**
@@ -159,10 +162,10 @@ public class SQLRunner {
    * @throws IllegalArgumentException if called with NO_COMMITS or INHERIT TX strategy
    */
   public SQLRunner(DataSource ds, String sql, boolean runInTransaction, String sqlName) {
-    _ds = ds;
-    _sql = sql;
+    _ds = requireNonNull(ds);
+    _sql = requireNonNull(sql);
     _txStrategy = (runInTransaction ? TxStrategy.TRANSACTION : TxStrategy.AUTO_COMMIT);
-    _responsibleForConnection = true;
+    _responsibleForClosingConnection = true;
     _sqlName = sqlName;
   }
 
@@ -191,10 +194,10 @@ public class SQLRunner {
    * @param sqlName name of SQL query/statement for logging
    */
   public SQLRunner(Connection conn, String sql, String sqlName) {
-    _conn = conn;
-    _sql = sql;
+    _conn = requireNonNull(conn);
+    _sql = requireNonNull(sql);
     _txStrategy = TxStrategy.INHERIT;
-    _responsibleForConnection = false;
+    _responsibleForClosingConnection = false;
     _sqlName = sqlName;
   }
 
@@ -383,16 +386,25 @@ public class SQLRunner {
       if (connectionSuccessful) {
         attemptRollback(conn);
       }
+      // since exception was thrown, close resources this instance generated even if set not responsible
+      closeQuietly(exec, stmt);
+      closeConnection();
       // if SQLRunnerException is thrown, propagate it; otherwise wrap in new SQLRunnerException
       throw (e instanceof SQLRunnerException ? (SQLRunnerException)e :
         new SQLRunnerException("Unable to " + (sqlExecutionSuccessful ? "process result of" : "run") +
             " SQL <" + _sql + "> with args " + exec.getParamsToString(), e));
     }
     finally {
-      exec.closeQuietly();
-      SqlUtils.closeQuietly(stmt);
+      if (_responsibleForClosingStatementAndResultSet) {
+        closeQuietly(exec, stmt);
+      }
       closeConnection();
     }
+  }
+
+  private <T> void closeQuietly(PreparedStatementExecutor<T> exec, PreparedStatement stmt) {
+    exec.closeQuietly();
+    SqlUtils.closeQuietly(stmt);
   }
 
   private void commit(Connection conn) throws SQLException {
@@ -419,7 +431,7 @@ public class SQLRunner {
   }
 
   private Connection getConnection() throws SQLException {
-    if (_responsibleForConnection) {
+    if (_conn == null) {
       _conn = _ds.getConnection();
       // set auto-commit to true if caller specified auto-commit
       _conn.setAutoCommit(_txStrategy.equals(TxStrategy.AUTO_COMMIT));
@@ -428,7 +440,7 @@ public class SQLRunner {
   }
 
   private void closeConnection() {
-    if (_responsibleForConnection) {
+    if (_responsibleForClosingConnection) {
       SqlUtils.closeQuietly(_conn);
     }
   }
@@ -447,5 +459,11 @@ public class SQLRunner {
       return NULL_LOGGER;
     }
     return tmp;
+  }
+
+  public SQLRunner setNotResponsibleForClosing() {
+    _responsibleForClosingConnection = false;
+    _responsibleForClosingStatementAndResultSet = false;
+    return this;
   }
 }

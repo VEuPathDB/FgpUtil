@@ -1,24 +1,34 @@
 package org.gusdb.fgputil.db.stream;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.gusdb.fgputil.functional.Functions.cSwallow;
+import static org.gusdb.fgputil.functional.Functions.wrapException;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.db.SqlScriptRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.slowquery.QueryLogger;
+import org.gusdb.fgputil.db.stream.ResultSetIterator.RowConverter;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.iterator.GroupingIterator;
+import org.gusdb.fgputil.iterator.GroupingStream;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.fgputil.test.TestUtil;
 import org.junit.Assert;
@@ -43,24 +53,71 @@ public class ResultSetStreamingTest {
     }
     public String getName() { return getThird(); }
     public String getGroup() { return getSecond(); }
+
+    public static RowConverter<Person> fromResultSet = row ->
+        Optional.of(new Person(row.getInt(1), row.getString(2), row.getString(3)));
   }
 
-  private DataSource _ds;
+  // formatter to convert a group of people to a single String
+  private static FunctionWithException<List<Person>,String> FORMATTER = people -> people.get(0).getGroup() +
+    ": [ " + people.stream().map(Person::getName).collect(Collectors.joining(", ")) + " ]";
+
+  private static DataSource _ds;
+
+  private static DataSource getDb() throws SQLException, IOException {
+    if (_ds == null) {
+      _ds = TestUtil.getTestDataSource("ResultSetStreamingTest");
+      SqlScriptRunner.runSqlScript(_ds, DB_SETUP_SCRIPT);
+    }
+    return _ds;
+  }
 
   @Before
-  public void setUpTests() throws Exception {
-    _ds = TestUtil.getTestDataSource("mymemdb");
-    SqlScriptRunner.runSqlScript(_ds, DB_SETUP_SCRIPT);
+  public void init() {
+    QueryLogger.setInactive();
   }
 
   @Test
-  public void streamingTest() {
+  public void iteratorTestWithWrite() throws Exception {
+    testWritingAggregatedOutput((rs, writer) -> {
 
+      // construct an iterator over objects constructed by the rows returned by the query
+      Iterator<Person> people = new ResultSetIterator<>(rs, Person.fromResultSet);
+
+      // group the objects by a common value
+      Iterator<List<Person>> groups = new GroupingIterator<Person>(people,
+          (p1, p2) -> p1.getGroup().equals(p2.getGroup()));
+
+      // iterate through groups and format into strings to be written to stream
+      for (List<Person> group : IteratorUtil.toIterable(groups)) {
+        wrapException(() -> { writer.write(FORMATTER.apply(group) + NL); return null; });
+      }
+    });
+  }
+
+  @Test
+  public void streamTestWithWrite() throws Exception {
+    testWritingAggregatedOutput((rs, writer) -> {
+
+      // construct an iterator over objects constructed by the rows returned by the query
+      Stream<Person> people = new ResultSetStream<>(rs, Person.fromResultSet);
+
+      // group the objects by a common value
+      Stream<List<Person>> groups = GroupingStream.create(people,
+          (p1, p2) -> p1.getGroup().equals(p2.getGroup()));
+
+      // iterate through groups and format into strings to be written to stream
+      groups.forEach(cSwallow(group -> writer.write(FORMATTER.apply(group) + NL)));
+
+    });
+  }
+
+  private void testWritingAggregatedOutput(BiConsumer<ResultSet,Writer> writer) throws Exception {
     // create an output stream to capture the output from our streamer
     ByteArrayOutputStream capturedOutput = new ByteArrayOutputStream();
 
     // stream DB rows into an aggregator, format, and write to an output stream
-    writeAggregatedData(_ds, capturedOutput);
+    writeAggregatedData(getDb(), capturedOutput, writer);
 
     // read the output from the stream for analysis
     String[] outputRows = capturedOutput.toString().split("\\n");
@@ -75,32 +132,15 @@ public class ResultSetStreamingTest {
     }
   }
 
-  private static void writeAggregatedData(DataSource ds, OutputStream out) {
+  private static void writeAggregatedData(DataSource ds, OutputStream out, BiConsumer<ResultSet,Writer> appender) {
 
     // SQL to get rows from our test DB
     String sql = "select * from records";
 
-    // formatter to convert a group of people to a single String
-    Function<List<Person>,String> formatter = people -> people.get(0).getGroup() +
-      ": [ " + people.stream().map(Person::getName).collect(Collectors.joining(", ")) + " ]";
-
     // run SQL, process output, format and write aggregated records to output stream
     new SQLRunner(ds, sql).executeQuery(rs -> {
       try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out))) {
-
-        // construct an iterator over objects constructed by the rows returned by the query
-        Iterator<Person> people = new ResultSetIterator<>(rs,
-            row -> Optional.of(new Person(row.getInt(1), row.getString(2), row.getString(3))));
-
-        // group the objects by a common value
-        Iterator<List<Person>> groups = new GroupingIterator<Person>(people,
-            (p1, p2) -> p1.getGroup().equals(p2.getGroup()));
-
-        // iterate through groups and format into strings to be written to stream
-        for (List<Person> group : IteratorUtil.toIterable(groups)) {
-          writer.write(formatter.apply(group) + NL);
-        }
-
+        appender.accept(rs, writer);
         writer.flush();
         return null;
       }
@@ -109,4 +149,49 @@ public class ResultSetStreamingTest {
       }
     });
   }
+
+  @Test
+  public void emptyIteratorTest() throws SQLException, IOException {
+
+    // SQL to get rows from our test DB
+    String sql = "select * from records where 1 = 0";
+
+    try (ResultSetIterator<Person> people = ResultSets.openIterator(
+        getDb(), sql, Person.fromResultSet)) {
+
+      // count people
+      int count = 0;
+      while (people.hasNext()) {
+        people.next();
+        count++;
+      }
+      Assert.assertEquals(0, count);
+    }
+  }
+
+  @Test
+  public void streamTest() throws SQLException, IOException {
+
+    // SQL to get rows from our test DB
+    String sql = "select * from records";
+
+    // run SQL, process output, format and write aggregated records to output stream
+    try (Stream<Person> people = ResultSets.openStream(getDb(), sql, Person.fromResultSet)) {
+      List<Person> list = people.collect(Collectors.toList());
+      Assert.assertEquals(12, list.size());
+    }
+  }
+
+  @Test
+  public void streamCountTest() throws SQLException, IOException {
+
+    // SQL to get rows from our test DB
+    String sql = "select * from records";
+
+    // run SQL, process output, format and write aggregated records to output stream
+    try (Stream<Person> people = ResultSets.openStream(getDb(), sql, Person.fromResultSet)) {
+      Assert.assertEquals(12, people.count());
+    }
+  }
+
 }

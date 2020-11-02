@@ -3,9 +3,11 @@ package org.gusdb.fgputil.db.stream;
 import org.gusdb.fgputil.db.SqlRuntimeException;
 import org.gusdb.fgputil.db.SqlUtils;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
@@ -15,8 +17,15 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   }
 
   private final ResultSet rs;
-
   private final RowConverter<T> converter;
+
+  // By default, this class is responsible for the connection that produced
+  // its ResultSet.  This is part of a strategy of having classes take
+  // responsibility by default.  Doings so means if a developer forgets to turn
+  // OFF responsibility, they get a runtime exception the first time the code
+  // is run.  This is preferable to forgetting to turn ON responsibility, which
+  // results in a silent connection leak.
+  private boolean _isResponsibleForConnection = true;
 
   private T next;
 
@@ -25,7 +34,7 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   public ResultSetIterator(ResultSet rs, RowConverter<T> converter) {
     this.rs = rs;
     this.converter = converter;
-    next();
+    next(); // returns null; preloads the first item
   }
 
   @Override
@@ -35,8 +44,11 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
 
   @Override
   public T next() {
-    var out = next;
+    if (!hasNext) {
+      throw new NoSuchElementException("No more elements.");
+    }
 
+    var out = next;
     try {
       while (rs.next()) {
         var tmp = converter.convert(rs);
@@ -54,8 +66,31 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
     }
   }
 
+  public int numRemaining() {
+    int count = 0;
+    while (hasNext()) {
+      next();
+      count++;
+    }
+    return count;
+  }
+
+  public ResultSetIterator<T> setResponsibleForConnection(boolean isResponsibleForConnection) {
+    _isResponsibleForConnection = isResponsibleForConnection;
+    return this;
+  }
+
   @Override
   public void close() {
-    SqlUtils.closeResultSetOnly(rs);
+    try {
+      Connection conn = rs.getStatement().getConnection();
+      SqlUtils.closeResultSetAndStatement(rs);
+      if (_isResponsibleForConnection) {
+        SqlUtils.closeQuietly(conn);
+      }
+    }
+    catch (SQLException e) {
+      throw new SqlRuntimeException(e);
+    }
   }
 }

@@ -46,6 +46,16 @@ public final class SqlUtils {
    * @param resultSet
    *          result set to close
    */
+  public static void closeResultSetAndStatement(ResultSet resultSet) {
+    closeResultSetAndStatement(resultSet, null);
+  }
+
+  /**
+   * Close the resultSet and the underlying statement, connection. Log the query.
+   *
+   * @param resultSet
+   *          result set to close
+   */
   public static void closeResultSetAndStatement(ResultSet resultSet, Statement stmt) {
     try {
       if (resultSet != null) {
