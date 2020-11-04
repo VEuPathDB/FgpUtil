@@ -24,7 +24,6 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.db.SqlScriptRunner;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.db.stream.ResultSetIterator.RowConverter;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.iterator.GroupingIterator;
@@ -32,7 +31,6 @@ import org.gusdb.fgputil.iterator.GroupingStream;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.fgputil.test.TestUtil;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 public class ResultSetStreamingTest {
@@ -70,11 +68,6 @@ public class ResultSetStreamingTest {
       SqlScriptRunner.runSqlScript(_ds, DB_SETUP_SCRIPT);
     }
     return _ds;
-  }
-
-  @Before
-  public void init() {
-    QueryLogger.setInactive();
   }
 
   @Test

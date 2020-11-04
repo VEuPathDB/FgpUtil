@@ -10,10 +10,6 @@ import org.gusdb.fgputil.Timer;
  */
 public class SqlTimer extends Timer {
 
-  public static interface SqlTimerLogger {
-    public void submitTimer(SqlTimer timer);
-  }
-
   public static enum SqlTimerEvents {
     STATEMENT_PREPARED,
     PARAMS_ASSIGNED,

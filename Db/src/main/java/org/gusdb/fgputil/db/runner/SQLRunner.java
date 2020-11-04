@@ -18,8 +18,8 @@ import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.PreparedStatementExecutor;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.QueryExecutor;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.StatementExecutor;
 import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.UpdateExecutor;
+import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.db.slowquery.SqlTimer;
-import org.gusdb.fgputil.db.slowquery.SqlTimer.SqlTimerLogger;
 
 /**
  * Provides API to easily run SQL statements and queries against a database.
@@ -95,12 +95,6 @@ public class SQLRunner {
     INHERIT;
   }
 
-  private static final SqlTimerLogger NULL_LOGGER = new SqlTimerLogger() {
-    @Override public void submitTimer(SqlTimer timer) { /* do nothing */ }
-  };
-
-  private static SqlTimerLogger _sqlLogger;
-
   private DataSource _ds;
   private Connection _conn;
   private String _sql;
@@ -119,7 +113,7 @@ public class SQLRunner {
    * @param sql SQL to execute via a PreparedStatement
    */
   public SQLRunner(DataSource ds, String sql) {
-    this(ds, sql, true, EncryptionUtil.encrypt(sql));
+    this(ds, sql, true, generateName(sql));
   }
 
   /**
@@ -147,7 +141,7 @@ public class SQLRunner {
    * @throws IllegalArgumentException if called with NO_COMMITS or INHERIT TX strategy
    */
   public SQLRunner(DataSource ds, String sql, boolean runInTransaction) {
-    this(ds, sql, runInTransaction, EncryptionUtil.encrypt(sql));
+    this(ds, sql, runInTransaction, generateName(sql));
   }
 
   /**
@@ -180,7 +174,7 @@ public class SQLRunner {
    * @param sql SQL to execute via a PreparedStatement
    */
   public SQLRunner(Connection conn, String sql) {
-    this(conn, sql, EncryptionUtil.encrypt(sql));
+    this(conn, sql, generateName(sql));
   }
 
   /**
@@ -377,7 +371,7 @@ public class SQLRunner {
       commit(conn);
       _lastExecutionTime = exec.getLastExecutionTime();
       timer.complete();
-      getSqlLogger().submitTimer(timer);
+      QueryLogger.submitTimer(timer);
       return result;
 
     }
@@ -449,21 +443,13 @@ public class SQLRunner {
     return _lastExecutionTime;
   }
 
-  public static void setSqlLogger(SqlTimerLogger sqlLogger) {
-    _sqlLogger = sqlLogger;
-  }
-
-  private static SqlTimerLogger getSqlLogger() {
-    SqlTimerLogger tmp = _sqlLogger;
-    if (tmp == null) {
-      return NULL_LOGGER;
-    }
-    return tmp;
-  }
-
   public SQLRunner setNotResponsibleForClosing() {
     _responsibleForClosingConnection = false;
     _responsibleForClosingStatementAndResultSet = false;
     return this;
+  }
+
+  public static String generateName(String sql) {
+    return EncryptionUtil.encrypt(sql);
   }
 }

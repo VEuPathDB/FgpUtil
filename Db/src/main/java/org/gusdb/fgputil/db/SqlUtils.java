@@ -90,16 +90,11 @@ public final class SqlUtils {
    */
   public static void closeResultSetOnly(ResultSet resultSet) {
     try {
-
       // close our resultSet,remove from hash and write to log
       if (resultSet != null) {
         resultSet.close();
         QueryLogger.logEndResultsProcessing(resultSet);
       }
-
-      // log orphaned result sets, ie, those that are closed but still in hash
-      QueryLogger.logOrphanedResultSets();
-
     }
     catch (SQLException ex) {
       throw new RuntimeException(ex);
