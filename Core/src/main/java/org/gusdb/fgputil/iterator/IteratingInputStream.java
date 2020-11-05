@@ -6,6 +6,19 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+/**
+ * Allows a consumer of an input stream to read formatted data delivered by a
+ * DataProvider.  The methods of the DataProvider specify a framework by which
+ * the read() method of this InputStream formats the data provided and delivers
+ * it byte by byte.
+ *
+ * A user of this class has in hand a supplier of records (e.g. a ResultSet or
+ * other object stream) and needs to format the rows (with possible header,
+ * footer, and record delimiter) and expose the formatted data via the
+ * InputStream interface.
+ *
+ * @author rdoherty
+ */
 public class IteratingInputStream extends InputStream {
 
   private static final Logger LOG = Logger.getLogger(IteratingInputStream.class);
