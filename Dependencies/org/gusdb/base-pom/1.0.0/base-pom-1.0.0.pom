@@ -550,6 +550,13 @@
         <scope>provided</scope>
       </dependency>
 
+      <!-- Contains context listener used to prevent classloader memory leaks -->
+      <dependency>
+        <groupId>se.jiderhamn.classloader-leak-prevention</groupId>
+        <artifactId>classloader-leak-prevention-servlet</artifactId>
+        <version>2.7.0</version>
+      </dependency>
+
       <!-- JSP Tag Libraries -->
       <!--
       <dependency>
