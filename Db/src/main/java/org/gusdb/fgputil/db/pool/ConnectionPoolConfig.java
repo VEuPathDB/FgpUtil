@@ -1,27 +1,45 @@
 package org.gusdb.fgputil.db.pool;
 
 import org.gusdb.fgputil.db.platform.SupportedPlatform;
+import org.json.JSONObject;
 
 
 public interface ConnectionPoolConfig {
 
-  public String getLogin();
-  public String getPassword();
-  public String getConnectionUrl();
-  public SupportedPlatform getPlatformEnum();
-  public String getDriverInitClass();
+  String getLogin();
+  String getPassword();
+  String getConnectionUrl();
+  SupportedPlatform getPlatformEnum();
+  String getDriverInitClass();
 
-  public boolean getDefaultAutoCommit();
-  public boolean getDefaultReadOnly();
-  public int getDefaultFetchSize();
+  boolean getDefaultAutoCommit();
+  boolean getDefaultReadOnly();
+  int getDefaultFetchSize();
   
-  public int getMaxActive();
-  public int getMaxIdle();
-  public int getMinIdle();
-  public long getMaxWait();
+  int getMaxActive();
+  int getMaxIdle();
+  int getMinIdle();
+  long getMaxWait();
 
-  public boolean isShowConnections();
-  public long getShowConnectionsInterval();
-  public long getShowConnectionsDuration();
+  boolean isShowConnections();
+  long getShowConnectionsInterval();
+  long getShowConnectionsDuration();
 
+  default JSONObject toJson() {
+    return new JSONObject()
+      .put("login", getLogin())
+      .put("connectionUrl", getConnectionUrl())
+      .put("platform", getPlatformEnum())
+      .put("driverInitClass", getDriverInitClass())
+      .put("defaultAutoCommit", getDefaultAutoCommit())
+      .put("defaultReadOnly", getDefaultReadOnly())
+      .put("defaultFetchSize", getDefaultFetchSize())
+      .put("maxActive", getMaxActive())
+      .put("maxIdle", getMaxIdle())
+      .put("minIdle", getMinIdle())
+      .put("maxWait", getMaxWait())
+      .put("showConnections", isShowConnections())
+      .put("showConnectionsInterval", getShowConnectionsInterval())
+      .put("showConnectionsDuration", getShowConnectionsDuration());
+  }
 }
