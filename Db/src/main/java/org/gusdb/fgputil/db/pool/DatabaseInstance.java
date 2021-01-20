@@ -106,6 +106,8 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
     ResultSet rs = null;
     try {
       conn = _dataSource.getConnection();
+      // See note on commented method below
+      //logOracleConnecionProperies(conn);
       stmt = conn.createStatement();
       rs = stmt.executeQuery(_platform.getValidationQuery());
       LOG.info("DB Instance " + getIdentifier() + " validation query successfully executed.");
@@ -125,6 +127,51 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
       SqlUtils.closeQuietly(rs, stmt, conn);
     }
   }
+
+  /**
+   * This method was used to log Oracle connection properties to help evaluate
+   * memory performance. If uncommented it will compile with the addition of the
+   * Oracle driver to the fgputil-db pom, e.g.
+   *  <dependency>
+   *    <groupId>com.oracle</groupId>
+   *    <artifactId>ojdbc8</artifactId>
+   *    <version>12.2.0.1</version>
+   *  </dependency>
+   *
+   * @param conn connection whose properties should be logged
+   *
+  private void logOracleConnecionProperies(Connection conn) {
+    try {
+      ConnectionWrapper connWrapper = (ConnectionWrapper)conn;
+      DelegatingConnection<?> poolDelegate = (DelegatingConnection<?>)connWrapper.getUnderlyingConnection();
+      PoolableConnection poolConn = (PoolableConnection)poolDelegate.getDelegate();
+      OracleConnection oraConn = (OracleConnection)poolConn.getDelegate();
+      LOG.info("Oracle Connection Properties: " + new JSONObject()
+          .put("directMethods", new JSONObject()
+              .put("defaultTimeZone", oraConn.getDefaultTimeZone())
+              .put("implicitCachingEnabled", oraConn.getImplicitCachingEnabled())
+              .put("explicitCachingEnabled", oraConn.getExplicitCachingEnabled())
+              .put("statementCacheSize", oraConn.getStatementCacheSize())
+              .put("needToPurgeStatementCache", oraConn.needToPurgeStatementCache()))
+          .put("clientInfo", toJson(oraConn.getClientInfo()))
+          //.put("connectionAttributes", toJson(oraConn.getConnectionAttributes()))
+          .put("properties", toJson(oraConn.getProperties()))
+          .toString(2));
+    }
+    catch(Exception e) {
+      // log but ignore
+      LOG.error("Could not read Oracle properties", e);
+    }
+  }
+
+  private static JSONObject toJson(Properties properties) {
+    JSONObject json = new JSONObject();
+    for (Entry<Object,Object> entry : properties.entrySet()) {
+      json.put((String)entry.getKey(), (String)entry.getValue());
+    }
+    return json;
+  }
+  */
 
   private static String getNextDbName() {
     return ANONYMOUS_DB_ID_PREFIX + ANONYMOUS_DB_ID_SEQ.getAndIncrement();
