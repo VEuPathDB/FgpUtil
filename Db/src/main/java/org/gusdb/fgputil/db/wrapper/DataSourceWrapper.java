@@ -1,91 +1,34 @@
-package org.gusdb.fgputil.db;
+package org.gusdb.fgputil.db.wrapper;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import org.gusdb.fgputil.EncryptionUtil;
-import org.gusdb.fgputil.FormatUtil;
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
+import org.gusdb.fgputil.db.wrapper.UnclosedObjectInfo.CloseableObjectType;
 
-public class DataSourceWrapper implements DataSource {
+public class DataSourceWrapper extends AbstractDataSourceWrapper {
 
-  // must use fully qualified Logger name since java.util Logger is part of the interface
-  private static final org.apache.log4j.Logger LOG =
-      org.apache.log4j.Logger.getLogger(DataSourceWrapper.class);
-
-  private static class UnclosedConnectionInfo {
-
-    private String _dbName;
-    private Date _timeOpened;
-    private String _stackTrace;
-    private String _stackTraceHash;
-
-    public UnclosedConnectionInfo(String dbName) {
-      this(dbName, null);
-    }
-
-    public UnclosedConnectionInfo(String dbName, Map<String, String> globalStacktraceMap) {
-      _dbName = dbName;
-      _timeOpened = new Date();
-      _stackTrace = FormatUtil.getCurrentStackTrace();
-      _stackTraceHash = EncryptionUtil.encrypt(_stackTrace);
-      // only add stack trace to global map if specified
-      if (globalStacktraceMap != null) {
-        globalStacktraceMap.put(_stackTraceHash, _stackTrace);
-      }
-    }
-
-    public String getStackTraceHash() {
-      return _stackTraceHash;
-    }
-
-    public String getStackTrace() {
-      return _stackTrace;
-    }
-
-    public String getBasicInfo() {
-      String timeOpenedStr = FormatUtil.formatDateTime(_timeOpened);
-      double secondsOpen = ((double)(new Date().getTime() - _timeOpened.getTime())) / 1000;
-      return new StringBuilder()
-          .append("Connection to ").append(_dbName)
-          .append(", open for ").append(secondsOpen)
-          .append(" seconds, retrieved from pool at ").append(timeOpenedStr)
-          .toString();
-    }
-
-    @Override
-    public String toString() {
-      return new StringBuilder()
-        .append(getStackTraceHash()).append(": ")
-        .append(getBasicInfo()).append(NL)
-        .append(getStackTrace())
-        .toString();
-    }
-  }
+  private static final Logger LOG = Logger.getLogger(DataSourceWrapper.class);
 
   private final String _dbName;
-  private final DataSource _underlyingDataSource;
   private final DBPlatform _underlyingPlatform;
-  private final Map<Connection, UnclosedConnectionInfo> _unclosedConnectionMap = new ConcurrentHashMap<>();
+  private final Map<Connection, UnclosedObjectInfo> _unclosedConnectionMap = new ConcurrentHashMap<>();
   private final Map<String, String> _globalStacktraceMap = new ConcurrentHashMap<>();
   private final AtomicInteger _numConnectionsOpened = new AtomicInteger(0);
   private final AtomicInteger _numConnectionsClosed = new AtomicInteger(0);
@@ -99,8 +42,8 @@ public class DataSourceWrapper implements DataSource {
 
   public DataSourceWrapper(String dbName, DataSource underlyingDataSource, DBPlatform underlyingPlatform,
       ConnectionPoolConfig dbConfig, boolean recordAllStacktraces) {
+    super(underlyingDataSource);
     _dbName = dbName;
-    _underlyingDataSource = underlyingDataSource;
     _underlyingPlatform = underlyingPlatform;
     _dbConfig = dbConfig;
     _recordAllStacktraces = recordAllStacktraces;
@@ -122,9 +65,9 @@ public class DataSourceWrapper implements DataSource {
   }
 
   private Connection wrapConnection(Connection conn) {
-    UnclosedConnectionInfo info = (_recordAllStacktraces ?
-      new UnclosedConnectionInfo(_dbName, _globalStacktraceMap) :
-      new UnclosedConnectionInfo(_dbName));
+    UnclosedObjectInfo info = (_recordAllStacktraces ?
+      new UnclosedObjectInfo(_dbName, CloseableObjectType.Connection, _globalStacktraceMap) :
+      new UnclosedObjectInfo(_dbName, CloseableObjectType.Connection));
     if (LOG.isDebugEnabled()) {
       // log hash for this connection; let caller know which connection was opened
       LOG.debug("Opening connection associated with stacktrace hash " +
@@ -139,7 +82,7 @@ public class DataSourceWrapper implements DataSource {
   public void unregisterClosedConnection(Connection conn) {
     if (LOG.isDebugEnabled()) {
       // log hash for this connection; let caller know which connection was closed
-      UnclosedConnectionInfo info = _unclosedConnectionMap.get(conn);
+      UnclosedObjectInfo info = _unclosedConnectionMap.get(conn);
       LOG.debug("Closing connection associated with stacktrace hash " +
       info.getStackTraceHash() + " : " + info.getBasicInfo());
     }
@@ -147,19 +90,19 @@ public class DataSourceWrapper implements DataSource {
     _unclosedConnectionMap.remove(conn);
   }
 
-  public String dumpUnclosedConnectionInfo() {
+  public String dumpUnclosedObjectInfo() {
     
     // accumulate counts of stack traces
-    Collection<UnclosedConnectionInfo> rawInfoList = _unclosedConnectionMap.values();
-    Map<String, List<UnclosedConnectionInfo>> countsMap = new HashMap<>();
-    List<List<UnclosedConnectionInfo>> countsList = new ArrayList<>();
+    Collection<UnclosedObjectInfo> rawInfoList = _unclosedConnectionMap.values();
+    Map<String, List<UnclosedObjectInfo>> countsMap = new HashMap<>();
+    List<List<UnclosedObjectInfo>> countsList = new ArrayList<>();
 
     // getting map values should be thread safe; values are simple pojos
-    for (UnclosedConnectionInfo info : rawInfoList) {
+    for (UnclosedObjectInfo info : rawInfoList) {
       String hash = info.getStackTraceHash();
-      List<UnclosedConnectionInfo> counts = countsMap.get(hash);
+      List<UnclosedObjectInfo> counts = countsMap.get(hash);
       if (counts == null) {
-        counts = new ArrayList<UnclosedConnectionInfo>();
+        counts = new ArrayList<UnclosedObjectInfo>();
         countsMap.put(hash, counts);
         countsList.add(counts);
       }
@@ -167,9 +110,9 @@ public class DataSourceWrapper implements DataSource {
     }
 
     // sort by number of instances (descending)
-    Collections.sort(countsList, new Comparator<List<UnclosedConnectionInfo>>() {
+    Collections.sort(countsList, new Comparator<List<UnclosedObjectInfo>>() {
       @Override
-      public int compare(List<UnclosedConnectionInfo> o1, List<UnclosedConnectionInfo> o2) {
+      public int compare(List<UnclosedObjectInfo> o1, List<UnclosedObjectInfo> o2) {
         return o2.size() - o1.size();
       }
     });
@@ -186,8 +129,8 @@ public class DataSourceWrapper implements DataSource {
     // if no unclosed connections exist, skip unclosed section
     if (!rawInfoList.isEmpty()) {
 
-      for (List<UnclosedConnectionInfo> infoList : countsList) {
-        UnclosedConnectionInfo firstInfo = infoList.get(0);
+      for (List<UnclosedObjectInfo> infoList : countsList) {
+        UnclosedObjectInfo firstInfo = infoList.get(0);
         sb.append("  ").append(infoList.size()).append(" : ").append(firstInfo.getStackTraceHash()).append(NL);
       }
 
@@ -195,12 +138,12 @@ public class DataSourceWrapper implements DataSource {
         .append("======================").append(NL)
         .append(" Unclosed Connections ").append(NL)
         .append("======================").append(NL).append(NL);
-      for (List<UnclosedConnectionInfo> infoList : countsList) {
-        UnclosedConnectionInfo firstInfo = infoList.get(0);
+      for (List<UnclosedObjectInfo> infoList : countsList) {
+        UnclosedObjectInfo firstInfo = infoList.get(0);
         sb.append(firstInfo.getStackTraceHash()).append(": ")
           .append(infoList.size()).append(" instances").append(NL).append(NL)
           .append("  Instance details:").append(NL).append(NL);
-        for (UnclosedConnectionInfo info : infoList) {
+        for (UnclosedObjectInfo info : infoList) {
           sb.append("    ").append(info.getBasicInfo()).append(NL);
         }
         sb.append(NL)
@@ -237,43 +180,6 @@ public class DataSourceWrapper implements DataSource {
 
   public int getConnectionsCurrentlyOpen() {
     return _unclosedConnectionMap.values().size();
-  }
-
-  /************ ALL METHODS BELOW THIS LINE ARE SIMPLE WRAPPERS ************/
-
-  @Override
-  public PrintWriter getLogWriter() throws SQLException {
-    return _underlyingDataSource.getLogWriter();
-  }
-
-  @Override
-  public void setLogWriter(PrintWriter out) throws SQLException {
-    _underlyingDataSource.setLogWriter(out);
-  }
-
-  @Override
-  public void setLoginTimeout(int seconds) throws SQLException {
-    _underlyingDataSource.setLoginTimeout(seconds);
-  }
-
-  @Override
-  public int getLoginTimeout() throws SQLException {
-    return _underlyingDataSource.getLoginTimeout();
-  }
-
-  @Override
-  public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-    return _underlyingDataSource.getParentLogger();
-  }
-
-  @Override
-  public <T> T unwrap(Class<T> iface) throws SQLException {
-    return _underlyingDataSource.unwrap(iface);
-  }
-
-  @Override
-  public boolean isWrapperFor(Class<?> iface) throws SQLException {
-    return _underlyingDataSource.isWrapperFor(iface);
   }
 
 }

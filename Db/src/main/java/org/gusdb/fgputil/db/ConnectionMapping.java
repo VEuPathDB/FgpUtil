@@ -8,6 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.wrapper.ConnectionWrapper;
+
 public class ConnectionMapping {
 
   // Contains a mapping from native JDBC Connection to ConnectionWrapper; this

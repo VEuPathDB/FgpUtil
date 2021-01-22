@@ -16,9 +16,9 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.log4j.Logger;
-import org.gusdb.fgputil.db.DataSourceWrapper;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.wrapper.DataSourceWrapper;
 
 public class DatabaseInstance implements Wrapper, AutoCloseable {
 
@@ -375,7 +375,7 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
 
   public String getUnclosedConnectionInfo() {
     checkInit();
-    return _dataSource.dumpUnclosedConnectionInfo();
+    return _dataSource.dumpUnclosedObjectInfo();
   }
 
   public int getNumConnectionsOpened() {
