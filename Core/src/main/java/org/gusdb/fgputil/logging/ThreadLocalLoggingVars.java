@@ -1,6 +1,6 @@
 package org.gusdb.fgputil.logging;
 
-import org.apache.log4j.MDC;
+import org.apache.logging.log4j.ThreadContext;
 
 /**
  * Manages thread-based data using Log4j's MDC mechanism.
@@ -9,72 +9,72 @@ import org.apache.log4j.MDC;
  * 
  * @author rdoherty
  */
-public class MDCUtil {
+public class ThreadLocalLoggingVars {
 
-  public static final String LOG4J_REQUEST_TIMER = "requestTimer";
-  public static final String LOG4J_IP_ADDRESS_KEY = "ipAddress";
-  public static final String LOG4J_REQUESTED_DOMAIN_KEY = "requestedDomain";
-  public static final String LOG4J_SESSION_ID_KEY = "sessionId";
-  public static final String LOG4J_SHORT_SESSION_ID_KEY = "shortSessionId";
-  public static final String LOG4J_REQUEST_ID_KEY = "requestId";
+  public static final String REQUEST_TIMER_KEY = "requestTimer";
+  public static final String IP_ADDRESS_KEY = "ipAddress";
+  public static final String REQUESTED_DOMAIN_KEY = "requestedDomain";
+  public static final String SESSION_ID_KEY = "sessionId";
+  public static final String SHORT_SESSION_ID_KEY = "shortSessionId";
+  public static final String REQUEST_ID_KEY = "requestId";
 
   public static void setRequestStartTime(final long startTime) {
-    MDC.put(LOG4J_REQUEST_TIMER, startTime);
+    ThreadContext.put(REQUEST_TIMER_KEY, String.valueOf(startTime));
   }
 
   public static String getRequestDuration() {
     return RequestDurationPatternConverter.getRequestDuration(
-        MDC.get(LOG4J_REQUEST_TIMER));
+        ThreadContext.get(REQUEST_TIMER_KEY));
   }
 
   public static void setIpAddress(String ipAddress) {
     if (ipAddress != null) {
-      MDC.put(LOG4J_IP_ADDRESS_KEY, ipAddress);
+      ThreadContext.put(IP_ADDRESS_KEY, ipAddress);
     }
   }
 
   public static String getIpAddress() {
-    return (String)MDC.get(LOG4J_IP_ADDRESS_KEY);
+    return ThreadContext.get(IP_ADDRESS_KEY);
   }
 
   public static void setRequestId(String requestId) {
     if (requestId != null) {
-      MDC.put(LOG4J_REQUEST_ID_KEY, requestId);
+      ThreadContext.put(REQUEST_ID_KEY, requestId);
     }
   }
 
   public static String getRequestId() {
-    return (String)MDC.get(LOG4J_REQUEST_ID_KEY);
+    return ThreadContext.get(REQUEST_ID_KEY);
   }
 
   public static void setRequestedDomain(String domain) {
     if (domain != null) {
-      MDC.put(LOG4J_REQUESTED_DOMAIN_KEY, domain);
+      ThreadContext.put(REQUESTED_DOMAIN_KEY, domain);
     }
   }
 
   public static String getRequestedDomain() {
-    return (String)MDC.get(LOG4J_REQUESTED_DOMAIN_KEY);
+    return ThreadContext.get(REQUESTED_DOMAIN_KEY);
   }
 
   public static void setSessionId(String sessionId) {
     if (sessionId != null) {
-      MDC.put(LOG4J_SESSION_ID_KEY, sessionId);
-      MDC.put(LOG4J_SHORT_SESSION_ID_KEY,
+      ThreadContext.put(SESSION_ID_KEY, sessionId);
+      ThreadContext.put(SHORT_SESSION_ID_KEY,
           sessionId.substring(0, Math.min(5, sessionId.length())));
     }
   }
 
   public static String getSessionId() {
-    return (String)MDC.get(LOG4J_SESSION_ID_KEY);
+    return ThreadContext.get(SESSION_ID_KEY);
   }
 
   public static String getShortSessionId() {
-    return (String)MDC.get(LOG4J_SHORT_SESSION_ID_KEY);
+    return ThreadContext.get(SHORT_SESSION_ID_KEY);
   }
 
-  public static MdcBundle getMdcBundle() {
-    return new MdcBundle(
+  public static ThreadContextBundle getThreadContextBundle() {
+    return new ThreadContextBundle(
         getRequestDuration(),
         getIpAddress(),
         getRequestId(),
@@ -84,22 +84,22 @@ public class MDCUtil {
   }
 
   public static void clearValues() {
-    MDC.remove(LOG4J_REQUEST_TIMER);
-    MDC.remove(LOG4J_IP_ADDRESS_KEY);
-    MDC.remove(LOG4J_REQUESTED_DOMAIN_KEY);
-    MDC.remove(LOG4J_SESSION_ID_KEY);
-    MDC.remove(LOG4J_SHORT_SESSION_ID_KEY);
-    MDC.remove(LOG4J_REQUEST_ID_KEY);
+    ThreadContext.remove(REQUEST_TIMER_KEY);
+    ThreadContext.remove(IP_ADDRESS_KEY);
+    ThreadContext.remove(REQUESTED_DOMAIN_KEY);
+    ThreadContext.remove(SESSION_ID_KEY);
+    ThreadContext.remove(SHORT_SESSION_ID_KEY);
+    ThreadContext.remove(REQUEST_ID_KEY);
   }
 
   public static void setNonRequestThreadVars(String threadId) {
-    MDCUtil.setRequestId(threadId);
-    MDCUtil.setSessionId(threadId);
-    MDCUtil.setIpAddress("<no_ip_address>");
-    MDCUtil.setRequestStartTime(System.currentTimeMillis());
+    ThreadLocalLoggingVars.setRequestId(threadId);
+    ThreadLocalLoggingVars.setSessionId(threadId);
+    ThreadLocalLoggingVars.setIpAddress("<no_ip_address>");
+    ThreadLocalLoggingVars.setRequestStartTime(System.currentTimeMillis());
   }
 
-  public static class MdcBundle {
+  public static class ThreadContextBundle {
 
     private String _requestDuration;
     private String _ipAddress;
@@ -108,7 +108,7 @@ public class MDCUtil {
     private String _shortSessionId;
     private String _requestedDomain;
 
-    public MdcBundle(String requestDuration, String ipAddress, String requestId, String sessionId,
+    public ThreadContextBundle(String requestDuration, String ipAddress, String requestId, String sessionId,
         String shortSessionId, String requestedDomain) {
       _requestDuration = requestDuration;
       _ipAddress = ipAddress;

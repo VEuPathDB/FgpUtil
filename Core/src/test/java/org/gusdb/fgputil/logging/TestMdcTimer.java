@@ -20,11 +20,11 @@ public class TestMdcTimer {
     Configurator.initialize(null, source);
 
     // set MDC vars to emulate request
-    MDCUtil.setRequestStartTime(System.currentTimeMillis());
-    MDCUtil.setIpAddress("123.456.789.000");
-    MDCUtil.setRequestedDomain("plasmodb.org");
-    MDCUtil.setRequestId("1");
-    MDCUtil.setSessionId("abcdefghijklmnopqrstuvwxyz");
+    ThreadLocalLoggingVars.setRequestStartTime(System.currentTimeMillis());
+    ThreadLocalLoggingVars.setIpAddress("123.456.789.000");
+    ThreadLocalLoggingVars.setRequestedDomain("plasmodb.org");
+    ThreadLocalLoggingVars.setRequestId("1");
+    ThreadLocalLoggingVars.setSessionId("abcdefghijklmnopqrstuvwxyz");
 
     Logger log = Logger.getLogger(TestMdcTimer.class);
     log.info("Test 1");
