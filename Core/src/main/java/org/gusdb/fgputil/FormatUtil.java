@@ -1,3 +1,4 @@
+
 package org.gusdb.fgputil;
 
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,8 +37,14 @@ public class FormatUtil {
   public static final String TAB = "\t";
   public static final String UTF8_ENCODING = "UTF-8";
 
+  // standard formats in java.time
   public static final DateTimeFormatter STANDARD_DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
   public static final DateTimeFormatter STANDARD_DATE_TIME_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+  // standard formats in java.text
+  public static final Supplier<SimpleDateFormat> STANDARD_DATE_TEXT_FORMAT = () -> new SimpleDateFormat("yyyy-MM-dd");
+  public static final Supplier<SimpleDateFormat> STANDARD_DATE_TIME_TEXT_FORMAT = () -> new SimpleDateFormat("yyyy-MM-ddTHH:mm:ss");
+
 
   public interface MultiLineToString {
     public String toMultiLineString(String indentation);
@@ -69,6 +78,14 @@ public class FormatUtil {
 
   public static LocalDateTime parseDateTime(String dateTime) throws DateTimeParseException {
     return LocalDateTime.parse(dateTime, STANDARD_DATE_TIME_FORMAT);
+  }
+
+  public static String formatDateTimezoneFree(Date date) {
+    return STANDARD_DATE_TEXT_FORMAT.get().format(date);
+  }
+
+  public static String formatDateTimeTimezoneFree(Date date) {
+    return STANDARD_DATE_TIME_TEXT_FORMAT.get().format(date);
   }
 
   public static String formatDate(Date date) {
