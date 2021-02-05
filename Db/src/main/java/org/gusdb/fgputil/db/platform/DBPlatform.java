@@ -5,12 +5,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
 
 /**
@@ -206,4 +209,41 @@ public abstract class DBPlatform {
       return ids;
     }
 
+    /**
+     * Returns a SQL value containing a call to the DB's to_date() function
+     * using the following format: 'YYYY-12-DD"T"HH:MI:SS'.  Note milliseconds
+     * and timezone/offset are not supported.
+     *
+     * @param iso8601FormattedDateTime a date-time in ISO-8601 format (not including ms or tz/offset info)
+     * @return date value to be used in select and conditional SQL
+     */
+    public String toDbDateSqlValue(String iso8601FormattedDateTime) {
+      return "TO_DATE('" + iso8601FormattedDateTime + "','YYYY-MM-DD\"T\"HH:MI:SS')";
+    }
+
+    /**
+     * Returns a SQL value containing a call to the DB's to_date() function. The
+     * passed Date is formatted into a ISO-8601 format and passed to
+     * toDbDateSqlValue(String).
+     *
+     * @param date date value to be used in SQL
+     * @return date value to be used in select and conditional SQL
+     */
+    public String toDbDateSqlValue(Date date) {
+      return toDbDateSqlValue(FormatUtil.formatDateTimeNoTimezone(date));
+    }
+
+    /**
+     * Returns a SQL value containing a call to the DB's to_date() function. The
+     * passed dateTime is converted first to a java.util.Date, which is then
+     * formatted into ISO-8601 format and passed to toDbDateSqlValue(String).
+     * Note this method may have timezone issues given the call to FormatUtil's
+     * date conversion library (TODO to be figured out).
+     *
+     * @param dateTime date-time value to be used in SQL
+     * @return date value to be used in select and conditional SQL
+     */
+    public String toDbDateSqlValue(LocalDateTime dateTime) {
+      return toDbDateSqlValue(FormatUtil.toDate(dateTime));
+    }
 }

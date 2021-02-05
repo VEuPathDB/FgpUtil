@@ -80,11 +80,11 @@ public class FormatUtil {
     return LocalDateTime.parse(dateTime, STANDARD_DATE_TIME_FORMAT);
   }
 
-  public static String formatDateTimezoneFree(Date date) {
+  public static String formatDateNoTimezone(Date date) {
     return STANDARD_DATE_TEXT_FORMAT.get().format(date);
   }
 
-  public static String formatDateTimeTimezoneFree(Date date) {
+  public static String formatDateTimeNoTimezone(Date date) {
     return STANDARD_DATE_TIME_TEXT_FORMAT.get().format(date);
   }
 
