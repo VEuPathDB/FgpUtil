@@ -43,7 +43,7 @@ public class FormatUtil {
 
   // standard formats in java.text
   public static final Supplier<SimpleDateFormat> STANDARD_DATE_TEXT_FORMAT = () -> new SimpleDateFormat("yyyy-MM-dd");
-  public static final Supplier<SimpleDateFormat> STANDARD_DATE_TIME_TEXT_FORMAT = () -> new SimpleDateFormat("yyyy-MM-ddTHH:mm:ss");
+  public static final Supplier<SimpleDateFormat> STANDARD_DATE_TIME_TEXT_FORMAT = () -> new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 
   public interface MultiLineToString {
