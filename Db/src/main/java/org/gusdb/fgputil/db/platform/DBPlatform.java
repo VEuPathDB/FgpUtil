@@ -211,14 +211,14 @@ public abstract class DBPlatform {
 
     /**
      * Returns a SQL value containing a call to the DB's to_date() function
-     * using the following format: 'YYYY-MM-DD"T"HH:MI:SS'.  Note milliseconds
+     * using the following format: 'YYYY-MM-DD"T"HH24:MI:SS'.  Note milliseconds
      * and timezone/offset are not supported.
      *
      * @param iso8601FormattedDateTime a date-time in ISO-8601 format (not including ms or tz/offset info)
      * @return date value to be used in select and conditional SQL
      */
     public String toDbDateSqlValue(String iso8601FormattedDateTime) {
-      return "TO_DATE('" + iso8601FormattedDateTime + "','YYYY-MM-DD\"T\"HH:MI:SS')";
+      return "TO_DATE('" + iso8601FormattedDateTime + "','YYYY-MM-DD\"T\"HH24:MI:SS')";
     }
 
     /**
