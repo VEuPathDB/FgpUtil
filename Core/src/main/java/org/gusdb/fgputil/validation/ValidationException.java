@@ -9,9 +9,21 @@ public class ValidationException extends Exception {
 
   private final ValidationBundle _validation;
 
+
+  public ValidationException(String error) {
+    _validation = ValidationBundle
+      .builder(ValidationLevel.RUNNABLE)
+      .addError(error)
+      .build();
+  }
+
   public ValidationException(ValidationBundle validation) {
-    super(validation.toString());
     _validation = validation;
+  }
+
+  @Override
+  public String getMessage() {
+    return _validation.toString();
   }
 
   public ValidationBundle getValidationBundle() {
