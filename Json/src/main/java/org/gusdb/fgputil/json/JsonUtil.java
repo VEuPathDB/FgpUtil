@@ -1,5 +1,23 @@
 package org.gusdb.fgputil.json;
 
+import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.gusdb.fgputil.functional.Result;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONString;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,13 +25,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import org.gusdb.fgputil.functional.Result;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONString;
-
-import java.util.*;
 
 public class JsonUtil {
 
@@ -309,6 +320,17 @@ public class JsonUtil {
     } catch (Exception e) {
       return Result.error(e);
     }
+  }
+
+  /**
+   * Attempt to represent an arbitrary object as a JSON string.
+   *
+   * @param object Object to serialize
+   * @return string representation of the object
+   * @throws RuntimeException if unable to serialize object
+   */
+  public static String serializeObject(Object object) {
+    return swallowAndGet(() -> Jackson.writeValueAsString(object));
   }
 
   /**
