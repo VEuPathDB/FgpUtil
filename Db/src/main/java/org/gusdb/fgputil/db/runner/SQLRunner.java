@@ -301,13 +301,26 @@ public class SQLRunner {
   /**
    * Executes an SQL query, passing results to the given handler.  This version
    * assumes no SQL parameters in this runner's SQL.
-   * 
+   *
    * @param handler handler implementation to process results
    * @return the passed handler
    * @throws SQLRunnerException if error occurs during processing
    */
   public <T> T executeQuery(ResultSetHandler<T> handler) {
-    return executeQuery(new Object[]{ }, null, handler);
+    return executeQuery(handler, QueryExecutor.NO_FETCH_SIZE_OVERRIDE);
+  }
+
+  /**
+   * Executes an SQL query, passing results to the given handler.  This version
+   * assumes no SQL parameters in this runner's SQL.
+   *
+   * @param handler handler implementation to process results
+   * @param fetchSize override of the configured fetch size
+   * @return the passed handler
+   * @throws SQLRunnerException if error occurs during processing
+   */
+  public <T> T executeQuery(ResultSetHandler<T> handler, int fetchSize) {
+    return executeSql(new QueryExecutor<T>(handler, new Object[]{ }, null, fetchSize));
   }
 
   /**
@@ -325,7 +338,6 @@ public class SQLRunner {
   }
 
   /**
-   * 
    * Executes an SQL query using the passed parameter array, passing results to
    * the given handler.  
    * 
@@ -336,7 +348,7 @@ public class SQLRunner {
    * @throws SQLRunnerException if error occurs during processing
    */
   public <T> T executeQuery(Object[] args, Integer[] types, ResultSetHandler<T> handler) {
-    return executeSql(new QueryExecutor<T>(handler, args, types));
+    return executeSql(new QueryExecutor<T>(handler, args, types, QueryExecutor.NO_FETCH_SIZE_OVERRIDE));
   }
 
   private <T> T executeSql(PreparedStatementExecutor<T> exec) {
@@ -352,6 +364,7 @@ public class SQLRunner {
 
       // prepare statement
       stmt = conn.prepareStatement(_sql);
+      exec.overrideFetchSize(stmt);
       timer.statementPrepared();
 
       // assign params

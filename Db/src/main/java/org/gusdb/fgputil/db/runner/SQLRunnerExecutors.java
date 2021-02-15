@@ -115,6 +115,14 @@ class SQLRunnerExecutors {
       run(stmt);
       _lastExecutionTime = System.currentTimeMillis() - startTime;
     }
+
+    /**
+     * @param stmt statement where fetch size may be overridden
+     * @throws SQLException if error occurs
+     */
+    public void overrideFetchSize(PreparedStatement stmt) throws SQLException {
+      // by default this is a no-op
+    }
   }
 
   /**
@@ -223,12 +231,21 @@ class SQLRunnerExecutors {
    */
   static class QueryExecutor<T> extends PreparedStatementExecutor<T> {
 
+    public static final int NO_FETCH_SIZE_OVERRIDE = -1;
+
     private ResultSetHandler<T> _handler;
     private ResultSet _results;
+    private int _fetchSize;
 
-    public QueryExecutor(ResultSetHandler<T> handler, Object[] args, Integer[] types) {
+    public QueryExecutor(ResultSetHandler<T> handler, Object[] args, Integer[] types, int fetchSize) {
       super(args, types);
       _handler = handler;
+      _fetchSize = fetchSize;
+    }
+
+    @Override
+    public void overrideFetchSize(PreparedStatement stmt) throws SQLException {
+      if (_fetchSize >= 0) stmt.setFetchSize(_fetchSize);
     }
 
     @Override
