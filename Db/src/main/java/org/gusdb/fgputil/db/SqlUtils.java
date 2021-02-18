@@ -1,11 +1,15 @@
 package org.gusdb.fgputil.db;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.sql.CallableStatement;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -22,6 +26,7 @@ import java.util.function.Function;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.db.stream.BlobValueInputStream;
@@ -717,6 +722,29 @@ public final class SqlUtils {
     }
     else {
       ps.setString(paramIndex, value);
+    }
+  }
+
+  /**
+   * Writes the entire contents of a CLOB column with the given name to the
+   * passed writer, then closes the CLOB.
+   *
+   * @param rs result set from which to read the clob
+   * @param columnName name of the clob column
+   * @param writer destination of the clob data
+   * @throws SQLException if error occurs reading clob
+   * @throws IOException if unable to read or write clob
+   */
+  public static void writeClob(ResultSet rs, String columnName, BufferedWriter writer) throws SQLException, IOException {
+    Clob clob = null;
+    try {
+      clob = rs.getClob(columnName);
+      try (BufferedReader in = new BufferedReader(clob.getCharacterStream())) {
+        IoUtil.transferStream(writer, in);
+      }
+    }
+    finally {
+      if (clob != null) clob.free();
     }
   }
 }
