@@ -60,7 +60,7 @@ public class LoginCookieFactory {
     CookieBuilder loginCookie = new CookieBuilder(WDK_LOGIN_COOKIE_NAME, "");
     loginCookie. setPath("/"); // set cookie for whole site, not just webapp
     loginCookie.setMaxAge(getDefaultMaxAge());
-    loginCookie.setValue(username);
+    loginCookie.setValue(getLoginCookieValue(username));
     return loginCookie;
   }
 
