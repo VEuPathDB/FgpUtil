@@ -30,6 +30,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.log4j.Logger;
@@ -235,6 +236,35 @@ public class IoUtil {
       int bytesRead;
       while ((bytesRead = reader.read(buffer)) != -1) {
         writer.write(buffer, 0, bytesRead);
+      }
+    }
+    finally {
+      // only close reader; container will close writer
+      reader.close();
+    }
+  }
+
+  /**
+   * Transfers character data from the reader to the writer until no more data
+   * is available, then closes reader (but not the writer).  This version also
+   * allows arbitrary escaping of characters depending on your use case; each
+   * character will be translated by the escaper before being written to the
+   * writer.
+   * 
+   * @param writer writer data is written to
+   * @param reader reader data is read from
+   * @param characterEscaper translation function for escaping character values
+   * @throws IOException if problem reading/writing data occurs
+   */
+  public static void transferStream(BufferedWriter writer, BufferedReader reader,
+      Function<Character, String> characterEscaper) throws IOException {
+    try {
+      char[] buffer = new char[10240]; // send 10kb at a time (depending on encoding)
+      int bytesRead;
+      while ((bytesRead = reader.read(buffer)) != -1) {
+        for (int i = 0; i < bytesRead; i++) {
+          writer.write(characterEscaper.apply(buffer[i]));
+        }
       }
     }
     finally {
@@ -451,4 +481,5 @@ public class IoUtil {
   public static FileAttribute<Set<PosixFilePermission>> getOpenPosixPermsAsFileAttribute() {
     return PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxrwxrwx"));
   }
+
 }

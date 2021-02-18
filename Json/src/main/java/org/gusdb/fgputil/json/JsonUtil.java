@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.gusdb.fgputil.functional.Result;
 import org.json.JSONArray;
@@ -38,6 +39,25 @@ public class JsonUtil {
     .registerModule(new JavaTimeModule())
     // org.json compatibility
     .registerModule(new JsonOrgModule());
+
+  /**
+   * Escapes required characters to convert a regular string into a string
+   * value compliant with the JSON spec.  Note this function does NOT convert
+   * arbitrary unicode chars (e.g. \u1a2b)!
+   */
+  public static final Function<Character,String> CHARACTER_ESCAPER = c -> {
+    switch(c) {
+      case '"': return "\\\"";
+      case '\\': return "\\\\";
+      case '/': return "\\/";
+      case '\b': return "\\b";
+      case '\f': return "\\f";
+      case '\n': return "\\n";
+      case '\r': return "\\r";
+      case '\t': return "\\t";
+      default: return String.valueOf(c);
+    }
+  };
 
   private JsonUtil() {}
 

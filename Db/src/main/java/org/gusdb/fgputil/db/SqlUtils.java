@@ -736,15 +736,41 @@ public final class SqlUtils {
    * @throws IOException if unable to read or write clob
    */
   public static void writeClob(ResultSet rs, String columnName, BufferedWriter writer) throws SQLException, IOException {
+    writeClob(rs, columnName, writer, null);
+  }
+
+  /**
+   * Writes the entire contents of a CLOB column with the given name to the
+   * passed writer, then closes the CLOB.  This version also
+   * allows arbitrary escaping of characters depending on your use case; each
+   * character will be translated by the escaper before being written to the
+   * writer.
+   *
+   * @param rs result set from which to read the clob
+   * @param columnName name of the clob column
+   * @param writer destination of the clob data
+   * @param characterEscaper translation function for escaping character values
+   * @throws SQLException if error occurs reading clob
+   * @throws IOException if unable to read or write clob
+   */
+  public static void writeClob(ResultSet rs, String columnName, BufferedWriter writer,
+      Function<Character, String> characterEscaper) throws SQLException, IOException {
     Clob clob = null;
     try {
       clob = rs.getClob(columnName);
       try (BufferedReader in = new BufferedReader(clob.getCharacterStream())) {
-        IoUtil.transferStream(writer, in);
+        if (characterEscaper == null) {
+          IoUtil.transferStream(writer, in);
+        }
+        else {
+          // much less efficient but allows arbitrary translation of character data
+          IoUtil.transferStream(writer, in, characterEscaper);
+        }
       }
     }
     finally {
       if (clob != null) clob.free();
     }
   }
+
 }
