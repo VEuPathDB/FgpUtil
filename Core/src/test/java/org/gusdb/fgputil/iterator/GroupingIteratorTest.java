@@ -7,8 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.FormatUtil.Style;
 import org.junit.Assert;
 import org.junit.Test;
 
