@@ -97,4 +97,8 @@ public class MapBuilder<S,T> {
     return _map;
   }
 
+  public MapBuilder<S,T> remove(S key) {
+    _map.remove(key);
+    return this;
+  }
 }
