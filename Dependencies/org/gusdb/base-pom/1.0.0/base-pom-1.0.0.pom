@@ -111,6 +111,11 @@
       </dependency>
       <dependency>
         <groupId>org.gusdb</groupId>
+        <artifactId>fgputil-client</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gusdb</groupId>
         <artifactId>fgputil-core</artifactId>
         <version>${project.version}</version>
       </dependency>

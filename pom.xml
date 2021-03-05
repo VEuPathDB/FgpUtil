@@ -17,6 +17,7 @@
     <module>Json</module>
     <module>Solr</module>
     <module>Web</module>
+    <module>Client</module>
     <module>Servlet</module>
     <module>Db</module>
     <module>AccountDB</module>

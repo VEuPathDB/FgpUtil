@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.web;
+package org.gusdb.fgputil.client;
 
 import java.io.IOException;
 import java.io.InputStream;

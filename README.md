@@ -13,6 +13,7 @@ A build produces a set of Java artifacts (JARs), each addressing a utility categ
 * AccountDB: access and configuration of user accounts stored in an AccountDB schema
 * Cache: in-memory cache system
 * Cli: command line utilities
+* Client: HTTP client utilities
 * Db: database configuration, vendor-specific code, connection pooling
 * Events: asynchronous event triggering and subscription
 * Json: utilities for reading, validating, typing, and serializing JSON

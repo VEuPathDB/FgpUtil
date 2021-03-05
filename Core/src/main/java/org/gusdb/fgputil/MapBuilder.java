@@ -46,6 +46,11 @@ public class MapBuilder<S,T> {
     _map.put(key, value);
   }
 
+  public MapBuilder(Entry<S, T> initialEntry) {
+    this(initialEntry.getKey(), initialEntry.getValue());
+  }
+
+
   public MapBuilder<S,T> put(S key, T value) {
     _map.put(key, value);
     return this;
