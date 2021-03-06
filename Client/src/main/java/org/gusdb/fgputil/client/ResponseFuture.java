@@ -3,11 +3,14 @@ package org.gusdb.fgputil.client;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
@@ -19,6 +22,20 @@ public class ResponseFuture {
 
   private final Future<Response> _response;
   private final boolean _logResponseHeadersOnReceipt;
+
+  public static void waitForAll(Collection<ResponseFuture> futures) throws InterruptedException {
+    boolean allDone = false;
+    while (!allDone) {
+      allDone = true;
+      for (ResponseFuture response : futures) {
+        if (!response.isDone()) {
+          allDone = false;
+          break;
+        }
+      }
+      Thread.sleep(10); // let other threads run
+    }
+  }
 
   public ResponseFuture(Future<Response> response, boolean logResponseHeadersOnReceipt) {
     _response = response;
