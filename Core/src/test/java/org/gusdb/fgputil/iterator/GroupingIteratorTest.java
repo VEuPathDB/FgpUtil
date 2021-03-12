@@ -16,7 +16,7 @@ public class GroupingIteratorTest {
   public void alphabetTest() {
 
     // build expected results
-    Integer[] successSizes = new Integer[] { 3, 2, 2, 1, 2 };
+    Integer[] successSizes = new Integer[] { 3, 2, 2, 1, 2, 1 };
 
     // build test data
     List<String> words = Arrays.asList(new String[] {
@@ -24,7 +24,8 @@ public class GroupingIteratorTest {
       "beaver", "bee",
       "cat", "cheetah",
       "deer",
-      "elephant", "earwig"
+      "elephant", "earwig",
+      "fly"
     });
 
     // run test
@@ -34,10 +35,11 @@ public class GroupingIteratorTest {
     );
 
     // check results
-    int i = 0;
+    int numGroups = 0;
     for (List<String> group : IteratorUtil.toIterable(groups)) {
-      Assert.assertEquals((long)successSizes[i++], group.size());
+      Assert.assertEquals((long)successSizes[numGroups++], group.size());
     }
+    Assert.assertEquals(successSizes.length, numGroups);
   }
 
   @Test
