@@ -51,14 +51,13 @@ public class GroupingIterator<T> implements Iterator<List<T>> {
         nextGroup.add(_next);
       }
       else {
-        break;
+        // more objects, but no match; return this group
+        return nextGroup;
       }
     }
 
-    // set _next to null if input iterator exhausted (no next group)
-    if (!_source.hasNext()) {
-      _next = null;
-    }
+    // source ran out of objects
+    _next = null;
     return nextGroup;
   }
 
