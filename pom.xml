@@ -27,7 +27,7 @@
   <parent>
     <groupId>com.github.VEuPathDB</groupId>
     <artifactId>base-pom</artifactId>
-    <version>v1.0.0</version>
+    <version>v1.0.1</version>
     <relativePath>Dependencies/org/gusdb/base-pom/1.0.0/base-pom-1.0.0.pom</relativePath>
   </parent>
 
