@@ -25,9 +25,9 @@
   </modules>
 
   <parent>
-    <groupId>org.gusdb</groupId>
+    <groupId>com.github.VEuPathDB</groupId>
     <artifactId>base-pom</artifactId>
-    <version>1.0.0</version>
+    <version>v1.0.0</version>
     <relativePath>Dependencies/org/gusdb/base-pom/1.0.0/base-pom-1.0.0.pom</relativePath>
   </parent>
 
@@ -40,6 +40,10 @@
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
+    </repository>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
     </repository>
   </repositories>
 
