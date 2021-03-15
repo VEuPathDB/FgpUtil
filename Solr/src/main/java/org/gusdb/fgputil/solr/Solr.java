@@ -73,7 +73,7 @@ public class Solr {
   public <T> T executeQuery(HttpMethod method, String queryEndpoint, String queryParams, boolean closeResponseOnExit, FunctionWithException<Response, T> handler) {
     String absoluteUrl = _solrUrl + queryEndpoint;
     String loggingInfo = absoluteUrl + " with params " + queryParams;
-    LOG.info("Querying SOLR at " + loggingInfo);
+    LOG.debug("Querying SOLR at " + loggingInfo);
     Response response = null;
     try {
       response = method.invokeRequest(absoluteUrl, queryParams);
@@ -117,7 +117,7 @@ public class Solr {
   public static SolrResponse parseResponse(String requestSubpath, Response response) throws IOException {
     String data = IoUtil.readAllChars(new InputStreamReader((InputStream)response.getEntity()));
     JSONObject responseBody = new JSONObject(data);
-    LOG.info("Received response from SOLR: " + responseBody.toString(2));
+    LOG.debug("Received response from SOLR: " + responseBody.toString(2));
     int responseStatus = responseBody.getJSONObject("responseHeader").getInt("status");
     if (responseStatus != 0) {
       throw handleError("SOLR response had non-zero embedded status (" + responseStatus + ")", requestSubpath, null);

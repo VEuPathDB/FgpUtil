@@ -46,6 +46,10 @@ public abstract class RESTServer {
    * @param commandLineArgs
    */
   public RESTServer(String[] commandLineArgs) {
+
+    // initialize logging
+    LoggingInitializer.initialize();
+
     // parse command line args into desired port and server config
     ThreeTuple<String, Integer, JSONObject> parsedArgs = parseConfig(commandLineArgs);
     _baseUri = parsedArgs.getFirst();
