@@ -198,11 +198,11 @@ public class IoUtil {
     try {
       byte[] buffer = new byte[10240]; // send 10kb at a time
       int bytesRead = inputStream.read(buffer);
-      if (LOG.isDebugEnabled()) logBuffer(buffer, bytesRead);
+      //if (LOG.isDebugEnabled()) logBuffer(buffer, bytesRead);
       while (bytesRead != -1) {
         outputStream.write(buffer, 0, bytesRead);
         bytesRead = inputStream.read(buffer);
-        if (LOG.isDebugEnabled()) logBuffer(buffer, bytesRead);
+        //if (LOG.isDebugEnabled()) logBuffer(buffer, bytesRead);
       }
       outputStream.flush();
     }
@@ -212,6 +212,7 @@ public class IoUtil {
     }
   }
 
+  @SuppressWarnings("unused") // used for debug when necessary; removed for efficiency
   private static void logBuffer(byte[] buffer, int bytesRead) {
     if (bytesRead == -1) {
       LOG.debug("End of stream");
