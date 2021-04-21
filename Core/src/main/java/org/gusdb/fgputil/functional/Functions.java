@@ -16,6 +16,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
@@ -583,5 +585,17 @@ public class Functions {
       }
       return acc;
     }, new LinkedHashMap<S,List<T>>());
+  }
+
+  /**
+   * Creates a map collector which creates a LinkedHashMap and populates it with
+   * the streamed values.  Keys are determined by the provided keyMapper.
+   *
+   * @param <T> type of object being streamed in (will become the values of the map)
+   * @param keyMapper function that takes a streamed object and returns its key
+   * @return collector that will produce a LinkedHashMap
+   */
+  public static <T> Collector<T, ?, Map<String,T>> newLinkedHashMapCollector(Function<T,String> keyMapper) {
+    return Collectors.toMap(keyMapper, a -> a, (a, b) -> b, () -> new LinkedHashMap<>());
   }
 }
