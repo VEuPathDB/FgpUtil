@@ -1,8 +1,16 @@
 package org.gusdb.fgputil;
 
+import static org.gusdb.fgputil.geo.GeographyUtil.DEG_TO_RAD;
+import static org.gusdb.fgputil.geo.GeographyUtil.RAD_TO_DEG;
+import static org.gusdb.fgputil.geo.GeographyUtil.coordToLatRads;
+import static org.gusdb.fgputil.geo.GeographyUtil.coordToLonRads;
+import static org.gusdb.fgputil.geo.GeographyUtil.toCartesianCoord;
+
+import org.gusdb.fgputil.geo.GeographyUtil.CartesianCoordinates;
 import org.gusdb.fgputil.geo.GeographyUtil.GeographicPoint;
 import org.gusdb.fgputil.geo.GeographyUtil.Units;
 import org.gusdb.fgputil.geo.LatLonAverager;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class LatLonAvgTest {
@@ -141,28 +149,29 @@ public class LatLonAvgTest {
   };
 
   @Test
-  public void bigDataTest() {
+  public void manyPointAvgTest() {
     doTest(POINTS);
   }
 
   @Test
-  public void farSideOfTheEarthTest() {
+  public void farSideOfTheEarthAvgTest() {
     double[] farSidePoints = new double[] {
-        90, -179,
-        -90, 179
+        45, -179,
+        -45, 179
     };
     doTest(farSidePoints);
     
   }
 
   @Test
-  public void noInputsTest() {
+  public void noInputsAvgTest() {
     double[] divZeroPoints = new double[] { };
     doTest(divZeroPoints);
   }
 
   public void doTest(double[] inputs) {
     int numDataPoints = inputs.length / 2;
+    System.out.println("Averaging " + numDataPoints + " data points...");
     double lat, latTotal = 0;
     double lon, lonTotal = 0;
     LatLonAverager runningAvg = new LatLonAverager();
@@ -176,5 +185,28 @@ public class LatLonAvgTest {
     // mostly this is an eyeball thing; in some cases shows why geometric is better
     System.out.println("Simple Average:    " + new GeographicPoint(latTotal / numDataPoints, lonTotal / numDataPoints, Units.DEGREES));
     System.out.println("Geometric Average: " + runningAvg.getCurrentAverage());
+  }
+
+  @Test
+  public void inverseFunctionTest() {
+    double[] latOptions = new double[] {
+      5, 27, -8, -33, 0, 90, -90
+    };
+    double[] lonOptions = new double[] {
+      35, 127, -56, -127, 0, 180, -180
+    };
+    double PRECISION_THRESHOLD = 0.000000000001;
+    for (double lat : latOptions) {
+      for (double lon : lonOptions) {
+        // convert to x,y,z
+        CartesianCoordinates coords = toCartesianCoord(DEG_TO_RAD * lat, DEG_TO_RAD * lon);
+        // convert back to lat/lon
+        double newLat = RAD_TO_DEG * coordToLatRads(coords);
+        double newLon = RAD_TO_DEG * coordToLonRads(coords);
+        // make sure new values are within some (small) precision threshold of the original
+        Assert.assertTrue(Math.abs(lat - newLat) < PRECISION_THRESHOLD);
+        Assert.assertTrue(Math.abs(lon - newLon) < PRECISION_THRESHOLD);
+      }
+    }
   }
 }

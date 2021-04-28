@@ -4,11 +4,24 @@ import java.util.function.Function;
 
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 
+/**
+ * Collection of spherical coordinate calculation utilities for conversion and
+ * averaging of latitude/longitudinal data.
+ *
+ * @author rdoherty
+ */
 public class GeographyUtil {
 
+  /** Constant multiplier to convert radians to degrees */
   public static final double RAD_TO_DEG = 180 / Math.PI;
+
+  /** Constant muliplier to convert degrees to radians */
   public static final double DEG_TO_RAD = Math.PI / 180;
 
+  /**
+   * Units for values representing angles;
+   * provides conversion methods between the two
+   */
   public enum Units {
 
     DEGREES(d -> d * DEG_TO_RAD, d -> d),
@@ -38,6 +51,9 @@ public class GeographyUtil {
     }
   }
 
+  /**
+   * Utility class to encapsulate a latitude, longitude, and the units of the point
+   */
   public static class GeographicPoint extends ThreeTuple<Double, Double, Units> {
 
     public GeographicPoint(double latitude, double longitude, Units units){
@@ -52,9 +68,12 @@ public class GeographyUtil {
     public String toString() {
       return "[ " + getLatitude() + ", " + getLongitude() + " ]";
     }
-
   }
 
+  /**
+   * Utility class to encapsulate a three dimensional point and/or a vector
+   * from a known reference point.
+   */
   public static class CartesianCoordinates extends ThreeTuple<Double, Double, Double> {
 
     public CartesianCoordinates(double x, double y, double z){
@@ -71,26 +90,48 @@ public class GeographyUtil {
     }
   }
 
+  /**
+   * Converts Cartesian coordinates to a latitude in radians (-Pi/2, Pi/2]
+   */
   public static double coordToLatRads(double x, double y, double z) {
     return Math.asin(z / Math.sqrt(x * x + y * y + z * z));
-    //return Math.atan2(z, Math.sqrt(x * x + y * y));
   }
 
+  /**
+   * Converts Cartesian coordinates to a latitude in radians (-Pi/2, Pi/2]
+   */
+  public static double coordToLatRads(CartesianCoordinates coords) {
+    return coordToLatRads(coords.getX(), coords.getY(), coords.getZ());
+  }
+
+  /**
+   * Converts Cartesian coordinates to a longitude in radians (-Pi, Pi]
+   */
   public static double coordToLonRads(double x, double y) {
     return Math.atan2(-y, x);
   }
 
-  public static CartesianCoordinates toCartesianCoord(double latitudeRad, double longitudeRad) {
-    double cosLatRad = Math.cos(latitudeRad);
-    return new CartesianCoordinates(
-      /* x */ cosLatRad * Math.sin(longitudeRad + (Math.PI / 2)),
-      /* y */ cosLatRad * Math.cos(longitudeRad + (Math.PI / 2)),
-      /* z */ Math.sin(latitudeRad));
-    //double sinLatRad = Math.sin(latitudeRad);
-    //return new CartesianCoordinates(
-      /* x */ //sinLatRad * Math.cos(longitudeRad),
-      /* y */ //sinLatRad * Math.sin(longitudeRad),
-      /* z */ //Math.cos(latitudeRad));
+  /**
+   * Converts Cartesian coordinates to a longitude in radians (-Pi, Pi]
+   */
+  public static double coordToLonRads(CartesianCoordinates coords) {
+    return coordToLonRads(coords.getX(), coords.getY());
   }
 
+  /**
+   * Converts values of latitude and longitude into reference Cartesian
+   * coordinates which can be converted back using the other utils in this class.
+   *
+   * @param latitudeRad latitude radians in range (-Pi/2, Pi/2]
+   * @param longitudeRad longitude radians in range (-Pi, Pi]
+   * @return
+   */
+  public static CartesianCoordinates toCartesianCoord(double latitudeRad, double longitudeRad) {
+    double referenceLon = longitudeRad + (Math.PI / 2);
+    double cosLatRad = Math.cos(latitudeRad);
+    return new CartesianCoordinates(
+      /* x */ cosLatRad * Math.sin(referenceLon),
+      /* y */ cosLatRad * Math.cos(referenceLon),
+      /* z */ Math.sin(latitudeRad));
+  }
 }

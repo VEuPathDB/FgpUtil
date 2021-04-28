@@ -11,7 +11,7 @@ import org.gusdb.fgputil.geo.GeographyUtil.Units;
 /**
  * Provides a utility to average a set of latitude and longitude coordinates.
  * To do so, lat/lon must be converted to radians if not already, then converted
- * to cartesian (xyz) coordinates (vectors), which are then averaged and
+ * to Cartesian (xyz) coordinates (vectors), which are then averaged and
  * converted back to radians and returned, or back to degrees if necessary.
  */
 public class LatLonAverager {
@@ -50,7 +50,6 @@ public class LatLonAverager {
         _units.toRadians(latitude),
         _units.toRadians(longitude)
     );
-    System.out.println("Added point: " + coords);
     _xSum += coords.getX();
     _ySum += coords.getY();
     _zSum += coords.getZ();
