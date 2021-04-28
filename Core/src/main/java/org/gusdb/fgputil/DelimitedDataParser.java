@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Facilitates conversion of lines of delimited data into named columns.  The
@@ -34,11 +35,21 @@ public class DelimitedDataParser {
     return Collections.unmodifiableList(Arrays.asList(_columnNames));
   }
 
-  public LinkedHashMap<String,String> parseLine(String line) {
+  public Optional<Integer> indexOfColumn(String columnName) {
+    int index = getColumnNames().indexOf(columnName);
+    return index == -1 ? Optional.empty() : Optional.of(index);
+  }
+
+  public String[] parseLineToArray(String line) {
     String[] values = line.split(_delimiterRegex);
     if (_enforceStrictColumns && values.length != _columnNames.length) {
       throw new RuntimeException("Expected " + _columnNames.length + " columns but parsed " + values.length + " in line:\n" + line);
     }
+    return values;
+  }
+
+  public LinkedHashMap<String,String> parseLine(String line) {
+    String[] values = parseLineToArray(line);
     LinkedHashMap<String,String> map = new LinkedHashMap<>();
     int numToParse = Math.min(values.length, _columnNames.length);
     for (int i = 0; i < numToParse; i++) {
