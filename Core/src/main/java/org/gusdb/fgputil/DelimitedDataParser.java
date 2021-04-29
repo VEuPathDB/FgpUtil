@@ -42,6 +42,12 @@ public class DelimitedDataParser {
 
   public String[] parseLineToArray(String line) {
     String[] values = line.split(_delimiterRegex);
+    if (values.length == _columnNames.length - 1) {
+      // Impossible to tell using split() if a trailing delimiter was present;
+      //   for now, assume it was and add an empty string so col count matches.
+      // Possible upgrade for the future to make sure trailing delimiter present
+      values = ArrayUtil.concatenate(values, new String[] { "" });
+    }
     if (_enforceStrictColumns && values.length != _columnNames.length) {
       throw new RuntimeException("Expected " + _columnNames.length + " columns but parsed " + values.length + " in line:\n" + line);
     }
