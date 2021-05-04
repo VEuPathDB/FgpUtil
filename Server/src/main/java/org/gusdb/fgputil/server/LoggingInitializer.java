@@ -1,10 +1,12 @@
 package org.gusdb.fgputil.server;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -24,11 +26,25 @@ public class LoggingInitializer {
    */
   public static void initialize() {
     try {
-      // initialize based on the config file
-      Configurator.initialize(
-        new JsonConfiguration((LoggerContext)LogManager.getContext(),
-          new ConfigurationSource(
-            LoggingInitializer.class.getResourceAsStream("/log4j2.json"))));
+      // try to find an application-defined config file
+      InputStream config = LoggingInitializer.class.getResourceAsStream("/log4j2.json");
+
+      boolean usedDefaultConfig = false;
+      if (config == null) {
+        // if application does not define a config, use default
+        config = LoggingInitializer.class.getResourceAsStream("/default/log4j2.json");
+        usedDefaultConfig = true;
+      }
+
+      // skip config if still unable to find
+      boolean ableToInitialize = false;
+      if (config != null) {
+        // initialize based on the config file
+        Configurator.initialize(
+            new JsonConfiguration((LoggerContext)LogManager.getContext(),
+                new ConfigurationSource(config)));
+        ableToInitialize = true;
+      }
 
       // override gusdb level if env var exists
       getEnvDeclaredLevel(LOG4J2_GUS_LOG_LEVEL)
@@ -37,6 +53,20 @@ public class LoggingInitializer {
       // override root level if env var exists
       getEnvDeclaredLevel(LOG4J2_ROOT_LOG_LEVEL)
         .ifPresent(level -> Configurator.setRootLevel(level));
+
+      // tell the user what happened
+      Logger log = LogManager.getLogger(LoggingInitializer.class);
+      if (!ableToInitialize) {
+        log.warn("Unable to find application log4j.json at classpath root or " +
+            "FgpUtil version at /default/log4j2.json.  Will use Log4j2 default settings.");
+      }
+      else if (usedDefaultConfig) {
+        log.warn("Unable to find application log4j.json at classpath root. " +
+            "Used FgpUtil default config at /default/log4j2.json");
+      }
+      else {
+        log.info("Log4j2 successfully initialized.");
+      }
     }
     catch (IOException e) {
       throw new RuntimeException(e);

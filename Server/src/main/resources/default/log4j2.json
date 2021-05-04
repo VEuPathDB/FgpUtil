@@ -5,22 +5,23 @@
         "type": "Console",
         "name": "STDOUT",
         "target": "SYSTEM_OUT",
-        "PatternLayout": { "pattern": "%-4r [%-5p] %C:%L - %m%n" }
+        "PatternLayout": { "pattern": "[%d{dd/MMM/yyyy|HH:mm:ss}] %-5p - %C:%L - %m%n" }
+        
       }]
     },
     "Loggers": {
       "logger": [{
         "name": "org.gusdb",
-        "level": "debug"
+        "level": "info"
       },{
         "name": "org.eupathdb",
-        "level": "debug"
+        "level": "info"
       },{
         "name": "org.apidb",
-        "level": "debug"
+        "level": "info"
       },{
         "name": "org.orthomcl",
-        "level": "debug"
+        "level": "info"
       }],
       "root" : {
         "level": "warn",
