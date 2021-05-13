@@ -69,7 +69,9 @@ public class LoggingInitializer {
       }
     }
     catch (IOException e) {
-      throw new RuntimeException(e);
+      // problems with logging config should not hose the entire service
+      Logger log = LogManager.getLogger(LoggingInitializer.class);
+      log.error("Could not initialize Log4j2; default configuration will be used.", e);
     }
   }
 
