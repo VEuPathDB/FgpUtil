@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.db.wrapper;
+package org.gusdb.fgputil.db.leakmonitor;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
@@ -10,25 +10,17 @@ import org.gusdb.fgputil.FormatUtil;
 
 public class UnclosedObjectInfo {
 
-  public enum CloseableObjectType {
-    Connection,
-    Statement,
-    PreparedStatement,
-    CallableStatement,
-    ResultSet
-  }
-
   private String _dbName;
-  private CloseableObjectType _type;
+  private CloseableObjectType<?> _type;
   private Date _timeOpened;
   private String _stackTrace;
   private String _stackTraceHash;
 
-  public UnclosedObjectInfo(String dbName, CloseableObjectType type) {
+  public UnclosedObjectInfo(String dbName, CloseableObjectType<?> type) {
     this(dbName, type, null);
   }
 
-  public UnclosedObjectInfo(String dbName, CloseableObjectType type, Map<String, String> globalStacktraceMap) {
+  public UnclosedObjectInfo(String dbName, CloseableObjectType<?> type, Map<String, String> globalStacktraceMap) {
     _dbName = dbName;
     _type = type;
     _timeOpened = new Date();

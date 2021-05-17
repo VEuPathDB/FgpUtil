@@ -35,6 +35,7 @@ import org.gusdb.fgputil.iterator.Cursor;
 
 /**
  * @author Jerric Gao
+ * @author Ryan Doherty
  */
 public final class SqlUtils {
 
@@ -46,22 +47,33 @@ public final class SqlUtils {
   private SqlUtils() {}
 
   /**
-   * Close the resultSet and the underlying statement, connection. Log the query.
+   * Closes the passed ResultSet, the underlying statement, and the connection,
+   * logging the end of result set processing via QueryLoggger.
    *
-   * @param resultSet
-   *          result set to close
+   * @param resultSet result set to close
    */
   public static void closeResultSetAndStatement(ResultSet resultSet) {
-    closeResultSetAndStatement(resultSet, null);
+    closeResultSetAndStatement(resultSet, null, true);
   }
 
   /**
-   * Close the resultSet and the underlying statement, connection. Log the query.
+   * Closes the passed ResultSet, the underlying Statement, and the Connection,
+   * along with the passed Statement and its Connection, logging the end of
+   * result set processing via QueryLoggger.
    *
-   * @param resultSet
-   *          result set to close
+   * @param resultSet result set to close
+   * @param stmt additional statement to close
    */
   public static void closeResultSetAndStatement(ResultSet resultSet, Statement stmt) {
+    closeResultSetAndStatement(resultSet, stmt, true);
+  }
+    
+
+  public static void closeResultSetAndStatementOnly(ResultSet rs) {
+    closeResultSetAndStatement(rs, null, false);
+  }
+
+  private static void closeResultSetAndStatement(ResultSet resultSet, Statement stmt, boolean closeConnection) {
     try {
       if (resultSet != null) {
         // close the statement in any way
@@ -75,11 +87,11 @@ public final class SqlUtils {
           }
         }
         finally {
-          closeStatement(stmtLocal);
+          closeStatement(stmtLocal, closeConnection);
         }
       }
       if (resultSet == null || (stmt != null && !stmt.isClosed())) {
-        closeStatement(stmt);
+        closeStatement(stmt, closeConnection);
       }
     }
     catch (SQLException ex) {
@@ -88,7 +100,7 @@ public final class SqlUtils {
   }
 
   /**
-   * Close the resultSet but not its statement. Log the query.
+   * Closes the passed ResultSet but not its statement. Log the query.
    *
    * @param resultSet
    *          result set to close
@@ -113,12 +125,16 @@ public final class SqlUtils {
    *          statement to close
    */
   public static void closeStatement(Statement stmt) {
+    closeStatement(stmt, true);
+  }
+
+  private static void closeStatement(Statement stmt, boolean closeConnection) {
     if (stmt != null) {
       Connection connection = null;
       try {
         if (stmt.isClosed()) return; // required because getConnection throws exception if already closed
         try {
-          connection = ConnectionMapping.getConnection(stmt);
+          connection = stmt.getConnection();
         }
         finally {
           // close statement regardless of whether we
@@ -131,8 +147,10 @@ public final class SqlUtils {
         throw new RuntimeException(e);
       }
       finally {
-        // unclear what happened above, but connection must be closed
-        closeQuietly(connection);
+        // unclear what happened above, but connection must be closed if requested
+        if (closeConnection) {
+          closeQuietly(connection);
+        }
       }
     }
   }
@@ -142,7 +160,7 @@ public final class SqlUtils {
     PreparedStatement ps = null;
 
     try {
-      connection = ConnectionMapping.getConnection(dataSource);
+      connection = dataSource.getConnection();
       return connection.prepareStatement(sql);
     }
     catch (SQLException ex) {
@@ -369,7 +387,7 @@ public final class SqlUtils {
     ResultSet resultSet = null;
 
     try {
-      connection = ConnectionMapping.getConnection(dataSource);
+      connection = dataSource.getConnection();
       long start = System.currentTimeMillis();
       stmt = connection.createStatement();
       if (fetchSize > 0) {

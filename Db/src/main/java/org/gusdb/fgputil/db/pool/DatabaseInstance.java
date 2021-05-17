@@ -202,7 +202,7 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
 
           _connectionPool = createConnectionPool(_dbConfig, _platform);
 
-          _dataSource = new DataSourceWrapper(_identifier, _connectionPool, _platform, _dbConfig);
+          _dataSource = new DataSourceWrapper(_identifier, _connectionPool, _dbConfig);
 
           // start the connection monitor if needed
           if (_dbConfig.isShowConnections()) {

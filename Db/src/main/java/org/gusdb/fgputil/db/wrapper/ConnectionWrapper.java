@@ -9,6 +9,9 @@ import java.sql.Statement;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.UncommittedChangesException;
+import org.gusdb.fgputil.db.leakmonitor.CloseableObjectType;
+import org.gusdb.fgputil.db.leakmonitor.UnclosedObjectMonitor;
+import org.gusdb.fgputil.db.leakmonitor.UnclosedObjectMonitor.UnclosedObjectMonitorMap;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
 import org.gusdb.fgputil.db.pool.DbDriverInitializer;
@@ -19,26 +22,29 @@ public class ConnectionWrapper extends AbstractConnectionWrapper {
 
   private static final boolean PERFORM_UNCOMMITTED_CHANGES_CHECK = false;
 
-  private final DataSourceWrapper _parentDataSource;
-  private final DBPlatform _underlyingPlatform;
   private final ConnectionPoolConfig _dbConfig;
+  private final DBPlatform _underlyingPlatform;
+  private final UnclosedObjectMonitorMap _unclosedObjectMonitorMap;
+  private final UnclosedObjectMonitor<Connection> _unclosedObjectMonitor;
 
-  public ConnectionWrapper(Connection underlyingConnection, DataSourceWrapper parentDataSource, DBPlatform underlyingPlatform) {
+  public ConnectionWrapper(Connection underlyingConnection, ConnectionPoolConfig dbConfig, UnclosedObjectMonitorMap unclosedObjectMonitorMap) {
     super(underlyingConnection);
-    _parentDataSource = parentDataSource;
-    _underlyingPlatform = underlyingPlatform;
-    _dbConfig = parentDataSource.getDbConfig();
+    _dbConfig = dbConfig;
+    _underlyingPlatform = dbConfig.getPlatformEnum().getPlatformInstance();
+    _unclosedObjectMonitorMap = unclosedObjectMonitorMap;
+    _unclosedObjectMonitor = unclosedObjectMonitorMap.get(CloseableObjectType.Connection);
+    _unclosedObjectMonitor.registerOpenedObject(underlyingConnection);
   }
 
-  public Connection getUnderlyingConnection() {
-    return _underlyingConnection;
+  UnclosedObjectMonitorMap getUnclosedObjectMonitorMap() {
+    return _unclosedObjectMonitorMap;
   }
 
   @Override
   public void close() throws SQLException {
     boolean uncommittedChangesPresent = false;
     try {
-      _parentDataSource.unregisterClosedConnection(_underlyingConnection);
+      _unclosedObjectMonitor.unregisterClosedObject(_underlyingConnection);
   
       // check to see if uncommitted changes are present in this connection
       uncommittedChangesPresent =
@@ -71,9 +77,8 @@ public class ConnectionWrapper extends AbstractConnectionWrapper {
     }
     finally {
       // close the underlying connection using possibly custom logic
-      ConnectionPoolConfig dbConfig = _parentDataSource.getDbConfig();
-      DbDriverInitializer dbManager = DbDriverInitializer.getInstance(dbConfig.getDriverInitClass());
-      dbManager.closeConnection(_underlyingConnection, dbConfig);
+      DbDriverInitializer dbManager = DbDriverInitializer.getInstance(_dbConfig.getDriverInitClass());
+      dbManager.closeConnection(_underlyingConnection, _dbConfig);
     }
   
     if (uncommittedChangesPresent) {
@@ -102,27 +107,83 @@ public class ConnectionWrapper extends AbstractConnectionWrapper {
     return uncommittedChangesPresent;
   }
 
-  /********* Statement factories that apply configured fetch size *********/
+  private <T extends Statement> T applyFetchSize(T statement) throws SQLException {
+    statement.setFetchSize(_dbConfig.getDefaultFetchSize());
+    return statement;
+  }
+
+  /********* Statement factories that apply configured fetch size and then wrap native objects *********/
 
   @Override
   public Statement createStatement() throws SQLException {
-    Statement statement = _underlyingConnection.createStatement();
-    statement.setFetchSize(_dbConfig.getDefaultFetchSize());
-    return statement;
+    Statement statement = super.createStatement();
+    return new StatementWrapper(applyFetchSize(statement), this);
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql) throws SQLException {
     PreparedStatement statement = _underlyingConnection.prepareStatement(sql);
-    statement.setFetchSize(_dbConfig.getDefaultFetchSize());
-    return statement;
+    return new PreparedStatementWrapper(applyFetchSize(statement), this);
   }
 
   @Override
   public CallableStatement prepareCall(String sql) throws SQLException {
     CallableStatement statement = _underlyingConnection.prepareCall(sql);
-    statement.setFetchSize(_dbConfig.getDefaultFetchSize());
-    return statement;
+    return new CallableStatementWrapper(applyFetchSize(statement), this);
   }
 
+  @Override
+  public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
+    Statement statement = super.createStatement(resultSetType, resultSetConcurrency);
+    return new StatementWrapper(applyFetchSize(statement), this);
+  }
+
+  @Override
+  public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+    PreparedStatement statement = super.prepareStatement(sql, resultSetType, resultSetConcurrency);
+    return new PreparedStatementWrapper(applyFetchSize(statement), this);
+  }
+
+  @Override
+  public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+    CallableStatement statement = super.prepareCall(sql, resultSetType, resultSetConcurrency);
+    return new CallableStatementWrapper(applyFetchSize(statement), this);
+  }
+
+  @Override
+  public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    Statement statement = super.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
+    return new StatementWrapper(applyFetchSize(statement), this);
+  }
+
+  @Override
+  public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    PreparedStatement statement = super.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
+    return new PreparedStatementWrapper(applyFetchSize(statement), this);
+  }
+
+  @Override
+  public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    CallableStatement statement = super.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
+    return new CallableStatementWrapper(applyFetchSize(statement), this);
+  }
+
+  @Override
+  public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
+    PreparedStatement statement = super.prepareStatement(sql, autoGeneratedKeys);
+    return new PreparedStatementWrapper(applyFetchSize(statement), this);
+  }
+
+  @Override
+  public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
+    PreparedStatement statement = super.prepareStatement(sql, columnIndexes);
+    return new PreparedStatementWrapper(applyFetchSize(statement), this);
+  }
+
+  @Override
+  public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
+    PreparedStatement statement = super.prepareStatement(sql, columnNames);
+    return new PreparedStatementWrapper(applyFetchSize(statement), this);
+  }
+  
 }

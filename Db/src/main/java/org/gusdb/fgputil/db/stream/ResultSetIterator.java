@@ -19,6 +19,8 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   private final ResultSet rs;
   private final RowConverter<T> converter;
 
+  private boolean _connectionClosed = false;
+
   // By default, this class is responsible for the connection that produced
   // its ResultSet.  This is part of a strategy of having classes take
   // responsibility by default.  Doings so means if a developer forgets to turn
@@ -84,13 +86,19 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   public void close() {
     try {
       Connection conn = rs.getStatement().getConnection();
-      SqlUtils.closeResultSetAndStatement(rs);
+      SqlUtils.closeResultSetAndStatementOnly(rs);
       if (_isResponsibleForConnection) {
         SqlUtils.closeQuietly(conn);
+        _connectionClosed = true;
       }
     }
     catch (SQLException e) {
       throw new SqlRuntimeException(e);
     }
   }
+
+  public boolean isClosed() {
+    return _connectionClosed;
+  }
+
 }

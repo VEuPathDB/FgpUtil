@@ -15,13 +15,28 @@ public class AbstractStatementWrapper implements Statement {
   }
 
   @Override
-  public <T> T unwrap(Class<T> iface) throws SQLException {
-    return _underlyingStatement.unwrap(iface);
+  public Connection getConnection() throws SQLException {
+    return _underlyingStatement.getConnection();
+  }
+
+  @Override
+  public ResultSet getGeneratedKeys() throws SQLException {
+    return _underlyingStatement.getGeneratedKeys();
+  }
+
+  @Override
+  public ResultSet getResultSet() throws SQLException {
+    return _underlyingStatement.getResultSet();
   }
 
   @Override
   public ResultSet executeQuery(String sql) throws SQLException {
     return _underlyingStatement.executeQuery(sql);
+  }
+
+  @Override
+  public <T> T unwrap(Class<T> iface) throws SQLException {
+    return _underlyingStatement.unwrap(iface);
   }
 
   @Override
@@ -100,11 +115,6 @@ public class AbstractStatementWrapper implements Statement {
   }
 
   @Override
-  public ResultSet getResultSet() throws SQLException {
-    return _underlyingStatement.getResultSet();
-  }
-
-  @Override
   public int getUpdateCount() throws SQLException {
     return _underlyingStatement.getUpdateCount();
   }
@@ -160,18 +170,8 @@ public class AbstractStatementWrapper implements Statement {
   }
 
   @Override
-  public Connection getConnection() throws SQLException {
-    return _underlyingStatement.getConnection();
-  }
-
-  @Override
   public boolean getMoreResults(int current) throws SQLException {
     return _underlyingStatement.getMoreResults(current);
-  }
-
-  @Override
-  public ResultSet getGeneratedKeys() throws SQLException {
-    return _underlyingStatement.getGeneratedKeys();
   }
 
   @Override

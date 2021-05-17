@@ -269,6 +269,10 @@ public class ResultSetStream<T> implements Stream<T> {
     _iterator.close();
   }
 
+  public boolean isClosed() {
+    return _iterator.isClosed();
+  }
+
   private Stream<T> subStream() {
     return StreamSupport.stream(spliterator(), false)
       .onClose(this::close);

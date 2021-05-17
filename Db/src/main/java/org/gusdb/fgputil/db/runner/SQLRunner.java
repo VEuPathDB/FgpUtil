@@ -100,8 +100,8 @@ public class SQLRunner {
   private String _sql;
   private String _sqlName;
   private TxStrategy _txStrategy;
-  private boolean _responsibleForClosingStatementAndResultSet = true;
-  private boolean _responsibleForClosingConnection;
+  private boolean _isInternallyCreatedConnection;
+  private boolean _returnedObjectResponsibleForClosing = false;
   private long _lastExecutionTime = 0L;
 
   /**
@@ -159,7 +159,7 @@ public class SQLRunner {
     _ds = requireNonNull(ds);
     _sql = requireNonNull(sql);
     _txStrategy = (runInTransaction ? TxStrategy.TRANSACTION : TxStrategy.AUTO_COMMIT);
-    _responsibleForClosingConnection = true;
+    _isInternallyCreatedConnection = true;
     _sqlName = sqlName;
   }
 
@@ -191,7 +191,7 @@ public class SQLRunner {
     _conn = requireNonNull(conn);
     _sql = requireNonNull(sql);
     _txStrategy = TxStrategy.INHERIT;
-    _responsibleForClosingConnection = false;
+    _isInternallyCreatedConnection = false;
     _sqlName = sqlName;
   }
 
@@ -393,25 +393,36 @@ public class SQLRunner {
       if (connectionSuccessful) {
         attemptRollback(conn);
       }
+
       // since exception was thrown, close resources this instance generated even if set not responsible
-      closeQuietly(exec, stmt);
-      closeConnection();
+      closeResources(exec, stmt, conn);
+
       // if SQLRunnerException is thrown, propagate it; otherwise wrap in new SQLRunnerException
       throw (e instanceof SQLRunnerException ? (SQLRunnerException)e :
         new SQLRunnerException("Unable to " + (sqlExecutionSuccessful ? "process result of" : "run") +
             " SQL <" + _sql + "> with args " + exec.getParamsToString(), e));
     }
     finally {
-      if (_responsibleForClosingStatementAndResultSet) {
-        closeQuietly(exec, stmt);
+      // close resources if not configured to allow the returned object to
+      //   handle resource closing.
+      if (!_returnedObjectResponsibleForClosing) {
+        closeResources(exec, stmt, conn);
       }
-      closeConnection();
     }
   }
 
-  private <T> void closeQuietly(PreparedStatementExecutor<T> exec, PreparedStatement stmt) {
+  /**
+   * Closes resources created by this SQLRunner; this always includes the
+   * statement and (if present) ResultSet, and sometimes includes the connection
+   * if the caller passed a DataSource.  If the caller passed in an existing
+   * Connection; SQLRunner is not responsible for it.
+   */
+  private void closeResources(PreparedStatementExecutor<?> exec, PreparedStatement stmt, Connection conn) {
     exec.closeQuietly();
     SqlUtils.closeQuietly(stmt);
+    if (_isInternallyCreatedConnection) {
+      SqlUtils.closeQuietly(conn);
+    }
   }
 
   private void commit(Connection conn) throws SQLException {
@@ -446,19 +457,12 @@ public class SQLRunner {
     return _conn;
   }
 
-  private void closeConnection() {
-    if (_responsibleForClosingConnection) {
-      SqlUtils.closeQuietly(_conn);
-    }
-  }
-
   public long getLastExecutionTime() {
     return _lastExecutionTime;
   }
 
   public SQLRunner setNotResponsibleForClosing() {
-    _responsibleForClosingConnection = false;
-    _responsibleForClosingStatementAndResultSet = false;
+    _returnedObjectResponsibleForClosing = true;
     return this;
   }
 

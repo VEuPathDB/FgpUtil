@@ -164,15 +164,17 @@ public class ResultSetStreamingTest {
 
   @Test
   public void streamTest() throws SQLException, IOException {
-
     // SQL to get rows from our test DB
     String sql = "select * from records";
 
     // run SQL, process output, format and write aggregated records to output stream
-    try (Stream<Person> people = ResultSets.openStream(getDb(), sql, Person.fromResultSet)) {
+
+    ResultSetStream<Person> people1 = ResultSets.openStream(getDb(), sql, Person.fromResultSet);
+    try (Stream<Person> people = people1) {
       List<Person> list = people.collect(Collectors.toList());
       Assert.assertEquals(12, list.size());
     }
+    Assert.assertTrue(people1.isClosed());
   }
 
   @Test
@@ -187,4 +189,23 @@ public class ResultSetStreamingTest {
     }
   }
 
+  @Test
+  public void convertToOtherStreamTest() throws SQLException, IOException {
+    String value = getParamValueFromSql("select count(*) from records", "", getDb()).get(0);
+    Assert.assertEquals("12", value);
+  }
+
+  private static List<String> getParamValueFromSql(String sql, String queryDescrip, DataSource dataSource) {
+    try(Stream<String> values = ResultSets.openStream(dataSource, sql, queryDescrip,
+        rs -> Optional.of(rs.getString(1)))) {
+      return values.collect(Collectors.toList());
+    }
+    catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
+  }
 }
+
+
+
+
