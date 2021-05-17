@@ -25,7 +25,7 @@ public class ResultSetWrapper extends AbstractResultSetWrapper {
   @Override
   public void close() throws SQLException {
     _unclosedObjectMonitor.unregisterClosedObject(_underlyingResultSet);
-    _underlyingResultSet.close();
+    super.close();
   }
 
   @Override
