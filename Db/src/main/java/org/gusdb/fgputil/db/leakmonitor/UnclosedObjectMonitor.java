@@ -70,15 +70,20 @@ public class UnclosedObjectMonitor<T> {
 
   public void unregisterClosedObject(T obj) {
 
-    if (LOG.isDebugEnabled()) {
-      // log hash for this object; let caller know what was closed
-      UnclosedObjectInfo info = _unclosedObjectMap.get(obj);
-      LOG.debug("Closing " + _type.getName() + " associated with stacktrace hash " +
-          info.getStackTraceHash() + " : " + info.getBasicInfo());
-    }
+    UnclosedObjectInfo info = _unclosedObjectMap.get(obj);
 
-    _numClosed.incrementAndGet();
-    _unclosedObjectMap.remove(obj);
+    // if no info remaining for this object, assume it was already closed
+    //   (i.e. someone is reclosing a closed object) and do nothing
+    if (info != null) {
+      if (LOG.isDebugEnabled()) {
+        // log hash for this object; let caller know what was closed
+        LOG.debug("Closing " + _type.getName() + " associated with stacktrace hash " +
+            info.getStackTraceHash() + " : " + info.getBasicInfo());
+      }
+
+      _numClosed.incrementAndGet();
+      _unclosedObjectMap.remove(obj);
+    }
   }
 
   public String getUnclosedObjectInfo() {
