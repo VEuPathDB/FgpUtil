@@ -77,7 +77,7 @@ sub getSystemProps {
   my $gusjvmprops = "/etc/.java/gusjvm.properties";
 
   #set the log4j configuration
-  $sysProps .= " -Dlog4j.configurationFile=\"file://$GUS_HOME/config/log4j2.json\"";
+  $sysProps .= " -Dlog4j.configurationFile=\"$GUS_HOME/config/log4j2.json\"";
 
   # process gusjvmprops if it exists
   if (-f $gusjvmprops) {

@@ -6,7 +6,6 @@
         "name": "STDOUT",
         "target": "SYSTEM_OUT",
         "PatternLayout": { "pattern": "[%d{dd/MMM/yyyy|HH:mm:ss}] %-5p - %C:%L - %m%n" }
-        
       }]
     },
     "Loggers": {

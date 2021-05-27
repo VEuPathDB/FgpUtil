@@ -1,17 +1,11 @@
 {
   "Configuration": {
-    "properties": {
-      "property": [{
-        "name": "standardLogPattern",
-        "value" : "[%d{dd/MMM/yyyy|HH:mm:ss}] sid:%-5X{shortSessionId} rid: %4X{requestId} %9cmdc{requestTimer} %15X{ipAddress} - %-5p - %C:%L - %m%n"
-      }]
-    },
     "Appenders": {
       "appender": [{
         "type": "Console",
         "name": "STDOUT",
         "target": "SYSTEM_OUT",
-        "PatternLayout": { "pattern": "${standardLogPattern}" }
+        "PatternLayout": { "pattern": "[%d{dd/MMM/yyyy|HH:mm:ss}] %-5p - %C:%L - %m%n" }
       }]
     },
     "Loggers": {
