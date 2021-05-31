@@ -613,18 +613,18 @@ public class Functions {
 
   /**
    * Creates a new map with the same key set as the passed map, but with values
-   * created by applying the passed transform to the values in the passed map.
+   * created by applying the passed transform to the entries in the passed map.
    *
    * @param <K> type of keys
    * @param <V1> type of old values
    * @param <V2> type of new values
    * @param map existing map
-   * @param transform function to convert old values to new
+   * @param transform function to convert old map entries to new values
    * @return a LinkedHashMap with identically ordered keys but new values
    */
-  public static <K,V1,V2> Map<K,V2> mapValues(Map<K,V1> map, Function<V1,V2> transform) {
+  public static <K,V1,V2> Map<K,V2> mapValues(Map<K,V1> map, Function<Entry<K,V1>,V2> transform) {
     return map.entrySet().stream()
-        .map(entry -> new TwoTuple<>(entry.getKey(), transform.apply(entry.getValue())))
+        .map(entry -> new TwoTuple<>(entry.getKey(), transform.apply(entry)))
         .collect(newLinkedHashMapCollector());
   }
 }
