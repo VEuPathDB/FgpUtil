@@ -598,4 +598,33 @@ public class Functions {
   public static <T> Collector<T, ?, Map<String,T>> newLinkedHashMapCollector(Function<T,String> keyMapper) {
     return Collectors.toMap(keyMapper, a -> a, (a, b) -> b, () -> new LinkedHashMap<>());
   }
+
+  /**
+   * Creates a map collector which creates a LinkedHashMap and populates it with
+   * the streamed Entry objects.
+   *
+   * @param <S> type of key present in the resulting map
+   * @param <T> type of value present in the resulting map
+   * @return collector that will produce a LinkedHashMap from a stream of Entries
+   */
+  public static <S,T> Collector<Entry<S,T>, ?, Map<S,T>> newLinkedHashMapCollector() {
+    return Collectors.toMap(e -> e.getKey(), e -> e.getValue(), (a, b) -> b, () -> new LinkedHashMap<>());
+  }
+
+  /**
+   * Creates a new map with the same key set as the passed map, but with values
+   * created by applying the passed transform to the values in the passed map.
+   *
+   * @param <K> type of keys
+   * @param <V1> type of old values
+   * @param <V2> type of new values
+   * @param map existing map
+   * @param transform function to convert old values to new
+   * @return a LinkedHashMap with identically ordered keys but new values
+   */
+  public static <K,V1,V2> Map<K,V2> mapValues(Map<K,V1> map, Function<V1,V2> transform) {
+    return map.entrySet().stream()
+        .map(entry -> new TwoTuple<>(entry.getKey(), transform.apply(entry.getValue())))
+        .collect(newLinkedHashMapCollector());
+  }
 }
