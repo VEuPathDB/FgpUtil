@@ -15,7 +15,7 @@ public class TestMdcTimer {
   public void testMdcTimer() throws Exception {
 
     // initialize configuration
-    File log4jConfigFile = new File("src/test/resources/log4j.json");
+    File log4jConfigFile = new File("src/test/resources/log4j2.json");
     ConfigurationSource source = new ConfigurationSource(new FileInputStream(log4jConfigFile), log4jConfigFile);
     Configurator.initialize(null, source);
 
