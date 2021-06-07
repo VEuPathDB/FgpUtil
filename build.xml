@@ -41,16 +41,9 @@
       <property name="component" value="Util"/>
     </ant>
 
-    <!-- post installation process -->
-    <!-- use default log4j.properties, if it does not exist
-    <available file="${targetDir}/config/log4j.properties" property="log4j.config.exist" />
-    <available file="${targetDir}/config/log4j.xml" property="log4j.config.exist" />
-    <antcall target="copyLog4jConfig" />
-    -->
+    <!-- copy default log4j2 config file to location in gus_home where it can be read by CLI apps -->
+    <copy file="${projectsDir}/FgpUtil/Server/src/main/resources/default/log4j2.json" toFile="${targetDir}/config/log4j2.json"/>
+
   </target>
-  <!--
-  <target name="copyLog4jConfig" unless="log4j.config.exist">
-    <copy file="${targetDir}/config/log4j.properties.sample" toFile="${targetDir}/config/log4j.properties"/>
-  </target>
-  -->
+
 </project>

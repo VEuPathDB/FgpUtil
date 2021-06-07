@@ -5,12 +5,9 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.iterator.IteratingInputStream.DataProvider;
 
 public class AlphabetUtils {
-
-  private static final Logger LOG = Logger.getLogger(AlphabetUtils.class);
 
   public static final byte[] ALPHABET = "abcdefghijklmnopqrstuvwxyz".getBytes();
   public static final int NUM_ALPHABET_REPEATS = 500;
@@ -37,7 +34,6 @@ public class AlphabetUtils {
         }
       }
       byte nextByte = ALPHABET[_index++];
-      LOG.info("Outputting " + (char)nextByte + ", index=" + _index + ", repeatsRemaining=" + _repeatsRemaining);
       return Byte.toUnsignedInt(nextByte);
       
     }
