@@ -390,6 +390,11 @@ public class JsonUtil {
    * @return JSON string.
    */
   public static String prettyPrint(Object any) {
+    if (any instanceof JSONObject)
+      return ((JSONObject) any).toString(2);
+    if (any instanceof JSONArray)
+      return ((JSONArray) any).toString(2);
+
     try {
       return Jackson.writerWithDefaultPrettyPrinter().writeValueAsString(any);
     } catch (Exception e) {
