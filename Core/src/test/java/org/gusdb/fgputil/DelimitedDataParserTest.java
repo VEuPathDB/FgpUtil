@@ -18,4 +18,14 @@ public class DelimitedDataParserTest {
     Assert.assertEquals(3, map.size());
     Assert.assertEquals("bucky", map.get("c"));
   }
+
+  @Test
+  public void emptyColsTest() {
+    String testHeader = "a\tb\tc";
+    DelimitedDataParser p = new DelimitedDataParser(testHeader, "\t", true);
+    Map<String,String> map = p.parseLine("1\t\t");
+    System.out.println(FormatUtil.prettyPrint(map, Style.MULTI_LINE));
+    Assert.assertEquals(3, map.size());
+    Assert.assertEquals("", map.get("c"));
+  }
 }
