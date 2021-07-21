@@ -1,6 +1,7 @@
 package org.gusdb.fgputil.client;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,13 +60,15 @@ public class ResponseFuture {
        logHeaders(response.getHeaders());
       }
 
-      // if successful, return entity stream if present, else exception (always expect a response body)
+      // if successful, return entity stream if present, else empty body
       if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
         if (response.hasEntity()) {
           return Either.left(new ResponseEntityInputStream(response));
         }
         else {
-          throw new RuntimeException("Successful (200) request did not return a response body.");
+          // close response; it is considered "processed"
+          response.close();
+          return Either.left(new ByteArrayInputStream(new byte[0]));
         }
       }
 
