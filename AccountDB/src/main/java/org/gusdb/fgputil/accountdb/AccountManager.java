@@ -106,7 +106,7 @@ public class AccountManager {
   private static final String PROPERTY_COLUMN_SELECTION_SQL =
       ", max(case when key = '" + DEFINED_PROPERTY_NAME_MACRO + "' then value end) as " + DEFINED_PROPERTY_NAME_MACRO;
 
-  private static final String USERNAME_CONDITION = "( " + COL_EMAIL + " = ? OR lowercase(" + USERNAME_PROPERTY_KEY + ") = lowercase(?)";
+  private static final String USERNAME_CONDITION = "( " + COL_EMAIL + " = ? OR lower(" + USERNAME_PROPERTY_KEY + ") = lower(?)";
 
   private static String getUpdateColumnSql(String colName) {
     return "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set " + colName + " = ? where " + COL_USER_ID + " = ?";
@@ -171,7 +171,7 @@ public class AccountManager {
   }
 
   public UserProfile getUserProfileByUsername(String username) {
-    return getSingleUserProfile(" where lowercase(" + USERNAME_PROPERTY_KEY + ") = lowercase(?)",
+    return getSingleUserProfile(" where lower(" + USERNAME_PROPERTY_KEY + ") = lower(?)",
         new Object[] { username.trim() },
         new Integer[] { Types.VARCHAR });
   }
