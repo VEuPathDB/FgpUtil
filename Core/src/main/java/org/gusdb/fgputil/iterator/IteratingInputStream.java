@@ -91,7 +91,7 @@ public class IteratingInputStream extends InputStream {
             _currentValueType = CurrentValueType.RECORD_DELIMETER;
           }
           else {
-            LOG.info("Out of rows. Using footer.");
+            LOG.debug("Out of rows. Using footer.");
             _recordBuffer = _footer;
             _currentValueType = CurrentValueType.FOOTER;
           }
@@ -101,7 +101,7 @@ public class IteratingInputStream extends InputStream {
           _currentValueType = CurrentValueType.END;
           break;
         case END:
-          LOG.info("Streamed " + _recordNum + " records.");
+          LOG.debug("Streamed " + _recordNum + " records.");
           return -1;
       }
     }
