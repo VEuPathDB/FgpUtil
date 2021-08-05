@@ -106,7 +106,7 @@ public class AccountManager {
   private static final String PROPERTY_COLUMN_SELECTION_SQL =
       ", max(case when key = '" + DEFINED_PROPERTY_NAME_MACRO + "' then value end) as " + DEFINED_PROPERTY_NAME_MACRO;
 
-  private static final String USERNAME_CONDITION = "( " + COL_EMAIL + " = ? OR lower(" + USERNAME_PROPERTY_KEY + ") = lower(?)";
+  private static final String USERNAME_CONDITION = "( " + COL_EMAIL + " = ? OR lower(" + USERNAME_PROPERTY_KEY + ") = lower(?) )";
 
   private static String getUpdateColumnSql(String colName) {
     return "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set " + colName + " = ? where " + COL_USER_ID + " = ?";
