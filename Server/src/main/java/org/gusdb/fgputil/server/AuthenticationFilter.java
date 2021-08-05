@@ -50,7 +50,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     }
     String userEmail = parsedAuthKey.getUsername();
     AccountManager accountMgr = new AccountManager(context.getAccountDb(), "useraccounts.", Collections.emptyList());
-    UserProfile userProfile = accountMgr.getUserProfile(userEmail);
+    UserProfile userProfile = accountMgr.getUserProfileByEmail(userEmail);
     if (userProfile == null) {
       requestContext.abortWith(Response
           .status(Status.FORBIDDEN)

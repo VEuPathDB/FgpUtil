@@ -45,6 +45,9 @@ public class AccountManager {
   private static final String COL_REGISTER_TIME = "register_time";
   private static final String COL_LAST_LOGIN = "last_login";
 
+  // special user property that, if present, users can be looked up by
+  public static final String USERNAME_PROPERTY_KEY = "username";
+
   private static final String COL_PROP_KEY = "key";
   private static final String COL_PROP_VALUE = "value";
 
@@ -102,6 +105,8 @@ public class AccountManager {
 
   private static final String PROPERTY_COLUMN_SELECTION_SQL =
       ", max(case when key = '" + DEFINED_PROPERTY_NAME_MACRO + "' then value end) as " + DEFINED_PROPERTY_NAME_MACRO;
+
+  private static final String USERNAME_CONDITION = "( " + COL_EMAIL + " = ? OR lowercase(" + USERNAME_PROPERTY_KEY + ") = lowercase(?)";
 
   private static String getUpdateColumnSql(String colName) {
     return "update " + ACCOUNT_SCHEMA_MACRO + TABLE_ACCOUNTS + " set " + colName + " = ? where " + COL_USER_ID + " = ?";
@@ -161,16 +166,40 @@ public class AccountManager {
         new Integer[] { Types.INTEGER });
   }
 
-  public UserProfile getUserProfile(String email) {
-    return getSingleUserProfile(" where " + COL_EMAIL + " = ?",
-        new Object[] { email.trim().toLowerCase() },
+  public static String trimAndLowercase(String usernameOrEmail) {
+    return usernameOrEmail.trim().toLowerCase();
+  }
+
+  public UserProfile getUserProfileByUsername(String username) {
+    return getSingleUserProfile(" where lowercase(" + USERNAME_PROPERTY_KEY + ") = lowercase(?)",
+        new Object[] { username.trim() },
         new Integer[] { Types.VARCHAR });
   }
 
-  public UserProfile getUserProfile(String email, String password) {
-    return getSingleUserProfile(" where " + COL_EMAIL + " = ? and " + COL_PASSWORD + " = ?",
-        new Object[] { email.trim().toLowerCase(), encryptPassword(password) },
+  public UserProfile getUserProfileByEmail(String email) {
+    return getSingleUserProfile(" where " + COL_EMAIL + " = ?",
+        new Object[] { trimAndLowercase(email) },
+        new Integer[] { Types.VARCHAR });
+  }
+
+  // kept temporarily for backward compatibility
+  @Deprecated
+  public UserProfile getUserProfile(String usernameOrEmail) {
+    return getUserProfileByUsernameOrEmail(usernameOrEmail);
+  }
+
+  public UserProfile getUserProfileByUsernameOrEmail(String usernameOrEmail) {
+    String trimmedUserNameOrEmail = trimAndLowercase(usernameOrEmail);
+    return getSingleUserProfile(" where " + USERNAME_CONDITION,
+        new Object[] { trimmedUserNameOrEmail, trimmedUserNameOrEmail },
         new Integer[] { Types.VARCHAR, Types.VARCHAR });
+  }
+
+  public UserProfile getUserProfile(String usernameOrEmail, String password) {
+    String trimmedUsernameOrEmail = trimAndLowercase(usernameOrEmail);
+    return getSingleUserProfile(" where " + USERNAME_CONDITION + " and " + COL_PASSWORD + " = ?",
+        new Object[] { trimmedUsernameOrEmail, trimmedUsernameOrEmail, encryptPassword(password) },
+        new Integer[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
   }
 
   public UserProfile getUserProfileBySignature(String signature) {
@@ -218,8 +247,11 @@ public class AccountManager {
 
   public UserProfile createAccount(String email, String password, Map<String, String> profileProperties) throws Exception {
 
-    // make sure email is lowercase
-    email = email.trim().toLowerCase();
+    // make sure email is trimmed/lowercase
+    email = trimAndLowercase(email);
+
+    // make sure username is non-empty after trimming and remove if so
+    massageUsername(profileProperties);
 
     // assign user ID to the new user (unique, stable, sequential, primary key identifier)
     long userId = getNextUserId();
@@ -235,6 +267,21 @@ public class AccountManager {
 
     // read user profile back out of the database
     return getUserProfile(userId);
+  }
+
+  /**
+   * make sure trimmed username is non-empty; if empty, remove
+   */
+  private void massageUsername(Map<String, String> profileProperties) {
+    if (profileProperties.containsKey(USERNAME_PROPERTY_KEY)) {
+      String trimmedValue = profileProperties.get(USERNAME_PROPERTY_KEY).trim();
+      if (trimmedValue.isEmpty()) {
+        profileProperties.remove(USERNAME_PROPERTY_KEY);
+      }
+      else {
+        profileProperties.put(USERNAME_PROPERTY_KEY, trimmedValue);
+      }
+    }
   }
 
   private void persistNewAccount(long userId, String email, String password, String signature,
@@ -351,6 +398,9 @@ public class AccountManager {
     // first update email; this can be done independently of property updates
     updateColumn(UPDATE_EMAIL_SQL, UPDATE_EMAIL_PARAM_TYPES,
         "update-user-email", userId, email.trim().toLowerCase());
+
+    // make sure trimmed username is non-empty; if empty, remove
+    massageUsername(profileProperties);
 
     // define SQL and params to remove existing property rows and replace with new via insert
     final String removePropsSql = REMOVE_PROPERTIES_SQL.replace(ACCOUNT_SCHEMA_MACRO, _accountSchema);
