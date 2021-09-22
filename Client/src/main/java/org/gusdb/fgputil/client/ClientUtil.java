@@ -15,6 +15,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
@@ -56,15 +57,21 @@ public class ClientUtil {
   private static ResponseFuture makeAsyncRequest(String url, String expectedResponseType,
       Function<AsyncInvoker, Future<Response>> responseProducer) {
     MultivaluedMap<String,Object> headers = new MultivaluedHashMap<>();
-    headers.add("Accept", "*/*");
+
+    // add accept header using passed response type or ALL if null
+    headers.add(HttpHeaders.ACCEPT, expectedResponseType == null
+        ? MediaType.WILDCARD : expectedResponseType);
+
+    // add jersey header tracing header if logging flag turned on
     if (LOG_RESPONSE_HEADERS) {
       headers.add("X-Jersey-Tracing-Accept", "any");
     }
+
     return new ResponseFuture(
       responseProducer.apply(
         ClientBuilder.newClient()
           .target(url)
-          .request(expectedResponseType)
+          .request()
           .headers(headers)
           .async()), LOG_RESPONSE_HEADERS);
   }
