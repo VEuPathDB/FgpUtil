@@ -102,6 +102,23 @@ public class FunctionalInterfaces {
   }
 
   /**
+   * Defines a bi-consumer that may throw an exception
+   *
+   * @param <T> type of first object being consumed
+   * @param <S> type of second object being consumed
+   */
+  public interface BiConsumerWithException<T,S> {
+    /**
+     * Consumes objects of type T, S
+     *
+     * @param obj1 first object to consume
+     * @param obj2 second object to consume
+     * @throws Exception if something goes wrong
+     */
+    void accept(T obj1, S obj2) throws Exception;
+  }
+
+  /**
    * Defines a single-argument predicate (function that returns a boolean) that may throw an exception
    *
    * @param <T> type of predicate input

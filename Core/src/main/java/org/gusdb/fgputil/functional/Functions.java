@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.BiConsumerWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
@@ -288,6 +290,29 @@ public class Functions {
     return x -> {
       try {
         c.accept(x);
+      }
+      catch (Exception e) {
+        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
+      }
+    };
+  }
+
+  /**
+   * Takes a bi-consumer that may or may not have checked exceptions and returns
+   * a new bi-consumer that performs the same operation but "swallows" any checked
+   * exception by wrapping it in a RuntimeException and throwing that instead.
+   * If calling code wishes to inspect the underlying exception it must catch
+   * the RuntimeException and use getCause().
+   *
+   * @param c
+   *   bi-consumer to wrap
+   *
+   * @return a new bi-consumer that swallows checked exceptions
+   */
+  public static <T,S> BiConsumer<T,S> c2Swallow(BiConsumerWithException<T,S> c) {
+    return (x, y) -> {
+      try {
+        c.accept(x, y);
       }
       catch (Exception e) {
         throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
