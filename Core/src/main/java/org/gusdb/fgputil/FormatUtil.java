@@ -76,8 +76,17 @@ public class FormatUtil {
     return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
   }
 
-  public static LocalDateTime parseDateTime(String dateTime) throws DateTimeParseException {
-    return LocalDateTime.parse(dateTime, STANDARD_DATE_TIME_FORMAT);
+  public static LocalDateTime parseDateTime(String dateTimeStr) {
+    try {
+      return LocalDateTime.parse(dateTimeStr, STANDARD_DATE_TIME_FORMAT);
+    }
+    catch (DateTimeParseException e) {
+      throw new IllegalArgumentException("Can't parse date/time string: " + dateTimeStr);
+    }
+  }
+
+  public static String formatDateTime(LocalDateTime dateTime) {
+      return STANDARD_DATE_TIME_FORMAT.format(dateTime);
   }
 
   public static String formatDateNoTimezone(Date date) {
