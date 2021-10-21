@@ -6,13 +6,10 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import org.gusdb.fgputil.FormatUtil;
 
 public class DateBinDistribution extends AbstractBinDistribution<LocalDateTime, DateBin> {
-
-  private static final Logger LOG = LogManager.getLogger(DateBinDistribution.class);
 
   private static final List<ChronoUnit> ALLOWED_UNITS = List.of(
       ChronoUnit.DAYS,
