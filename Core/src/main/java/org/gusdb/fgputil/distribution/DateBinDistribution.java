@@ -21,8 +21,8 @@ public class DateBinDistribution extends AbstractBinDistribution<LocalDateTime, 
   public interface DateBinSpec {
     ChronoUnit getBinUnits();
     int getBinSize();
-    Object getDisplayRangeMin();
-    Object getDisplayRangeMax();
+    String getDisplayRangeMin();
+    String getDisplayRangeMax();
   }
 
   private final LocalDateTime _displayMin;
