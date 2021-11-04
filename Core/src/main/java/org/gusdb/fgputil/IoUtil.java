@@ -204,11 +204,13 @@ public class IoUtil {
         bytesRead = inputStream.read(buffer);
         //if (LOG.isDebugEnabled()) logBuffer(buffer, bytesRead);
       }
-      outputStream.flush();
     }
     finally {
       // only close input stream; container will close output stream
-      inputStream.close();
+      IoUtil.closeQuietly(inputStream);
+      // flush the output stream in both success and failure cases to avoid
+      //   bytes being stuck in the buffer after exception is thrown
+      outputStream.flush();
     }
   }
 
