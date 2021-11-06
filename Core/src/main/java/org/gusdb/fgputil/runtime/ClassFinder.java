@@ -7,10 +7,20 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+/**
+ * This class is supposed to provide utilities to look up classes by package
+ * and supertype.  However, depending on your deployment model, the functions
+ * contained herein may not work i.e. they may not find all the classes
+ * requested.  More research is needed to discover how classes are omitted, but
+ * for now usage of this class is NOT RECOMMENDED!
+ * 
+ * @author rdoherty
+ */
 public class ClassFinder {
 
   /**
    * Finds all classes in the given package of the given supertype
+   *
    * @param <T> supertype
    * @param subtype class of the supertype
    * @param packageName package to search for classes
