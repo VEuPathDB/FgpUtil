@@ -46,6 +46,14 @@ public class ClientUtil {
       invoker -> invoker.get());
   }
 
+
+  public static ResponseFuture makeAsyncPostRequest(
+      String url, String requestBody, String requestMimeType, String expectedResponseType) {
+    LOG.info("Will send following POST request to " + url + "\n" + requestBody);
+    return makeAsyncRequest(url, expectedResponseType,
+      invoker -> invoker.post(Entity.entity(requestBody,requestMimeType)));
+  }
+
   public static ResponseFuture makeAsyncPostRequest(
       String url, Object postBodyObject, String expectedResponseType) {
     String json = JsonUtil.serializeObject(postBodyObject);
