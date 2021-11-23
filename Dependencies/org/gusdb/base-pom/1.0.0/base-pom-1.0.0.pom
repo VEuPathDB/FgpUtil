@@ -452,6 +452,18 @@
         <version>2.4.0</version>
       </dependency>
 
+      <!-- Metrics Gathering -->
+      <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>simpleclient</artifactId>
+        <version>0.12.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>simpleclient_common</artifactId>
+        <version>0.12.0</version>
+      </dependency>
+
       <!-- OAuth 2 -->
       <dependency>
         <groupId>org.apache.oltu.oauth2</groupId>
@@ -562,64 +574,6 @@
         <version>2.7.0</version>
       </dependency>
 
-      <!-- JSP Tag Libraries -->
-      <!--
-      <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>jsp-api</artifactId>
-        <version>2.0</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>jstl</artifactId>
-        <version>1.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.glassfish.web</groupId>
-        <artifactId>jstl-impl</artifactId>
-        <version>1.2</version>
-        <exclusions>
-          <exclusion>
-            <artifactId>servlet-api</artifactId>
-            <groupId>javax.servlet</groupId>
-          </exclusion>
-          <exclusion>
-            <artifactId>jsp-api</artifactId>
-            <groupId>javax.servlet.jsp</groupId>
-          </exclusion>
-          <exclusion>
-            <artifactId>jstl-api</artifactId>
-            <groupId>javax.servlet.jsp.jstl</groupId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>taglibs</groupId>
-        <artifactId>standard</artifactId>
-        <version>1.1.2</version>
-      </dependency>
-      <dependency>
-        <groupId>taglibs</groupId>
-        <artifactId>random</artifactId>
-        <version>1.0.2</version>
-      </dependency>
-      <dependency>
-        <groupId>jsptags</groupId>
-        <artifactId>pager-taglib</artifactId>
-        <version>2.0</version>
-      </dependency>
-      <dependency>
-        <groupId>wraptag</groupId>
-        <artifactId>wraptag</artifactId>
-        <version>1.4</version>
-      </dependency>
-      <dependency>
-        <groupId>com.crashingdaily</groupId>
-        <artifactId>wheninrome</artifactId>
-        <version>1.0</version>
-      </dependency>
-      -->
 
       <!-- Unit Test Support -->
       <dependency>
