@@ -4,7 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -41,26 +43,42 @@ public class ClientUtil {
 
   public static ResponseFuture makeAsyncGetRequest(
       String url, String expectedResponseType) {
-    LOG.info("Will send following GET request to " + url);
-    return makeAsyncRequest(url, expectedResponseType,
-      invoker -> invoker.get());
+    return makeAsyncGetRequest(url, expectedResponseType, Collections.emptyMap());
   }
 
   public static ResponseFuture makeAsyncPostRequest(
       String url, String requestBody, String requestMimeType, String expectedResponseType) {
-    LOG.info("Will send following POST request to " + url + "\n" + requestBody);
-    return makeAsyncRequest(url, expectedResponseType,
-      invoker -> invoker.post(Entity.entity(requestBody,requestMimeType)));
+    return makeAsyncPostRequest(url, requestBody, requestMimeType, expectedResponseType, Collections.emptyMap());
   }
 
   public static ResponseFuture makeAsyncPostRequest(
       String url, Object postBodyObject, String expectedResponseType) {
+    return makeAsyncPostRequest(url, postBodyObject, expectedResponseType, Collections.emptyMap());
+  }
+
+  public static ResponseFuture makeAsyncGetRequest(
+      String url, String expectedResponseType, Map<String,String> additionalHeaders) {
+    LOG.info("Will send following GET request to " + url);
+    return makeAsyncRequest(url, expectedResponseType,
+      invoker -> invoker.get(), additionalHeaders);
+  }
+
+  public static ResponseFuture makeAsyncPostRequest(
+      String url, String requestBody, String requestMimeType, String expectedResponseType, Map<String,String> additionalHeaders) {
+    LOG.info("Will send following POST request to " + url + "\n" + requestBody);
+    return makeAsyncRequest(url, expectedResponseType,
+      invoker -> invoker.post(Entity.entity(requestBody,requestMimeType)), additionalHeaders);
+  }
+
+  public static ResponseFuture makeAsyncPostRequest(
+      String url, Object postBodyObject, String expectedResponseType, Map<String,String> additionalHeaders) {
     return makeAsyncPostRequest(url, JsonUtil.serializeObject(postBodyObject),
-        MediaType.APPLICATION_JSON, expectedResponseType);
+        MediaType.APPLICATION_JSON, expectedResponseType, additionalHeaders);
   }
 
   private static ResponseFuture makeAsyncRequest(String url, String expectedResponseType,
-      Function<AsyncInvoker, Future<Response>> responseProducer) {
+      Function<AsyncInvoker, Future<Response>> responseProducer, Map<String,String> additionalHeaders) {
+
     MultivaluedMap<String,Object> headers = new MultivaluedHashMap<>();
 
     // add accept header using passed response type or ALL if null
@@ -70,6 +88,11 @@ public class ClientUtil {
     // add jersey header tracing header if logging flag turned on
     if (LOG_RESPONSE_HEADERS) {
       headers.add("X-Jersey-Tracing-Accept", "any");
+    }
+
+    // add any extra headers the caller submitted, overriding if necessary
+    for (Entry<String,String> header : additionalHeaders.entrySet()) {
+      headers.putSingle(header.getKey(), header.getValue());
     }
 
     return new ResponseFuture(
