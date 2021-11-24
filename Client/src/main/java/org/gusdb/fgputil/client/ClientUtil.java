@@ -124,15 +124,17 @@ public class ClientUtil {
     }
   }
 
-  public static String readSmallResponseBody(Response smallResponse) throws IOException {
-    String responseBody = "";
-    if (smallResponse.hasEntity()) {
-      try (InputStream body = (InputStream)smallResponse.getEntity();
-           ByteArrayOutputStream str = new ByteArrayOutputStream()) {
-        IoUtil.transferStream(str, body);
-        responseBody = str.toString();
-      }
+  public static String readSmallResponseBody(InputStream smallResponseStream) throws IOException {
+    try (ByteArrayOutputStream str = new ByteArrayOutputStream()) {
+      IoUtil.transferStream(str, smallResponseStream);
+      return str.toString();
     }
-    return responseBody;
+  }
+
+  public static String readSmallResponseBody(Response smallResponse) throws IOException {
+    if (!smallResponse.hasEntity()) return "";
+    try (InputStream body = (InputStream)smallResponse.getEntity()) {
+      return readSmallResponseBody(body);
+    }
   }
 }
