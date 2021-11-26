@@ -41,6 +41,12 @@ public class ClientUtil {
     return new ObjectMapper().readerFor(responseObjectClass).readValue(new URL(url));
   }
 
+  public static <T> T getResponseObject(String url, Class<T> responseObjectClass, Map<String,String> headers) throws Exception {
+    return new ObjectMapper().readerFor(responseObjectClass).readValue(
+      makeAsyncGetRequest(url, MediaType.APPLICATION_JSON, headers).getInputStream()
+    );
+  }
+
   public static ResponseFuture makeAsyncGetRequest(
       String url, String expectedResponseType) {
     return makeAsyncGetRequest(url, expectedResponseType, Collections.emptyMap());
