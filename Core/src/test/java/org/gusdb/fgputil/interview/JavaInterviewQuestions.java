@@ -22,7 +22,7 @@ public class JavaInterviewQuestions {
     return (str != null);
   }
 
-  public boolean isPalindromeSolution(String str) {
+  public boolean isPalindromeIterativeSolution(String str) {
     if (str == null)
       return false;
     for (int i = 0; i < (str.length() / 2); i++) {
@@ -31,6 +31,14 @@ public class JavaInterviewQuestions {
       }
     }
     return true;
+  }
+
+  public boolean isPalindromeRecurseSolution(String str) {
+    return
+      str == null ? false :
+      str.length() < 2 ? true :
+      str.charAt(0) != str.charAt(str.length() - 1) ? false :
+      isPalindromeRecurseSolution(str.substring(1, str.length() - 1));
   }
 
   public boolean isNearPalindrome(String str, int maxDiffs) {

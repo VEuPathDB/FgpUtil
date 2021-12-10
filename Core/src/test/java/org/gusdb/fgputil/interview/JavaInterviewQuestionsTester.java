@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Function;
 
 import org.junit.Test;
 
@@ -18,16 +19,24 @@ public class JavaInterviewQuestionsTester {
 	private static final String REVERSED_FILE_PATH = "/tmp/reversedTextFile.txt";
 	
 	@Test
-	public void testPalindrome() {
-		JavaInterviewQuestions q = new JavaInterviewQuestions();
-		assertFalse(q.isPalindrome(null));
-		assertTrue(q.isPalindrome(""));
-		assertTrue(q.isPalindrome("aba"));
-		assertTrue(q.isPalindrome("abba"));
-		assertTrue(q.isPalindrome("quvicoekeocivuq"));
-		assertFalse(q.isPalindrome("abca"));
-		assertFalse(q.isPalindrome("uiopoui"));
-		assertFalse(q.isPalindrome("yuijuhiuy"));
+	public void testPalindromeIterative() {
+	    testPalindrome(new JavaInterviewQuestions()::isPalindromeIterativeSolution);
+	}
+
+	@Test
+	public void testPalindromeRecursive() {
+	    testPalindrome(new JavaInterviewQuestions()::isPalindromeRecurseSolution);
+	}
+
+	private void testPalindrome(Function<String,Boolean> function) {
+		assertFalse(function.apply(null));
+		assertTrue(function.apply(""));
+		assertTrue(function.apply("aba"));
+		assertTrue(function.apply("abba"));
+		assertTrue(function.apply("quvicoekeocivuq"));
+		assertFalse(function.apply("abca"));
+		assertFalse(function.apply("uiopoui"));
+		assertFalse(function.apply("yuijuhiuy"));
 	}
 
 	@Test
