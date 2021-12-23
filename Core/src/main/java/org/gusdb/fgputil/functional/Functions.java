@@ -633,7 +633,29 @@ public class Functions {
    * @return collector that will produce a LinkedHashMap from a stream of Entries
    */
   public static <S,T> Collector<Entry<S,T>, ?, Map<S,T>> newLinkedHashMapCollector() {
-    return Collectors.toMap(e -> e.getKey(), e -> e.getValue(), (a, b) -> b, () -> new LinkedHashMap<>());
+    return Collectors.toMap(
+        e -> e.getKey(),
+        e -> e.getValue(),
+        (a, b) -> b,
+        () -> new LinkedHashMap<>()
+    );
+  }
+
+  /**
+   * Creates a new map with the same values as the passed map, but with keys
+   * created by applying the passed transform to the entries in the passed map.
+   *
+   * @param <K1> type of old keys
+   * @param <K2> type of new keys
+   * @param <V> type of values
+   * @param map existing map
+   * @param transform function to convert old map entries to new keys
+   * @return a LinkedHashMap with identically ordered keys but newly mapped keys
+   */
+  public static <K1,K2,V> Map<K2,V> mapKeys(Map<K1,V> map, Function<Entry<K1,V>,K2> transform) {
+    return map.entrySet().stream()
+        .map(entry -> new TwoTuple<>(transform.apply(entry), entry.getValue()))
+        .collect(newLinkedHashMapCollector());
   }
 
   /**
@@ -645,7 +667,7 @@ public class Functions {
    * @param <V2> type of new values
    * @param map existing map
    * @param transform function to convert old map entries to new values
-   * @return a LinkedHashMap with identically ordered keys but new values
+   * @return a LinkedHashMap with identically ordered entries but newly mapped values
    */
   public static <K,V1,V2> Map<K,V2> mapValues(Map<K,V1> map, Function<Entry<K,V1>,V2> transform) {
     return map.entrySet().stream()
