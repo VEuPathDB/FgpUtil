@@ -11,6 +11,7 @@ import java.util.Map;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.FormatUtil.Style;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
+import org.gusdb.fgputil.runtime.ProjectSpecificProperties.ProjectSpecificPropertiesException;
 import org.gusdb.fgputil.runtime.ProjectSpecificProperties.PropertySpec;
 import org.junit.Test;
 
@@ -35,6 +36,12 @@ public class ProjectSpecificPropertiesTest {
     }
   }
 
+  private static final PropertySpec[] PROP_SPEC = new PropertySpec[] {
+      PropertySpec.required(SCHEMA),
+      PropertySpec.optional(RAW_FILE_DIR),
+      PropertySpec.optionalWithDefault(ACCESS_PWD, "12345")
+  };
+
   private static final Map<String,String> CONFIG = new HashMap<>() {{
     put(envVarName("CE", PROJECT_ID), "ClinEpiDB");
     put(envVarName("CE", SCHEMA), "edauserce");
@@ -49,15 +56,9 @@ public class ProjectSpecificPropertiesTest {
   }};
 
   @Test
-  public void testPSP() {
-    ProjectSpecificProperties<ProjectProps> projectProps = new ProjectSpecificProperties<ProjectProps>(
-        new PropertySpec[] {
-          PropertySpec.required(SCHEMA),
-          PropertySpec.optional(RAW_FILE_DIR),
-          PropertySpec.optionalWithDefault(ACCESS_PWD, "12345")
-        },
-        ProjectProps::new,
-        CONFIG
+  public void testGoodInput() {
+    ProjectSpecificProperties<ProjectProps> projectProps = new ProjectSpecificProperties<>(
+        PROP_SPEC, ProjectProps::new, CONFIG
     );
     System.out.println(FormatUtil.prettyPrint(projectProps.toMap(), Style.MULTI_LINE));
     assertEquals(3, projectProps.getProjectIds().size());
@@ -65,5 +66,18 @@ public class ProjectSpecificPropertiesTest {
     assertEquals(null, projectProps.getProperties("MicrobiomeDB").get().getSecond());
     assertEquals("56789", projectProps.getProperties("VEuPathDB").get().getThird());
     assertEquals("12345", projectProps.getProperties("MicrobiomeDB").get().getThird());
+  }
+
+  private static final Map<String,String> BAD_CONFIG = new HashMap<>() {{
+    put(envVarName("CE", SCHEMA), "edauserce");
+    put(envVarName("CE", RAW_FILE_DIR), "cefiles");
+  }};
+
+  @Test(expected = ProjectSpecificPropertiesException.class)
+  public void testBadInput() {
+    @SuppressWarnings("unused")
+    ProjectSpecificProperties<ProjectProps> projectProps = new ProjectSpecificProperties<>(
+        PROP_SPEC, ProjectProps::new, BAD_CONFIG
+    );
   }
 }
