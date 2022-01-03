@@ -68,16 +68,29 @@ public class ProjectSpecificPropertiesTest {
     assertEquals("12345", projectProps.getProperties("MicrobiomeDB").get().getThird());
   }
 
-  private static final Map<String,String> BAD_CONFIG = new HashMap<>() {{
+  private static final Map<String,String> BAD_CONFIG1 = new HashMap<>() {{
     put(envVarName("CE", SCHEMA), "edauserce");
     put(envVarName("CE", RAW_FILE_DIR), "cefiles");
   }};
 
   @Test(expected = ProjectSpecificPropertiesException.class)
-  public void testBadInput() {
+  public void testMissingProject() {
     @SuppressWarnings("unused")
     ProjectSpecificProperties<ProjectProps> projectProps = new ProjectSpecificProperties<>(
-        PROP_SPEC, ProjectProps::new, BAD_CONFIG
+        PROP_SPEC, ProjectProps::new, BAD_CONFIG1
+    );
+  }
+
+  private static final Map<String,String> BAD_CONFIG2 = new HashMap<>() {{
+    put(envVarName("CE", PROJECT_ID), "ClinEpiDB");
+    put(envVarName("CE", RAW_FILE_DIR), "cefiles");
+  }};
+
+  @Test(expected = ProjectSpecificPropertiesException.class)
+  public void testMissingRequiredProp() {
+    @SuppressWarnings("unused")
+    ProjectSpecificProperties<ProjectProps> projectProps = new ProjectSpecificProperties<>(
+        PROP_SPEC, ProjectProps::new, BAD_CONFIG2
     );
   }
 }
