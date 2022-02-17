@@ -3,7 +3,11 @@ package org.gusdb.fgputil.db.pool;
 import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.json.JSONObject;
 
-
+/**
+ * Defines the set of values used to fully configure an instance of DatabaseInstance.
+ *
+ * @author rdoherty
+ */
 public interface ConnectionPoolConfig {
 
   String getLogin();

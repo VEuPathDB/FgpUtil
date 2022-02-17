@@ -9,10 +9,21 @@ import org.gusdb.fgputil.db.platform.SupportedPlatform;
  * user-specified connection pool of size getConnectionPoolSize().  Any methods
  * in ConnectionPoolConfig can be overridden if more precise configuration is
  * required.
- * 
+ *
+ * Note: this class is mostly for small applications and scripts that require
+ * a small pool or even single connection.  Thus it uses certain defaults for
+ * sometimes important pool management parameters.  To override these defaults
+ * or make them configurable, a more comprehensive subclass should be used.
+ *
  * @author rdoherty
  */
 public abstract class SimpleDbConfig implements ConnectionPoolConfig {
+
+    // default min idle if not overridden
+    private static final int DEFAULT_MIN_IDLE = 1;
+
+    // default max wait if not overridden
+    private static final int DEFAULT_MAX_WAIT = 1000;
 
     /**
      * Creates a simple database configuration with connection pool of size 1.  This is for
@@ -68,9 +79,9 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
         @Override public int getDefaultFetchSize()           { return defaultFetchSize; }
       };
     }
-  
+
     public abstract int getConnectionPoolSize();
-    
+
     @Override
     public String getDriverInitClass() {
         return DefaultDbDriverInitializer.class.getName();
@@ -83,17 +94,17 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
 
     @Override
     public int getMaxIdle() {
-        return getConnectionPoolSize();
+        return Math.max(1, getConnectionPoolSize() / 2);
     }
 
     @Override
     public int getMinIdle() {
-        return 1;
+        return DEFAULT_MIN_IDLE;
     }
 
     @Override
     public long getMaxWait() {
-        return 1000;
+        return DEFAULT_MAX_WAIT;
     }
 
     @Override
@@ -120,12 +131,12 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
     public boolean getDefaultReadOnly() {
       return false;
     }
-    
+
     @Override
     public String toString() {
       return toString(false);
     }
-    
+
     public String toString(boolean showPassword) {
       return new StringBuilder(super.toString())
           .append(" {").append(NL)
