@@ -22,6 +22,9 @@ public abstract class NumberBinDistribution<T extends Number & Comparable<T>> ex
   // return the sum of the two numbers
   protected abstract T sum(T a, T b);
 
+  // validate bin width
+  protected abstract void validateBinWidth(T binWidth) throws IllegalArgumentException;
+
   public NumberBinDistribution(DistributionStreamProvider streamProvider, ValueSpec valueSpec, NumberBinSpec binSpec) {
     super(streamProvider, valueSpec);
     _displayRangeMin = getRangeMin(binSpec);
@@ -38,7 +41,9 @@ public abstract class NumberBinDistribution<T extends Number & Comparable<T>> ex
   }
 
   private T getBinWidth(NumberBinSpec binSpec) {
-    return getTypedObject("binWidth", binSpec.getBinSize(), ValueSource.CONFIG);
+    T binWidth = getTypedObject("binWidth", binSpec.getBinSize(), ValueSource.CONFIG);
+    validateBinWidth(binWidth);
+    return binWidth;
   }
 
   @Override

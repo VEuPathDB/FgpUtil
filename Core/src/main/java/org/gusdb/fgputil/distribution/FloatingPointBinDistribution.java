@@ -14,6 +14,13 @@ public class FloatingPointBinDistribution extends NumberBinDistribution<Double> 
   }
 
   @Override
+  protected void validateBinWidth(Double binWidth) throws IllegalArgumentException {
+    if (binWidth <= 0) {
+      throw new IllegalArgumentException("Bin width must be a positive number.");
+    }
+  }
+
+  @Override
   protected Double getTypedObject(String objectName, Object value, ValueSource source) {
     Supplier<RuntimeException> exSupplier = () -> { switch(source) {
       case CONFIG: return new IllegalArgumentException(objectName + " must be a number value.");

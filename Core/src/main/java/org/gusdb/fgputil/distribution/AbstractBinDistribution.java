@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.fgputil.distribution.AbstractBinDistribution.Bin;
+import org.gusdb.fgputil.iterator.IteratorUtil;
 
 public abstract class AbstractBinDistribution<S, R extends Bin<S>> extends AbstractDistribution {
 
@@ -26,7 +27,6 @@ public abstract class AbstractBinDistribution<S, R extends Bin<S>> extends Abstr
   public AbstractBinDistribution(DistributionStreamProvider streamProvider, ValueSpec valueSpec) {
     super(streamProvider, valueSpec);
   }
-
 
   @Override
   protected DistributionResult processDistributionStream(long subsetEntityCount, Stream<TwoTuple<String, Long>> distributionStream) {

@@ -14,6 +14,13 @@ public class IntegerBinDistribution extends NumberBinDistribution<Long> {
   }
 
   @Override
+  protected void validateBinWidth(Long binWidth) throws IllegalArgumentException {
+    if (binWidth <= 0) {
+      throw new IllegalArgumentException("Bin width must be a positive integer.");
+    }
+  }
+
+  @Override
   protected Long getTypedObject(String objectName, Object value, ValueSource source) {
     Supplier<RuntimeException> exSupplier = () -> { switch(source) {
       case CONFIG: return new IllegalArgumentException(objectName + " must be an integer value.");
