@@ -24,4 +24,13 @@ public class ComparableLocalDateTime implements Comparable<ComparableLocalDateTi
            _t.isAfter(t.get()) ? 1 :
            0;
   }
+
+  public boolean isAfter(ComparableLocalDateTime t) {
+    return _t.isAfter(t.get());
+  }
+
+  public boolean isBefore(ComparableLocalDateTime t) {
+    return _t.isBefore(t.get());
+  }
+
 }
