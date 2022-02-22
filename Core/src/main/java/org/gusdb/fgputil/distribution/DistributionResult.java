@@ -1,20 +1,26 @@
 package org.gusdb.fgputil.distribution;
 
 import java.util.List;
-import org.gusdb.fgputil.Tuples;
 
-public class DistributionResult extends Tuples.TwoTuple<List<HistogramBin>, HistogramStats> {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class DistributionResult {
+
+  private final List<HistogramBin> _histogram;
+  private final HistogramStats _stats;
 
   public DistributionResult(List<HistogramBin> histogram, HistogramStats stats) {
-    super(histogram, stats);
+    _histogram = histogram;
+    _stats = stats;
   }
 
+  @JsonProperty("histogram")
   public List<HistogramBin> getHistogramData() {
-    return getFirst();
+    return _histogram;
   }
 
   public HistogramStats getStatistics() {
-    return getSecond();
+    return _stats;
   }
 
 }
