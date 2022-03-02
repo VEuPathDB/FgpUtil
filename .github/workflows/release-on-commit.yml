@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+  schedule:
+    - '0 1 * * 0'
 
 jobs:
   build:
@@ -49,6 +51,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./AccountDB/target/fgputil-accountdb-1.0.0.jar
+          asset_name: fgputil-accountdb-1.0.0.jar
 
       - name: Publish Cache
         uses: actions/upload-release-asset@v1
@@ -57,6 +60,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Cache/target/fgputil-cache-1.0.0.jar
+          asset_name: fgputil-cache-1.0.0.jar
 
       - name: Publish Client
         uses: actions/upload-release-asset@v1
@@ -65,6 +69,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Client/target/fgputil-client-1.0.0.jar
+          asset_name: fgputil-client-1.0.0.jar
 
       - name: Publish CLI
         uses: actions/upload-release-asset@v1
@@ -73,6 +78,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Cli/target/fgputil-cli-1.0.0.jar
+          asset_name: fgputil-cli-1.0.0.jar
 
       - name: Publish Core
         uses: actions/upload-release-asset@v1
@@ -81,6 +87,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Core/target/fgputil-core-1.0.0.jar
+          asset_name: fgputil-core-1.0.0.jar
 
       - name: Publish DB
         uses: actions/upload-release-asset@v1
@@ -89,6 +96,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Db/target/fgputil-db-1.0.0.jar
+          asset_name: fgputil-db-1.0.0.jar
 
       - name: Publish Events
         uses: actions/upload-release-asset@v1
@@ -97,6 +105,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Events/target/fgputil-events-1.0.0.jar
+          asset_name: fgputil-events-1.0.0.jar
 
       - name: Publish JSON
         uses: actions/upload-release-asset@v1
@@ -105,6 +114,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Json/target/fgputil-json-1.0.0.jar
+          asset_name: fgputil-json-1.0.0.jar
 
       - name: Publish Server
         uses: actions/upload-release-asset@v1
@@ -113,6 +123,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Server/target/fgputil-server-1.0.0.jar
+          asset_name: fgputil-server-1.0.0.jar
 
       - name: Publish Servlet
         uses: actions/upload-release-asset@v1
@@ -121,6 +132,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Servlet/target/fgputil-servlet-1.0.0.jar
+          asset_name: fgputil-servlet-1.0.0.jar
 
       - name: Publish Solr
         uses: actions/upload-release-asset@v1
@@ -129,6 +141,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Solr/target/fgputil-solr-1.0.0.jar
+          asset_name: fgputil-solr-1.0.0.jar
 
       - name: Publish Test
         uses: actions/upload-release-asset@v1
@@ -137,6 +150,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Test/target/fgputil-test-1.0.0.jar
+          asset_name: fgputil-test-1.0.0.jar
 
       - name: Publish Web
         uses: actions/upload-release-asset@v1
@@ -145,6 +159,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Web/target/fgputil-web-1.0.0.jar
+          asset_name: fgputil-web-1.0.0.jar
 
       - name: Publish XML
         uses: actions/upload-release-asset@v1
@@ -153,3 +168,4 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./Xml/target/fgputil-xml-1.0.0.jar
+          asset_name: fgputil-xml-1.0.0.jar
