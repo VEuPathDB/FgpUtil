@@ -1,9 +1,9 @@
 name: Release on Commit
 
 on:
-  milestone:
-    types:
-      - closed
+  push:
+    branches:
+      - master
 
 jobs:
   build:
