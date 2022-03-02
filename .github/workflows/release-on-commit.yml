@@ -2,7 +2,7 @@ name: Release on Commit
 
 on:
   schedule:
-    - '0 1 * * 0'
+    - cron: '0 1 * * 0'
 
 jobs:
   build:
