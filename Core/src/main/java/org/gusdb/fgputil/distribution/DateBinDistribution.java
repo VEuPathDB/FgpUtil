@@ -11,7 +11,7 @@ import org.gusdb.fgputil.FormatUtil;
 
 public class DateBinDistribution extends AbstractBinDistribution<LocalDateTime, DateBin> {
 
-  private static final List<ChronoUnit> ALLOWED_UNITS = List.of(
+  public static final List<ChronoUnit> ALLOWED_UNITS = List.of(
       ChronoUnit.DAYS,
       ChronoUnit.WEEKS,
       ChronoUnit.MONTHS,
