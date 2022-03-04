@@ -29,7 +29,7 @@ public abstract class AbstractBinDistribution<S, R extends Bin<S>> extends Abstr
   }
 
   @Override
-  protected DistributionResult processDistributionStream(long subsetEntityCount, Stream<TwoTuple<String, Long>> distributionStream) {
+  protected DistributionResult processDistributionStream(long subsetEntityCount, Stream<TwoTuple<String, Long>> distributionStream, boolean omitHistogram) {
     StatsCollector<S> stats = getStatsCollector();
     long missingCasesCount = 0;
     R currentBin = getFirstBin();
@@ -83,7 +83,9 @@ public abstract class AbstractBinDistribution<S, R extends Bin<S>> extends Abstr
     }
 
     // return result
-    return new DistributionResult(bins, stats.toHistogramStats(subsetEntityCount, missingCasesCount));
+    return new DistributionResult(
+        omitHistogram ? null : bins,
+        stats.toHistogramStats(subsetEntityCount, missingCasesCount));
   }
 
 }

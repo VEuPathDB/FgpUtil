@@ -13,7 +13,7 @@ public class DiscreteDistribution extends AbstractDistribution {
   }
 
   @Override
-  protected DistributionResult processDistributionStream(long subsetEntityCount, Stream<TwoTuple<String,Long>> distributionStream) {
+  protected DistributionResult processDistributionStream(long subsetEntityCount, Stream<TwoTuple<String,Long>> distributionStream, boolean omitHistogram) {
     List<HistogramBin> bins = new ArrayList<>();
     long distinctValueCount = 0;
     long totalValueCount = 0;
@@ -38,6 +38,6 @@ public class DiscreteDistribution extends AbstractDistribution {
     stats.setNumDistinctValues(distinctValueCount);
     stats.setNumVarValues(totalValueCount);
     stats.setNumDistinctEntityRecords(subsetEntityCount - missingCasesCount);
-    return new DistributionResult(bins, stats);
+    return new DistributionResult(omitHistogram ? null : bins, stats);
   }
 }
