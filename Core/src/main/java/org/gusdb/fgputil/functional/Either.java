@@ -1,13 +1,13 @@
 package org.gusdb.fgputil.functional;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Either represents a value that MUST be one of 2 options, left or right.
@@ -150,6 +150,24 @@ public class Either<L, R> {
   }
 
   /**
+   * Returns the left value if present, else throws the throwable supplied by
+   * the given function.  The right value will be passed to the function.
+   *
+   * @param fn
+   *   Throwable supplier
+   * @param <E>
+   *   Type of Throwable
+   *
+   * @return left value
+   *
+   * @throws E
+   *   if this is not a left either.
+   */
+  public <E extends Throwable> L leftOrElseThrowWithRight(Function<R,E> fn) throws E {
+    return left().orElseThrow(() -> fn.apply(_right));
+  }
+
+  /**
    * Returns the right value if present, else throws the throwable supplied by
    * the given method.
    *
@@ -241,4 +259,5 @@ public class Either<L, R> {
   public static <L, R> Either<L, R> right(final R val) {
     return new Either<>(null, requireNonNull(val));
   }
+
 }
