@@ -10,13 +10,19 @@ my $sysProps = &FgpUtil::Util::CommandHelper::getSystemProps($gusHome, 'fgpJava'
 
 sub main {
     @args = @_;
+    $printCmd = 0;
+    if ($args[0] eq "-printCommand") {
+        $printCmd = 1;
+        shift @args;
+    }
     $cmd = "java $sysProps -classpath $classpath @args";
+    printf "\n$cmd\n\n" if ($printCmd);
     my $err = system($cmd);
     return $err >> 8;
 }
 
 sub printUsageAndDie { # no arguments
-    printf(STDERR "\nUSAGE: fgpJava <java_class> [<arg1> <arg2> ...]\n\n");
+    printf(STDERR "\nUSAGE: fgpJava [-printCommand] <java_class> [<arg1> <arg2> ...]\n\n");
     exit 1;
 }
 
