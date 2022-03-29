@@ -1,6 +1,6 @@
 package org.gusdb.fgputil.web;
 
-import javax.ws.rs.core.NewCookie;
+import jakarta.ws.rs.core.NewCookie;
 
 public class CookieBuilder {
 
