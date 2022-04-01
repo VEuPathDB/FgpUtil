@@ -4,9 +4,11 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.web.HttpMethod;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.fgputil.web.SessionProxy;
@@ -52,7 +54,7 @@ public class HttpRequestData implements RequestData {
 
   @Override
   public Map<String, List<String>> getRequestParamMap() {
-    return _request.getParameterMap();
+      return Functions.mapValues(_request.getParameterMap(),(entry -> Arrays.asList(entry.getValue())));
   }
 
   @Override
