@@ -36,8 +36,8 @@ public class JsonIteratorsTest {
   public void testObjectIter() throws Exception {
     JSONObject obj = new JSONObject("{}");
     testCount(obj, 0);
-    obj = new JSONObject("{ 1: b, blah: null, a: true, 4: 6.78E34, true: false, null: [], []: {}, {}: [] }");
-    testCount(obj, 8);
+    obj = new JSONObject("{ 1: b, blah: null, a: true, 4: 6.78E34, true: false, null: [] }");
+    testCount(obj, 6);
   }
 
   private void testCount(JSONObject obj, int expected) {
