@@ -3,6 +3,8 @@ package org.gusdb.fgputil.db.runner;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.NoSuchElementException;
+
 import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 
 /**

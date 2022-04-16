@@ -28,11 +28,11 @@ public class TreeUtil {
    * Sample usage that may support a trimmed tree for SQL joins:
    *
    * private static class Entity { public String getName() { return null; }}
-   * TreeNode<Entity> entityTree;
+   * TreeNode&lt;Entity> entityTree;
    * String targetEntityName;
-   * List<String> filteredEntityNames;
+   * List&lt;String> filteredEntityNames;
    *
-   * TreeNode<Entity> trimmedRoot = trimToActiveAndPivotNodes(entityTree,
+   * TreeNode&lt;Entity> trimmedRoot = trimToActiveAndPivotNodes(entityTree,
    *   e -> targetEntityName.equals(e.getName()) || filteredEntityNames.contains(e.getName()));
    */
   public static <T> TreeNode<T> trimToActiveAndPivotNodes(TreeNode<T> root, Predicate<T> isActive) {

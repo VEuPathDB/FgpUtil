@@ -14,9 +14,9 @@ import org.apache.log4j.Logger;
  * Implements an efficient cache of objects mapped by key.  This class is
  * thread-safe and can be used in a static, application-wide way to cache
  * homogeneous objects.
- * 
- * @param S type of unique keys of values cached
- * @param T type of values cached
+ *
+ * Generic S type of unique keys of values cached
+ * Generic T type of values cached
  * 
  * @author rdoherty
  */
