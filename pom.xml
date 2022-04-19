@@ -16,7 +16,6 @@
 
   <scm>
     <developerConnection>scm:git:ssh://github.com/VEuPathDB/FgpUtil</developerConnection>
-    <tag>v2.0</tag>
   </scm>
 
   <modules>
