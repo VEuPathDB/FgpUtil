@@ -11,12 +11,22 @@
   <parent>
     <groupId>org.gusdb</groupId>
     <artifactId>base-pom</artifactId>
-    <version>2.2</version>
+    <version>2.7</version>
   </parent>
 
   <scm>
     <developerConnection>scm:git:ssh://github.com/VEuPathDB/FgpUtil</developerConnection>
   </scm>
+
+  <repositories>
+    <repository>
+      <id>veupathdb</id>
+      <url>https://maven.pkg.github.com/veupathdb/maven-packages</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <modules>
     <module>Test</module>
