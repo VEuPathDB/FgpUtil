@@ -5,19 +5,9 @@
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="FgpUtil-Installation" depends="FgpUtil-MavenInstallation,
-                                               FgpUtil/Util-Installation">
-    <ant target="defaultProjectInstall">
-      <property name="project" value="FgpUtil"/>
-    </ant>
-  </target>
+  <!-- Java code in FgpUtil is no longer built as part of the gus build -->
+  <target name="FgpUtil-Installation" depends="FgpUtil/Util-Installation"/>
 
-  <target name="FgpUtil-MavenInstallation">
-    <ant target="mavenBuildProject">
-      <property name="project" value="FgpUtil"/>
-    </ant>
-    <property name="alreadyBuilt" value="true"/>
-  </target>
 
   <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
 

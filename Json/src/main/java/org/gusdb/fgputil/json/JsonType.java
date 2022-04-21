@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.json;
 
+import java.math.BigDecimal;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -117,6 +119,11 @@ public class JsonType {
       else if (object instanceof Double) {
         _type = ValueType.NUMBER;
         _numberSubtype = NumberSubtype.DOUBLE;
+      }
+      else if (object instanceof BigDecimal) {
+        _type = ValueType.NUMBER;
+        _numberSubtype = NumberSubtype.DOUBLE;
+        object = ((BigDecimal)object).doubleValue();
       }
       else {
         throw new UnsupportedOperationException("Only Integer, Long, Float, and Double number types are supported.");

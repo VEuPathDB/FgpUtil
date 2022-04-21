@@ -22,7 +22,6 @@ public class ClassFinder {
    * Finds all classes in the given package of the given supertype
    *
    * @param <T> supertype
-   * @param subtype class of the supertype
    * @param packageName package to search for classes
    * @return list of classes found
    */
