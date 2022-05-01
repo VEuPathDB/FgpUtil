@@ -5,18 +5,13 @@
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="FgpUtil-Installation" depends="FgpUtil-MavenInstallation,
-                                               FgpUtil/Util-Installation">
+  <target name="FgpUtil-Installation" depends="FgpUtil/Util-Installation">
+    <!-- No longer build at the project level.  Only scripts, etc. in Util
+         should be build as part of the GUS build.  The Java code is now
+         built and released independently
     <ant target="defaultProjectInstall">
       <property name="project" value="FgpUtil"/>
-    </ant>
-  </target>
-
-  <target name="FgpUtil-MavenInstallation">
-    <ant target="mavenBuildProject">
-      <property name="project" value="FgpUtil"/>
-    </ant>
-    <property name="alreadyBuilt" value="true"/>
+    </ant>-->
   </target>
 
   <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
