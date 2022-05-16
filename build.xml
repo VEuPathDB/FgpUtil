@@ -1,4 +1,4 @@
-<project name="FgpUtil" default="FgpUtil-Installation" basedir=".">
+<project name="FgpUtil" basedir=".">
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
