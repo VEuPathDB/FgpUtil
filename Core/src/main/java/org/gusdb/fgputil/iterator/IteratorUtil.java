@@ -3,6 +3,7 @@ package org.gusdb.fgputil.iterator;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -94,11 +95,40 @@ public class IteratorUtil {
   }
 
   /**
-   * Transforms a Cursor to an Iterator.  This requires caching the "next" object in memory, so be advised
-   * these should probably not be too big.  The object behind the cursor is not closed in any way; the
+   * Transforms an OptionStream to an Iterator.  This requires caching the "next" object in memory, so be advised
+   * these should probably not be too big.  The object behind the iterator is not closed in any way; the
    * caller is responsible for closing any underlying open resources.
    * 
-   * @param cursor cursor object
+   * @param optionStream option stream to iterate over
+   * @return a read-only iterator facade over the passed option stream
+   */
+  public static <T> ReadOnlyIterator<T> toIterator(final OptionStream<T> optionStream) {
+
+    final Wrapper<Optional<T>> storedItem = new Wrapper<Optional<T>>().set(optionStream.next());
+
+    return new ReadOnlyIterator<T>() {
+      @Override
+      public boolean hasNext() {
+        return storedItem.get().isPresent();
+      }
+      @Override
+      public T next() {
+        if (!hasNext()) {
+          throw new NoSuchElementException("No more elements can be returned by this iterator.");
+        }
+        T nextItem = storedItem.get().get();
+        storedItem.set(optionStream.next());
+        return nextItem;
+      }
+    };
+  }
+
+  /**
+   * Transforms a Cursor to an Iterator.  This requires caching the "next" object in memory, so be advised
+   * these should probably not be too big.  The object behind the iterator is not closed in any way; the
+   * caller is responsible for closing any underlying open resources.
+   * 
+   * @param cursor cursor to iterate over
    * @return a read-only iterator facade over the passed cursor
    */
   public static <T> ReadOnlyIterator<T> toIterator(final Cursor<T> cursor) {
