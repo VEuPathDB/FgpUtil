@@ -63,7 +63,7 @@ public class DataSourceWrapper extends AbstractDataSourceWrapper {
           // looks like connection pool is exhausted, causing a request failure
           LOG.warn("\n\nUnable to retrieve a database connection from the pool for " + _dbName +
               " before timeout.  This application may be under heavy load or there may be a " +
-              "connection leak.  Will dump open connection information, followed by the " +
+              "connection leak.  Dumping open connection information, followed by the " +
               "exception which triggered this message.\n\n" + dumpUnclosedObjectInfo() + "\n\n", e);
         }
       }
