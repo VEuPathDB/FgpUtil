@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.distribution;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class FloatingPointBinDistribution extends NumberBinDistribution<Double> {
@@ -15,6 +16,9 @@ public class FloatingPointBinDistribution extends NumberBinDistribution<Double> 
 
   @Override
   protected void validateBinWidth(Double binWidth) throws IllegalArgumentException {
+    if (binWidth == null) {
+      throw new IllegalArgumentException("Bin width cannot be null.");
+    }
     if (binWidth <= 0) {
       throw new IllegalArgumentException("Bin width must be a positive number.");
     }
@@ -27,6 +31,7 @@ public class FloatingPointBinDistribution extends NumberBinDistribution<Double> 
       case DB: return new RuntimeException("Value in column " + objectName + " is not a number.");
       default: return null;
     }};
+    Objects.requireNonNull(value);
     if (value instanceof Number) {
       return ((Number)value).doubleValue();
     }
