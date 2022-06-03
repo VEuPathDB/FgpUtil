@@ -85,8 +85,8 @@ public class DateBinDistribution extends AbstractBinDistribution<LocalDateTime, 
       return FormatUtil.parseDateTime((String)value);
     }
     switch(source) {
-      case CONFIG: throw new IllegalArgumentException(objectName + " must be a date string value.");
-      case DB: throw new RuntimeException("Converted value in column " + objectName + " is not a valid date string.");
+      case CONFIG: throw new IllegalArgumentException(objectName + " must be a date string value, not " + value);
+      case DB: throw new RuntimeException("Converted value in column " + objectName + " (" + value + ") is not a valid date string.");
       default: throw new IllegalStateException("Unsupported source: " + source);
     }
   }
