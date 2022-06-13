@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -475,5 +476,42 @@ public class FormatUtil {
       }
     }
     return text;
+  }
+
+  /**
+   * Converts a string to a statically-sized byte array.  To do this, the
+   * encoded String's size is also recorded and saved using 4 of the allowed
+   * bytes.  To be used in concert with <code>paddedBinaryToString()</code>.
+   *
+   * @param s string to encode
+   * @param numBytesToOccupy size of returned byte array
+   * @return byte array that can be decoded using paddedBinaryToString()
+   */
+  public static byte[] stringToPaddedBinary(String s, int numBytesToOccupy) {
+    ByteBuffer buf = ByteBuffer.allocate(numBytesToOccupy);
+    byte[] encodedString = getUtf8EncodedBytes(s);
+    if (encodedString.length + Integer.BYTES > numBytesToOccupy) {
+      throw new RuntimeException("String '" + s + "' (plus its size) cannot fit into " + numBytesToOccupy + " bytes.");
+    }
+    buf.putInt(encodedString.length);
+    buf.put(encodedString);
+    return buf.array();
+  }
+
+  /**
+   * Converts a statically-sized byte array to a String. To do this, it
+   * must first read the size of the enclosed String, then decode exactly
+   * that many bytes into the resulting String value.  To be used in
+   * concert with <code>stringToPaddedBinary()</code>.
+   *
+   * @param bytes byte array containing string size and encoded string
+   * @return decoded string value
+   */
+  public static String paddedBinaryToString(byte[] bytes) {
+    ByteBuffer buf = ByteBuffer.wrap(bytes);
+    int stringLength = buf.getInt();
+    byte[] stringBytes = new byte[stringLength];
+    buf.get(stringBytes, 0, stringLength);
+    return decodeUtf8EncodedBytes(stringBytes);
   }
 }

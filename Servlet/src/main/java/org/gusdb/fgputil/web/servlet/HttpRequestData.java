@@ -1,7 +1,9 @@
 package org.gusdb.fgputil.web.servlet;
 
-import java.util.Enumeration;
-import java.util.HashMap;
+import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
+import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
+
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +54,8 @@ public class HttpRequestData implements RequestData {
 
   @Override
   public Map<String, List<String>> getRequestParamMap() {
-    return _request.getParameterMap();
+    Map<String,String[]> rawMap = _request.getParameterMap();
+    return getMapFromKeys(rawMap.keySet(), key -> List.of(rawMap.get(key)));
   }
 
   @Override
@@ -62,13 +65,8 @@ public class HttpRequestData implements RequestData {
 
   @Override
   public Map<String, Object> getAttributeMap() {
-    Map<String,Object> attributes = new HashMap<>();
-    Enumeration<String> attributeNames = _request.getAttributeNames();
-    while (attributeNames.hasMoreElements()) {
-      String key = attributeNames.nextElement();
-      attributes.put(key, _request.getAttribute(key));
-    }
-    return attributes;
+    Iterator<String> attributeNames = _request.getAttributeNames().asIterator();
+    return getMapFromKeys(toIterable(attributeNames), _request::getAttribute);
   }
 
   @Override
