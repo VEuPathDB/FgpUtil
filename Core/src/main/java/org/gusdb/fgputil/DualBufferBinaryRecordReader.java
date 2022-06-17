@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 import org.gusdb.fgputil.iterator.OptionStream;
 
@@ -23,18 +24,20 @@ import org.gusdb.fgputil.iterator.OptionStream;
  * 
  * @author rdoherty
  */
-public class DualBufferBinaryRecordReader implements OptionStream<byte[]>, AutoCloseable {
+public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoCloseable {
 
   private final Path _file;
   private final ExecutorService _exec;
   private final AsynchronousFileChannel _channel;
   private final int _recordLength;
   private final int _bufferSize;
+  private final Function<ByteBuffer, T> _byteBufferMapper;
 
   private long _fileCursor = 0;
   private boolean _wasLastFill = false;
   private ByteBuffer _current;
   private ByteBuffer _next;
+  private ByteBuffer _recordBuffer;
   private Future<Integer> _nextFill;
 
   /**
@@ -49,7 +52,9 @@ public class DualBufferBinaryRecordReader implements OptionStream<byte[]>, AutoC
    * footprint will be approximately recordLength * recordsPerBuffer * 2.
    * @throws IOException if unable to read file
    */
-  public DualBufferBinaryRecordReader(Path file, int recordLength, int recordsPerBuffer) throws IOException {
+  public DualBufferBinaryRecordReader(Path file, int recordLength, int recordsPerBuffer,
+                                      Function<ByteBuffer, T> byteBufferMapper,
+                                      ByteBuffer recordBuffer) throws IOException {
     _file = file;
     _exec = Executors.newSingleThreadExecutor();
     _channel = AsynchronousFileChannel.open(file, Set.of(StandardOpenOption.READ), _exec);
@@ -57,6 +62,13 @@ public class DualBufferBinaryRecordReader implements OptionStream<byte[]>, AutoC
     _bufferSize = recordLength * recordsPerBuffer;
     _current = ByteBuffer.allocate(_bufferSize);
     _next = ByteBuffer.allocate(_bufferSize);
+    _byteBufferMapper = byteBufferMapper;
+    _recordBuffer = recordBuffer;
+
+    if (recordBuffer.limit() != recordLength) {
+      throw new IllegalArgumentException(String.format("Buffer length (%d) must be equal to recordLength (%d)",
+          recordBuffer.limit(), _bufferSize));
+    }
 
     // start reading into _next immediately
     startNextFill();
@@ -68,7 +80,7 @@ public class DualBufferBinaryRecordReader implements OptionStream<byte[]>, AutoC
    * Returns the next record
    */
   @Override
-  public Optional<byte[]> next() {
+  public Optional<T> next() {
     if (!_current.hasRemaining()) {
       if (_wasLastFill) {
         return Optional.empty();
@@ -80,9 +92,9 @@ public class DualBufferBinaryRecordReader implements OptionStream<byte[]>, AutoC
       }
     }
     // read the next record
-    byte[] nextRecord = new byte[_recordLength];
-    _current.get(nextRecord);
-    return Optional.of(nextRecord);
+//    _recordBuffer.position(0);
+//    _current.get(_recordBuffer.array());
+    return Optional.of(_byteBufferMapper.apply(_current));
   }
 
   private void startNextFill() {

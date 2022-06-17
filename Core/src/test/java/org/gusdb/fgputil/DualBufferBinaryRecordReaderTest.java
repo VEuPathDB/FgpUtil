@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -97,7 +98,13 @@ public class DualBufferBinaryRecordReaderTest {
 
   // next read the records back out
   private void doTest(int recordsPerBuffer) throws IOException {
-    try (DualBufferBinaryRecordReader reader = new DualBufferBinaryRecordReader(Paths.get(FILE), Record.BINARY_SIZE, recordsPerBuffer)) {
+    Function<ByteBuffer, byte[]> bufferMapper = buffer -> {
+      byte[] arr = new byte[Record.BINARY_SIZE];
+      buffer.get(arr);
+      return arr;
+    };
+    try (DualBufferBinaryRecordReader<byte[]> reader = new DualBufferBinaryRecordReader<>(Paths.get(FILE), Record.BINARY_SIZE,
+        recordsPerBuffer, bufferMapper, ByteBuffer.allocate(Record.BINARY_SIZE))) {
       int i = 0;
       for (Record r : toIterable(transform(toIterator(reader),Record::new))) {
         assertEquals(i, r.i);
