@@ -21,8 +21,8 @@ public class UnclosedObjectMonitor<T> {
   public static class UnclosedObjectMonitorMap extends ArrayList<UnclosedObjectMonitor<?>> {
 
     /**
-     * Creates a "map" where a key of type CloseableObjectType<T> can be used to
-     * look up a UnclosedObjectMonitor<T>, where T is one of the types being
+     * Creates a "map" where a key of type CloseableObjectType&lt;T> can be used to
+     * look up a UnclosedObjectMonitor&lt;T>, where T is one of the types being
      * monitored (e.g. java.sql.Connection).  It is not an implementation of Map
      * so it can provide this sort of multi-typed lookup.
      *
