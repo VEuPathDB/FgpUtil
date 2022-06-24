@@ -1,14 +1,12 @@
 package org.gusdb.fgputil.server;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import static org.gusdb.fgputil.functional.Functions.getMapFromKeys;
+
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.util.Header;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.web.HttpMethod;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.fgputil.web.SessionProxy;
@@ -54,11 +52,8 @@ public class GrizzlyRequestData implements RequestData {
 
   @Override
   public Map<String, List<String>> getRequestParamMap() {
-    Map<String,List<String>> map = new HashMap<>();
-    for (Entry<String,String[]> param : _request.getParameterMap().entrySet()) {
-      map.put(param.getKey(), Arrays.asList(param.getValue()));
-    }
-    return map;
+    Map<String,String[]> rawMap = _request.getParameterMap();
+    return getMapFromKeys(rawMap.keySet(), key -> List.of(rawMap.get(key)));
   }
 
   @Override
@@ -68,7 +63,7 @@ public class GrizzlyRequestData implements RequestData {
 
   @Override
   public Map<String, Object> getAttributeMap() {
-    return Functions.getMapFromKeys(_request.getAttributeNames(), key -> _request.getAttribute(key));
+    return getMapFromKeys(_request.getAttributeNames(), _request::getAttribute);
   }
 
   @Override

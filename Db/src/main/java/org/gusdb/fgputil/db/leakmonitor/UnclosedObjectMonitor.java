@@ -20,6 +20,16 @@ public class UnclosedObjectMonitor<T> {
 
   public static class UnclosedObjectMonitorMap extends ArrayList<UnclosedObjectMonitor<?>> {
 
+    /**
+     * Creates a "map" where a key of type CloseableObjectType<T> can be used to
+     * look up a UnclosedObjectMonitor<T>, where T is one of the types being
+     * monitored (e.g. java.sql.Connection).  It is not an implementation of Map
+     * so it can provide this sort of multi-typed lookup.
+     *
+     * @param dbName database this unclosed object monitor is associated with
+     * @param recordAllStacktraces whether to record stack traces for every object
+     * ever opened and retain them for later logging (even if they have been closed)
+     */
     public UnclosedObjectMonitorMap(String dbName, boolean recordAllStacktraces) {
       for (CloseableObjectType<?> type : CloseableObjectType.values()) {
         add(new UnclosedObjectMonitor<>(type, dbName, recordAllStacktraces));
