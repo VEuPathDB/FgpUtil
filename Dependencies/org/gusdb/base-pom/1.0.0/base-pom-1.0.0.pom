@@ -274,6 +274,11 @@
             <groupId>com.github.fge</groupId>
             <artifactId>msg-simple</artifactId>
           </exclusion>
+          <!-- Included version 1.4.3 has runtime conflicts with 1.4.7 -->
+          <exclusion>
+            <groupId>javax.mail</groupId>
+            <artifactId>mailapi</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -532,7 +537,7 @@
       <dependency>
         <groupId>org.irods.jargon</groupId>
         <artifactId>jargon-core</artifactId>
-        <version>4.3.0.1-RELEASE</version>
+        <version>4.3.2.5-RELEASE</version>
         <exclusions>
           <exclusion>
             <groupId>log4j</groupId>
