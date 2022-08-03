@@ -186,9 +186,9 @@ public class FormatUtil {
    */
   public static String escapeHtml(String str) {
     return str
+      .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
-      .replaceAll("&", "&amp;")
       .replaceAll("\n", "<br/>\n");
   }
 
