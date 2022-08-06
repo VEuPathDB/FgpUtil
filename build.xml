@@ -1,13 +1,16 @@
-<project name="FgpUtil" default="FgpUtil-Installation" basedir=".">
-
+<project name="FgpUtil" basedir=".">
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <!-- Java code in FgpUtil is no longer built as part of the gus build -->
+  <!--
+     Note: FgpUtil no longer has build steps at the project level.  Only the
+     scripts, perl libs in Util are needed as part of the GUS build.  All the
+     Java code is now built, versioned, and released independently.  We are
+     keeping the top level target so the post-process step below still triggers.
+  -->
   <target name="FgpUtil-Installation" depends="FgpUtil/Util-Installation"/>
-
 
   <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
 
