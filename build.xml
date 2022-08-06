@@ -4,7 +4,7 @@
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-   <!--
+  <!--
      Note: FgpUtil no longer has build steps at the project level.  Only the
      scripts, perl libs in Util are needed as part of the GUS build.  All the
      Java code is now built, versioned, and released independently.  We are

@@ -3,6 +3,8 @@ package org.gusdb.fgputil.events;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.events.ListenerStatus.Status;
 import org.junit.Test;
@@ -11,7 +13,7 @@ public class EventsTest implements EventListener {
 
   private static final String THROW_ERROR = "throw_error";
 
-  private static int totalEventsReceived = 0;
+  private static AtomicInteger totalEventsReceived = new AtomicInteger(0);
 
   public static class TestEvent extends Event {
 
@@ -40,7 +42,7 @@ public class EventsTest implements EventListener {
       Events.subscribe(this, ListenerExceptionEvent.class);
       Events.subscribe(new EventListener() {
         @Override public void eventTriggered(Event event) throws Exception {
-          totalEventsReceived++;
+          totalEventsReceived.incrementAndGet();
           System.out.println("Event submitted with code: " + event.getEventCode());
         }}, Event.class);
 
@@ -52,7 +54,7 @@ public class EventsTest implements EventListener {
       status = getStatusWhenSubmitting(THROW_ERROR);
       assertEquals(status, Status.ERRORED);
 
-      // trigger an event were we expect all listeners to succed using triggerAndWait()
+      // trigger an event were we expect all listeners to succeed using triggerAndWait()
       try {
         Events.triggerAndWait(new TestEvent("some message"), new Exception("failed!"));
         assertTrue(true);
@@ -61,7 +63,7 @@ public class EventsTest implements EventListener {
         assertTrue(false);
       }
 
-      // trigger an event were we expect all listeners to succed using triggerAndWait()
+      // trigger an event were we expect all listeners to fail using triggerAndWait()
       try {
         Events.triggerAndWait(new TestEvent(THROW_ERROR), new Exception("failed!"));
         assertTrue(false);
@@ -77,7 +79,7 @@ public class EventsTest implements EventListener {
       sleep(2000);
 
       // make sure the correct number of events have been processed
-      assertEquals(12, totalEventsReceived);
+      assertEquals(12, totalEventsReceived.get());
     }
     finally {
       Events.shutDown();
@@ -97,7 +99,7 @@ public class EventsTest implements EventListener {
 
   @Override
   public void eventTriggered(Event event) throws Exception {
-    totalEventsReceived++;
+    totalEventsReceived.incrementAndGet();
     System.out.println("Received event with code '" + event.getEventCode() + "' of type: " + event.getClass().getName());
     if (event instanceof TestEvent) {
       sleep(100);

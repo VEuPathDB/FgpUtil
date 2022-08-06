@@ -16,7 +16,7 @@ import org.gusdb.fgputil.IoUtil;
 /**
  * Provides utility to parse URL-encoded form serialization, i.e. a data
  * value submitted as part of a 'application/x-www-form-urlencoded' POST
- * request, or a GET request's param string (after the '&' character).
+ * request, or a GET request's param string (after the '&amp;' character).
  *
  * @author rdoherty
  */
