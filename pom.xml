@@ -5,7 +5,7 @@
   <url>http://gusdb.org</url>
 
   <artifactId>fgputil</artifactId>
-  <version>2.7.3-jakarta</version>
+  <version>2.7.4-jakarta-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <parent>
