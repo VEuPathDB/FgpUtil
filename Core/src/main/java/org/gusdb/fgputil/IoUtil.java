@@ -485,7 +485,7 @@ public class IoUtil {
   /**
    * Given an absolute path to a directory with optional wildcards, returns all matching directories. Note that multiple
    * directories will only be returned if wildcards are specified. Note that this API does not support full glob syntax.
-   * Asterisks will only be treated as wild if they are the only character in a path segment (e.g. '/var/log/&#42/archive').
+   * Asterisks will only be treated as wild if they are the only character in a path segment (e.g. '/var/log/&#42;/archive').
    * @param absolutePath Path with optional wildcards to search
    * @return All matching paths.
    * @throws IOException If unable to traverse directory due to I/O issues.
