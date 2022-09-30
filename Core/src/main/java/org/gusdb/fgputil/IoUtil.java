@@ -18,15 +18,12 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
 import java.nio.charset.Charset;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -483,6 +480,41 @@ public class IoUtil {
    */
   public static FileAttribute<Set<PosixFilePermission>> getOpenPosixPermsAsFileAttribute() {
     return PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxrwxrwx"));
+  }
+
+  /**
+   * Given an absolute path to a directory with optional wildcards, returns all matching directories. Note that multiple
+   * directories will only be returned if wildcards are specified. Note that this API does not support full glob syntax.
+   * Asterisks will only be treated as wild if they are the only character in a path segment (e.g. '/var/log/&#42/archive').
+   * @param absolutePath Path with optional wildcards to search
+   * @return All matching paths.
+   * @throws IOException If unable to traverse directory due to I/O issues.
+   */
+  public static List<Path> findDirsFromAbsoluteDirWithWildcards(String absolutePath) throws IOException {
+    List<Path> allPaths = new ArrayList<>();
+    addPaths("/", absolutePath.split("/"), 0, allPaths);
+    return allPaths;
+  }
+
+  private static void addPaths(String partialPath, String[] segments, int segmentIndex, List<Path> pathsList) throws IOException {
+    Path path = Paths.get(partialPath);
+    // only interested in directories at any level
+    if (Files.isDirectory(path)) {
+      if (segmentIndex == segments.length) {
+        // done with this branch; add and return
+        pathsList.add(path);
+      }
+      else if (segments[segmentIndex].equals("*")) {
+        // this segment is a wildcard; find all dirs in the partial path and test each
+        for (Path foundPath : Files.newDirectoryStream(path)) {
+          addPaths(partialPath + "/" + foundPath.getFileName() , segments, segmentIndex + 1, pathsList);
+        }
+      }
+      else {
+        // this segment is a regular dir; append to partial path and move on
+        addPaths(partialPath + "/" + segments[segmentIndex], segments, segmentIndex + 1, pathsList);
+      }
+    }
   }
 
 }
