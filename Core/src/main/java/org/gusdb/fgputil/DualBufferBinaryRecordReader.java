@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.gusdb.fgputil.iterator.OptionStream;
@@ -24,14 +25,14 @@ import org.gusdb.fgputil.iterator.OptionStream;
  *
  * @author rdoherty
  */
-public class DualBufferBinaryRecordReader implements OptionStream<byte[]>, AutoCloseable {
+public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoCloseable {
 
   private final Path _file;
   private final ExecutorService _exec;
   private final AsynchronousFileChannel _channel;
   private final int _recordLength;
   private final int _bufferSize;
-  private final Supplier<byte[]> _recordBufferSupplier;
+  private final Function<ByteBuffer, T> _deserializer;
 
   private long _fileCursor = 0;
   private boolean _wasLastFill = false;
@@ -49,20 +50,18 @@ public class DualBufferBinaryRecordReader implements OptionStream<byte[]>, AutoC
    * @param recordLength size of binary records in bytes
    * @param recordsPerBuffer number of records to store in a buffer at one time.  Note: memory
    * footprint will be approximately recordLength * recordsPerBuffer * 2.
-   * @param recordBufferSupplier lazily-provided buffer for storing contents of a record. This enables client to determine
-   * whether a single shared buffer is used, or a new buffer is instantiated per record.
    * @throws IOException if unable to read file
    */
   public DualBufferBinaryRecordReader(Path file, int recordLength, int recordsPerBuffer,
-                                      Supplier<byte[]> recordBufferSupplier) throws IOException {
+                                      Function<ByteBuffer, T> deserializer) throws IOException {
     _file = file;
     _exec = Executors.newSingleThreadExecutor();
     _channel = AsynchronousFileChannel.open(file, Set.of(StandardOpenOption.READ), _exec);
     _recordLength = recordLength;
     _bufferSize = recordLength * recordsPerBuffer;
-    _current = ByteBuffer.allocateDirect(_bufferSize);
-    _next = ByteBuffer.allocateDirect(_bufferSize);
-    _recordBufferSupplier = recordBufferSupplier;
+    _current = ByteBuffer.allocate(_bufferSize);
+    _next = ByteBuffer.allocate(_bufferSize);
+    _deserializer = deserializer;
 
     // start reading into _next immediately
     startNextFill();
@@ -70,17 +69,11 @@ public class DualBufferBinaryRecordReader implements OptionStream<byte[]>, AutoC
     _current.position(_current.capacity());
   }
 
-  public DualBufferBinaryRecordReader(Path file, int recordLength, int recordsPerBuffer) throws IOException {
-    // By default, create a new byte array for each record. This is less memory efficient, but gives more flexibility
-    // to the caller.
-    this(file, recordLength, recordsPerBuffer, () -> new byte[recordLength]);
-  }
-
   /**
    * Returns the next record
    */
   @Override
-  public Optional<byte[]> next() {
+  public Optional<T> next() {
     if (!_current.hasRemaining()) {
       if (_wasLastFill) {
         return Optional.empty();
@@ -92,9 +85,7 @@ public class DualBufferBinaryRecordReader implements OptionStream<byte[]>, AutoC
       }
     }
     // read the next record
-    byte[] nextRecord = _recordBufferSupplier.get();
-    _current.get(nextRecord);
-    return Optional.of(nextRecord);
+    return Optional.of(_deserializer.apply(_current));
   }
 
   private void startNextFill() {

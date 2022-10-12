@@ -47,7 +47,10 @@ public class DualBufferBinaryRecordReaderTest {
     }
 
     public Record(byte[] bytes) {
-      ByteBuffer buf = ByteBuffer.wrap(bytes);
+      this(ByteBuffer.wrap(bytes));
+    }
+
+    public Record(ByteBuffer buf) {
       i = buf.getInt();
       l = buf.getLong();
       f = buf.getFloat();
@@ -97,9 +100,9 @@ public class DualBufferBinaryRecordReaderTest {
 
   // next read the records back out
   private void doTest(int recordsPerBuffer) throws IOException {
-    try (DualBufferBinaryRecordReader reader = new DualBufferBinaryRecordReader(Paths.get(FILE), Record.BINARY_SIZE, recordsPerBuffer)) {
+    try (DualBufferBinaryRecordReader<Record> reader = new DualBufferBinaryRecordReader<>(Paths.get(FILE), Record.BINARY_SIZE, recordsPerBuffer, Record::new)) {
       int i = 0;
-      for (Record r : toIterable(transform(toIterator(reader),Record::new))) {
+      for (Record r : toIterable(toIterator(reader))) {
         assertEquals(i, r.i);
         assertEquals(i, r.l);
         assertEquals(i, r.f, 0.0001);
