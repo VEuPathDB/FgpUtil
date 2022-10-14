@@ -43,7 +43,7 @@ public class IoUtil {
    * type is a stream, and the content to be returned already exists in memory
    * as a string.  This is simply a wrapper around the ByteArrayInputStream
    * constructor.
-   * 
+   *
    * @param data data to be converted
    * @return stream representing the data
    */
@@ -55,7 +55,7 @@ public class IoUtil {
    * Converts a string into an open input stream.  This can be used if the
    * result type is a stream, and the content to be returned already exists in
    * memory as a string.
-   * 
+   *
    * @param str string to be converted
    * @return input stream representing the string
    */
@@ -65,7 +65,7 @@ public class IoUtil {
 
   /**
    * Recursively removes the passed directory
-   * 
+   *
    * @param directory directory to remove
    * @throws IOException if unable to delete entire directory tree (deletion will stop after first error)
    */
@@ -93,7 +93,7 @@ public class IoUtil {
   /**
    * Checks if the passed directory exists and is readable and throws an exception supplied by
    * the passed supplier if not
-   * 
+   *
    * @param directoryName directory to check
    * @return File object for found, readable directory
    * @throws T exception thrown if directory specified does not exist or is not readable
@@ -109,7 +109,7 @@ public class IoUtil {
   /**
    * Checks if the passed directory exists and is writable and calls
    * System.exit() with the default exit error code if not
-   * 
+   *
    * @param directoryName directory to check
    * @return File object for found, writable directory
    */
@@ -125,7 +125,7 @@ public class IoUtil {
   /**
    * Checks if the passed directory exists and is writable and throws an exception supplied by
    * the passed supplier if not
-   * 
+   *
    * @param directoryName directory to check
    * @return File object for found, writable directory
    * @throws T exception thrown if directory specified does not exist or is not writeable
@@ -141,7 +141,7 @@ public class IoUtil {
   /**
    * Checks if the passed file exists and is readable and calls
    * System.exit() with the default exit error code if not
-   * 
+   *
    * @param fileName directory to check
    * @return File object for found, writable directory
    */
@@ -157,7 +157,7 @@ public class IoUtil {
   /**
    * Checks if the passed file exists and is readable and throws an exception supplied by
    * the passed supplier if not
-   * 
+   *
    * @param fileName directory to check
    * @return File object for found, writable directory
    * @throws T exception thrown if file specified does not exist or is not readable
@@ -173,7 +173,7 @@ public class IoUtil {
   /**
    * Tries to close each of the passed Closeables, but does not throw error if
    * the close does not succeed.  Also ignores nulls.
-   * 
+   *
    * @param closeable array of closable objects
    */
   public static void closeQuietly(Closeable... closeable) {
@@ -185,7 +185,7 @@ public class IoUtil {
   /**
    * Transfers data from input stream to the output stream until no more data
    * is available, then closes input stream (but not output stream).
-   * 
+   *
    * @param outputStream output stream data is written to
    * @param inputStream input stream data is read from
    * @throws IOException if problem reading/writing data occurs
@@ -225,7 +225,7 @@ public class IoUtil {
   /**
    * Transfers character data from the reader to the writer until no more data
    * is available, then closes reader (but not the writer).
-   * 
+   *
    * @param writer writer data is written to
    * @param reader reader data is read from
    * @throws IOException if problem reading/writing data occurs
@@ -250,7 +250,7 @@ public class IoUtil {
    * allows arbitrary escaping of characters depending on your use case; each
    * character will be translated by the escaper before being written to the
    * writer.
-   * 
+   *
    * @param writer writer data is written to
    * @param reader reader data is read from
    * @param characterEscaper translation function for escaping character values
@@ -275,7 +275,7 @@ public class IoUtil {
 
   /**
    * Serializes a serializable object into a byte array and returns it
-   * 
+   *
    * @param obj object to be serialized
    * @return serialized object
    * @throws IOException if unable to serialize
@@ -290,7 +290,7 @@ public class IoUtil {
 
   /**
    * Deserializes a byte array into a Java object.
-   * 
+   *
    * @param bytes serialized object
    * @return serializable object built from the passed bytes
    * @throws IOException if unable to convert bytes to object
@@ -307,7 +307,7 @@ public class IoUtil {
   /**
    * Read all available characters from the passed Reader and return them as a
    * String.
-   * 
+   *
    * @param charReader Reader from which to read chars
    * @return String containing chars read from reader
    * @throws IOException if unable to read chars
@@ -325,7 +325,7 @@ public class IoUtil {
   /**
    * Reads all available bytes from the passed input stream and returns them as
    * a byte array.
-   * 
+   *
    * @param inputStream stream from which to read bytes
    * @return byte array containing bytes read from stream
    * @throws IOException if unable to read bytes
@@ -341,7 +341,7 @@ public class IoUtil {
    * Opens a series of files and places readers of them into an AutoCloseableList.  If
    * any of the files are unopenable for read, any already opened readers are closed and
    * an exception is thrown.
-   * 
+   *
    * @param files list of paths of files to be opened for reading
    * @return list of readers that can be closed together
    * @throws FileNotFoundException if unable to open any of the files for read
@@ -364,7 +364,7 @@ public class IoUtil {
    * Opens a series of files and places writers to them into an AutoCloseableList.  If
    * any of the files are unopenable for write, any already opened writers are closed and
    * an exception is thrown.
-   * 
+   *
    * @param files list of paths of files to be opened for write
    * @return list of writers that can be closed together
    * @throws IOException if unable to open any of the files for write
@@ -385,7 +385,7 @@ public class IoUtil {
 
   /**
    * Create a directory at the given path and open rwx perms to all.
-   * 
+   *
    * @param directory path to directory
    * @throws IOException if unable to create directory or apply permissions
    */
@@ -398,7 +398,7 @@ public class IoUtil {
    * an existing directory by that name.  If directory exists and useExisting is true, an attempt will be
    * made to open permissions on the existing directory.  If useExisting is false, an exception will be
    * thrown if the directory already exists.
-   * 
+   *
    * @param directory path to directory
    * @param useExisting if false and directory exists, an exception will be thrown
    * @throws IOException if unable to create directory or apply permissions
@@ -421,7 +421,7 @@ public class IoUtil {
    * assumes you are on a POSIX system and applies open permissions (rwxrwxrwx) to any directories created during
    * its call.  This is done atomically when creating the nonexistent directories.  If this method fails, then it may
    * do so after creating some, but not all, of the parent directories.
-   * 
+   *
    * @param directory the directory to create
    * @return the directory
    */
@@ -431,7 +431,7 @@ public class IoUtil {
 
 /**
    * Generate an empty, open-permissions temporary directory in the default tmp location.
-   * 
+   *
    * @param dirPrefix prefix applied to generated directory name
    * @return path to generated directory
    * @throws IOException if unable to create directory or apply open permissions
@@ -442,7 +442,7 @@ public class IoUtil {
 
   /**
    * Generate an empty, open-permissions temporary directory under the passed path.
-   * 
+   *
    * @param parentDir parent directory in which new directory will be located
    * @param dirPrefix prefix applied to generated directory name
    * @return path to generated directory
@@ -455,7 +455,7 @@ public class IoUtil {
   /**
    * Opens all POSIX permission (i.e. rwxrwxrwx) for the passed path, ignoring UnsupportedOperationException
    * in case this method is called from a non-POSIX-like OS.
-   * 
+   *
    * @param path path to apply permissions to
    * @return the passed path
    * @throws IOException if I/O error occurs
@@ -475,7 +475,7 @@ public class IoUtil {
 
   /**
    * Create a file attribute representing open file permissions on a POSIX system (rwx on owner, group, all)
-   * 
+   *
    * @return open posix permissions as a file attribute
    */
   public static FileAttribute<Set<PosixFilePermission>> getOpenPosixPermsAsFileAttribute() {
