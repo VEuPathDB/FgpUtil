@@ -4,7 +4,6 @@ import static org.gusdb.fgputil.FormatUtil.paddedBinaryToString;
 import static org.gusdb.fgputil.FormatUtil.stringToPaddedBinary;
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterator;
-import static org.gusdb.fgputil.iterator.IteratorUtil.transform;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedOutputStream;
@@ -44,10 +43,6 @@ public class DualBufferBinaryRecordReaderTest {
       f = n;
       d = n;
       s = String.valueOf(n);
-    }
-
-    public Record(byte[] bytes) {
-      this(ByteBuffer.wrap(bytes));
     }
 
     public Record(ByteBuffer buf) {
