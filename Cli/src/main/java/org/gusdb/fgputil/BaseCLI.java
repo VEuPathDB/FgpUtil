@@ -5,9 +5,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
@@ -57,7 +57,7 @@ public abstract class BaseCLI {
   }
 
   private void parseCommandLine(String[] args) throws ParseException {
-    CommandLineParser parser = new BasicParser();
+    CommandLineParser parser = new DefaultParser();
     _commandLine = parser.parse(_options, args);
   }
 
