@@ -24,6 +24,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.media.multipart.MultiPart;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.web.HttpMethod;
@@ -80,6 +81,14 @@ public class ClientUtil {
       String url, Object postBodyObject, String expectedResponseType, Map<String,String> additionalHeaders) {
     return makeAsyncPostRequest(url, JsonUtil.serializeObject(postBodyObject),
         MediaType.APPLICATION_JSON, expectedResponseType, additionalHeaders);
+  }
+
+  public static ResponseFuture makeAsyncMultiPartPostRequest(
+      String url, MultiPart multiPartEntity, String expectedResponseType, Map<String,String> additionalHeaders) {
+    LOG.info("Will send a multi-part POST request to " + url);
+    multiPartEntity.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+    return makeAsyncRequest(url, expectedResponseType,
+      invoker -> invoker.post(Entity.entity(multiPartEntity, multiPartEntity.getMediaType())), additionalHeaders);
   }
 
   private static ResponseFuture makeAsyncRequest(String url, String expectedResponseType,
