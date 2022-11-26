@@ -25,6 +25,7 @@ import jakarta.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.web.HttpMethod;
@@ -67,14 +68,15 @@ public class ClientUtil {
       String url, String expectedResponseType, Map<String,String> additionalHeaders) {
     LOG.info("Will send following GET request to " + url);
     return makeAsyncRequest(url, expectedResponseType,
-      invoker -> invoker.get(), additionalHeaders);
+      invoker -> invoker.get(), additionalHeaders, Function.identity());
   }
 
   public static ResponseFuture makeAsyncPostRequest(
       String url, String requestBody, String requestMimeType, String expectedResponseType, Map<String,String> additionalHeaders) {
     LOG.info("Will send following POST request to " + url + "\n" + requestBody);
     return makeAsyncRequest(url, expectedResponseType,
-      invoker -> invoker.post(Entity.entity(requestBody,requestMimeType)), additionalHeaders);
+      invoker -> invoker.post(Entity.entity(requestBody,requestMimeType)),
+      additionalHeaders, Function.identity());
   }
 
   public static ResponseFuture makeAsyncPostRequest(
@@ -88,11 +90,14 @@ public class ClientUtil {
     LOG.info("Will send a multi-part POST request to " + url);
     multiPartEntity.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
     return makeAsyncRequest(url, expectedResponseType,
-      invoker -> invoker.post(Entity.entity(multiPartEntity, multiPartEntity.getMediaType())), additionalHeaders);
+      invoker -> invoker.post(Entity.entity(multiPartEntity, multiPartEntity.getMediaType())),
+      additionalHeaders, cli -> cli.register(MultiPartFeature.class));
   }
 
   private static ResponseFuture makeAsyncRequest(String url, String expectedResponseType,
-      Function<AsyncInvoker, Future<Response>> responseProducer, Map<String,String> additionalHeaders) {
+      Function<AsyncInvoker, Future<Response>> responseProducer,
+      Map<String,String> additionalHeaders,
+      Function<Client,Client> clientModifier) {
 
     MultivaluedMap<String,Object> headers = new MultivaluedHashMap<>();
 
@@ -112,7 +117,7 @@ public class ClientUtil {
 
     return new ResponseFuture(
       responseProducer.apply(
-        ClientBuilder.newClient()
+        clientModifier.apply(ClientBuilder.newClient())
           .target(url)
           .request()
           .headers(headers)
