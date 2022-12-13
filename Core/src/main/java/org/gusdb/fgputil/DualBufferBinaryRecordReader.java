@@ -89,7 +89,7 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
   }
 
   public long getTimeAwaitingFill() {
-    return _awaitingFillTimer.getElapsed();
+    return _awaitingFillTimer == null ? 0L : _awaitingFillTimer.getElapsed();
   }
 
   private void startNextFill() {
