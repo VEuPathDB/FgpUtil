@@ -38,6 +38,7 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
   private ByteBuffer _current;
   private ByteBuffer _next;
   private Future<Integer> _nextFill;
+  private Timer _awaitingFillTimer = null;
 
   /**
    * Creates a instance that will read from the passed file, expecting records of size recordLength
@@ -87,6 +88,10 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
     return Optional.of(_deserializer.apply(_current));
   }
 
+  public long getTimeAwaitingFill() {
+    return _awaitingFillTimer.getElapsed();
+  }
+
   private void startNextFill() {
     _next.clear();
     _nextFill = _channel.read(_next, _fileCursor);
@@ -96,7 +101,13 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
   private void resetCurrent() {
     try {
       // wait for the fill to complete (hopefully will be ready immediately)
+      if (_awaitingFillTimer == null){
+        _awaitingFillTimer = Timer.start();
+      } else {
+        _awaitingFillTimer.resume();
+      }
       Integer bytesRead = _nextFill.get();
+      _awaitingFillTimer.pause();
 
       // throw if bytes does not represent an exact number of records
       if (bytesRead != -1 && bytesRead % _recordLength != 0) {

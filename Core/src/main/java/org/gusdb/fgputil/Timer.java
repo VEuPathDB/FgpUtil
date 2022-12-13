@@ -1,5 +1,7 @@
 package org.gusdb.fgputil;
 
+import java.time.Clock;
+
 /**
  * Provides simple timer class for measuring duration of clock time between events.  Also provides
  * human-readable toString of time elapsed.
@@ -8,28 +10,53 @@ package org.gusdb.fgputil;
  */
 public class Timer {
 
-  private long _startTime;
+  private long _lastStartTime;
+  private long _accumulatedDuration;
+  private boolean _isRunning;
+  private Clock _clock;
 
   public static Timer start() {
     return new Timer();
   }
 
   public Timer() {
+    this(Clock.systemUTC());
+  }
+
+  public Timer(Clock clock) {
+    _clock = clock;
     restart();
   }
 
   public void restart() {
-    _startTime = System.currentTimeMillis();
+    _accumulatedDuration = 0L;
+    _lastStartTime = _clock.millis();
+    _isRunning = true;
   }
 
   public long getElapsed() {
-    return System.currentTimeMillis() - _startTime;
+    return (_clock.millis() - _lastStartTime) + _accumulatedDuration;
+  }
+
+  public void pause() {
+    if (_isRunning) {
+      _accumulatedDuration += _clock.millis() - _lastStartTime;
+      _isRunning = false;
+    }
+  }
+
+  public void resume() {
+    if (!_isRunning) {
+      _isRunning = true;
+      _lastStartTime = _clock.millis();
+    }
   }
 
   public long getElapsedAndRestart() {
-    long now = System.currentTimeMillis();
-    long previousInterval = now - _startTime;
-    _startTime = now;
+    long now = _clock.millis();
+    long previousInterval = (now - _lastStartTime) + _accumulatedDuration;
+    _lastStartTime = now;
+    _accumulatedDuration = 0L;
     return previousInterval;
   }
 
