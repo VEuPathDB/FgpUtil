@@ -92,19 +92,13 @@ public class DualBufferBinaryRecordReaderTest {
   public void doTestWithOffsetBufferSize() throws IOException {
     doTest(33);
   }
-
-  @Test
-  public void doTestWithOffsetBufferSizes() throws IOException {
-    doTest(4);
-  }
-
+  
 
   // next read the records back out
   private void doTest(int recordsPerBuffer) throws IOException {
     try (DualBufferBinaryRecordReader<Record> reader = new DualBufferBinaryRecordReader<>(Paths.get(FILE), Record.BINARY_SIZE, recordsPerBuffer, Record::new)) {
       int i = 0;
       for (Record r : toIterable(toIterator(reader))) {
-//        System.out.println(i);
         assertEquals(i, r.i);
         assertEquals(i, r.l);
         assertEquals(i, r.f, 0.0001);
