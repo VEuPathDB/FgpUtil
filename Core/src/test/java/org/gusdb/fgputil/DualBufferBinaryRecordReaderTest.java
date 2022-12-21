@@ -92,7 +92,7 @@ public class DualBufferBinaryRecordReaderTest {
   public void doTestWithOffsetBufferSize() throws IOException {
     doTest(33);
   }
-  
+
 
   // next read the records back out
   private void doTest(int recordsPerBuffer) throws IOException {

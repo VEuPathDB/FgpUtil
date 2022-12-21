@@ -184,9 +184,9 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
             throw new RuntimeException(e);
           }
         }
+        _deserializedRecordsConsumed++;
       }
       final T element = (T) _deserializedElements[_deserializedRecordsConsumed];
-      _deserializedRecordsConsumed++;
       return Optional.of(element);
     }
 
@@ -225,7 +225,7 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
       });
 
       bufferFill.thenAcceptAsync((channelReadResult) -> {
-        for (int i = 0; i < this._recordsReadFromDiskCount; ++i) {
+        for (int i = 0; i < this._recordsReadFromDiskCount; i++) {
           _deserializedElements[i] = this._deserializer.apply(channelReadResult._byteBuffer);
           // Lock while we increment the counter indicating available elements. The consumer will check if elements are
           // available and block if not so we need to ensure the count is consistent.

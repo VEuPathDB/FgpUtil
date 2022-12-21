@@ -9,6 +9,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -36,7 +38,7 @@ public class FormatUtil {
 
   public static final String NL = System.lineSeparator();
   public static final String TAB = "\t";
-  public static final String UTF8_ENCODING = "UTF-8";
+  public static final Charset UTF8_ENCODING = StandardCharsets.UTF_8;
 
   // standard formats in java.time
   public static final DateTimeFormatter STANDARD_DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
@@ -135,45 +137,21 @@ public class FormatUtil {
   }
 
   public static byte[] getUtf8EncodedBytes(String s) {
-    try {
-      return s.getBytes(UTF8_ENCODING);
-    }
-    catch (UnsupportedEncodingException e) {
-      // this should never happen; if it does, wrap in RuntimeException
-      throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
-    }
+    return s.getBytes(UTF8_ENCODING);
   }
 
   public static String decodeUtf8EncodedBytes(byte[] bytes) {
-    try {
-      return new String(bytes, UTF8_ENCODING);
-    }
-    catch (UnsupportedEncodingException e) {
-      // this should never happen; if it does, wrap in RuntimeException
-      throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
-    }
+    return new String(bytes, UTF8_ENCODING);
   }
 
   public static String urlEncodeUtf8(String s) {
-    try {
-      if (s == null) return null;
-      return URLEncoder.encode(s, UTF8_ENCODING);
-    }
-    catch (UnsupportedEncodingException e) {
-      // this should never happen; if it does, wrap in RuntimeException
-      throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
-    }
+    if (s == null) return null;
+    return URLEncoder.encode(s, UTF8_ENCODING);
   }
 
   public static String urlDecodeUtf8(String s) {
-    try {
-      if (s == null) return null;
-      return URLDecoder.decode(s, UTF8_ENCODING);
-    }
-    catch (UnsupportedEncodingException e) {
-      // this should never happen; if it does, wrap in RuntimeException
-      throw new RuntimeException(UTF8_ENCODING + " encoding no longer supported by Java.", e);
-    }
+    if (s == null) return null;
+    return URLDecoder.decode(s, UTF8_ENCODING);
   }
 
   /**
