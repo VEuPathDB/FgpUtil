@@ -23,14 +23,13 @@ import org.gusdb.fgputil.iterator.OptionStream;
  * @author rdoherty
  */
 public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoCloseable {
-  private static final ExecutorService DESERIALIZER_THREAD_POOL = Executors.newFixedThreadPool(6, r -> new Thread(r, "deserializer"));
-  private static final ExecutorService DISK_THREAD_POOL = Executors.newCachedThreadPool(r -> new Thread(r, "disk-read"));
-
   private final Path _file;
   private final AsynchronousFileChannel _channel;
   private final int _bufferSize;
-
   private final int _recordLength;
+  private final ExecutorService _deserializerThreadPool;// = Executors.newFixedThreadPool(6, r -> new Thread(r, "deserializer"));
+  // = Executors.newCachedThreadPool(r -> new Thread(r, "read-file"));
+
 
   private boolean _wasLastFill;
   private long _fileCursor = 0;
@@ -53,20 +52,23 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
    * @throws IOException if unable to read file
    */
   public DualBufferBinaryRecordReader(Path file, int recordLength, int recordsPerBuffer,
-                                      Function<ByteBuffer, T> deserializer) throws IOException {
+                                      Function<ByteBuffer, T> deserializer,
+                                      ExecutorService fileChannelThreadPool,
+                                      ExecutorService deserializerThreadPool) throws IOException {
     _file = file;
-    _channel = AsynchronousFileChannel.open(file, Set.of(StandardOpenOption.READ), DISK_THREAD_POOL);
+    _channel = AsynchronousFileChannel.open(file, Set.of(StandardOpenOption.READ), fileChannelThreadPool);
     _bufferSize = recordLength * recordsPerBuffer;
     _recordLength = recordLength;
     _current = new Buffer<>(recordsPerBuffer, deserializer, recordLength);
     _next = new Buffer<>(recordsPerBuffer, deserializer, recordLength);
+    _deserializerThreadPool = deserializerThreadPool;
 
     // start reading into _next immediately
     startNextFill();
   }
 
   /**
-   * Returns the next record
+   * Returns the next record.
    */
   @Override
   public Optional<T> next() {
@@ -89,7 +91,7 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
   }
 
   private void startNextFill() {
-    _nextFill = _next.startFill(_channel, _fileCursor, DESERIALIZER_THREAD_POOL);
+    _nextFill = _next.startFill(_channel, _fileCursor, _deserializerThreadPool);
     _fileCursor += _bufferSize;
   }
 
@@ -169,6 +171,7 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
      * @return
      */
     public Optional<T> next() {
+      T element;
       // If all elements read from disk have been deserialized and consumed, return empty.
       if (_recordsReadFromDiskCount == _deserializedRecordsConsumed) {
         return Optional.empty();
@@ -184,9 +187,8 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
             throw new RuntimeException(e);
           }
         }
-        _deserializedRecordsConsumed++;
+        element = (T) _deserializedElements[_deserializedRecordsConsumed++];
       }
-      final T element = (T) _deserializedElements[_deserializedRecordsConsumed];
       return Optional.of(element);
     }
 
@@ -230,10 +232,9 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
           // Lock while we increment the counter indicating available elements. The consumer will check if elements are
           // available and block if not so we need to ensure the count is consistent.
           synchronized (this._elementAvailableLock) {
-            _deserializedElementsAvailable++;
             // The only scenario where our consumer is awaiting this lock is if there are no deserialized elements
             // available to read. If this is the case, we are making one available here, so we notify the consumer.
-            if (this._deserializedElementsAvailable - 1 == this._deserializedRecordsConsumed) {
+            if (_deserializedElementsAvailable++ == this._deserializedRecordsConsumed) {
               _elementAvailableLock.notify();
             }
           }
@@ -242,14 +243,14 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
       return bufferFill;
     }
 
-  private static class FileChannelReadResult {
-    private int _bytesRead;
-    private ByteBuffer _byteBuffer;
+    private static class FileChannelReadResult {
+      private int _bytesRead;
+      private ByteBuffer _byteBuffer;
 
-    public FileChannelReadResult(int _bytesRead, ByteBuffer _byteBuffer) {
-      this._bytesRead = _bytesRead;
-      this._byteBuffer = _byteBuffer;
+      public FileChannelReadResult(int _bytesRead, ByteBuffer _byteBuffer) {
+        this._bytesRead = _bytesRead;
+        this._byteBuffer = _byteBuffer;
+      }
     }
-  }
   }
 }
