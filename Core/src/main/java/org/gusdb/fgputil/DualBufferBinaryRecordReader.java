@@ -9,6 +9,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 import org.gusdb.fgputil.iterator.OptionStream;
@@ -59,8 +60,8 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
     _channel = AsynchronousFileChannel.open(file, Set.of(StandardOpenOption.READ), fileChannelThreadPool);
     _bufferSize = recordLength * recordsPerBuffer;
     _recordLength = recordLength;
-    _current = new Buffer<>(recordsPerBuffer, deserializer, recordLength);
-    _next = new Buffer<>(recordsPerBuffer, deserializer, recordLength);
+    _current = new Buffer<>(recordsPerBuffer, deserializer, recordLength, true);
+    _next = new Buffer<>(recordsPerBuffer, deserializer, recordLength, false);
     _deserializerThreadPool = deserializerThreadPool;
 
     // start reading into _next immediately
@@ -103,7 +104,9 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
       } else {
         _awaitingFillTimer.resume();
       }
+
       int bytesRead = _nextFill.get()._bytesRead;
+      _current._deserializationComplete.get();
       _awaitingFillTimer.pause();
 
       // throw if bytes does not represent an exact number of records
@@ -149,18 +152,23 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
     private int _recordsReadFromDiskCount;
     private int _deserializedRecordsConsumed;
     private int _deserializedElementsAvailable;
+    private CompletableFuture<Void> _deserializationComplete;
 
-    public Buffer(int bufferSize, Function<ByteBuffer, T> deserializer, int recordLength) {
+    public Buffer(int bufferSize, Function<ByteBuffer, T> deserializer, int recordLength, boolean startFull) {
       _deserializer = deserializer;
       _deserializedElements = new Object[bufferSize];
       _elementAvailableLock = new Object();
       _byteBuf = ByteBuffer.allocate(bufferSize * recordLength);
       _recordLength = recordLength;
-      _recordsReadFromDiskCount = 0;
+      _deserializationComplete = CompletableFuture.completedFuture(null);
+      if (startFull) {
+        _recordsReadFromDiskCount = -1;
+      } else {
+        _recordsReadFromDiskCount = Integer.MAX_VALUE;
+      }
       _deserializedRecordsConsumed = 0;
       _deserializedElementsAvailable = 0;
     }
-
     public boolean hasRemaining() {
       return _recordsReadFromDiskCount != _deserializedRecordsConsumed && _recordsReadFromDiskCount != -1;
     }
@@ -209,16 +217,16 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
       final CompletableFuture<FileChannelReadResult> bufferFill = new CompletableFuture<>();
       // Wrapper the {@link AsynchronousFileChannel#read(ByteBuffer, long)} method returning a CompletableFuture
       // instead of a Future to enable chaining.
-      channel.read(this._byteBuf, fileCursor, null, new CompletionHandler<Integer, Void>() {
+      channel.read(_byteBuf, fileCursor, null, new CompletionHandler<Integer, Void>() {
         public void completed(Integer result, Void attachment) {
           if (result == -1) {
             _recordsReadFromDiskCount = -1;
           } else {
-            _recordsReadFromDiskCount = result / Buffer.this._recordLength;
+            _recordsReadFromDiskCount = result / _recordLength;
           }
 
           _byteBuf.flip();
-          bufferFill.complete(new FileChannelReadResult(result, _byteBuf));
+          bufferFill.complete(new FileChannelReadResult(result));
         }
 
         public void failed(Throwable exc, Void attachment) {
@@ -226,15 +234,15 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
         }
       });
 
-      bufferFill.thenAcceptAsync((channelReadResult) -> {
-        for (int i = 0; i < this._recordsReadFromDiskCount; i++) {
-          _deserializedElements[i] = this._deserializer.apply(channelReadResult._byteBuffer);
+      _deserializationComplete = bufferFill.thenAcceptAsync((channelReadResult) -> {
+        for (int i = 0; i < _recordsReadFromDiskCount; i++) {
+          _deserializedElements[i] = _deserializer.apply(_byteBuf);
           // Lock while we increment the counter indicating available elements. The consumer will check if elements are
           // available and block if not so we need to ensure the count is consistent.
-          synchronized (this._elementAvailableLock) {
+          synchronized (_elementAvailableLock) {
             // The only scenario where our consumer is awaiting this lock is if there are no deserialized elements
             // available to read. If this is the case, we are making one available here, so we notify the consumer.
-            if (_deserializedElementsAvailable++ == this._deserializedRecordsConsumed) {
+            if (_deserializedElementsAvailable++ == _deserializedRecordsConsumed) {
               _elementAvailableLock.notify();
             }
           }
@@ -245,12 +253,14 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
 
     private static class FileChannelReadResult {
       private int _bytesRead;
-      private ByteBuffer _byteBuffer;
 
-      public FileChannelReadResult(int _bytesRead, ByteBuffer _byteBuffer) {
+      public FileChannelReadResult(int _bytesRead) {
         this._bytesRead = _bytesRead;
-        this._byteBuffer = _byteBuffer;
       }
+    }
+
+    private static class Attachment {
+      private ReentrantLock lock = new ReentrantLock();
     }
   }
 }
