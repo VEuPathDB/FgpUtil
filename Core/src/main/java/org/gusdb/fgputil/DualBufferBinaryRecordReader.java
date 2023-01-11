@@ -6,14 +6,13 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
-import org.gusdb.fgputil.iterator.OptionStream;
+import org.gusdb.fgputil.iterator.CloseableIterator;
 
 /**
  * Reads uniform binary records from a file, using a double buffered system that allows
@@ -24,7 +23,7 @@ import org.gusdb.fgputil.iterator.OptionStream;
  *
  * @author rdoherty
  */
-public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoCloseable {
+public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
   private final Path _file;
   private final AsynchronousFileChannel _channel;
   private final int _bufferSize;
@@ -73,19 +72,27 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
    * Returns the next record.
    */
   @Override
-  public Optional<T> next() {
+  public boolean hasNext() {
+    ensureBuffer();
+    return _current.hasRemaining();
+  }
+
+  /**
+   * Returns the next record
+   */
+  @Override
+  public T next() {
+    ensureBuffer();
+    return _current.next();
+  }
+
+  private void ensureBuffer() {
     if (!_current.hasRemaining()) {
       if (_wasLastFill) {
-        return Optional.empty();
+        return;
       }
       resetCurrent();
-      // check again in case the latest fill was empty
-      if (!_current.hasRemaining()) {
-        return Optional.empty();
-      }
     }
-    // read the next record
-    return _current.next();
   }
 
   public long getTimeAwaitingFill() {
@@ -179,12 +186,11 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
      *
      * @return
      */
-    @SuppressWarnings("unchecked")
-    public Optional<T> next() {
+    public T next() {
       T element;
       // If all elements read from disk have been deserialized and consumed, return empty.
       if (_recordsReadFromDiskCount == _deserializedRecordsConsumed) {
-        return Optional.empty();
+        return null;
       }
       // Lock while checking if elements are available.
       synchronized (_elementAvailableLock) {
@@ -197,9 +203,9 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
             throw new RuntimeException(e);
           }
         }
-        element = (T) _deserializedElements[_deserializedRecordsConsumed++];
+        _deserializedRecordsConsumed++;
       }
-      return Optional.of(element);
+      return (T) _deserializedElements[_deserializedRecordsConsumed - 1];
     }
 
     /**
