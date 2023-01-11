@@ -6,13 +6,13 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.*;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
-import org.gusdb.fgputil.iterator.OptionStream;
+import org.gusdb.fgputil.iterator.CloseableIterator;
 
 /**
  * Reads uniform binary records from a file, using a double buffered system that allows
@@ -23,7 +23,7 @@ import org.gusdb.fgputil.iterator.OptionStream;
  *
  * @author rdoherty
  */
-public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoCloseable {
+public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
   private final Path _file;
   private final AsynchronousFileChannel _channel;
   private final int _bufferSize;
@@ -72,19 +72,27 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
    * Returns the next record.
    */
   @Override
-  public Optional<T> next() {
+  public boolean hasNext() {
+    ensureBuffer();
+    return _current.hasRemaining();
+  }
+
+  /**
+   * Returns the next record
+   */
+  @Override
+  public T next() {
+    ensureBuffer();
+    return _current.next();
+  }
+
+  private void ensureBuffer() {
     if (!_current.hasRemaining()) {
       if (_wasLastFill) {
-        return Optional.empty();
+        return;
       }
       resetCurrent();
-      // check again in case the latest fill was empty
-      if (!_current.hasRemaining()) {
-        return Optional.empty();
-      }
     }
-    // read the next record
-    return _current.next();
   }
 
   public long getTimeAwaitingFill() {
@@ -176,13 +184,13 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
     /**
      * Return the next available deserialized element from the buffer.
      *
-     * @return
+     * @return next deserialized element
      */
-    public Optional<T> next() {
+    public T next() {
       T element;
       // If all elements read from disk have been deserialized and consumed, return empty.
       if (_recordsReadFromDiskCount == _deserializedRecordsConsumed) {
-        return Optional.empty();
+        return null;
       }
       // Lock while checking if elements are available.
       synchronized (_elementAvailableLock) {
@@ -195,9 +203,9 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
             throw new RuntimeException(e);
           }
         }
-        element = (T) _deserializedElements[_deserializedRecordsConsumed++];
+        _deserializedRecordsConsumed++;
       }
-      return Optional.of(element);
+      return (T) _deserializedElements[_deserializedRecordsConsumed - 1];
     }
 
     /**
@@ -207,7 +215,7 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
      * @param channel         File channel used to read from disk.
      * @param fileCursor      Cursor indicating where to begin the read from file.
      * @param executorService Thread pool used to read from file.
-     * @return
+     * @return CompletableFuture containing number of bytes read and buffer read into.
      */
 
     public CompletableFuture<FileChannelReadResult> startFill(AsynchronousFileChannel channel, long fileCursor, ExecutorService executorService) {
@@ -218,6 +226,7 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
       // Wrapper the {@link AsynchronousFileChannel#read(ByteBuffer, long)} method returning a CompletableFuture
       // instead of a Future to enable chaining.
       channel.read(_byteBuf, fileCursor, null, new CompletionHandler<Integer, Void>() {
+        @Override
         public void completed(Integer result, Void attachment) {
           if (result == -1) {
             _recordsReadFromDiskCount = -1;
@@ -229,6 +238,7 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
           bufferFill.complete(new FileChannelReadResult(result));
         }
 
+        @Override
         public void failed(Throwable exc, Void attachment) {
           bufferFill.completeExceptionally(exc);
         }
@@ -252,15 +262,11 @@ public class DualBufferBinaryRecordReader<T> implements OptionStream<T>, AutoClo
     }
 
     private static class FileChannelReadResult {
-      private int _bytesRead;
+      private final int _bytesRead;
 
       public FileChannelReadResult(int _bytesRead) {
         this._bytesRead = _bytesRead;
       }
-    }
-
-    private static class Attachment {
-      private ReentrantLock lock = new ReentrantLock();
     }
   }
 }

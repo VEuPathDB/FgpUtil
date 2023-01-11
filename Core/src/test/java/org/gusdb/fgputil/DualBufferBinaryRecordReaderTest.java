@@ -100,7 +100,7 @@ public class DualBufferBinaryRecordReaderTest {
     try (DualBufferBinaryRecordReader<Record> reader = new DualBufferBinaryRecordReader<>(Paths.get(FILE), Record.BINARY_SIZE, recordsPerBuffer, Record::new,
             Executors.newSingleThreadExecutor(), Executors.newSingleThreadExecutor())) {
       int i = 0;
-      for (Record r : toIterable(toIterator(reader))) {
+      for (Record r : toIterable(reader)) {
         assertEquals(i, r.i);
         assertEquals(i, r.l);
         assertEquals(i, r.f, 0.0001);
