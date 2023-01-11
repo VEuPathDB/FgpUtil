@@ -184,7 +184,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
     /**
      * Return the next available deserialized element from the buffer.
      *
-     * @return
+     * @return next deserialized element
      */
     public T next() {
       T element;
@@ -215,7 +215,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
      * @param channel         File channel used to read from disk.
      * @param fileCursor      Cursor indicating where to begin the read from file.
      * @param executorService Thread pool used to read from file.
-     * @return
+     * @return CompletableFuture containing number of bytes read and buffer read into.
      */
 
     public CompletableFuture<FileChannelReadResult> startFill(AsynchronousFileChannel channel, long fileCursor, ExecutorService executorService) {
@@ -262,7 +262,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
     }
 
     private static class FileChannelReadResult {
-      private int _bytesRead;
+      private final int _bytesRead;
 
       public FileChannelReadResult(int _bytesRead) {
         this._bytesRead = _bytesRead;
