@@ -13,7 +13,7 @@ public interface DistributionStreamProvider {
 
   /**
    * @return number of unique records; may or may not be the same as unique values
-   * since some records may have no values and others may have >1 depending on
+   * since some records may have no values and others may have greater than one depending on
    * the data model
    */
   long getRecordCount();

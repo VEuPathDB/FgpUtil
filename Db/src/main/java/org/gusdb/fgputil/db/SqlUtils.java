@@ -622,6 +622,7 @@ public final class SqlUtils {
    * Transforms a ResultSet into a Cursor over a stream of typed objects, each created by a row in the
    * ResultSet by the passed object creator
    *
+   * @param <T> type of output objects
    * @param rs ResultSet to iterate over
    * @param objCreator function that takes a ResultSet set to a row and creates an object from it
    * @return cursor over the produced objects
