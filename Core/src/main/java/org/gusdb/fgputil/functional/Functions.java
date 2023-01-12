@@ -28,6 +28,7 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.PredicateWithException;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.ProcedureWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ReducerWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
@@ -511,6 +512,23 @@ public class Functions {
   public static <T, S extends Exception> T mapException(SupplierWithException<T> f, Function<Exception, S> exceptionMapper) throws S {
     try {
       return f.get();
+    }
+    catch (Exception e) {
+      throw exceptionMapper.apply(e);
+    }
+  }
+
+  /**
+   * Takes a procedure that may throw an exception, and a mapper from that exception to a desired exception;
+   * calls the procedure, throwing a mapped exception if something goes wrong.
+   *
+   * @param p procedure
+   * @param exceptionMapper exception mapper
+   * @throws S mapped exception if supplier is not successful
+   */
+  public static <S extends Exception> void mapException(ProcedureWithException f, Function<Exception, S> exceptionMapper) throws S {
+    try {
+       f.perform();
     }
     catch (Exception e) {
       throw exceptionMapper.apply(e);
