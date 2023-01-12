@@ -6,7 +6,7 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
-import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.collection.builder.ListBuilder;
 import org.gusdb.fgputil.script.Scripting.Language;
 
 /**

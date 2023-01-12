@@ -1,7 +1,5 @@
 package org.gusdb.fgputil.functional;
 
-import java.util.function.Predicate;
-
 /**
  * Static class provides basic functional interfaces and true and false predicates
  *
@@ -71,6 +69,27 @@ public class FunctionalInterfaces {
   }
 
   /**
+   * Defines a three-argument function that may throw and exception
+   *
+   * @param <R> type of first function input
+   * @param <S> type of second function input
+   * @param <T> type of third function input
+   * @param <U> type of function output
+   */
+  @FunctionalInterface
+  public interface TriFunctionWithException<R,S,T,U> {
+    /**
+     * Applies the function to the given input and returns output
+     *
+     * @param obj1 input to function
+     * @param obj2 input to function
+     * @param obj3 input to function
+     * @return result of function
+     */
+    U apply(R obj1, S obj2, T obj3) throws Exception;
+  }
+
+  /**
    * Defines a no-argument function that may throw an exception
    *
    * @param <T> type of function output
@@ -91,6 +110,7 @@ public class FunctionalInterfaces {
    *
    * @param <T> type of object being consumed
    */
+  @FunctionalInterface
   public interface ConsumerWithException<T> {
     /**
      * Consumes an object of type T
@@ -107,6 +127,7 @@ public class FunctionalInterfaces {
    * @param <T> type of first object being consumed
    * @param <S> type of second object being consumed
    */
+  @FunctionalInterface
   public interface BiConsumerWithException<T,S> {
     /**
      * Consumes objects of type T, S
@@ -182,34 +203,11 @@ public class FunctionalInterfaces {
   }
 
   /**
-   * Typed predicate that always returns true.
-   *
-   * @param <T> type of object being evaluated
+   * Performs a procedure that has no output and does not need parameters that may throw an exception
    */
-  public static class TruePredicate<T> implements Predicate<T> {
-    @Override public boolean test(T obj) { return true; }
+  @FunctionalInterface
+  public interface ProcedureWithException {
+    void perform() throws Exception;
   }
 
-  /**
-   * Returns a predicate that tests whether an object is equal to
-   * the passed object using the object's equal() method.
-   *
-   * @param obj object
-   * @return predicate to test equality to passed object
-   */
-  public static <T> Predicate<T> equalTo(final T obj) {
-    return obj::equals;
-  }
-
-  /**
-   * Returns a predicate that negates the result of the passed predicate
-   * for each input (i.e. if the passed predicate's test method returns
-   * true, the returned predicate returns false, and vice versa).
-   *
-   * @param predicate any predicate
-   * @return predicate that negates results of the passed predicate
-   */
-  public static <T> Predicate<T> negate(final Predicate<T> predicate) {
-    return candidate -> !predicate.test(candidate);
-  }
 }

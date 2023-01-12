@@ -1,8 +1,8 @@
 package org.gusdb.fgputil.db.stream;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.functional.Functions.cSwallow;
-import static org.gusdb.fgputil.functional.Functions.wrapException;
+import static org.gusdb.fgputil.functional.ExceptionUtil.cSwallow;
+import static org.gusdb.fgputil.functional.ExceptionUtil.mapException;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -83,7 +83,7 @@ public class ResultSetStreamingTest {
 
       // iterate through groups and format into strings to be written to stream
       for (List<Person> group : IteratorUtil.toIterable(groups)) {
-        wrapException(() -> { writer.write(FORMATTER.apply(group) + NL); return null; });
+        mapException(() -> writer.write(FORMATTER.apply(group) + NL), RuntimeException::new);
       }
     });
   }

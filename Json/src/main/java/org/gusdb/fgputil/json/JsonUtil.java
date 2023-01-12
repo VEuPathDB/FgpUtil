@@ -1,6 +1,6 @@
 package org.gusdb.fgputil.json;
 
-import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
+import static org.gusdb.fgputil.functional.ExceptionUtil.sSwallow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -350,7 +350,7 @@ public class JsonUtil {
    * @throws RuntimeException if unable to serialize object
    */
   public static String serializeObject(Object object) {
-    return swallowAndGet(() -> Jackson.writeValueAsString(object));
+    return sSwallow(() -> Jackson.writeValueAsString(object)).get();
   }
 
   /**

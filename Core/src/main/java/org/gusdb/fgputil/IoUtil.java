@@ -31,6 +31,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.collection.AutoCloseableList;
 
 public class IoUtil {
 

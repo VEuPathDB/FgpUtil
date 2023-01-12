@@ -1,4 +1,4 @@
-package org.gusdb.fgputil;
+package org.gusdb.fgputil.collection;
 
 import java.util.ArrayList;
 import java.util.Collection;
