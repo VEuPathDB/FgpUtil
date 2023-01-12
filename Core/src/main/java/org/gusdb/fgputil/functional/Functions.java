@@ -522,7 +522,7 @@ public class Functions {
    * Takes a procedure that may throw an exception, and a mapper from that exception to a desired exception;
    * calls the procedure, throwing a mapped exception if something goes wrong.
    *
-   * @param p procedure
+   * @param f procedure
    * @param exceptionMapper exception mapper
    * @throws S mapped exception if supplier is not successful
    */
