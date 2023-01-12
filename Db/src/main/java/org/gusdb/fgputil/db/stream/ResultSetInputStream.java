@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.db.stream;
 
+import static org.gusdb.fgputil.functional.ExceptionUtil.fSwallow;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +16,6 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.db.ResultSetColumnInfo;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.iterator.IteratingInputStream;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 
@@ -98,9 +99,7 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
       @Override
       public Iterator<byte[]> getRecordIterator() {
         return IteratorUtil.toIterator(SqlUtils.toCursor(
-            resultSet, rs -> Functions.mapException(
-                () -> resultConverter.getRow(rs, columnInfo),
-                e -> new RuntimeException(e))));
+            resultSet, fSwallow(rs -> resultConverter.getRow(rs, columnInfo))));
       }
     };
   }

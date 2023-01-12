@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.collection.AutoCloseableList;
 import org.junit.Test;
 
 public class AutoCloseableListTest {

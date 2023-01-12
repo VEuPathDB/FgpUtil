@@ -14,8 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.gusdb.fgputil.AlphabetUtils.AlphabetDataProvider;
+import org.gusdb.fgputil.collection.builder.ListBuilder;
 import org.gusdb.fgputil.IoUtil;
-import org.gusdb.fgputil.ListBuilder;
 import org.junit.Test;
 
 public class IterablesTest {

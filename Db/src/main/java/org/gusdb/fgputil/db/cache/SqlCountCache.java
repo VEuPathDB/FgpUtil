@@ -1,6 +1,6 @@
 package org.gusdb.fgputil.db.cache;
 
-import static org.gusdb.fgputil.functional.Functions.fSwallow;
+import static org.gusdb.fgputil.functional.ExceptionUtil.fSwallow;
 
 import javax.sql.DataSource;
 

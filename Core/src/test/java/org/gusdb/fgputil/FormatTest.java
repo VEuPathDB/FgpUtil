@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil.Style;
+import org.gusdb.fgputil.collection.builder.MapBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 

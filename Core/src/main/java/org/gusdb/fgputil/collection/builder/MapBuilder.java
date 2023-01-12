@@ -1,4 +1,4 @@
-package org.gusdb.fgputil;
+package org.gusdb.fgputil.collection.builder;
 
 import java.util.Collection;
 import java.util.HashMap;

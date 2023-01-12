@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import org.gusdb.fgputil.functional.TreeNode.StructureMapper;
+import org.gusdb.fgputil.functional.TreeHelpers.StructureMapper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public class TreeNodeTest {
   @Test
   public void testStructureMap() {
     TreeNode<Integer> root = buildTestTree();
-    JSONObject result = root.mapStructure(new StructureMapper<Integer, JSONObject>(){
+    JSONObject result = TreeHelpers.mapStructure(root, new StructureMapper<Integer, JSONObject>(){
       @Override
       public JSONObject apply(Integer obj, List<JSONObject> mappedChildren) {
         JSONObject json = new JSONObject();

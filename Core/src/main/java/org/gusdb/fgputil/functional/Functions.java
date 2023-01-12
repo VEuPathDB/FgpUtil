@@ -10,32 +10,31 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import org.gusdb.fgputil.ListBuilder;
-import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.BiConsumerWithException;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.BiFunctionWithException;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.PredicateWithException;
+import org.gusdb.fgputil.collection.builder.ListBuilder;
+import org.gusdb.fgputil.collection.builder.MapBuilder;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.Reducer;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.ReducerWithException;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.TriFunction;
 
 public class Functions {
 
+  // static class
   private Functions() {}
+
+  /**
+   * Typed predicate that always returns true.
+   *
+   * @param <T> type of object being evaluated
+   */
+  public static <T> Predicate<T> alwaysTrue() {
+    return x -> true;
+  }
 
   /**
    * Returns a copy (a new HashMap) of the input map with entries trimmed out whose keys do not pass the
@@ -255,170 +254,6 @@ public class Functions {
   }
 
   /**
-   * Takes a function that may or may not have checked exceptions and returns a new function that performs
-   * the same operation but "swallows" any checked exception by wrapping it in a RuntimeException and
-   * throwing that instead.  If calling code wishes to inspect the underlying exception it must catch the
-   * RuntimeException and use getCause().
-   *
-   * @param f function to wrap
-   * @return a new function that swallows checked exceptions
-   */
-  public static <S,T> Function<S,T> fSwallow(FunctionWithException<S,T> f) {
-    return x -> {
-      try {
-        return f.apply(x);
-      }
-      catch (Exception e) {
-        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
-      }
-    };
-  }
-
-  /**
-   * Takes a consumer that may or may not have checked exceptions and returns a
-   * new consumer that performs the same operation but "swallows" any checked
-   * exception by wrapping it in a RuntimeException and throwing that instead.
-   * If calling code wishes to inspect the underlying exception it must catch
-   * the RuntimeException and use getCause().
-   *
-   * @param c
-   *   consumer to wrap
-   *
-   * @return a new consumer that swallows checked exceptions
-   */
-  public static <T> Consumer<T> cSwallow(ConsumerWithException<T> c) {
-    return x -> {
-      try {
-        c.accept(x);
-      }
-      catch (Exception e) {
-        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
-      }
-    };
-  }
-
-  /**
-   * Takes a bi-consumer that may or may not have checked exceptions and returns
-   * a new bi-consumer that performs the same operation but "swallows" any checked
-   * exception by wrapping it in a RuntimeException and throwing that instead.
-   * If calling code wishes to inspect the underlying exception it must catch
-   * the RuntimeException and use getCause().
-   *
-   * @param c
-   *   bi-consumer to wrap
-   *
-   * @return a new bi-consumer that swallows checked exceptions
-   */
-  public static <T,S> BiConsumer<T,S> c2Swallow(BiConsumerWithException<T,S> c) {
-    return (x, y) -> {
-      try {
-        c.accept(x, y);
-      }
-      catch (Exception e) {
-        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
-      }
-    };
-  }
-
-  /**
-   * Takes a predicate that may or may not have checked exceptions and returns a
-   * new predicate that performs the same operation but "swallows" any checked
-   * exception by wrapping it in a RuntimeException and throwing that instead.
-   * If calling code wishes to inspect the underlying exception it must catch
-   * the RuntimeException and use getCause().
-   *
-   * @param f
-   *   predicate to wrap
-   *
-   * @return a new predicate that swallows checked exceptions
-   */
-  public static <T> Predicate<T> pSwallow(PredicateWithException<T> f) {
-    return x -> {
-      try {
-        return f.test(x);
-      }
-      catch (Exception e) {
-        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
-      }
-    };
-  }
-
-  /**
-   * Takes a reducer that may or may not have checked exceptions and returns a new reducer that performs
-   * the same operation but "swallows" any checked exception by wrapping it in a RuntimeException and
-   * throwing that instead.  If calling code wishes to inspect the underlying exception it must catch the
-   * RuntimeException and use getCause().
-   *
-   * @param r reducer to wrap
-   * @return a new reducer that swallows checked exceptions
-   */
-  public static <S,T> Reducer<S,T> rSwallow(ReducerWithException<S,T> r) {
-    return (accumulator, next) -> {
-      try {
-        return r.reduce(accumulator, next);
-      }
-      catch (Exception e) {
-        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
-      }
-    };
-  }
-
-  /**
-   * Takes a no-arg function that may or may not have checked exceptions and returns a new no-arg function
-   * that performs the same operation but "swallows" any checked exception by wrapping it in a
-   * RuntimeException and throwing that instead.  If calling code wishes to inspect the underlying exception
-   * it must catch the RuntimeException and use getCause().
-   *
-   * @param f function to wrap
-   * @return a new function that swallows checked exceptions
-   */
-  public static <T> Supplier<T> f0Swallow(SupplierWithException<T> f) {
-    return () -> {
-      try {
-        return f.get();
-      }
-      catch (Exception e) {
-        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
-      }
-    };
-  }
-
-  /**
-   * Takes a 2-arg function that may or may not have checked exceptions and returns a new 2-arg function
-   * that performs the same operation but "swallows" any checked exception by wrapping it in a
-   * RuntimeException and throwing that instead.  If calling code wishes to inspect the underlying exception
-   * it must catch the RuntimeException and use getCause().
-   *
-   * @param f function to wrap
-   * @return a new function that swallows checked exceptions
-   */
-  public static <R,S,T> BiFunction<R,S,T> f2Swallow(BiFunctionWithException<R,S,T> f) {
-    return (obj1, obj2) -> {
-      try {
-        return f.apply(obj1, obj2);
-      }
-      catch (Exception e) {
-        throw (e instanceof RuntimeException ? (RuntimeException)e : new RuntimeException(e));
-      }
-    };
-  }
-
-  /**
-   * Takes a no-arg function that may throw an exception, calls it, and returns the result
-   *
-   * @param producer a function that produces a value from no arguments
-   * @return the value the function produces
-   */
-  public static <T> T swallowAndGet(SupplierWithException<T> producer) {
-    try {
-      return producer.get();
-    }
-    catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
    * Zips two Iterables of objects into a single List of "combined" objects.  Combined objects are generated
    * by the passed zipper function.  If the two input Iterables contain unequal numbers of objects, the
    * stopOnExhaustion parameter is used to determine whether to apply the combiner only until both Iterables
@@ -484,51 +319,6 @@ public class Functions {
   }
 
   /**
-   * Attempts to retrieve a value from the passed supplier.  If an exception occurs, a default value
-   * is returned and the exception is buried.
-   *
-   * @param f supplier function to execute
-   * @param defaultValue value to return if supplier fails
-   */
-  public static <T> T defaultOnException(SupplierWithException<T> f, T defaultValue) {
-    try {
-      return f.get();
-    }
-    catch (Exception e) {
-      return defaultValue;
-    }
-  }
-
-  /**
-   * Takes a supplier that may throw an exception, and a mapper from that exception to a desired exception;
-   * calls the supplier, throwing a mapped exception is something goes wrong.
-   *
-   * @param f supplier
-   * @param exceptionMapper exception mapper
-   * @return value supplied by supplier if successful
-   * @throws S mapped exception if supplier is not successful
-   */
-  public static <T, S extends Exception> T mapException(SupplierWithException<T> f, Function<Exception, S> exceptionMapper) throws S {
-    try {
-      return f.get();
-    }
-    catch (Exception e) {
-      throw exceptionMapper.apply(e);
-    }
-  }
-
-  /**
-   * Calls the passed supplier and wraps any throw exception with a RuntimeException
-   *
-   * @param f supplier
-   * @return value supplied by the supplier if successful
-   * @throws RuntimeException if not successful
-   */
-  public static <T> T wrapException(SupplierWithException<T> f) {
-    return mapException(f, RuntimeException::new);
-  }
-
-  /**
    * Checks the passed list's size to ensure n is a valid index; if so, returns the
    * value at that index, else returns null.
    *
@@ -538,47 +328,6 @@ public class Functions {
    */
   public static <T> T getNthOrNull(List<T> list, int n) {
     return n >= 0 && list.size() > n ? list.get(n) : null;
-  }
-
-  /**
-   * Negate a given predicate
-   *
-   * @return Negated predicate
-   */
-  public static <T> Predicate<T> not(final Predicate<T> pred) {
-    return pred.negate();
-  }
-
-  /**
-   * Tries to get the next value from the passed supplier.  If successful,
-   * returns an optional containing the supplied value; if not and an exception
-   * is thrown, returns an empty optional.
-   *
-   * @param supplier supplier with exception
-   * @return optional of supplied value, or empty optional if exception thrown
-   */
-  public static <S> Optional<S> optionalOnException(SupplierWithException<S> supplier) {
-    try {
-      return Optional.of(supplier.get());
-    }
-    catch (Exception e) {
-      return Optional.empty();
-    }
-  }
-
-  /**
-   * Calls the passed function with the passed value and returns true if no exception is thrown, else false.
-   *
-   * @param function function to be called
-   * @param inputValue value to pass to the function
-   * @return false if exception thrown, else true
-   */
-  public static <T> boolean executesWithoutException(Function<T, ?> function, T inputValue) {
-    try { function.apply(inputValue); return true; } catch(Exception e) { return false; }
-  }
-
-  public static <T,E extends Throwable> T doThrow(Supplier<E> exceptionSupplier) throws E {
-    throw exceptionSupplier.get();
   }
 
   /**
