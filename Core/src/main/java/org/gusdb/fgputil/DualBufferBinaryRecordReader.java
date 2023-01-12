@@ -186,8 +186,8 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
      *
      * @return next deserialized element
      */
+    @SuppressWarnings("unchecked")
     public T next() {
-      T element;
       // If all elements read from disk have been deserialized and consumed, return empty.
       if (_recordsReadFromDiskCount == _deserializedRecordsConsumed) {
         return null;

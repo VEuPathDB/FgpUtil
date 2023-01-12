@@ -182,6 +182,14 @@ public class FunctionalInterfaces {
   }
 
   /**
+   * Performs a procedure that has no output and does not need parameters that may throw an exception
+   */
+  @FunctionalInterface
+  public interface ProcedureWithException {
+    void perform() throws Exception;
+  }
+
+ /**
    * Typed predicate that always returns true.
    *
    * @param <T> type of object being evaluated

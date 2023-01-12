@@ -3,7 +3,6 @@ package org.gusdb.fgputil;
 import static org.gusdb.fgputil.FormatUtil.paddedBinaryToString;
 import static org.gusdb.fgputil.FormatUtil.stringToPaddedBinary;
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
-import static org.gusdb.fgputil.iterator.IteratorUtil.toIterator;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedOutputStream;
