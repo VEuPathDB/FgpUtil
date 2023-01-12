@@ -49,16 +49,13 @@ public class CookieBuilder {
   }
 
   public NewCookie toJaxRsCookie() {
-    return new NewCookie(
-        getName(),
-        getValue(),
-        getPath(),
-        null,
-        NewCookie.DEFAULT_VERSION,
-        null,
-        getMaxAge(),
-        false
-    );
+    return new NewCookie.Builder(getName())
+        .value(getValue())
+        .path(getPath())
+        .version(NewCookie.DEFAULT_VERSION)
+        .maxAge(getMaxAge())
+        .secure(false)
+        .build();
   }
 
 }
