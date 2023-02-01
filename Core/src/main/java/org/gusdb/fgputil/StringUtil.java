@@ -72,6 +72,16 @@ public class StringUtil {
     return ltrim(rtrim(target, trim), trim);
   }
 
+  /**
+   * Alternate implementation of {@link String#split(String)} for a non-regex single delimiter and a fixed number of
+   * output tokens. This allows allocation of a fixed amount of memory instead of needing to grow as more tokens are
+   * pushed.
+   *
+   * @param target Target string to split into tokens.
+   * @param delimiter The delimiting character.
+   * @param numTokens Number of tokens in the target string.
+   * @return Array of tokens split on input delimiter.
+   */
   public static String[] splitWithFixedTokenCount(final String target, final char delimiter, int numTokens) {
     final String[] out = new String[numTokens];
     int lastDelimiterIndex = -1;
