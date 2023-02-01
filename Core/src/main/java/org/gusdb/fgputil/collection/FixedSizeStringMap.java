@@ -9,8 +9,26 @@ import java.util.Set;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 
+/**
+ * A map implementation that uses a predefined number and values of String keys.
+ * Use requires first creating a Builder instance that defines the keys of the
+ * maps it produces.  Values of those keys can then be associated with the pre-
+ * defined keys.  Underlying implementation uses an efficient array-based
+ * storage of the values, while a map from key to array index is shared across
+ * all maps produced by the Builder.
+ *
+ * Note the produced maps allow null values but not null keys.  The key order
+ * during iteration is maintained from the initial keys String[].
+ *
+ * @author rdoherty
+ */
 public class FixedSizeStringMap implements Map<String,String> {
 
+  /**
+   * Builder class used to create instances of maps that all share the same
+   * keys.  Values added to those maps can only be associated with the keys
+   * passed to the Builder's constructor.
+   */
   public static class Builder {
 
     private final Map<String,Integer> _keyIndex;
@@ -18,7 +36,7 @@ public class FixedSizeStringMap implements Map<String,String> {
     public Builder(String[] keys) {
       if (keys == null || keys.length == 0)
         throw new IllegalArgumentException("FixedSizeStringMap must have at least one key.");
-      _keyIndex = new LinkedHashMap<>();
+      _keyIndex = new LinkedHashMap<>(keys.length);
       for (int i = 0; i < keys.length; i++) {
         if (keys[i] == null)
           throw new IllegalArgumentException("No keys can be null.");
@@ -40,6 +58,11 @@ public class FixedSizeStringMap implements Map<String,String> {
   }
 
   private final Map<String,Integer> _keyIndex;
+
+  // _values can be:
+  //   1. null (no assigned values)
+  //   2. an array with length smaller than size of _keyIndex (assigned with putAll(String[]))
+  //   3. an array with length = size of _keyIndex (values for all keys
   private String[] _values;
 
   private FixedSizeStringMap(Map<String,Integer> keyIndex) {
