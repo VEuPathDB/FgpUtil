@@ -71,4 +71,24 @@ public class StringUtil {
   public static String trim(final String target, final char trim) {
     return ltrim(rtrim(target, trim), trim);
   }
+
+  public static String[] splitWithFixedTokenCount(final String target, final char delimiter, int numTokens) {
+    final String[] out = new String[numTokens];
+    int lastDelimiterIndex = -1;
+    int outputIndex = 0;
+    for (int i = 0; i < target.length(); i++) {
+      if (target.charAt(i) == delimiter) {
+        if (outputIndex >= numTokens) {
+          throw new IllegalArgumentException("Number of tokens in string cannot exceed fixed length specified: " + numTokens);
+        }
+        out[outputIndex++] = target.substring(lastDelimiterIndex + 1, i);
+        lastDelimiterIndex = i;
+      }
+    }
+    if (outputIndex >= numTokens) {
+      throw new IllegalArgumentException("Number of tokens in string cannot exceed fixed length specified: " + numTokens);
+    }
+    out[outputIndex] = target.substring(lastDelimiterIndex + 1);
+    return out;
+  }
 }
