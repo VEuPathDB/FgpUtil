@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.gusdb.fgputil.collection.FixedSizeStringMap;
+import org.gusdb.fgputil.collection.InitialSizeStringMap;
 
 /**
  * Facilitates conversion of lines of delimited data into named columns.  The
@@ -16,20 +16,20 @@ import org.gusdb.fgputil.collection.FixedSizeStringMap;
  */
 public class DelimitedDataParser {
 
-  private final FixedSizeStringMap.Builder _lineBuilder;
+  private final InitialSizeStringMap.Builder _lineBuilder;
   private final String _delimiterRegex;
   private final boolean _enforceStrictColumns;
 
   public DelimitedDataParser(List<String> columnNames, String delimiterRegex, boolean enforceStrictColumns) {
     _delimiterRegex = delimiterRegex;
     _enforceStrictColumns = enforceStrictColumns;
-    _lineBuilder = new FixedSizeStringMap.Builder(columnNames.toArray(new String[columnNames.size()]));
+    _lineBuilder = new InitialSizeStringMap.Builder(columnNames.toArray(new String[columnNames.size()]));
   }
 
   public DelimitedDataParser(String headerLine, String delimiterRegex, boolean enforceStrictColumns) {
     _delimiterRegex = delimiterRegex;
     _enforceStrictColumns = enforceStrictColumns;
-    _lineBuilder = new FixedSizeStringMap.Builder(headerLine.split(delimiterRegex));
+    _lineBuilder = new InitialSizeStringMap.Builder(headerLine.split(delimiterRegex));
   }
 
   public List<String> getColumnNames() {
