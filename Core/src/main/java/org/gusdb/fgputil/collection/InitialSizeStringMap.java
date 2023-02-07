@@ -3,8 +3,8 @@ package org.gusdb.fgputil.collection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -107,7 +107,8 @@ public class InitialSizeStringMap implements Map<String,String> {
     // check initial keys' values first
     if (_values != null) {
       for (int i = 0; i < _values.length; i++) {
-        if (_values[i] != null && _values[i].equals(value))
+        if ((value == null && _values[i] == null) ||
+            (_values[i] != null && _values[i].equals(value)))
           return true;
       }
     }
@@ -123,7 +124,7 @@ public class InitialSizeStringMap implements Map<String,String> {
       }
     }
     // key not in initial keys; check supplemental
-    return _supplementalEntries.get(key);
+    return _supplementalEntries == null ? null : _supplementalEntries.get(key);
   }
 
   @Override
@@ -177,7 +178,7 @@ public class InitialSizeStringMap implements Map<String,String> {
     if (_supplementalEntries == null || _supplementalEntries.isEmpty()) {
       return _keyIndex.keySet();
     }
-    Set<String> keys = new HashSet<>(_keyIndex.keySet());
+    Set<String> keys = new LinkedHashSet<>(_keyIndex.keySet());
     keys.addAll(_supplementalEntries.keySet());
     return keys;
   }
@@ -195,7 +196,7 @@ public class InitialSizeStringMap implements Map<String,String> {
 
   @Override
   public Set<Entry<String, String>> entrySet() {
-    Set<Entry<String,String>> entries = new HashSet<>();
+    Set<Entry<String,String>> entries = new LinkedHashSet<>();
     for (String key : _keyIndex.keySet()) {
       entries.add(new TwoTuple<String,String>(key, get(key)));
     }
