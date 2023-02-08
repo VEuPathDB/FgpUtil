@@ -117,7 +117,7 @@ public class ClientUtil {
 
     return new ResponseFuture(
       responseProducer.apply(
-        clientModifier.apply(ClientBuilder.newClient())
+        clientModifier.apply(makeClient())
           .target(url)
           .request()
           .headers(headers)
@@ -125,7 +125,7 @@ public class ClientUtil {
   }
 
   public static CloseableResponse makeRequest(String url, HttpMethod method, Optional<JSONObject> body, Map<String,String> headers) {
-    Client client = ClientBuilder.newClient();
+    Client client = makeClient();
     WebTarget webTarget = client.target(url);
     Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_JSON);
     switch(method) {
@@ -156,5 +156,12 @@ public class ClientUtil {
     try (InputStream body = (InputStream)smallResponse.getEntity()) {
       return readSmallResponseBody(body);
     }
+  }
+
+  private static Client makeClient() {
+    return ClientBuilder
+        .newBuilder()
+        .register(new TracePropagatingClientInterceptor())
+        .newClient();
   }
 }
