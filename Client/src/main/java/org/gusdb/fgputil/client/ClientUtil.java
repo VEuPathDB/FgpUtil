@@ -24,6 +24,7 @@ import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.gusdb.fgputil.IoUtil;
@@ -34,7 +35,7 @@ import org.json.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ClientUtil {
-
+  private static final String TRACE_CONTEXT_KEY = "traceId";
   private static final Logger LOG = Logger.getLogger(ClientUtil.class);
 
   public static boolean LOG_RESPONSE_HEADERS = false;
@@ -117,7 +118,7 @@ public class ClientUtil {
 
     return new ResponseFuture(
       responseProducer.apply(
-        clientModifier.apply(ClientBuilder.newClient())
+        clientModifier.apply(makeClient())
           .target(url)
           .request()
           .headers(headers)
@@ -125,7 +126,7 @@ public class ClientUtil {
   }
 
   public static CloseableResponse makeRequest(String url, HttpMethod method, Optional<JSONObject> body, Map<String,String> headers) {
-    Client client = ClientBuilder.newClient();
+    Client client = makeClient();
     WebTarget webTarget = client.target(url);
     Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_JSON);
     switch(method) {
@@ -156,5 +157,12 @@ public class ClientUtil {
     try (InputStream body = (InputStream)smallResponse.getEntity()) {
       return readSmallResponseBody(body);
     }
+  }
+
+  private static Client makeClient() {
+    return ClientBuilder
+        .newBuilder()
+        .newClient()
+        .register(new TracePropagatingClientInterceptor(ThreadContext.get(TRACE_CONTEXT_KEY)));
   }
 }
