@@ -6,6 +6,10 @@ import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import java.io.IOException;
 
+/**
+ * Jersey client request interceptor used to propagate the trace ID from the thread context as a header in the
+ * HTTP request.
+ */
 public class TracePropagatingClientInterceptor implements ClientRequestFilter {
   private static final String TRACE_HEADER = "traceparent";
   private static final String TRACE_CONTEXT_KEY = "traceId";
