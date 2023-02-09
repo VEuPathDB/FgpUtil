@@ -24,6 +24,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.gusdb.fgputil.IoUtil;
@@ -34,7 +35,7 @@ import org.json.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ClientUtil {
-
+  private static final String TRACE_CONTEXT_KEY = "traceId";
   private static final Logger LOG = Logger.getLogger(ClientUtil.class);
 
   public static boolean LOG_RESPONSE_HEADERS = false;
@@ -161,7 +162,7 @@ public class ClientUtil {
   private static Client makeClient() {
     return ClientBuilder
         .newBuilder()
-        .register(new TracePropagatingClientInterceptor())
-        .newClient();
+        .newClient()
+        .register(new TracePropagatingClientInterceptor(ThreadContext.get(TRACE_CONTEXT_KEY)));
   }
 }

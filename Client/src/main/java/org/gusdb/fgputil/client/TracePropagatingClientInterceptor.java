@@ -1,6 +1,6 @@
 package org.gusdb.fgputil.client;
 
-import org.apache.logging.log4j.ThreadContext;
+import org.apache.log4j.Logger;
 
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
@@ -11,13 +11,20 @@ import java.io.IOException;
  * HTTP request.
  */
 public class TracePropagatingClientInterceptor implements ClientRequestFilter {
+  private static final Logger LOG = Logger.getLogger(TracePropagatingClientInterceptor.class);
   private static final String TRACE_HEADER = "traceparent";
-  private static final String TRACE_CONTEXT_KEY = "traceId";
+
+  private String traceId;
+
+  public TracePropagatingClientInterceptor(String traceId) {
+    this.traceId = traceId;
+  }
 
   @Override
   public void filter(ClientRequestContext clientRequestContext) throws IOException {
-    final String traceId = ThreadContext.get(TRACE_CONTEXT_KEY);
-    if (ThreadContext.get(TRACE_CONTEXT_KEY) != null) {
+    LOG.info("Running interceptor");
+    if (traceId != null) {
+      LOG.info("Found trace ID on thread context: " + traceId);
       clientRequestContext.getHeaders().add(TRACE_HEADER, traceId);
     }
   }
