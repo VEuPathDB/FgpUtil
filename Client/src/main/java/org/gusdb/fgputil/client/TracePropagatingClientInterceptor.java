@@ -22,9 +22,7 @@ public class TracePropagatingClientInterceptor implements ClientRequestFilter {
 
   @Override
   public void filter(ClientRequestContext clientRequestContext) throws IOException {
-    LOG.info("Running interceptor");
     if (traceId != null) {
-      LOG.info("Found trace ID on thread context: " + traceId);
       clientRequestContext.getHeaders().add(TRACE_HEADER, traceId);
     }
   }
