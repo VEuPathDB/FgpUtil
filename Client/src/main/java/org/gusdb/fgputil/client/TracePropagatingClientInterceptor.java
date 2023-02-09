@@ -2,8 +2,8 @@ package org.gusdb.fgputil.client;
 
 import org.apache.logging.log4j.ThreadContext;
 
-import jakarta.ws.rs.client.ClientRequestContext;
-import jakarta.ws.rs.client.ClientRequestFilter;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
 import java.io.IOException;
 
 public class TracePropagatingClientInterceptor implements ClientRequestFilter {
