@@ -10,8 +10,7 @@ import javax.ws.rs.client.ClientRequestFilter;
  * HTTP request.
  */
 public class TracePropagatingClientInterceptor implements ClientRequestFilter {
-
-  private static final String TRACE_HEADER = "traceparent";
+  private static final String TRACE_HEADER = "traceid";
 
   private String traceId;
 
