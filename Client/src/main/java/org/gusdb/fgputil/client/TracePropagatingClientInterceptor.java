@@ -11,8 +11,7 @@ import java.io.IOException;
  * HTTP request.
  */
 public class TracePropagatingClientInterceptor implements ClientRequestFilter {
-  private static final Logger LOG = Logger.getLogger(TracePropagatingClientInterceptor.class);
-  private static final String TRACE_HEADER = "traceparent";
+  private static final String TRACE_HEADER = "traceid";
 
   private String traceId;
 
