@@ -28,6 +28,7 @@ import org.apache.logging.log4j.ThreadContext;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.web.HttpMethod;
 import org.json.JSONObject;
@@ -35,7 +36,6 @@ import org.json.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ClientUtil {
-  private static final String TRACE_CONTEXT_KEY = "traceId";
   private static final Logger LOG = Logger.getLogger(ClientUtil.class);
 
   public static boolean LOG_RESPONSE_HEADERS = false;
@@ -159,9 +159,18 @@ public class ClientUtil {
     }
   }
 
+  public static Optional<Tuples.TwoTuple<String, String>> getTraceIdHeader() {
+    if (ThreadContext.get(TracingConstants.TRACE_CONTEXT_KEY) != null) {
+      return Optional.of(
+          new Tuples.TwoTuple<>(TracingConstants.TRACE_HEADER, ThreadContext.get(TracingConstants.TRACE_CONTEXT_KEY))
+      );
+    }
+    return Optional.empty();
+  }
+
   private static Client makeClient() {
     return ClientBuilder
         .newClient()
-        .register(new TracePropagatingClientInterceptor(ThreadContext.get(TRACE_CONTEXT_KEY)));
+        .register(new TracePropagatingClientInterceptor(ThreadContext.get(TracingConstants.TRACE_CONTEXT_KEY)));
   }
 }

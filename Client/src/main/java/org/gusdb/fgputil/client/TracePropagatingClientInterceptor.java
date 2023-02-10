@@ -11,7 +11,6 @@ import java.io.IOException;
  * HTTP request.
  */
 public class TracePropagatingClientInterceptor implements ClientRequestFilter {
-  private static final String TRACE_HEADER = "traceid";
 
   private String traceId;
 
@@ -22,7 +21,7 @@ public class TracePropagatingClientInterceptor implements ClientRequestFilter {
   @Override
   public void filter(ClientRequestContext clientRequestContext) throws IOException {
     if (traceId != null) {
-      clientRequestContext.getHeaders().add(TRACE_HEADER, traceId);
+      clientRequestContext.getHeaders().add(TracingConstants.TRACE_HEADER, traceId);
     }
   }
 }
