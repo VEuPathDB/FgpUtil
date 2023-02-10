@@ -161,7 +161,6 @@ public class ClientUtil {
 
   private static Client makeClient() {
     return ClientBuilder
-        .newBuilder()
         .newClient()
         .register(new TracePropagatingClientInterceptor(ThreadContext.get(TRACE_CONTEXT_KEY)));
   }

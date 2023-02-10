@@ -1,17 +1,16 @@
 package org.gusdb.fgputil.client;
 
-import org.apache.log4j.Logger;
+import java.io.IOException;
 
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
-import java.io.IOException;
 
 /**
  * Jersey client request interceptor used to propagate the trace ID from the thread context as a header in the
  * HTTP request.
  */
 public class TracePropagatingClientInterceptor implements ClientRequestFilter {
-  private static final Logger LOG = Logger.getLogger(TracePropagatingClientInterceptor.class);
+
   private static final String TRACE_HEADER = "traceparent";
 
   private String traceId;
