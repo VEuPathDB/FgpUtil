@@ -93,4 +93,15 @@ public class FunctionTests {
     String[] words = { "a", "bee", "adam", "best", "cat", "better", "critter", "apple" };
     System.out.println(FormatUtil.prettyPrint(Functions.binItems(Arrays.asList(words), word -> word.charAt(0), w -> true),Style.MULTI_LINE));
   }
+
+  @Test
+  public void testIndexedStreams() {
+    Arrays
+      .stream(new Integer[] { 5, 4, 3, 2, 1, 0 })
+      .map(StreamUtil.toIndexedEntry())
+      .forEach(o -> {
+        System.out.println(o.getKey() + ": " + o.getValue());
+        assertEquals(5, o.getKey() + o.getValue());
+      });
+  }
 }
