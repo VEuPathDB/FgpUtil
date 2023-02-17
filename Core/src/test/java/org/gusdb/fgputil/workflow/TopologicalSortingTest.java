@@ -84,13 +84,33 @@ public class TopologicalSortingTest {
     List<String> orderingStr = resolver.convertToKeyList(ordering);
     System.out.println("Full ordered list: " + orderingStr);
 
-    // FIXME: currently broken on maven build; I think it has to do with map ordering
-    //        the result is valid, but F and A can be switched
-    //assertEquals("[F, A, C, B, D, E]", orderingStr.toString());
+    assertEquals("[A, F, C, B, D, E]", orderingStr.toString());
 
     for (Param param : allParams) {
       System.out.println("Param " + param.getKey() + ": [" + param.getDependentElementsAsString() + "]");
       assertEquals(param.getExpectedDepList(), param.getDependentElementsAsString());
     }
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCircularDeps() {
+
+    Param A = new Param("A", null);
+    Param B = new Param("B", null);
+    Param C = new Param("C", null);
+    Param D = new Param("D", null);
+    Param E = new Param("E", null);
+
+    Param[] allParams = { A, B, C, D, E };
+
+    A.addDependedParams(B,C);
+    B.addDependedParams(C,D);
+    C.addDependedParams(D,E);
+    E.addDependedParams(B);
+
+    // expect error here because B -> C -> E -> B
+    DependencyResolver<Param> resolver = new DependencyResolver<>();
+    resolver.addElements(allParams);
+    resolver.resolveDependencyOrder();
   }
 }
