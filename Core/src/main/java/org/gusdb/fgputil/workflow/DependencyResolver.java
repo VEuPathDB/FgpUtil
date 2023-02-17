@@ -2,8 +2,10 @@ package org.gusdb.fgputil.workflow;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+//import java.util.HashMap;
+//import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,12 +23,12 @@ public class DependencyResolver<T extends DependencyElement<T>> {
     private final T _element;
 
     // map of nodes this node depends on
-    private Map<String, Node> _dependents = new HashMap<>();
-    private Map<String, Node> _savedDependents = new HashMap<>();
+    private Map<String, Node> _dependents = new LinkedHashMap<>();
+    private Map<String, Node> _savedDependents = new LinkedHashMap<>();
 
     // map of nodes that depend on this node
-    private Map<String, Node> _dependeds = new HashMap<>();
-    private Map<String, Node> _savedDependeds = new HashMap<>();
+    private Map<String, Node> _dependeds = new LinkedHashMap<>();
+    private Map<String, Node> _savedDependeds = new LinkedHashMap<>();
 
     public Node(T element) {
       _element = element;
@@ -65,7 +67,7 @@ public class DependencyResolver<T extends DependencyElement<T>> {
     public void applyDependents(List<Node> orderedNodes) {
       // still only have references to nodes directly dependent on this node;
       //   need to fetch ALL dependents, direct and indirect
-      Set<Node> allDependents = new HashSet<>();
+      Set<Node> allDependents = new LinkedHashSet<>();
       LOG.debug("Loading all dependents for node " + getKey());
       loadDependents(allDependents, _dependents.values());
       LOG.debug("Done. All dependents of " + getKey() + ": " +
@@ -104,12 +106,12 @@ public class DependencyResolver<T extends DependencyElement<T>> {
     }
 
     public void resetDependencies() {
-      _dependents = new HashMap<>(_savedDependents);
-      _dependeds = new HashMap<>(_savedDependeds);
+      _dependents = new LinkedHashMap<>(_savedDependents);
+      _dependeds = new LinkedHashMap<>(_savedDependeds);
     }
   }
 
-  private Map<String, T> _elementMap = new HashMap<>();
+  private Map<String, T> _elementMap = new LinkedHashMap<>();
 
   public DependencyResolver<T> addElements(T[] elements) {
     for (T element : elements) {
@@ -125,7 +127,7 @@ public class DependencyResolver<T extends DependencyElement<T>> {
   public List<T> resolveDependencyOrder() {
 
     // build node map
-    Map<String, Node> nodeMap = new HashMap<>();
+    Map<String, Node> nodeMap = new LinkedHashMap<>();
     for (T element : _elementMap.values()) {
       nodeMap.put(element.getKey(), new Node(element));
     }
