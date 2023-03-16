@@ -68,9 +68,9 @@ public class UnclosedObjectMonitor<T> {
         new UnclosedObjectInfo(_dbName, _type, _globalStacktraceMap) :
         new UnclosedObjectInfo(_dbName, _type));
 
-    if (LOG.isDebugEnabled()) {
+    if (LOG.isTraceEnabled()) {
       // log hash for this object; let caller know what was opened
-      LOG.debug("Opening " + _type.getName() + " associated with stacktrace hash " +
+      LOG.trace("Opening " + _type.getName() + " associated with stacktrace hash " +
           info.getStackTraceHash() + " : " + info.getBasicInfo());
     }
 
@@ -85,9 +85,9 @@ public class UnclosedObjectMonitor<T> {
     // if no info remaining for this object, assume it was already closed
     //   (i.e. someone is reclosing a closed object) and do nothing
     if (info != null) {
-      if (LOG.isDebugEnabled()) {
+      if (LOG.isTraceEnabled()) {
         // log hash for this object; let caller know what was closed
-        LOG.debug("Closing " + _type.getName() + " associated with stacktrace hash " +
+        LOG.trace("Closing " + _type.getName() + " associated with stacktrace hash " +
             info.getStackTraceHash() + " : " + info.getBasicInfo());
       }
 
