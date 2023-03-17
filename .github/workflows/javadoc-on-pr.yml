@@ -27,7 +27,7 @@ jobs:
           java-version: 11
 
       - name: Build project with Maven and generate javadoc
-        run: mvn -s $GITHUB_WORKSPACE/.m2/setings.xml compile test javadoc:javadoc
+        run: mvn -s /home/runner/.m2/settings.xml compile test javadoc:javadoc
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
           GITHUB_USERNAME: ${{ secrets.USERNAME }}
