@@ -18,6 +18,12 @@ jobs:
 
       - name: Build project with Maven
         run: mvn compile test
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_USERNAME: ${{ secrets.USERNAME }}
 
       - name: Generate javadoc with Maven
         run: mvn javadoc:javadoc
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_USERNAME: ${{ secrets.USERNAME }}
