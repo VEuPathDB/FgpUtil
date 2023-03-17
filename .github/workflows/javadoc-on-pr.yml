@@ -18,13 +18,13 @@ jobs:
 
       - name: Build project with Maven and generate javadoc
         uses: s4u/maven-settings-action@v2.3.0
-          with:
-            servers: |
-              [{
-                  "id": "veupathdb",
-                  "username": "${{ secrets.USERNAME }}",
-                  "password": "${{ secrets.TOKEN }}"
-              }]
+        with:
+          servers: |
+            [{
+                "id": "veupathdb",
+                "username": "${{ secrets.USERNAME }}",
+                "password": "${{ secrets.TOKEN }}"
+            }]
         run: mvn compile test javadoc:javadoc
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
