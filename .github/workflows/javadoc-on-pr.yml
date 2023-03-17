@@ -11,13 +11,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: s4u/maven-settings-action@v2.3.0
+      - uses: s4u/maven-settings-action@v2.8.0
         with:
           servers: |
             [{
                 "id": "veupathdb",
-                "username": "${{ secrets.USERNAME }}",
-                "password": "${{ secrets.TOKEN }}"
+                "username": "${env.GITHUB_USERNAME}",
+                "password": "${env.GITHUB_TOKEN}}"
             }]
 
       - name: Set up JDK 11
