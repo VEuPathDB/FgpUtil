@@ -16,14 +16,16 @@ jobs:
         with:
           java-version: 11
 
-      - name: Build project with Maven
-        run: mvn compile test
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-          GITHUB_USERNAME: ${{ secrets.USERNAME }}
-
-      - name: Generate javadoc with Maven
-        run: mvn javadoc:javadoc
+      - name: Build project with Maven and generate javadoc
+        uses: s4u/maven-settings-action@v2.3.0
+          with:
+            servers: |
+              [{
+                  "id": "veupathdb",
+                  "username": "${{ secrets.USERNAME }}",
+                  "password": "${{ secrets.TOKEN }}"
+              }]
+        run: mvn compile test javadoc:javadoc
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
           GITHUB_USERNAME: ${{ secrets.USERNAME }}
