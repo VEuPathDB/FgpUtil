@@ -60,6 +60,8 @@ public abstract class DBPlatform {
 
     public abstract String getNextIdSqlExpression(String schema, String table);
 
+    public abstract String getNextValExpression(String schema, String table, String sequenceSuffix)
+
     public abstract String getNumberDataType(int size);
 
     public abstract String getFloatDataType(int size);
@@ -161,6 +163,8 @@ public abstract class DBPlatform {
     public abstract String prepareExpressionList(String[] values);
 
     public abstract String getNvlFunctionName();
+
+    public abstract String getSysdateIdentifier();
 
     //#########################################################################
     // Common methods are platform independent
