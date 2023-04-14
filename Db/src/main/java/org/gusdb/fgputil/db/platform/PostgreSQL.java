@@ -97,7 +97,7 @@ public class PostgreSQL extends DBPlatform {
 
   @Override
   public String getNextIdSqlExpression(String schema, String table) {
-    return getNextValExpression(schema, table,ID_SEQUENCE_SUFFIX);
+    return getNextValExpression(schema, table, ID_SEQUENCE_SUFFIX);
   }
 
   @Override
