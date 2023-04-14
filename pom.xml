@@ -11,12 +11,11 @@
   <parent>
     <groupId>org.gusdb</groupId>
     <artifactId>base-pom</artifactId>
-    <version>2.15-jakarta</version>
+    <version>2.16-jakarta</version>
   </parent>
 
   <scm>
     <developerConnection>scm:git:ssh://github.com/VEuPathDB/FgpUtil</developerConnection>
-    <tag>v2.7.3-jakarta</tag>
   </scm>
 
   <repositories>
