@@ -30,6 +30,11 @@ public class Oracle extends DBPlatform {
   }
 
   @Override
+  public String getSysdateIdentifier(){
+    return "SYSDATE";
+  }
+
+  @Override
   public String getNvlFunctionName() {
 	  return "NVL";
   }
@@ -113,7 +118,11 @@ public class Oracle extends DBPlatform {
 
   @Override
   public String getNextIdSqlExpression(String schema, String table) {
-    return normalizeSchema(schema) + table + ID_SEQUENCE_SUFFIX + ".nextval";
+    return getNextValExpression(schema, table, ID_SEQUENCE_SUFFIX);
+  }
+
+  public String getNextValExpression(String schema, String table, String sequenceSuffix){
+    return normalizeSchema(schema) + table + sequenceSuffix + ".nextval";
   }
 
   @Override

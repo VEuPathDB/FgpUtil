@@ -25,6 +25,11 @@ public class PostgreSQL extends DBPlatform {
   }
 
   @Override
+  public String getSysdateIdentifier(){
+      return "LOCALTIMESTAMP";
+  }
+
+  @Override
   public String getNvlFunctionName() {
 	  return "COALESCE";
   }
@@ -93,10 +98,15 @@ public class PostgreSQL extends DBPlatform {
 
   @Override
   public String getNextIdSqlExpression(String schema, String table) {
+    return getNextValExpression(schema, table, ID_SEQUENCE_SUFFIX);
+  }
+
+  @Override
+  public String getNextValExpression(String schema, String table, String sequenceSuffix){
     schema = normalizeSchema(schema);
 
     StringBuffer sql = new StringBuffer("nextval('");
-    sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
+    sql.append(schema).append(table).append(sequenceSuffix);
     sql.append("')");
     return sql.toString();
   }
