@@ -10,8 +10,8 @@ public class Environment {
 
   public static String getRequiredVar(String name) {
     String value = System.getenv(name);
-    if (value == null) {
-      throw new RuntimeException("Required environment variable '" + name + "' is not defined.");
+    if (value == null || value.isBlank()) {
+      throw new RuntimeException("Required environment variable '" + name + "' is not defined or is empty.");
     }
     return value;
   }
