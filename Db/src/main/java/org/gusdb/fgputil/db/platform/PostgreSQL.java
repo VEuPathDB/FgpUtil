@@ -28,6 +28,7 @@ public class PostgreSQL extends DBPlatform {
   public String getSysdateIdentifier(){
       return "LOCALTIMESTAMP";
   }
+
   @Override
   public String getNvlFunctionName() {
 	  return "COALESCE";

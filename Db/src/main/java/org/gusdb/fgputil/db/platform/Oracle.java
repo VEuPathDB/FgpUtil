@@ -33,6 +33,7 @@ public class Oracle extends DBPlatform {
   public String getSysdateIdentifier(){
     return "SYSDATE";
   }
+
   @Override
   public String getNvlFunctionName() {
 	  return "NVL";
