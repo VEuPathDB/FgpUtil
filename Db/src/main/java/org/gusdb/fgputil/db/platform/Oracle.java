@@ -31,7 +31,7 @@ public class Oracle extends DBPlatform {
 
   @Override
   public String getSysdateIdentifier(){
-    return "LOCALTIMESTAMP";
+    return "SYSDATE";
   }
   @Override
   public String getNvlFunctionName() {
