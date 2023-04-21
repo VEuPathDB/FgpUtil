@@ -105,4 +105,9 @@ public class InitialSizeStringMapTest {
     assertArrayEquals(new Object[]{ null, null, "c", null }, map.values().toArray());
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testMultipleSameInitialKeys() {
+    String[] initialKeys = new String[] { "a", "b", "c", "b" };
+    new InitialSizeStringMap.Builder(initialKeys).build();
+  }
 }
