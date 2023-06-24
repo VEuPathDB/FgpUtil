@@ -121,6 +121,7 @@ public class Oracle extends DBPlatform {
     return getNextValExpression(schema, table, ID_SEQUENCE_SUFFIX);
   }
 
+  @Override
   public String getNextValExpression(String schema, String table, String sequenceSuffix){
     return normalizeSchema(schema) + table + sequenceSuffix + ".nextval";
   }
