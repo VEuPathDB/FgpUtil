@@ -692,4 +692,42 @@ public class Functions {
         .map(entry -> new TwoTuple<>(entry.getKey(), transform.apply(entry)))
         .collect(newLinkedHashMapCollector());
   }
+
+  /**
+   * Takes a given {@code value} of type {@code I} and applies the given
+   * function to it, returning the value of type {@code R} which is itself
+   * returned by the given function.
+   *
+   * @param <I> Input value type.
+   *
+   * @param <R> Return value type.
+   *
+   * @param value Value to apply the given function to and transform to a value
+   * of type {@code R}.
+   *
+   * @param func Function that will be used to transform {@code value}.
+   *
+   * @return The value returned by {@code func}.
+   */
+  public static <I, R> R with(I value, Function<I, R> func) {
+    return func.apply(value);
+  }
+
+  /**
+   * Takes a {@code value}, applies the given mutation {@link Consumer} to it
+   * and returns the updated value.
+   *
+   * @param <T> Type of the value that will be manipulated.
+   *
+   * @param value Value to manipulate/mutate.
+   *
+   * @param func Function that will apply the mutation to the given
+   * {@code value}.
+   *
+   * @return The given {@code value}.
+   */
+  public static <T> T also(T value, Consumer<T> func) {
+    func.accept(value);
+    return value;
+  }
 }
