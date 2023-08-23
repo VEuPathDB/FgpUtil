@@ -71,4 +71,75 @@ public class StringUtil {
   public static String trim(final String target, final char trim) {
     return ltrim(rtrim(target, trim), trim);
   }
+
+  /**
+   * Tests whether the given string is in the valid UUID V4 format.
+   *
+   * @param s String to test.
+   *
+   * @return {@code true} if the given string is a valid UUID V4 string,
+   * otherwise {@code false}.
+   */
+  // XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+  public static boolean isUuidV4(String s) {
+    if (s.length() != 36)
+      return false;
+
+    // validate the first 8 digits
+    for (int i = 0; i < 8; i++)
+      if (!isHexDigit(s.charAt(i)))
+        return false;
+
+    // first dash
+    if (s.charAt(8) != '-')
+      return false;
+
+    // first block of 4 digits
+    for (int i = 9; i < 13; i++)
+      if (!isHexDigit(s.charAt(i)))
+        return false;
+
+    // second dash
+    if (s.charAt(13) != '-')
+      return false;
+
+    // second block of 4 digits
+    for (int i = 14; i < 18; i++)
+      if (!isHexDigit(s.charAt(i)))
+        return false;
+
+    // third dash
+    if (s.charAt(18) != '-')
+      return false;
+
+    // last block of 4 digits
+    for (int i = 19; i < 23; i++)
+      if (!isHexDigit(s.charAt(i)))
+        return false;
+
+    // last dash
+    if (s.charAt(23) != '-')
+      return false;
+
+    // last block of digits (12 digits)
+    for (int i = 24; i < 36; i++)
+      if (!isHexDigit(s.charAt(i)))
+        return false;
+
+    return true;
+  }
+
+  /**
+   * Tests whether the given character is a valid hexadecimal digit.
+   *
+   * @param c Character to test.
+   *
+   * @return {@code true} if the given character is a valid hex digit, otherwise
+   * {@code false}.
+   */
+  public static boolean isHexDigit(char c) {
+    return (c >= '0' && c <= '9')
+      || (c >= 'A' && c <= 'F')
+      || (c >= 'a' && c <= 'f');
+  }
 }
