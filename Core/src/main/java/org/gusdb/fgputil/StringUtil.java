@@ -72,17 +72,17 @@ public class StringUtil {
     return ltrim(rtrim(target, trim), trim);
   }
 
-  public static final Pattern UUID4_REGEX = Pattern.compile("^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$");
+  public static final Pattern UUID_REGEX = Pattern.compile("^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$");
 
   /**
-   * Tests whether the given string is in the valid UUID V4 format.
+   * Tests whether the given string is in the valid UUID format.
    *
    * @param s String to test.
    *
-   * @return {@code true} if the given string is a valid UUID V4 string,
+   * @return {@code true} if the given string is a valid UUID string,
    * otherwise {@code false}.
    */
-  public static boolean isUuidV4(String s) {
-    return UUID4_REGEX.matcher(s).matches();
+  public static boolean isUuid(String s) {
+    return UUID_REGEX.matcher(s).matches();
   }
 }
