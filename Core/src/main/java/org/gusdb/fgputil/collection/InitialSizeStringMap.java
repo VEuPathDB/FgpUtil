@@ -16,13 +16,13 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
  * will never be smaller than the initial size, but it can be greater if keys
  * are added beyond the initial list.  Use requires first creating a Builder
  * instance that defines the initial keys of the maps it produces
- * 
+ *
  * Values can be associated with the initial keys cheaply via an efficient
  * array-based storage of the values, with a map from key to array index is
  * shared across all maps produced by the Builder.
  *
  * Supplemental entries beyond the initial keys can be added, but no more
- * efficiently than a regular HashMap. 
+ * efficiently than a regular HashMap.
  *
  * Note the produced maps allow null values but not null keys.  The key order
  * during iteration is maintained from the initial keys String[] and then
@@ -43,11 +43,13 @@ public class InitialSizeStringMap implements Map<String,String> {
 
     public Builder(String[] keys) {
       if (keys == null || keys.length == 0)
-        throw new IllegalArgumentException("FixedSizeStringMap must have at least one key.");
+        throw new IllegalArgumentException(getClass().getSimpleName() + " builder must have at least one key.");
       _keyIndex = new LinkedHashMap<>(keys.length);
       for (int i = 0; i < keys.length; i++) {
         if (keys[i] == null)
           throw new IllegalArgumentException("No keys can be null.");
+        if (_keyIndex.containsKey(keys[i]))
+          throw new IllegalArgumentException("Keys cannot be repeated. Key '" + keys[i] + "' is present more than once.");
         _keyIndex.put(keys[i], i);
       }
     }
@@ -70,7 +72,7 @@ public class InitialSizeStringMap implements Map<String,String> {
   // _values can be:
   //   1. null (no assigned values)
   //   2. an array with length smaller than size of _keyIndex (assigned with putAll(String[]))
-  //   3. an array with length = size of _keyIndex (values for all keys
+  //   3. an array with length = size of _keyIndex (values for all keys)
   private String[] _values;
 
   private Map<String,String> _supplementalEntries;
@@ -209,3 +211,4 @@ public class InitialSizeStringMap implements Map<String,String> {
   }
 
 }
+

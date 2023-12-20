@@ -12,6 +12,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 
 /**
@@ -24,6 +26,8 @@ import org.gusdb.fgputil.iterator.CloseableIterator;
  * @author rdoherty
  */
 public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
+  private static final Logger LOG = LogManager.getLogger(DualBufferBinaryRecordReader.class);
+
   private final Path _file;
   private final AsynchronousFileChannel _channel;
   private final int _bufferSize;
@@ -148,6 +152,8 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
 
   @Override
   public void close() {
+    LOG.debug("Current buffer trace: " + _current);
+    LOG.debug("Next buffer trace: " + _next);
     IoUtil.closeQuietly(_channel);
   }
 
@@ -179,6 +185,18 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
     }
     public boolean hasRemaining() {
       return _recordsReadFromDiskCount != _deserializedRecordsConsumed && _recordsReadFromDiskCount != -1;
+    }
+
+    @Override
+    public String toString() {
+      return "Buffer{" +
+          "_recordLength=" + _recordLength +
+          ", _byteBuf=" + _byteBuf +
+          ", _recordsReadFromDiskCount=" + _recordsReadFromDiskCount +
+          ", _deserializedRecordsConsumed=" + _deserializedRecordsConsumed +
+          ", _deserializedElementsAvailable=" + _deserializedElementsAvailable +
+          ", _deserializationComplete=" + _deserializationComplete.isDone() +
+          '}';
     }
 
     /**
@@ -229,7 +247,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
         @Override
         public void completed(Integer result, Void attachment) {
           if (result == -1) {
-            _recordsReadFromDiskCount = -1;
+            _recordsReadFromDiskCount = -1; // Indicate that there's nothing left to read in the file.
           } else {
             _recordsReadFromDiskCount = result / _recordLength;
           }
