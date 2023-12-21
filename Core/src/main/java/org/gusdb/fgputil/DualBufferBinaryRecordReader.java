@@ -152,7 +152,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
 
   @Override
   public void close() {
-    LOG.debug("Current buffer trace: " + _current);
+    LOG.debug("Current buffer trace: " + _current + " -- Cursor: " + _fileCursor);
     LOG.debug("Next buffer trace: " + _next);
     IoUtil.closeQuietly(_channel);
   }
@@ -196,6 +196,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
           ", _deserializedRecordsConsumed=" + _deserializedRecordsConsumed +
           ", _deserializedElementsAvailable=" + _deserializedElementsAvailable +
           ", _deserializationComplete=" + _deserializationComplete.isDone() +
+          ", _currentItem=" + _deserializedElements[_deserializedRecordsConsumed] +
           '}';
     }
 
@@ -266,6 +267,9 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
         try {
           for (int i = 0; i < _recordsReadFromDiskCount; i++) {
             _deserializedElements[i] = _deserializer.apply(_byteBuf);
+            if (_deserializedElements[i] == null) {
+              LOG.warn("Deserializer returned a null element at index" + i);
+            }
             // Lock while we increment the counter indicating available elements. The consumer will check if elements are
             // available and block if not so we need to ensure the count is consistent.
             synchronized (_elementAvailableLock) {
