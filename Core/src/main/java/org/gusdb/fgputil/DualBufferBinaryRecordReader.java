@@ -263,17 +263,23 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
       });
 
       _deserializationComplete = bufferFill.thenAcceptAsync((channelReadResult) -> {
-        for (int i = 0; i < _recordsReadFromDiskCount; i++) {
-          _deserializedElements[i] = _deserializer.apply(_byteBuf);
-          // Lock while we increment the counter indicating available elements. The consumer will check if elements are
-          // available and block if not so we need to ensure the count is consistent.
-          synchronized (_elementAvailableLock) {
-            // The only scenario where our consumer is awaiting this lock is if there are no deserialized elements
-            // available to read. If this is the case, we are making one available here, so we notify the consumer.
-            if (_deserializedElementsAvailable++ == _deserializedRecordsConsumed) {
-              _elementAvailableLock.notify();
+        try {
+          for (int i = 0; i < _recordsReadFromDiskCount; i++) {
+            _deserializedElements[i] = _deserializer.apply(_byteBuf);
+            // Lock while we increment the counter indicating available elements. The consumer will check if elements are
+            // available and block if not so we need to ensure the count is consistent.
+            synchronized (_elementAvailableLock) {
+              // The only scenario where our consumer is awaiting this lock is if there are no deserialized elements
+              // available to read. If this is the case, we are making one available here, so we notify the consumer.
+              if (_deserializedElementsAvailable++ == _deserializedRecordsConsumed) {
+                _elementAvailableLock.notify();
+              }
             }
           }
+        } catch (Exception e) {
+          // Log exception in case it leads to an error before we synchronize this thread.
+          LOG.error("Caught exception while deserializing elements.", e);
+          throw e;
         }
       }, executorService);
       return bufferFill;
