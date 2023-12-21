@@ -196,7 +196,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
           ", _deserializedRecordsConsumed=" + _deserializedRecordsConsumed +
           ", _deserializedElementsAvailable=" + _deserializedElementsAvailable +
           ", _deserializationComplete=" + _deserializationComplete.isDone() +
-          ", _currentItem=" + _deserializedElements[_deserializedRecordsConsumed] +
+          ", _currentItem=" + _deserializedElements[_deserializedRecordsConsumed - 1] +
           '}';
     }
 
