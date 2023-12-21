@@ -152,7 +152,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
 
   @Override
   public void close() {
-    LOG.debug("Current buffer trace: " + _current);
+    LOG.debug("Current buffer trace: " + _current + " -- Cursor: " + _fileCursor);
     LOG.debug("Next buffer trace: " + _next);
     IoUtil.closeQuietly(_channel);
   }
@@ -196,6 +196,10 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
           ", _deserializedRecordsConsumed=" + _deserializedRecordsConsumed +
           ", _deserializedElementsAvailable=" + _deserializedElementsAvailable +
           ", _deserializationComplete=" + _deserializationComplete.isDone() +
+          ", _previousItem1=" + _deserializedElements[_deserializedRecordsConsumed - 2] +
+          ", _previousItem2=" + _deserializedElements[_deserializedRecordsConsumed - 1] +
+          ", _currentItem=" + _deserializedElements[_deserializedRecordsConsumed] +
+          ", _nextItem=" + _deserializedElements[_deserializedRecordsConsumed + 1] +
           '}';
     }
 
