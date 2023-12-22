@@ -6,6 +6,7 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -165,7 +166,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
     private final Object _elementAvailableLock;
     private int _recordsReadFromDiskCount;
     private int _deserializedRecordsConsumed;
-    private int _deserializedElementsAvailable;
+    private int _deserializedElementsProduced;
     private CompletableFuture<Void> _deserializationComplete;
 
     public Buffer(int bufferSize, Function<ByteBuffer, T> deserializer, int recordLength, boolean startFull) {
@@ -181,7 +182,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
         _recordsReadFromDiskCount = Integer.MAX_VALUE;
       }
       _deserializedRecordsConsumed = 0;
-      _deserializedElementsAvailable = 0;
+      _deserializedElementsProduced = 0;
     }
     public boolean hasRemaining() {
       return _recordsReadFromDiskCount != _deserializedRecordsConsumed && _recordsReadFromDiskCount != -1;
@@ -194,7 +195,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
           ", _byteBuf=" + _byteBuf +
           ", _recordsReadFromDiskCount=" + _recordsReadFromDiskCount +
           ", _deserializedRecordsConsumed=" + _deserializedRecordsConsumed +
-          ", _deserializedElementsAvailable=" + _deserializedElementsAvailable +
+          ", _deserializedElementsAvailable=" + _deserializedElementsProduced +
           ", _deserializationComplete=" + _deserializationComplete.isDone() +
           '}';
     }
@@ -208,11 +209,12 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
     public T next() {
       // If all elements read from disk have been deserialized and consumed, return empty.
       if (_recordsReadFromDiskCount == _deserializedRecordsConsumed) {
-        return null;
+        throw new NoSuchElementException();
       }
       // Lock while checking if elements are available.
       synchronized (_elementAvailableLock) {
-        if (_deserializedRecordsConsumed == _deserializedElementsAvailable) {
+        // Use a while loop to account for the unlikely spurious wakeup from wait() without being notified.
+        while (_deserializedRecordsConsumed == _deserializedElementsProduced) {
           try {
             // If we have consumed all deserialized elements, release lock and wait for producer thread.
             _elementAvailableLock.wait();
@@ -239,7 +241,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
     public CompletableFuture<FileChannelReadResult> startFill(AsynchronousFileChannel channel, long fileCursor, ExecutorService executorService) {
       this._byteBuf.clear();
       this._deserializedRecordsConsumed = 0;
-      this._deserializedElementsAvailable = 0;
+      this._deserializedElementsProduced = 0;
       final CompletableFuture<FileChannelReadResult> bufferFill = new CompletableFuture<>();
       // Wrapper the {@link AsynchronousFileChannel#read(ByteBuffer, long)} method returning a CompletableFuture
       // instead of a Future to enable chaining.
@@ -266,15 +268,12 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
         try {
           for (int i = 0; i < _recordsReadFromDiskCount; i++) {
             _deserializedElements[i] = _deserializer.apply(_byteBuf);
-            if (_deserializedElements[i] == null) {
-              LOG.warn("Deserializer returned a null element at index" + i);
-            }
             // Lock while we increment the counter indicating available elements. The consumer will check if elements are
             // available and block if not so we need to ensure the count is consistent.
             synchronized (_elementAvailableLock) {
               // The only scenario where our consumer is awaiting this lock is if there are no deserialized elements
               // available to read. If this is the case, we are making one available here, so we notify the consumer.
-              if (_deserializedElementsAvailable++ == _deserializedRecordsConsumed) {
+              if (_deserializedElementsProduced++ == _deserializedRecordsConsumed) {
                 _elementAvailableLock.notify();
               }
             }
