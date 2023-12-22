@@ -213,6 +213,7 @@ public class DualBufferBinaryRecordReader<T> implements CloseableIterator<T> {
       }
       // Lock while checking if elements are available.
       synchronized (_elementAvailableLock) {
+        // Use a while loop to account for the unlikely spurious wakeup from wait() without being notified.
         while (_deserializedRecordsConsumed == _deserializedElementsProduced) {
           try {
             // If we have consumed all deserialized elements, release lock and wait for producer thread.
