@@ -27,5 +27,15 @@ A build produces a set of Java artifacts (JARs), each addressing a utility categ
 ### Java
 FgpUtil's Java code requires Java 11 or higher and can be built by Maven 3+ directly or as part of the GUS build system (also requiring Maven 3+).  It depends on [VEuPathDB's base POM](https://github.com/VEuPathDB/base-pom) for dependency management (version definitions).  To explore individual component dependencies, review the sub-module pom.xml files for those components.
 
+### Stand-alone Java CLI tools in a GUS environment
+Because FgpUtil components are released as Java libraries (to be depended on in a modern Java build system e.g. ivy, maven, gradle), downloading a particular built version and its dependencies outside the context of a larger application is not intuitive.  For GUS environments, you can use a script in [the install project](https://github.com/VEuPathDB/install) to deploy all FgpUtil jars and their dependencies into $GUS_HOME/lib/java, where they will be available to gus-based scripts.  The version of FgpUtil will be the one declared in $PROJECT_HOME/install/pom.xml.  To do this, run:
+```
+> cd $PROJECT_HOME
+> git clone https://github.com/VEuPathDB/install.git
+> cd install
+> mvn install
+> bash bin/installFgpUtilJars.sh
+```
+
 ### Scripts
 Nearly all scripts in FgpUtil are written in bash or perl, and many are wrappers around Java code.  The perl code in FgpUtil expects Perl 5.x.  To access the scripts, one would typically build FgpUtil using the GUS build system and add $GUS_HOME/bin to their $PATH.
