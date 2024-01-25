@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 
 import javax.sql.DataSource;
 
@@ -29,6 +30,7 @@ import org.gusdb.fgputil.db.slowquery.SqlTimer;
 public class SQLRunner {
 
   private static Logger LOG = Logger.getLogger(SQLRunner.class.getName());
+  private static Integer GLOBAL_QUERY_TIMEOUT_SECONDS = null;
 
   /**
    * Represents a class that will handle the ResultSet when caller uses it with
@@ -103,6 +105,7 @@ public class SQLRunner {
   private boolean _isInternallyCreatedConnection;
   private boolean _returnedObjectResponsibleForClosing = false;
   private long _lastExecutionTime = 0L;
+  private Duration _timeout = null;
 
   /**
    * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
@@ -193,6 +196,26 @@ public class SQLRunner {
     _txStrategy = TxStrategy.INHERIT;
     _isInternallyCreatedConnection = false;
     _sqlName = sqlName;
+  }
+
+  /**
+   * Set a global connection timeout that gets used for all SQLRunner instances if no override is set.
+   *
+   * @param timeout Default timeout value.
+   */
+  public static void setGlobalDefaultConnectionTimeout(Duration timeout) {
+    GLOBAL_QUERY_TIMEOUT_SECONDS = (int) timeout.getSeconds();
+  }
+
+  /**
+   * Set the override connection timeout for this instance of SQLRunner. This takes precedence of the global timeout.
+   *
+   * @param timeout Timeout value to propagate to JDBC statement.
+   * @return this instance of SQLRunner.
+   */
+  public SQLRunner setDefaultConnectionTimeout(Duration timeout) {
+    _timeout = timeout;
+    return this;
   }
 
   /**
@@ -364,6 +387,15 @@ public class SQLRunner {
 
       // prepare statement
       stmt = conn.prepareStatement(_sql);
+
+      // Prioritize override query timeout and fallback to global query timeout.
+      if (GLOBAL_QUERY_TIMEOUT_SECONDS != null) {
+        stmt.setQueryTimeout(GLOBAL_QUERY_TIMEOUT_SECONDS);
+      }
+      if (_timeout != null) {
+        stmt.setQueryTimeout((int) _timeout.getSeconds());
+      }
+
       exec.overrideFetchSize(stmt);
       timer.statementPrepared();
 
