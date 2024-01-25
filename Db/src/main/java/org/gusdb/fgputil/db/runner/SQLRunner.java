@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -29,6 +31,9 @@ import org.gusdb.fgputil.db.slowquery.SqlTimer;
 public class SQLRunner {
 
   private static Logger LOG = Logger.getLogger(SQLRunner.class.getName());
+
+  // Set a long default static timeout to avoid connection leaks if the database hangs.
+  private static Integer DEFAULT_QUERY_TIMEOUT_SECONDS = 1800;
 
   /**
    * Represents a class that will handle the ResultSet when caller uses it with
@@ -103,6 +108,7 @@ public class SQLRunner {
   private boolean _isInternallyCreatedConnection;
   private boolean _returnedObjectResponsibleForClosing = false;
   private long _lastExecutionTime = 0L;
+  private Duration _timeout = null;
 
   /**
    * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
@@ -193,6 +199,30 @@ public class SQLRunner {
     _txStrategy = TxStrategy.INHERIT;
     _isInternallyCreatedConnection = false;
     _sqlName = sqlName;
+  }
+
+  /**
+   * Set a global default connection timeout that gets used for all SQLRunner instances if no override is set. Set to null
+   * if no global default timeout is desired.
+   *
+   * @param timeout Default timeout value.
+   */
+  public static void setDefaultConnectionTimeout(Duration timeout) {
+    DEFAULT_QUERY_TIMEOUT_SECONDS = Optional.ofNullable(timeout)
+        .map(d -> (int) d.getSeconds())
+        .orElse(null);
+  }
+
+  /**
+   * Set the connection timeout for this instance of SQLRunner. This takes precedence over the default timeout set via
+   * {@link this#setDefaultConnectionTimeout(Duration)}.
+   *
+   * @param timeout Timeout value to propagate to JDBC statement.
+   * @return this instance of SQLRunner.
+   */
+  public SQLRunner setConnectionTimeout(Duration timeout) {
+    _timeout = timeout;
+    return this;
   }
 
   /**
@@ -364,6 +394,15 @@ public class SQLRunner {
 
       // prepare statement
       stmt = conn.prepareStatement(_sql);
+
+      // Prioritize override query timeout and fallback to global query timeout.
+      if (DEFAULT_QUERY_TIMEOUT_SECONDS != null) {
+        stmt.setQueryTimeout(DEFAULT_QUERY_TIMEOUT_SECONDS);
+      }
+      if (_timeout != null) {
+        stmt.setQueryTimeout((int) _timeout.getSeconds());
+      }
+
       exec.overrideFetchSize(stmt);
       timer.statementPrepared();
 
