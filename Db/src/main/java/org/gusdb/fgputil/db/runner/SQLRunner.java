@@ -202,24 +202,25 @@ public class SQLRunner {
   }
 
   /**
-   * Set a global connection timeout that gets used for all SQLRunner instances if no override is set. Set to null
+   * Set a global default connection timeout that gets used for all SQLRunner instances if no override is set. Set to null
    * if no global default timeout is desired.
    *
    * @param timeout Default timeout value.
    */
-  public static void setGlobalDefaultConnectionTimeout(Duration timeout) {
+  public static void setDefaultConnectionTimeout(Duration timeout) {
     GLOBAL_QUERY_TIMEOUT_SECONDS = Optional.ofNullable(timeout)
         .map(d -> (int) d.getSeconds())
         .orElse(null);
   }
 
   /**
-   * Set the override connection timeout for this instance of SQLRunner. This takes precedence of the global timeout.
+   * Set the connection timeout for this instance of SQLRunner. This takes precedence over the default timeout set via
+   * {@link this#setDefaultConnectionTimeout(Duration)}.
    *
    * @param timeout Timeout value to propagate to JDBC statement.
    * @return this instance of SQLRunner.
    */
-  public SQLRunner setDefaultConnectionTimeout(Duration timeout) {
+  public SQLRunner setConnectionTimeout(Duration timeout) {
     _timeout = timeout;
     return this;
   }
