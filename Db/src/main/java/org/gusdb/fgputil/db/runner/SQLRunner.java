@@ -32,8 +32,8 @@ public class SQLRunner {
 
   private static Logger LOG = Logger.getLogger(SQLRunner.class.getName());
 
-  // Set a long global timeout to avoid connection leaks when the database hangs.
-  private static Integer GLOBAL_QUERY_TIMEOUT_SECONDS = 1800;
+  // Set a long default static timeout to avoid connection leaks if the database hangs.
+  private static Integer DEFAULT_QUERY_TIMEOUT_SECONDS = 1800;
 
   /**
    * Represents a class that will handle the ResultSet when caller uses it with
@@ -208,7 +208,7 @@ public class SQLRunner {
    * @param timeout Default timeout value.
    */
   public static void setDefaultConnectionTimeout(Duration timeout) {
-    GLOBAL_QUERY_TIMEOUT_SECONDS = Optional.ofNullable(timeout)
+    DEFAULT_QUERY_TIMEOUT_SECONDS = Optional.ofNullable(timeout)
         .map(d -> (int) d.getSeconds())
         .orElse(null);
   }
@@ -396,8 +396,8 @@ public class SQLRunner {
       stmt = conn.prepareStatement(_sql);
 
       // Prioritize override query timeout and fallback to global query timeout.
-      if (GLOBAL_QUERY_TIMEOUT_SECONDS != null) {
-        stmt.setQueryTimeout(GLOBAL_QUERY_TIMEOUT_SECONDS);
+      if (DEFAULT_QUERY_TIMEOUT_SECONDS != null) {
+        stmt.setQueryTimeout(DEFAULT_QUERY_TIMEOUT_SECONDS);
       }
       if (_timeout != null) {
         stmt.setQueryTimeout((int) _timeout.getSeconds());
