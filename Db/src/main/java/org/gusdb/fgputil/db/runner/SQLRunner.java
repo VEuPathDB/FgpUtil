@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -30,7 +31,9 @@ import org.gusdb.fgputil.db.slowquery.SqlTimer;
 public class SQLRunner {
 
   private static Logger LOG = Logger.getLogger(SQLRunner.class.getName());
-  private static Integer GLOBAL_QUERY_TIMEOUT_SECONDS = null;
+
+  // Set a long global timeout to avoid connection leaks when the database hangs.
+  private static Integer GLOBAL_QUERY_TIMEOUT_SECONDS = 1800;
 
   /**
    * Represents a class that will handle the ResultSet when caller uses it with
@@ -199,12 +202,15 @@ public class SQLRunner {
   }
 
   /**
-   * Set a global connection timeout that gets used for all SQLRunner instances if no override is set.
+   * Set a global connection timeout that gets used for all SQLRunner instances if no override is set. Set to null
+   * if no global default timeout is desired.
    *
    * @param timeout Default timeout value.
    */
   public static void setGlobalDefaultConnectionTimeout(Duration timeout) {
-    GLOBAL_QUERY_TIMEOUT_SECONDS = (int) timeout.getSeconds();
+    GLOBAL_QUERY_TIMEOUT_SECONDS = Optional.ofNullable(timeout)
+        .map(d -> (int) d.getSeconds())
+        .orElse(null);
   }
 
   /**
