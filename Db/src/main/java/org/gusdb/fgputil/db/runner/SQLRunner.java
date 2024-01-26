@@ -215,7 +215,7 @@ public class SQLRunner {
 
   /**
    * Set the connection timeout for this instance of SQLRunner. This takes precedence over the default timeout set via
-   * {@link this#setDefaultConnectionTimeout(Duration)}.
+   * setDefaultConnectionTimeout.
    *
    * @param timeout Timeout value to propagate to JDBC statement.
    * @return this instance of SQLRunner.
