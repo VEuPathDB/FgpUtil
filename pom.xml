@@ -5,7 +5,7 @@
   <url>http://gusdb.org</url>
 
   <artifactId>fgputil</artifactId>
-  <version>2.13.0-jakarta</version>
+  <version>2.13.1-jakarta-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <parent>
@@ -16,7 +16,7 @@
 
   <scm>
     <developerConnection>scm:git:ssh://github.com/VEuPathDB/FgpUtil</developerConnection>
-    <tag>v2.13.0-jakarta</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <repositories>
