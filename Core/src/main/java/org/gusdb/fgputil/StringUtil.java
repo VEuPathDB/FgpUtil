@@ -71,4 +71,18 @@ public class StringUtil {
   public static String trim(final String target, final char trim) {
     return ltrim(rtrim(target, trim), trim);
   }
+
+  public static final Pattern UUID_REGEX = Pattern.compile("^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$");
+
+  /**
+   * Tests whether the given string is in the valid UUID format.
+   *
+   * @param s String to test.
+   *
+   * @return {@code true} if the given string is a valid UUID string,
+   * otherwise {@code false}.
+   */
+  public static boolean isUuid(String s) {
+    return UUID_REGEX.matcher(s).matches();
+  }
 }
