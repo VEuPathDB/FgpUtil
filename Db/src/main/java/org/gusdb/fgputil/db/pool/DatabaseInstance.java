@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Wrapper;
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -241,7 +242,7 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
     connectionPool.setDefaultAutoCommit(dbConfig.getDefaultAutoCommit());
 
     // configure the connection pool
-    connectionPool.setMaxWaitMillis(dbConfig.getMaxWait());
+    connectionPool.setMaxWait(Duration.ofMillis(dbConfig.getMaxWait()));
     connectionPool.setMaxIdle(dbConfig.getMaxIdle());
     connectionPool.setMinIdle(dbConfig.getMinIdle());
     connectionPool.setMaxTotal(dbConfig.getMaxActive());
@@ -432,7 +433,7 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
    */
   public long getMinEvictableIdleTimeMillis() {
     checkInit();
-    return _connectionPool.getMinEvictableIdleTimeMillis();
+    return _connectionPool.getMinEvictableIdleDuration().toMillis();
   }
 
   /**
@@ -440,7 +441,7 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
    */
   public long getTimeBetweenEvictionRunsMillis() {
     checkInit();
-    return _connectionPool.getTimeBetweenEvictionRunsMillis();
+    return _connectionPool.getDurationBetweenEvictionRuns().toMillis();
   }
 
   /**
