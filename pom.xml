@@ -5,7 +5,7 @@
   <url>http://gusdb.org</url>
 
   <artifactId>fgputil</artifactId>
-  <version>2.13.2-j21tc9</version>
+  <version>2.13.3-j21tc9-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <parent>
@@ -16,7 +16,7 @@
 
   <scm>
     <developerConnection>scm:git:ssh://github.com/VEuPathDB/FgpUtil</developerConnection>
-    <tag>v2.13.2-j21tc9</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <repositories>
@@ -77,7 +77,7 @@
       <dependency>
         <groupId>org.gusdb</groupId>
         <artifactId>fgputil-db</artifactId>
-        <version>${project.version}</version>
+        <version>2.13.3-j21tc9-SNAPSHOT2.13.3-j21tc9-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.gusdb</groupId>
