@@ -77,7 +77,7 @@
       <dependency>
         <groupId>org.gusdb</groupId>
         <artifactId>fgputil-db</artifactId>
-        <version>2.13.3-j21tc9-SNAPSHOT2.13.3-j21tc9-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gusdb</groupId>

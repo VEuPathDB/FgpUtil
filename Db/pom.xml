@@ -9,7 +9,6 @@
 
   <name>Functional Genomics Platform - Database</name>
   <artifactId>fgputil-db</artifactId>
-  <version>2.13.3-j21tc9-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <dependencies>
