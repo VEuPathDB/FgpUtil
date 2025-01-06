@@ -59,7 +59,8 @@ public class DataSourceWrapper extends AbstractDataSourceWrapper {
         Throwable cause = e.getCause();
         if (cause != null &&
             cause instanceof NoSuchElementException &&
-            IDLE_OBJECT_MESSAGE.equals(cause.getMessage())) {
+            cause.getMessage() != null &&
+            cause.getMessage().startsWith(IDLE_OBJECT_MESSAGE)) {
           // looks like connection pool is exhausted, causing a request failure
           LOG.warn("\n\nUnable to retrieve a database connection from the pool for " + _dbName +
               " before timeout.  This application may be under heavy load or there may be a " +
