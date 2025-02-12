@@ -8,8 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
@@ -226,6 +228,25 @@ public class OnDiskCache {
     catch (Exception e) {
       throw (e instanceof RuntimeException) ? (RuntimeException)e :
         new RuntimeException("Unable to delete entry at " + path.toAbsolutePath());
+    }
+  }
+
+  /**
+   * Removes all entries in the cache store's parent directory.  Note it will delete ALL directories
+   * in the parent dir, assuming they are meant to be entries.  It will not delete plain files.
+   */
+  public void removeAllEntries() {
+    try {
+      List<String> entries = Files.list(_parentDirectory).map(p -> p.getFileName().toString()).collect(Collectors.toList());
+      for (String cacheKey : entries) {
+        if (Files.isDirectory(Paths.get(_parentDirectory.toString(), cacheKey))) {
+          removeEntry(cacheKey);
+        }
+      }
+    }
+    catch (Exception e) {
+      throw (e instanceof RuntimeException) ? (RuntimeException)e :
+        new RuntimeException("Unable to delete all entries in " + _parentDirectory.toAbsolutePath());
     }
   }
 }
