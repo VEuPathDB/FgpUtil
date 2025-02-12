@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 
 /**
  * Manages a filesystem-based cache of entries, with data located specified directory
@@ -115,18 +116,18 @@ public class OnDiskCache {
    *
    * @param cacheKey key for this cache entry; must be a valid directory name on your OS
    * @param cachePopulator populates the contents of the passed directory with files to be cached
-   * @param cacheVisitor visits the cached files
+   * @param cacheVisitor visits the cached files and returns a value generated from the content
    * @param overwriteFlag indicates conditions under which cache entry content should be overwritten
    * @throws IllegalArgumentException if cache key is an illegal value
    * @throws DirectoryLockTimeoutException if unable to procure an entry lock before timeout
    * @throws Exception typically forwarded exceptions thrown by the consumer or predicate arguments
    */
-  public void populateAndProcessContent(
+  public <T> T populateAndProcessContent(
       String cacheKey,
       ConsumerWithException<Path> cachePopulator,
-      ConsumerWithException<Path> cacheVisitor,
+      FunctionWithException<Path, T> cacheVisitor,
       Overwrite overwriteFlag) throws Exception {
-    populateAndProcessContent(cacheKey, cachePopulator, cacheVisitor, overwriteFlag.getPredicate());
+    return populateAndProcessContent(cacheKey, cachePopulator, cacheVisitor, overwriteFlag.getPredicate());
   }
 
   /**
@@ -135,16 +136,16 @@ public class OnDiskCache {
    *
    * @param cacheKey key for this cache entry; must be a valid directory name on your OS
    * @param cachePopulator populates the contents of the passed directory with files to be cached
-   * @param cacheVisitor visits the cached files
+   * @param cacheVisitor visits the cached files and returns a value generated from the content
    * @param conditionalOverwritePredicate returns true if the entry's content should be overwritten, else false
    * @throws IllegalArgumentException if cache key is an illegal value
    * @throws DirectoryLockTimeoutException if unable to procure an entry lock before timeout
    * @throws Exception typically forwarded exceptions thrown by the consumer or predicate arguments
    */
-  public void populateAndProcessContent(
+  public <T> T populateAndProcessContent(
       String cacheKey,
       ConsumerWithException<Path> cachePopulator,
-      ConsumerWithException<Path> cacheVisitor,
+      FunctionWithException<Path,T> cacheVisitor,
       Predicate<Path> conditionalOverwritePredicate) throws Exception {
 
     // determine path to entry directory and ensure existence (atomic)
@@ -175,7 +176,7 @@ public class OnDiskCache {
       }
 
       // entry population complete (for better or worse); visit the produced files
-      cacheVisitor.accept(path);
+      return cacheVisitor.apply(path);
     }
   }
 
@@ -195,16 +196,16 @@ public class OnDiskCache {
    * create a new one, but a EntryNotCreatedException is thrown and the visitor is not called.
    *
    * @param cacheKey key for this cache entry
-   * @param contentVisitor consumer which will visit content
+   * @param cacheVisitor visits the cached files and returns a value generated from the content
    * @throws EntryNotCreatedException if no entry yet exists for this key
    * @throws Exception if exception is thrown while accessing entry or by the contentVisitor
    */
-  public void visitContent(String cacheKey, ConsumerWithException<Path> contentVisitor) throws Exception {
+  public <T> T visitContent(String cacheKey, FunctionWithException<Path,T> contentVisitor) throws Exception {
     Path path = getEntryPath(cacheKey);
     if (!Files.exists(path)) {
       throw new EntryNotCreatedException(path.toAbsolutePath().toString());
     }
-    populateAndProcessContent(cacheKey, d -> {}, contentVisitor, Overwrite.NO);
+    return populateAndProcessContent(cacheKey, d -> {}, contentVisitor, Overwrite.NO);
   }
 
   /**
