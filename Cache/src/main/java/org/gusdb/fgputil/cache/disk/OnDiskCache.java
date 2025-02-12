@@ -5,6 +5,7 @@ import static org.gusdb.fgputil.functional.Functions.mapException;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -69,7 +70,7 @@ public class OnDiskCache {
   private static void setEntryComplete(Path entryDir) throws IOException {
     Files.createFile(Paths.get(entryDir.toString(), SUCCESS_FILE));
   }
-  private static boolean isEntryComplete(Path entryDir) {
+  public static boolean isEntryComplete(Path entryDir) {
     return Files.exists(Paths.get(entryDir.toString(), SUCCESS_FILE));
   }
 
@@ -78,7 +79,7 @@ public class OnDiskCache {
   private static void setEntryFailed(Path entryDir) throws IOException {
     Files.createFile(Paths.get(entryDir.toString(), FAILED_FILE));
   }
-  private static boolean isEntryFailed(Path entryDir) {
+  public static boolean isEntryFailed(Path entryDir) {
     return Files.exists(Paths.get(entryDir.toString(), FAILED_FILE));
   }
 
@@ -145,8 +146,7 @@ public class OnDiskCache {
       Predicate<Path> conditionalOverwritePredicate) throws Exception {
 
     // determine path to entry directory and ensure existence (atomic)
-    Path path = mapException(() -> Paths.get(_parentDirectory.toString(), Objects.requireNonNull(cacheKey)),
-        e -> new IllegalArgumentException("Illegal cache key; " + e.getMessage()));
+    Path path = getEntryPath(cacheKey);
     mapException(() -> createOpenPermsDirectory(path, true),
         e -> new RuntimeException("Could not create disk cache entry directory " + path, e));
 
@@ -174,6 +174,58 @@ public class OnDiskCache {
 
       // entry population complete (for better or worse); visit the produced files
       cacheVisitor.accept(path);
+    }
+  }
+
+  private Path getEntryPath(String cacheKey) {
+    return mapException(() -> Paths.get(_parentDirectory.toString(), Objects.requireNonNull(cacheKey)),
+        e -> new IllegalArgumentException("Illegal cache key; " + e.getMessage()));
+  }
+
+  public static class EntryNotCreatedException extends NoSuchFileException {
+    public EntryNotCreatedException(String file) {
+      super(file);
+    }
+  }
+
+  /**
+   * Visits the content of a cache entry.  If an entry does not yet exist, does NOT
+   * create a new one, but a EntryNotCreatedException is thrown and the visitor is not called.
+   *
+   * @param cacheKey key for this cache entry
+   * @param contentVisitor consumer which will visit content
+   * @throws EntryNotCreatedException if no entry yet exists for this key
+   * @throws Exception if exception is thrown while accessing entry or by the contentVisitor
+   */
+  public void visitContent(String cacheKey, ConsumerWithException<Path> contentVisitor) throws Exception {
+    Path path = getEntryPath(cacheKey);
+    if (!Files.exists(path)) {
+      throw new EntryNotCreatedException(path.toAbsolutePath().toString());
+    }
+    populateAndProcessContent(cacheKey, d -> {}, contentVisitor, Overwrite.NO);
+  }
+
+  /**
+   * Waits for the lock on the entry for this key, then deletes the entry.
+   *
+   * @param cacheKey key for this cache entry
+   */
+  public void removeEntry(String cacheKey) {
+
+    // determine path; if not present, nothing to do
+    Path path = getEntryPath(cacheKey);
+    if (!Files.exists(path)) return;
+
+    // get a lock on this entry
+    try (DirectoryLock lock = new DirectoryLock(path, _populationTimeoutMillis, _lockPollFrequencyMillis)) {
+      // to minimize likelihood of a collision, delete everything but the lock in step one
+      IoUtil.deleteDirectoryTree(path, path, lock.getLockFile());
+      // then delete both the lock file and parent directory
+      IoUtil.deleteDirectoryTree(path);
+    }
+    catch (Exception e) {
+      throw (e instanceof RuntimeException) ? (RuntimeException)e :
+        new RuntimeException("Unable to delete entry at " + path.toAbsolutePath());
     }
   }
 }
