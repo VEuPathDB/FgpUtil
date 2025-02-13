@@ -17,6 +17,8 @@ import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 
+import org.gusdb.fgputil.cache.disk.DirectoryLock.DirectoryLockTimeoutException;
+
 /**
  * Manages a filesystem-based cache of entries, with data located specified directory
  *
@@ -118,6 +120,8 @@ public class OnDiskCache {
    * @param cachePopulator populates the contents of the passed directory with files to be cached
    * @param cacheVisitor visits the cached files and returns a value generated from the content
    * @param overwriteFlag indicates conditions under which cache entry content should be overwritten
+   * @param <T> type of return value
+   * @return the value returned by the visitor
    * @throws IllegalArgumentException if cache key is an illegal value
    * @throws DirectoryLockTimeoutException if unable to procure an entry lock before timeout
    * @throws Exception typically forwarded exceptions thrown by the consumer or predicate arguments
@@ -138,6 +142,8 @@ public class OnDiskCache {
    * @param cachePopulator populates the contents of the passed directory with files to be cached
    * @param cacheVisitor visits the cached files and returns a value generated from the content
    * @param conditionalOverwritePredicate returns true if the entry's content should be overwritten, else false
+   * @param <T> type of return value
+   * @return the value returned by the visitor
    * @throws IllegalArgumentException if cache key is an illegal value
    * @throws DirectoryLockTimeoutException if unable to procure an entry lock before timeout
    * @throws Exception typically forwarded exceptions thrown by the consumer or predicate arguments
@@ -197,15 +203,17 @@ public class OnDiskCache {
    *
    * @param cacheKey key for this cache entry
    * @param cacheVisitor visits the cached files and returns a value generated from the content
+   * @param <T> type of return value
+   * @return the value returned by the visitor
    * @throws EntryNotCreatedException if no entry yet exists for this key
    * @throws Exception if exception is thrown while accessing entry or by the contentVisitor
    */
-  public <T> T visitContent(String cacheKey, FunctionWithException<Path,T> contentVisitor) throws Exception {
+  public <T> T visitContent(String cacheKey, FunctionWithException<Path,T> cacheVisitor) throws Exception {
     Path path = getEntryPath(cacheKey);
     if (!Files.exists(path)) {
       throw new EntryNotCreatedException(path.toAbsolutePath().toString());
     }
-    return populateAndProcessContent(cacheKey, d -> {}, contentVisitor, Overwrite.NO);
+    return populateAndProcessContent(cacheKey, d -> {}, cacheVisitor, Overwrite.NO);
   }
 
   /**
