@@ -29,27 +29,42 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   // results in a silent connection leak.
   private boolean _isResponsibleForConnection = true;
 
+  private boolean firstRowLoaded = false;
+  private boolean hasNext = true;
+
   private T next;
 
-  private boolean hasNext = true;
 
   public ResultSetIterator(ResultSet rs, RowConverter<T> converter) {
     this.rs = rs;
     this.converter = converter;
-    next(); // returns null; preloads the first item
   }
 
   @Override
   public boolean hasNext() {
+    preloadFirstRow();
     return hasNext;
   }
 
   @Override
   public T next() {
+    preloadFirstRow();
     if (!hasNext) {
       throw new NoSuchElementException("No more elements.");
     }
+    return loadNext();
+  }
 
+  // called by hasNext() and next() to avoid exceptions in constructor that could
+  //   lead to a connection leak if this is instantiated in a try-with-resources
+  private void preloadFirstRow() {
+    if (!firstRowLoaded) {
+      loadNext(); // will always return null here
+      firstRowLoaded = true;
+    }
+  }
+
+  private T loadNext() {
     var out = next;
     try {
       while (rs.next()) {
