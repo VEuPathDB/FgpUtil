@@ -126,9 +126,6 @@ public class DiskCacheTest {
       cache.removeAllEntries();
       long remainingEntries = Files.list(parentDir).collect(Collectors.counting());
       Assert.assertEquals(0, remainingEntries);
-
-      // clean up parent dir
-      Files.delete(parentDir);
     }
     finally {
       exec.shutdown();
