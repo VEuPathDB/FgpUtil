@@ -42,7 +42,6 @@
     <module>Client</module>
     <module>Servlet</module>
     <module>Db</module>
-    <module>AccountDB</module>
     <module>Server</module>
   </modules>
 
