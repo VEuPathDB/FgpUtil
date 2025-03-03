@@ -89,18 +89,18 @@ public class OnDiskCache {
   }
 
   private final Path _parentDirectory;
-  private final long _populationTimeoutMillis;
+  private final long _defaultLockTryTimeoutMillis;
   private final long _lockPollFrequencyMillis;
 
   /**
    * Creates a new on-disk cache
    *
    * @param parentDirectory parent directory for the cache's storage
-   * @param populationTimeoutMillis maximum time to wait for an entry to be unlocked before timing out (-1 for no limit)
+   * @param defaultLockTryTimeoutMillis maximum time to wait for an entry to be unlocked before timing out (-1 for no limit)
    * @param lockPollFrequencyMillis duration between attempts to procure an entry lock for write/read
    * @throws IOException if parent directory does not exist or cannot be read or written to (rwx on unix systems)
    */
-  public OnDiskCache(Path parentDirectory, long populationTimeoutMillis, long lockPollFrequencyMillis) throws IOException {
+  public OnDiskCache(Path parentDirectory, long defaultLockTryTimeoutMillis, long lockPollFrequencyMillis) throws IOException {
     if (!Files.isDirectory(parentDirectory) ||
         !Files.isReadable(parentDirectory) ||
         !Files.isWritable(parentDirectory) ||
@@ -108,7 +108,7 @@ public class OnDiskCache {
       throw new IOException("Path " + parentDirectory.toAbsolutePath() + " must be a readable, writeable directory.");
     }
     _parentDirectory = parentDirectory;
-    _populationTimeoutMillis = populationTimeoutMillis;
+    _defaultLockTryTimeoutMillis = defaultLockTryTimeoutMillis;
     _lockPollFrequencyMillis = lockPollFrequencyMillis;
   }
 
@@ -153,6 +153,32 @@ public class OnDiskCache {
       ConsumerWithException<Path> cachePopulator,
       FunctionWithException<Path,T> cacheVisitor,
       Predicate<Path> conditionalOverwritePredicate) throws Exception {
+    return populateAndProcessContent(cacheKey, cachePopulator, cacheVisitor,
+        conditionalOverwritePredicate, _defaultLockTryTimeoutMillis);
+  }
+
+  /**
+   * Visits cached content in a keyed directory, populating that content if necessary
+   * or requested.  This method takes a custom timeout override parameter so lock
+   * reservation attempts can be shorter or longer than the duration specified in the constructor.
+   *
+   * @param cacheKey key for this cache entry; must be a valid directory name on your OS
+   * @param cachePopulator populates the contents of the passed directory with files to be cached
+   * @param cacheVisitor visits the cached files and returns a value generated from the content
+   * @param conditionalOverwritePredicate returns true if the entry's content should be overwritten, else false
+   * @param lockTimeoutMillisOverride custom amount of time to wait for the lock before giving up
+   * @param <T> type of return value
+   * @return the value returned by the visitor
+   * @throws IllegalArgumentException if cache key is an illegal value
+   * @throws DirectoryLockTimeoutException if unable to procure an entry lock before timeout
+   * @throws Exception typically forwarded exceptions thrown by the consumer or predicate arguments
+   */
+  public <T> T populateAndProcessContent(
+      String cacheKey,
+      ConsumerWithException<Path> cachePopulator,
+      FunctionWithException<Path,T> cacheVisitor,
+      Predicate<Path> conditionalOverwritePredicate,
+      long lockTimeoutMillisOverride) throws Exception {
 
     // determine path to entry directory and ensure existence (atomic)
     Path path = getEntryPath(cacheKey);
@@ -160,7 +186,7 @@ public class OnDiskCache {
         e -> new RuntimeException("Could not create disk cache entry directory " + path, e));
 
     // get a lock on this entry
-    try (DirectoryLock lock = new DirectoryLock(path, _populationTimeoutMillis, _lockPollFrequencyMillis)) {
+    try (DirectoryLock lock = new DirectoryLock(path, lockTimeoutMillisOverride, _lockPollFrequencyMillis)) {
 
       // decide whether to overwrite this entry
       if ((!isEntryComplete(path) && !isEntryFailed(path)) // either brand new entry or something has gone wrong
@@ -186,14 +212,41 @@ public class OnDiskCache {
     }
   }
 
-  private Path getEntryPath(String cacheKey) {
+  /**
+   * Returns the directory that would contain the entry for the passed key.  Key must be
+   * valid or an IllegalArgumentException will be thrown.  The returned path may or may
+   * not exist (if no entry has been created for the passed key), and accessing this
+   * directory in a concurrent environment without using the locking methods in this
+   * class (populate and visit methods) is unreliable and potentially dangerous.  However,
+   * there may be use cases where access is needed; thus the method is public, but
+   * use is discouraged.
+   *
+   * @param cacheKey key for a potential cache entry
+   * @return directory that would be used to store the entry for this key if created
+   * @throws IllegalArgumentException if cacheKey is not a valid potential cache key value
+   */
+  public Path getEntryPath(String cacheKey) {
     return mapException(() -> Paths.get(_parentDirectory.toString(), Objects.requireNonNull(cacheKey)),
         e -> new IllegalArgumentException("Illegal cache key; " + e.getMessage()));
   }
 
+  /**
+   * Exception thrown by OnDiskCache visitor methods if the cache entry for the
+   * passed key has not yet been created (visitors do not create the entry when
+   * it does not exist).
+   */
   public static class EntryNotCreatedException extends NoSuchFileException {
-    public EntryNotCreatedException(String file) {
-      super(file);
+
+    private final String _cacheKey;
+
+    public EntryNotCreatedException(String cacheKey, Path entryDirectory) {
+      super(entryDirectory.toAbsolutePath().toString(), null, "Entry directory for key '" +
+          cacheKey + "' does not exist [" + entryDirectory.toAbsolutePath() + "].");
+      _cacheKey = cacheKey;
+    }
+
+    public String getCacheKey() {
+      return _cacheKey;
     }
   }
 
@@ -209,11 +262,29 @@ public class OnDiskCache {
    * @throws Exception if exception is thrown while accessing entry or by the contentVisitor
    */
   public <T> T visitContent(String cacheKey, FunctionWithException<Path,T> cacheVisitor) throws Exception {
+    return visitContent(cacheKey, cacheVisitor, _defaultLockTryTimeoutMillis);
+  }
+
+  /**
+   * Visits the content of a cache entry.  If an entry does not yet exist, does NOT
+   * create a new one, but a EntryNotCreatedException is thrown and the visitor is not called.
+   * This method takes a custom timeout override parameter so lock reservation attempts can
+   * be shorter or longer than the duration specified in the constructor.
+   *
+   * @param cacheKey key for this cache entry
+   * @param cacheVisitor visits the cached files and returns a value generated from the content
+   * @param lockTimeoutMillisOverride custom amount of time to wait for the lock before giving up
+   * @param <T> type of return value
+   * @return the value returned by the visitor
+   * @throws EntryNotCreatedException if no entry yet exists for this key
+   * @throws Exception if exception is thrown while accessing entry or by the contentVisitor
+   */
+  public <T> T visitContent(String cacheKey, FunctionWithException<Path,T> cacheVisitor, long lockTimeoutMillisOverride) throws Exception {
     Path path = getEntryPath(cacheKey);
     if (!Files.exists(path)) {
-      throw new EntryNotCreatedException(path.toAbsolutePath().toString());
+      throw new EntryNotCreatedException(cacheKey, path.toAbsolutePath());
     }
-    return populateAndProcessContent(cacheKey, d -> {}, cacheVisitor, Overwrite.NO);
+    return populateAndProcessContent(cacheKey, d -> {}, cacheVisitor, Overwrite.NO.getPredicate(), lockTimeoutMillisOverride);
   }
 
   /**
@@ -228,7 +299,7 @@ public class OnDiskCache {
     if (!Files.exists(path)) return;
 
     // get a lock on this entry
-    try (DirectoryLock lock = new DirectoryLock(path, _populationTimeoutMillis, _lockPollFrequencyMillis)) {
+    try (DirectoryLock lock = new DirectoryLock(path, _defaultLockTryTimeoutMillis, _lockPollFrequencyMillis)) {
       // to minimize likelihood of a collision, delete everything but the lock in step one
       IoUtil.deleteDirectoryTree(path, path, lock.getLockFile());
       // then delete both the lock file and parent directory
