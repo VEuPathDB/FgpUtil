@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.gusdb</groupId>
     <artifactId>fgputil</artifactId>
-    <version>2.15.3-SNAPSHOT</version>
+    <version>2.16.1-SNAPSHOT</version>
   </parent>
 
   <name>Functional Genomics Platform - REST Server</name>
@@ -21,11 +21,6 @@
     <dependency>
       <groupId>org.gusdb</groupId>
       <artifactId>fgputil-web</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.gusdb</groupId>
-      <artifactId>fgputil-accountdb</artifactId>
     </dependency>
 
     <dependency>

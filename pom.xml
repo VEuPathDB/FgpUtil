@@ -5,13 +5,13 @@
   <url>http://gusdb.org</url>
 
   <artifactId>fgputil</artifactId>
-  <version>2.15.3-SNAPSHOT</version>
+  <version>2.16.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <parent>
     <groupId>org.gusdb</groupId>
     <artifactId>base-pom</artifactId>
-    <version>2.24</version>
+    <version>2.26</version>
   </parent>
 
   <scm>
@@ -42,18 +42,12 @@
     <module>Client</module>
     <module>Servlet</module>
     <module>Db</module>
-    <module>AccountDB</module>
     <module>Server</module>
   </modules>
 
   <dependencyManagement>
     <dependencies>
       <!-- Declare dependencies on the current FgpUtil version -->
-      <dependency>
-        <groupId>org.gusdb</groupId>
-        <artifactId>fgputil-accountdb</artifactId>
-        <version>${project.version}</version>
-      </dependency>
       <dependency>
         <groupId>org.gusdb</groupId>
         <artifactId>fgputil-cache</artifactId>
