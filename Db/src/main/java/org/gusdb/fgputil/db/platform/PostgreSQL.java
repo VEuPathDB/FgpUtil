@@ -253,4 +253,9 @@ public class PostgreSQL extends DBPlatform {
       throws SQLException, UnsupportedOperationException {
     throw new UnsupportedOperationException("Method not yet supported.");
   }
+
+  @Override
+  public SupportedPlatform getPlatformEnum() {
+    return SupportedPlatform.POSTGRESQL;
+  }
 }
