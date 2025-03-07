@@ -56,6 +56,8 @@ public abstract class DBPlatform {
     // platform-dependent abstract methods
     //#########################################################################
 
+    public abstract SupportedPlatform getPlatformEnum();
+
     public abstract long getNextId(DataSource dataSource, String schema, String table) throws SQLException;
 
     public abstract String getNextIdSqlExpression(String schema, String table);

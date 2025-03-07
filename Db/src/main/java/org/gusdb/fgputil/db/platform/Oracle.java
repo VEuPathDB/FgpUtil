@@ -413,4 +413,9 @@ public class Oracle extends DBPlatform {
       throw e;
     }
   }
+
+  @Override
+  public SupportedPlatform getPlatformEnum() {
+    return SupportedPlatform.ORACLE;
+  }
 }

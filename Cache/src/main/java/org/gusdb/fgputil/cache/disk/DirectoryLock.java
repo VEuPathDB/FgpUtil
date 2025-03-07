@@ -44,7 +44,11 @@ public class DirectoryLock implements AutoCloseable {
         return; // success; got the lock
       }
       catch (FileAlreadyExistsException exists) {
-        // wait, then try again
+	// if waiting `pollFrequencyMillis` would cause a timeout, bail now
+	if (millisExpended + pollFrequencyMillis >= timeoutMillis) {
+	  throw new DirectoryLockTimeoutException("Timeout (" + timeoutMillis + "ms) occurred before able to lock directory: " + directory + " (aborting before next retry)");
+	}
+        // otherwise wait, then try again in next iteration of loop
         if (ThreadUtil.sleep(pollFrequencyMillis)) {
           throw new RuntimeException("Thread performing directory lock procurement was interrupted before it could complete.");
         }
