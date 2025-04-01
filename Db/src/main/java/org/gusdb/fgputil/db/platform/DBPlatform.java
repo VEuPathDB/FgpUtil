@@ -15,6 +15,8 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.functional.Either;
+import org.veupathdb.lib.ldap.NetDesc;
 
 /**
  * Provides a base class for DB-vendor-specific interfaces.  This allows calling
@@ -50,6 +52,20 @@ public abstract class DBPlatform {
 
     public static String normalizeString(String string) {
         return string.replaceAll("'", "''");
+    }
+
+    public static Either<NetDesc, String> parseConnectionUrl(String connectionUrl) {
+      return SupportedPlatform
+          .fromConnectionUrl(connectionUrl)
+          .getPlatformInstance()
+          .parsePlatformConnectionUrl(connectionUrl);
+    }
+
+    public static String getConnectionUrl(NetDesc netDesc) {
+      return SupportedPlatform
+          .fromLdapPlatform(netDesc.getPlatform())
+          .getPlatformInstance()
+          .getConnectionUrl(netDesc.getHost(), netDesc.getPort(), netDesc.getIdentifier());
     }
 
     //#########################################################################
@@ -127,6 +143,10 @@ public abstract class DBPlatform {
 
     public abstract String getDriverClassName();
 
+    public abstract String getConnectionUrl(String host, int port, String identifier);
+
+    public abstract Either<NetDesc,String> parsePlatformConnectionUrl(String connectionUrl);
+
     public abstract String getValidationQuery();
 
     /**
@@ -171,6 +191,10 @@ public abstract class DBPlatform {
     //#########################################################################
     // Common methods are platform independent
     //#########################################################################
+
+    public int getDefaultPort() {
+      return getPlatformEnum().getDefaultPort();
+    }
 
     public int setClobData(PreparedStatement ps, int columnIndex,
         String content, boolean commit) throws SQLException {
