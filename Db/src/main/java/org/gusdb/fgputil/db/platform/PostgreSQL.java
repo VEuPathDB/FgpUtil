@@ -6,12 +6,17 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.functional.Either;
+import org.veupathdb.lib.ldap.NetDesc;
+import org.veupathdb.lib.ldap.PostgresNetDesc;
 
 /**
  * @author Jerric Gao
@@ -19,6 +24,12 @@ import org.gusdb.fgputil.db.SqlUtils;
 public class PostgreSQL extends DBPlatform {
 
   public static final String DRIVER_NAME = "org.postgresql.Driver";
+
+  public static final String CONNECTION_URL_SCHEME = "jdbc:postgresql://";
+
+  // connection URL patterns
+  private static final Pattern URL_PATTERN_WITH_PORT = Pattern.compile("^" + CONNECTION_URL_SCHEME + "([.a-zA-Z0-9_\\-]+):([0-9]+)/(\\(\\)[.a-zA-Z0-9_\\-]+)$");
+  private static final Pattern URL_PATTERN_WITHOUT_PORT = Pattern.compile("^" + CONNECTION_URL_SCHEME + "([.a-zA-Z0-9_\\-]+)/(\\(\\)[.a-zA-Z0-9_\\-]+)$");
 
   public PostgreSQL() {
     super();
@@ -37,6 +48,25 @@ public class PostgreSQL extends DBPlatform {
   @Override
   public String getDriverClassName() {
     return DRIVER_NAME;
+  }
+
+  @Override
+  public String getConnectionUrl(String host, int port, String serviceName) {
+    return CONNECTION_URL_SCHEME + host + ":" + port + "/" + serviceName;
+  }
+
+  @Override
+  public Either<NetDesc,String> parsePlatformConnectionUrl(String connectionUrl) {
+    // try with and without port, with first
+    Matcher m = URL_PATTERN_WITH_PORT.matcher(connectionUrl);
+    if (m.find()) {
+      return Either.left(new PostgresNetDesc(m.group(1), Integer.parseInt(m.group(2)), m.group(3)));
+    }
+    m = URL_PATTERN_WITHOUT_PORT.matcher(connectionUrl);
+    if (m.find()) {
+      return Either.left(new PostgresNetDesc(m.group(1), getDefaultPort(), m.group(2)));
+    }
+    throw new IllegalArgumentException("Unsupported Postgres connection URL: " + connectionUrl);
   }
 
   @Override
