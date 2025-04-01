@@ -670,7 +670,9 @@ public final class SqlUtils {
       boolean origAutoCommit = conn.getAutoCommit();
       try {
         conn.setAutoCommit(false);
-        conn.createStatement().executeUpdate("SET CONSTRAINTS ALL DEFERRED");
+        try (Statement statement = conn.createStatement()) {
+          statement.executeUpdate("SET CONSTRAINTS ALL DEFERRED");
+        }
         for (ConsumerWithException<Connection> proc : procedures) {
           proc.accept(conn);
         }
