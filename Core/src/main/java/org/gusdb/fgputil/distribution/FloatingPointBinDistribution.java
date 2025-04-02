@@ -2,6 +2,7 @@ package org.gusdb.fgputil.distribution;
 
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.math.BigDecimal;
 
 public class FloatingPointBinDistribution extends NumberBinDistribution<Double> {
 
@@ -11,7 +12,10 @@ public class FloatingPointBinDistribution extends NumberBinDistribution<Double> 
 
   @Override
   protected Double sum(Double a, Double b) {
-    return a + b;
+    // use BigDecimal to prevent "precision drift" errors
+    return new BigDecimal(Double.toString(a))
+           .add(new BigDecimal(Double.toString(b)))
+           .doubleValue();
   }
 
   @Override
