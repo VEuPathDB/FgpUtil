@@ -36,11 +36,13 @@ public class Oracle extends DBPlatform {
   public static final String CONNECTION_URL_PREFIX = "jdbc:oracle:";
   public static final String CONNECTION_URL_SCHEME_THIN = CONNECTION_URL_PREFIX + "thin:@//";
   public static final String CONNECTION_URL_SCHEME_OCI = CONNECTION_URL_PREFIX + "oci:@";
+  public static final String CONNECTION_URL_SCHEME_TNS = CONNECTION_URL_PREFIX + "thin:@";
 
   // connection URL patterns
-  private static final Pattern URL_PATTERN_THIN_WITH_PORT = Pattern.compile("^" + CONNECTION_URL_SCHEME_THIN + "([.a-zA-Z0-9_\\-]+):([0-9]+)/(\\(\\)[.a-zA-Z0-9_\\-]+)$");
-  private static final Pattern URL_PATTERN_THIN_WITHOUT_PORT = Pattern.compile("^" + CONNECTION_URL_SCHEME_THIN + "([.a-zA-Z0-9_\\-]+)/(\\(\\)[.a-zA-Z0-9_\\-]+)$");
-  private static final Pattern URL_PATTERN_OCI = Pattern.compile("^" + CONNECTION_URL_SCHEME_OCI + "([.a-zA-Z0-9_\\-]+)$");
+  private static final Pattern URL_PATTERN_THIN_WITH_PORT = Pattern.compile("^" + CONNECTION_URL_SCHEME_THIN + "([\\.a-zA-Z0-9_\\-]+):([0-9]+)/([\\(\\)\\.a-zA-Z0-9_\\-]+)$");
+  private static final Pattern URL_PATTERN_THIN_WITHOUT_PORT = Pattern.compile("^" + CONNECTION_URL_SCHEME_THIN + "([\\.a-zA-Z0-9_\\-]+)/([\\(\\)\\.a-zA-Z0-9_\\-]+)$");
+  private static final Pattern URL_PATTERN_OCI = Pattern.compile("^" + CONNECTION_URL_SCHEME_OCI + "([\\.a-zA-Z0-9_\\-]+)$");
+  private static final Pattern URL_PATTERN_TNS = Pattern.compile("^" + CONNECTION_URL_SCHEME_TNS + "(.+)");
 
   public Oracle() {
     super();
@@ -80,6 +82,16 @@ public class Oracle extends DBPlatform {
     m = URL_PATTERN_OCI.matcher(connectionUrl);
     if (m.find()) {
       return Either.right(m.group(1));
+    }
+    m = URL_PATTERN_TNS.matcher(connectionUrl);
+    if (m.find()) {
+      String tnsFormat = m.group(1);
+      try {
+        return Either.left(new OracleNetDesc(tnsFormat));
+      }
+      catch (IllegalArgumentException e) {
+        // fall through to the throw below
+      }
     }
     throw new IllegalArgumentException("Unsupported Oracle connection URL: " + connectionUrl);
   }

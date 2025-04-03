@@ -5,6 +5,12 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.functional.Either;
+import org.junit.Test;
+import org.veupathdb.lib.ldap.NetDesc;
+import org.veupathdb.lib.ldap.Platform;
+
+import static org.junit.Assert.*;
 
 public class DBPlatformTest {
 
@@ -48,5 +54,85 @@ public class DBPlatformTest {
       runner = new SQLRunner(userDs, userDb.getPlatform().getValidationQuery());
       runner.executeStatement();
     }
+  }
+
+  @Test
+  public void validConnectionUrlTests() {
+
+    String valid = "jdbc:oracle:thin:@//db.example.com/testdb";
+    Either<NetDesc,String> parsed = DBPlatform.parseConnectionUrl(valid);
+    assertEquals(true, parsed.isLeft());
+    NetDesc desc = parsed.getLeft();
+    assertEquals(Platform.ORACLE, desc.getPlatform());
+    assertEquals("db.example.com", desc.getHost());
+    assertEquals(1521, desc.getPort());
+    assertEquals("testdb", desc.getIdentifier());
+
+    valid = "jdbc:oracle:thin:@//db.example.com:1234/testdb";
+    parsed = DBPlatform.parseConnectionUrl(valid);
+    assertEquals(true, parsed.isLeft());
+    desc = parsed.getLeft();
+    assertEquals(Platform.ORACLE, desc.getPlatform());
+    assertEquals("db.example.com", desc.getHost());
+    assertEquals(1234, desc.getPort());
+    assertEquals("testdb", desc.getIdentifier());
+
+    valid = "jdbc:oracle:thin:@(ADDRESS=(PROTOCOL=TCP)(HOST=db.example.com)(PORT=1234))(CONNECT_DATA=(SERVICE_NAME=testdb)))";
+    parsed = DBPlatform.parseConnectionUrl(valid);
+    assertEquals(true, parsed.isLeft());
+    desc = parsed.getLeft();
+    assertEquals(Platform.ORACLE, desc.getPlatform());
+    assertEquals("db.example.com", desc.getHost());
+    assertEquals(1234, desc.getPort());
+    assertEquals("testdb", desc.getIdentifier());
+
+    valid = "jdbc:oracle:oci:@mydbcn";
+    parsed = DBPlatform.parseConnectionUrl(valid);
+    assertEquals(true, parsed.isRight());
+    String ldapCn = parsed.getRight();
+    assertEquals("mydbcn", ldapCn);
+
+    valid = "jdbc:postgresql://db.example.com/testdb";
+    parsed = DBPlatform.parseConnectionUrl(valid);
+    assertEquals(true, parsed.isLeft());
+    desc = parsed.getLeft();
+    assertEquals(Platform.POSTGRES, desc.getPlatform());
+    assertEquals("db.example.com", desc.getHost());
+    assertEquals(5432, desc.getPort());
+    assertEquals("testdb", desc.getIdentifier());
+
+    valid = "jdbc:postgresql://db.example.com:1234/testdb";
+    parsed = DBPlatform.parseConnectionUrl(valid);
+    assertEquals(true, parsed.isLeft());
+    desc = parsed.getLeft();
+    assertEquals(Platform.POSTGRES, desc.getPlatform());
+    assertEquals("db.example.com", desc.getHost());
+    assertEquals(1234, desc.getPort());
+    assertEquals("testdb", desc.getIdentifier());
+  }
+
+  @Test
+  public void invalidConnectionUrlTests() {
+    String[] badUrls = new String[] {
+        "",
+        "jdbc:blah://hey/you",
+        "jdbc:postgresql://",
+        "jdbc:oracle:abc:",
+        "ajdbc:oracle:thin:@abc",
+        "jdbc:oracle:thick://blah/db",
+        "jdbc:postgresql:/blah:123/db",
+        "jdbc:postgresql://blah:123",
+        "jdbc:postgresql://blah/"
+    };
+    int broken = 0;
+    for (String badUrl : badUrls) {
+      try {
+        DBPlatform.parseConnectionUrl(badUrl);
+      }
+      catch (UnsupportedPlatformException | IllegalArgumentException e) {
+        broken++;
+      }
+    }
+    assertEquals(badUrls.length, broken);
   }
 }
