@@ -28,8 +28,8 @@ public class PostgreSQL extends DBPlatform {
   public static final String CONNECTION_URL_SCHEME = "jdbc:postgresql://";
 
   // connection URL patterns
-  private static final Pattern URL_PATTERN_WITH_PORT = Pattern.compile("^" + CONNECTION_URL_SCHEME + "([.a-zA-Z0-9_\\-]+):([0-9]+)/(\\(\\)[.a-zA-Z0-9_\\-]+)$");
-  private static final Pattern URL_PATTERN_WITHOUT_PORT = Pattern.compile("^" + CONNECTION_URL_SCHEME + "([.a-zA-Z0-9_\\-]+)/(\\(\\)[.a-zA-Z0-9_\\-]+)$");
+  private static final Pattern URL_PATTERN_WITH_PORT = Pattern.compile("^" + CONNECTION_URL_SCHEME + "([.a-zA-Z0-9_\\-]+):([0-9]+)/([.a-zA-Z0-9_\\-]+)$");
+  private static final Pattern URL_PATTERN_WITHOUT_PORT = Pattern.compile("^" + CONNECTION_URL_SCHEME + "([.a-zA-Z0-9_\\-]+)/([.a-zA-Z0-9_\\-]+)$");
 
   public PostgreSQL() {
     super();
