@@ -11,6 +11,8 @@ import org.gusdb.fgputil.iterator.IteratorUtil;
 
 public abstract class AbstractBinDistribution<S, R extends Bin<S>> extends AbstractDistribution {
 
+  protected static final int MAX_BINS = 2000;
+
   protected enum ValueSource { CONFIG, DB }
 
   public interface Bin<T> {
@@ -33,6 +35,7 @@ public abstract class AbstractBinDistribution<S, R extends Bin<S>> extends Abstr
     StatsCollector<S> stats = getStatsCollector();
     long missingCasesCount = 0;
     R currentBin = getFirstBin();
+    int numBins = 1;
     boolean beforeFirstBin = true;
     boolean afterLastBin = false;
     List<HistogramBin> bins = new ArrayList<>();
@@ -61,6 +64,10 @@ public abstract class AbstractBinDistribution<S, R extends Bin<S>> extends Abstr
         // value not accepted; move to the next bin if present
         Optional<R> nextBin = getNextBin(currentBin);
         if (nextBin.isPresent()) {
+          numBins++;
+          if (numBins > MAX_BINS) {
+            throw new IllegalArgumentException("Maximum number of allowed bins (" + MAX_BINS + ") exceeded.");
+          }
           bins.add(currentBin.toHistogramBin());
           currentBin = nextBin.get();
         }
