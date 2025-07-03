@@ -183,7 +183,9 @@ public class Oracle extends DBPlatform {
     Clob messageClob = rs.getClob(columnName);
     if (messageClob == null)
       return null;
-    return messageClob.getSubString(1, (int) messageClob.length());
+    String data = messageClob.getSubString(1, (int) messageClob.length());
+    messageClob.free();
+    return data;
   }
 
   @Override
