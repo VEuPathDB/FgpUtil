@@ -11,7 +11,7 @@ import java.util.function.Function;
 public class StreamUtil {
 
   /**
-   * Returns a function that converts any T to an {@link Entry<Integer,T>} where the key of each
+   * Returns a function that converts any T to an {@link Entry} where the key of each
    * entry is an integer that increments each time the function is called.  Passing it
    * to the Stream.map() method causes this key to effectively act as an index of the
    * object i.e. the 0-based order that the objects are processed.
