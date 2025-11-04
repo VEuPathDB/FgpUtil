@@ -13,7 +13,8 @@ import javax.sql.DataSource;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.DBStateException;
-import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.functional.Either;
 import org.veupathdb.lib.ldap.NetDesc;
 import org.veupathdb.lib.ldap.PostgresNetDesc;
@@ -77,13 +78,14 @@ public class PostgreSQL extends DBPlatform {
   @Override
   public void createSequence(DataSource dataSource, String sequence, int start, int increment)
       throws SQLException {
-    StringBuffer sql = new StringBuffer("CREATE SEQUENCE ");
-    sql.append(sequence);
-    sql.append(" START ");
-    sql.append(start);
-    sql.append(" INCREMENT ");
-    sql.append(increment);
-    SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-create-sequence");
+    String sql = new StringBuilder("CREATE SEQUENCE ")
+        .append(sequence)
+        .append(" START ")
+        .append(start)
+        .append(" INCREMENT ")
+        .append(increment)
+        .toString();
+    new SQLRunner(dataSource, sql, "wdk-create-sequence").executeUpdate();
   }
 
   @Override
@@ -119,11 +121,9 @@ public class PostgreSQL extends DBPlatform {
   @Override
   public long getNextId(DataSource dataSource, String schema, String table) throws SQLException {
     schema = normalizeSchema(schema);
-    StringBuffer sql = new StringBuffer("SELECT nextval('");
-    sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
-    sql.append("')");
-    long id = (Long) SqlUtils.executeScalar(dataSource, sql.toString(), "select-next-id");
-    return id;
+    String sql = new StringBuilder("SELECT nextval('")
+        .append(schema).append(table).append(ID_SEQUENCE_SUFFIX).append("')").toString();
+    return new SQLRunner(dataSource, sql, "select-next-id").executeQuery(new SingleLongResultSetHandler()).get();
   }
 
   @Override
@@ -176,11 +176,12 @@ public class PostgreSQL extends DBPlatform {
       schema = schema.substring(0, schema.length() - 1);
     tableName = tableName.toLowerCase();
 
-    StringBuffer sql = new StringBuffer("SELECT count(*) FROM pg_tables ");
-    sql.append("WHERE tablename = '").append(tableName).append("'");
-    sql.append(" AND schemaname = '").append(schema).append("'");
-    long count = (Long) SqlUtils.executeScalar(dataSource, sql.toString(), "wdk-check-table-exist");
-    return (count > 0);
+    String sql = new StringBuilder("SELECT count(*) FROM pg_tables ")
+        .append("WHERE tablename = '").append(tableName).append("'")
+        .append(" AND schemaname = '").append(schema).append("'")
+        .toString();
+    long count = new SQLRunner(dataSource, sql, "wdk-check-table-exist").executeQuery(new SingleLongResultSetHandler()).get();
+    return count > 0;
   }
 
   @Override
@@ -206,7 +207,7 @@ public class PostgreSQL extends DBPlatform {
       sql += schema;
     sql += table;
     // ignore purge option
-    SqlUtils.executeUpdate(dataSource, sql, "wdk-drop-table" + table);
+    new SQLRunner(dataSource, sql, "wdk-drop-table" + table).executeStatement();
   }
 
   @Override
@@ -224,9 +225,7 @@ public class PostgreSQL extends DBPlatform {
   public String[] queryTableNames(DataSource dataSource, String schema, String pattern) throws SQLException {
     String sql = "SELECT tablename FROM pg_tables WHERE schemaname = '" + schema + "' AND tablename LIKE '" +
         pattern + "'";
-    ResultSet resultSet = null;
-    try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql, "wdk-postgres-select-table-names");
+    return new SQLRunner(dataSource, sql, "wdk-postgres-select-table-names").executeQuery(resultSet -> {
       List<String> tables = new ArrayList<String>();
       while (resultSet.next()) {
         tables.add(resultSet.getString("tablename"));
@@ -234,10 +233,7 @@ public class PostgreSQL extends DBPlatform {
       String[] array = new String[tables.size()];
       tables.toArray(array);
       return array;
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
-    }
+    });
   }
 
   @Override
