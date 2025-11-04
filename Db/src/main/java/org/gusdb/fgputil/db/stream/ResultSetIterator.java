@@ -6,6 +6,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -100,8 +101,9 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   @Override
   public void close() {
     try {
-      Connection conn = rs.getStatement().getConnection();
-      SqlUtils.closeResultSetAndStatementOnly(rs);
+      Statement statement = rs.getStatement();
+      Connection conn = statement.getConnection();
+      SqlUtils.closeQuietly(rs, statement);
       if (_isResponsibleForConnection) {
         SqlUtils.closeQuietly(conn);
         _connectionClosed = true;

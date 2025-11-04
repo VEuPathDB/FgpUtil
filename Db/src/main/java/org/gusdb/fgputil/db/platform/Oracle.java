@@ -1,6 +1,5 @@
 package org.gusdb.fgputil.db.platform;
 
-import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -19,6 +18,7 @@ import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
+import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.functional.Either;
 import org.veupathdb.lib.ldap.NetDesc;
 import org.veupathdb.lib.ldap.OracleNetDesc;
@@ -104,11 +104,12 @@ public class Oracle extends DBPlatform {
   @Override
   public void createSequence(DataSource dataSource, String sequence, int start, int increment)
       throws SQLException {
-    StringBuilder sql = new StringBuilder("CREATE SEQUENCE ");
-    sql.append(sequence);
-    sql.append(" START WITH ").append(start);
-    sql.append(" INCREMENT BY ").append(increment);
-    SqlUtils.executeUpdate(dataSource, sql.toString(), "wdk-create-sequence");
+    String sql = new StringBuilder("CREATE SEQUENCE ")
+        .append(sequence)
+        .append(" START WITH ").append(start)
+        .append(" INCREMENT BY ").append(increment)
+        .toString();
+    new SQLRunner(dataSource, sql, "wdk-create-sequence").executeStatement();
   }
 
   @Override
@@ -221,9 +222,9 @@ public class Oracle extends DBPlatform {
       schema = schema.substring(0, schema.length() - 1);
     sql.append(" AND owner = '").append(schema.toUpperCase()).append("'");
 
-    BigDecimal count = (BigDecimal) SqlUtils.executeScalar(dataSource, sql.toString(),
-        "wdk-check-table-exist");
-    return (count.longValue() > 0);
+    long count = new SQLRunner(dataSource, sql.toString(), "wdk-check-table-exist")
+        .executeQuery(new SingleLongResultSetHandler()).get();
+    return count > 0;
   }
 
   @Override
@@ -253,7 +254,7 @@ public class Oracle extends DBPlatform {
       sql += " PURGE";
       name += "_purge";
     }
-    SqlUtils.executeUpdate(dataSource, sql, name);
+    new SQLRunner(dataSource, sql, name).executeStatement();
   }
 
   /**
@@ -359,9 +360,7 @@ public class Oracle extends DBPlatform {
   public String[] queryTableNames(DataSource dataSource, String schema, String pattern) throws SQLException {
     String sql = "SELECT table_name FROM all_tables WHERE owner = '" + schema.toUpperCase() +
         "' AND table_name LIKE '" + pattern.toUpperCase() + "'";
-    ResultSet resultSet = null;
-    try {
-      resultSet = SqlUtils.executeQuery(dataSource, sql, "wdk-oracle-select-table-names");
+    return new SQLRunner(dataSource, sql, "wdk-oracle-select-table-names").executeQuery(resultSet -> {
       List<String> tables = new ArrayList<String>();
       while (resultSet.next()) {
         tables.add(resultSet.getString("table_name"));
@@ -369,10 +368,8 @@ public class Oracle extends DBPlatform {
       String[] array = new String[tables.size()];
       tables.toArray(array);
       return array;
-    }
-    finally {
-      SqlUtils.closeResultSetAndStatement(resultSet, null);
-    }
+    });
+
   }
 
   @Override
