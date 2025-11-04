@@ -45,6 +45,9 @@ public class JavaScript {
    */
   public JavaScript() {
     _engine = Scripting.getScriptEngine(Language.JAVASCRIPT);
+    if (_engine == null) {
+      throw new RuntimeException("Could not find script engine for " + Language.JAVASCRIPT);
+    }
     try {
       registerFunctions();
     }
