@@ -155,12 +155,28 @@ public final class SqlUtils {
     }
   }
 
-  public static PreparedStatement getPreparedStatement(DataSource dataSource, String sql) throws SQLException {
+  public enum Autocommit {
+    ON(true),
+    OFF(false);
+
+    private final boolean autocommit;
+
+    Autocommit(boolean autocommit) {
+      this.autocommit = autocommit;
+    }
+
+    public boolean getAutocommit() {
+      return autocommit;
+    }
+  }
+  
+  public static PreparedStatement getPreparedStatement(DataSource dataSource, String sql, Autocommit autocommit) throws SQLException {
     Connection connection = null;
     PreparedStatement ps = null;
 
     try {
       connection = dataSource.getConnection();
+      connection.setAutoCommit(autocommit.getAutocommit());
       return connection.prepareStatement(sql);
     }
     catch (SQLException ex) {
@@ -388,6 +404,7 @@ public final class SqlUtils {
 
     try {
       connection = dataSource.getConnection();
+      connection.setAutoCommit(false);
       long start = System.currentTimeMillis();
       stmt = connection.createStatement();
       if (fetchSize > 0) {
