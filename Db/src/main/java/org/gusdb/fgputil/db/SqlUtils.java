@@ -41,21 +41,6 @@ public final class SqlUtils {
 
   private static final Logger logger = Logger.getLogger(SqlUtils.class);
 
-  public enum Autocommit {
-    ON(true),
-    OFF(false);
-
-    private final boolean autocommit;
-
-    Autocommit(boolean autocommit) {
-      this.autocommit = autocommit;
-    }
-
-    public boolean getAutocommit() {
-      return autocommit;
-    }
-  }
-
   /**
    * private constructor, make sure SqlUtils cannot be instanced.
    */
@@ -170,6 +155,21 @@ public final class SqlUtils {
     }
   }
 
+  public enum Autocommit {
+    ON(true),
+    OFF(false);
+
+    private final boolean autocommit;
+
+    Autocommit(boolean autocommit) {
+      this.autocommit = autocommit;
+    }
+
+    public boolean getAutocommit() {
+      return autocommit;
+    }
+  }
+  
   public static PreparedStatement getPreparedStatement(DataSource dataSource, String sql, Autocommit autocommit) throws SQLException {
     Connection connection = null;
     PreparedStatement ps = null;
