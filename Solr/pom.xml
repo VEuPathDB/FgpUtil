@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.gusdb</groupId>
     <artifactId>fgputil</artifactId>
-    <version>2.16.5-jakarta-SNAPSHOT</version>
+    <version>2.17.0-jakarta</version>
   </parent>
 
   <name>Functional Genomics Platform - SOLR</name>
