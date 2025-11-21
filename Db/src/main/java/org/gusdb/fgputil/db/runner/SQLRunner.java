@@ -456,6 +456,7 @@ public class SQLRunner {
     try {
       conn = getConnection();
       connectionSuccessful = true;
+      exec.setAutocommit(conn);
       timer.restart();
 
       // prepare statement
