@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db.runner;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -123,6 +124,22 @@ class SQLRunnerExecutors {
     public void overrideFetchSize(PreparedStatement stmt) throws SQLException {
       // by default this is a no-op
     }
+
+    /**
+     * Sets auto-commit value on connection before statement is executed.  By
+     * default does nothing meaning:
+     * - connections created via passed DataSource will have autocommit=true
+     * - connections passed in directly will not be modified
+     *
+     * Query-based executors should override this and set autocommit=false since
+     * some DB vendors e.g. PostgreSQL have poor interaction between fetches and
+     * autocommit (e.g. fetch size ignored and entire result loaded into memory,
+     * or cursor is closed during commit, leading to runtime error).
+     *
+     * @param conn connection being prepared
+     * @throws SQLException if setting autocommit fails
+     */
+    public void setAutocommit(Connection conn) throws SQLException { }
   }
 
   /**
@@ -241,6 +258,11 @@ class SQLRunnerExecutors {
       super(args, types);
       _handler = handler;
       _fetchSize = fetchSize;
+    }
+
+    @Override
+    public void setAutocommit(Connection conn) throws SQLException {
+      conn.setAutoCommit(false);
     }
 
     @Override
