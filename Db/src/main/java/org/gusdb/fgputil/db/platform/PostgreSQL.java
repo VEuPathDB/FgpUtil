@@ -223,8 +223,11 @@ public class PostgreSQL extends DBPlatform {
 
   @Override
   public String[] queryTableNames(DataSource dataSource, String schema, String pattern) throws SQLException {
-    String sql = "SELECT tablename FROM pg_tables WHERE schemaname = '" + schema + "' AND tablename LIKE '" +
-        pattern + "'";
+    String sql =
+        "SELECT tablename" +
+        " FROM pg_tables" +
+        " WHERE lower(schemaname) = lower('" + schema + "')" +
+        " AND lower(tablename) LIKE lower('" + pattern + "')";
     return new SQLRunner(dataSource, sql, "wdk-postgres-select-table-names").executeQuery(resultSet -> {
       List<String> tables = new ArrayList<String>();
       while (resultSet.next()) {
