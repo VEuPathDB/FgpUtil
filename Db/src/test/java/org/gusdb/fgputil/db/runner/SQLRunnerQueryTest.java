@@ -38,14 +38,25 @@ public class SQLRunnerQueryTest {
     int rowsChanged = db.executeUpdate(new Object[] { 4, "ryan", "badpw" });
     
     assertEquals(rowsChanged, 1);
-  }    
-    
+  }
+
+  @Test
+  public void testInsertWithParamBuilder() {
+    SQLRunner db = new SQLRunner(_ds, INSERT_USER);
+    int rowsChanged = db.executeUpdate(new ParamBuilder()
+        .addInteger(4)
+        .addString("ryanagain")
+        .addString("badpw"));
+
+    assertEquals(rowsChanged, 1);
+  }
+
   @Test
   public void testQuery() {
     testInsert();
 
     SQLRunner db = new SQLRunner(_ds, SELECT_BY_NAME);
-    db.executeQuery(new Object[] { "ryan" }, _handler);
+    db.executeQuery(new Object[] { "ryan" }, new Integer[] { Types.VARCHAR }, _handler);
     
     assertEquals(_handler.getNumRows(), 2);
     assertEquals(_handler.getNumCols(), 3);
@@ -59,7 +70,27 @@ public class SQLRunnerQueryTest {
     }
     */
   }
-  
+
+  @Test
+  public void testQueryWithParamBuilder() {
+    testInsert();
+
+    SQLRunner db = new SQLRunner(_ds, SELECT_BY_NAME);
+    db.executeQuery(new ParamBuilder().addString("ryan"), _handler);
+    
+    assertEquals(_handler.getNumRows(), 2);
+    assertEquals(_handler.getNumCols(), 3);
+    assertEquals(_handler.getColumnTypes().get(2).intValue(), Types.VARCHAR);
+    
+    /* Debug printouts
+    printRow(_handler.getColumnNames());
+    printRow(_handler.getColumnTypes());
+    for (Map<String,Object> row : _handler.getResults()) {
+      printRow(row.values());
+    }
+    */
+  }
+
   @Test
   public void testRowCount() {
     SQLRunner db = new SQLRunner(_ds, COUNT_ROWS);
