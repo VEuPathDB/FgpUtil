@@ -25,7 +25,7 @@ import org.gusdb.fgputil.db.slowquery.SqlTimer;
 
 /**
  * Provides API to easily run SQL statements and queries against a database.
- * 
+ *
  * @author rdoherty
  */
 public class SQLRunner {
@@ -38,7 +38,7 @@ public class SQLRunner {
   /**
    * Represents a class that will handle the ResultSet when caller uses it with
    * a <code>SQLRunner</code>.
-   * 
+   *
    * @author rdoherty
    */
   @FunctionalInterface
@@ -46,7 +46,7 @@ public class SQLRunner {
     /**
      * Handles a result set.  The implementer should not attempt to close the
      * result set, as this is handled by SQLRunner.
-     * 
+     *
      * @param rs result set to be handled
      * @throws SQLException if a DB error occurs while reading results
      */
@@ -56,13 +56,13 @@ public class SQLRunner {
   /**
    * Enables access to multiple sets of arguments, in the event that the caller
    * wishes to execute a batch operation.
-   * 
+   *
    * @author rdoherty
    */
   public interface ArgumentBatch extends Iterable<Object[]> {
     /**
      * Tells SQLRunner how many instructions to add before executing a batch
-     * 
+     *
      * @return how many instructions should be added before executing a batch
      */
     public int getBatchSize();
@@ -73,7 +73,7 @@ public class SQLRunner {
      * param tells SQLRunner to intelligently 'guess' the type for that param.
      * A value of null returned by this method tells SQLRunner to guess for all
      * params.  Note guessing is less efficient.
-     * 
+     *
      * @return SQL types that will suggest the type of data to be passed, or
      * null if SQLRunner is to guess the types.
      */
@@ -114,7 +114,7 @@ public class SQLRunner {
    * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
    * new connection from the DataSource and will run each call in a transaction,
    * committing at the end of the call.  SQL name will be auto-generated from SQL.
-   * 
+   *
    * @param ds data source on which to operate
    * @param sql SQL to execute via a PreparedStatement
    */
@@ -126,7 +126,7 @@ public class SQLRunner {
    * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
    * new connection from the DataSource and will run each call in a transaction,
    * committing at the end of the call.
-   * 
+   *
    * @param ds data source on which to operate
    * @param sql SQL to execute via a PreparedStatement
    * @param sqlName name of SQL query/statement for logging
@@ -139,7 +139,7 @@ public class SQLRunner {
    * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
    * new connection from the DataSource, running in a transaction if specified.
    * SQL name will be auto-generated from SQL.
-   * 
+   *
    * @param ds data source on which to operate
    * @param sql SQL to execute via a PreparedStatement
    * @param runInTransaction if true, will wrap all batch calls in a transaction;
@@ -153,7 +153,7 @@ public class SQLRunner {
   /**
    * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
    * new connection from the DataSource, running in a transaction if specified.
-   * 
+   *
    * @param ds data source on which to operate
    * @param sql SQL to execute via a PreparedStatement
    * @param runInTransaction if true, will wrap all batch calls in a transaction;
@@ -175,7 +175,7 @@ public class SQLRunner {
    * responsibility to this class, use the constructor that takes a DataSource
    * parameter.  Will use the auto-commit setting of the passed Connection.
    * SQL name will be auto-generated from SQL.
-   * 
+   *
    * @param conn connection on which to operate
    * @param sql SQL to execute via a PreparedStatement
    */
@@ -188,7 +188,7 @@ public class SQLRunner {
    * responsible for closing the connection they pass in.  To delegate that
    * responsibility to this class, use the constructor that takes a DataSource
    * parameter.  Will use the auto-commit setting of the passed Connection.
-   * 
+   *
    * @param conn connection on which to operate
    * @param sql SQL to execute via a PreparedStatement
    * @param sqlName name of SQL query/statement for logging
@@ -227,7 +227,7 @@ public class SQLRunner {
 
   /**
    * Executes this runner's SQL and assumes no SQL parameters
-   * 
+   *
    * @throws SQLRunnerException if error occurs during processing
    */
   public void executeStatement() {
@@ -236,7 +236,7 @@ public class SQLRunner {
 
   /**
    * Executes this runner's SQL using the passed parameter array
-   * 
+   *
    * @param args SQL parameters
    * @throws SQLRunnerException if error occurs during processing
    */
@@ -247,7 +247,7 @@ public class SQLRunner {
   /**
    * Executes this runner's SQL using the passed parameter array and parameter
    * types.  Use java.sql.Types to as type values.
-   * 
+   *
    * @param args SQL parameters
    * @param types SQL types of parameters
    * @throws SQLRunnerException if error occurs during processing
@@ -257,10 +257,20 @@ public class SQLRunner {
   }
 
   /**
+   * Executes this runner's SQL using the passed parameter builder.
+   *
+   * @param params set of parameters as set in a builder
+   * @throws SQLRunnerException if error occurs during processing
+   */
+  public void executeStatement(ParamBuilder params) {
+    executeStatement(params.getParamValues(), params.getParamTypes());
+  }
+
+  /**
    * Executes a batch statement operation using sets of SQL parameters retrieved
    * from the passed argument batch.  Uses the batch's getBatchSize() method
    * to determine how many operations to group into each batch.
-   * 
+   *
    * @param batch set of SQL parameter sets containing
    * @throws SQLRunnerException if error occurs during processing
    */
@@ -273,7 +283,7 @@ public class SQLRunner {
    * captures the resulting number of updates.  This method should be called
    * for insert or update operations where the caller would like to know the
    * effects of the execution.
-   * 
+   *
    * @return number of rows updated
    * @throws SQLRunnerException if error occurs during processing
    */
@@ -286,7 +296,7 @@ public class SQLRunner {
    * captures the resulting number of updates.  This method should be called
    * for insert or update operations where the caller would like to know the
    * effects of the execution.
-   * 
+   *
    * @param args SQL parameters
    * @return number of rows updated
    * @throws SQLRunnerException if error occurs during processing
@@ -301,7 +311,7 @@ public class SQLRunner {
    * should be called for insert or update operations where the caller would
    * like to know the effects of the execution.  Use java.sql.Types to as type
    * values.
-   * 
+   *
    * @param args SQL parameters
    * @param types SQL types of parameters
    * @return number of rows updated
@@ -312,6 +322,20 @@ public class SQLRunner {
   }
 
   /**
+   * Executes this runner's SQL using the passed parameter builder.
+   * When doing so, captures the resulting number of updates.  This method
+   * should be called for insert or update operations where the caller would
+   * like to know the effects of the execution.
+   *
+   * @param params set of parameters as set in a builder
+   * @return number of rows updated
+   * @throws SQLRunnerException if error occurs during processing
+   */
+  public int executeUpdate(ParamBuilder params) {
+    return executeUpdate(params.getParamValues(), params.getParamTypes());
+  }
+
+  /**
    * Executes a batch update operation using sets of SQL parameters retrieved
    * from the passed argument batch.  Uses the batch's getBatchSize() method
    * to determine how many operations to group into each batch.  Also captures
@@ -319,7 +343,7 @@ public class SQLRunner {
    * driver.  Note the constants that may be returned instead from
    * <code>PreparedStatement.executeBatch()</code>.  This method simply sums
    * up the values returned from executeBatch().
-   * 
+   *
    * @param batch set of SQL parameter sets containing
    * @return number of rows updated, if supported by the underlying driver
    * @throws SQLRunnerException if error occurs during processing
@@ -333,7 +357,7 @@ public class SQLRunner {
    * assumes no SQL parameters in this runner's SQL.
    *
    * @param handler handler implementation to process results
-   * @return the passed handler
+   * @return value returned by the handler
    * @throws SQLRunnerException if error occurs during processing
    */
   public <T> T executeQuery(ResultSetHandler<T> handler) {
@@ -346,39 +370,81 @@ public class SQLRunner {
    *
    * @param handler handler implementation to process results
    * @param fetchSize override of the configured fetch size
-   * @return the passed handler
+   * @return value returned by the handler
    * @throws SQLRunnerException if error occurs during processing
    */
   public <T> T executeQuery(ResultSetHandler<T> handler, int fetchSize) {
-    return executeSql(new QueryExecutor<T>(handler, new Object[]{ }, null, fetchSize));
+    return executeQuery(new Object[]{ }, null, handler, fetchSize);
   }
 
   /**
-   * 
    * Executes an SQL query using the passed parameter array, passing results to
    * the given handler.  
-   * 
+   *
    * @param handler handler implementation to process results
    * @param args SQL parameters
-   * @return the passed handler
+   * @return value returned by the handler
    * @throws SQLRunnerException if error occurs during processing
    */
+  @Deprecated
   public <T> T executeQuery(Object[] args, ResultSetHandler<T> handler) {
-    return executeQuery(args, null, handler);
+    return executeQuery(args, null, handler, QueryExecutor.NO_FETCH_SIZE_OVERRIDE);
   }
 
   /**
    * Executes an SQL query using the passed parameter array, passing results to
    * the given handler.  
-   * 
-   * @param handler handler implementation to process results
+   *
    * @param args SQL parameters
    * @param types SQL types of parameters
-   * @return the passed handler
+   * @param handler handler implementation to process results
+   * @return value returned by the handler
    * @throws SQLRunnerException if error occurs during processing
    */
   public <T> T executeQuery(Object[] args, Integer[] types, ResultSetHandler<T> handler) {
-    return executeSql(new QueryExecutor<T>(handler, args, types, QueryExecutor.NO_FETCH_SIZE_OVERRIDE));
+    return executeQuery(args, types, handler, QueryExecutor.NO_FETCH_SIZE_OVERRIDE);
+  }
+
+  /**
+   * Executes an SQL query using the passed parameter array and using a
+   * custom fetch size, passing results to the given handler.
+   *
+   * @param args SQL parameters
+   * @param types SQL types of parameters
+   * @param handler handler implementation to process results
+   * @param fetchSize override of the configured fetch size
+   * @return value returned by the handler
+   * @throws SQLRunnerException if error occurs during processing
+   */
+  public <T> T executeQuery(Object[] args, Integer[] types, ResultSetHandler<T> handler, int fetchSize) {
+    return executeSql(new QueryExecutor<T>(handler, args, types, fetchSize));
+  }
+
+  /**
+   * Executes an SQL query using the passed parameters, passing
+   * results to the given handler.
+   *
+   * @param params set of parameters as set in a builder
+   * @param handler handler implementation to process results
+   * @return value returned by the handler
+   * @throws SQLRunnerException if error occurs during processing
+   */
+  public <T> T executeQuery(ParamBuilder params, ResultSetHandler<T> handler) {
+    return executeQuery(params.getParamValues(), params.getParamTypes(), handler, QueryExecutor.NO_FETCH_SIZE_OVERRIDE);
+  }
+
+  /**
+   * Executes an SQL query using the passed parameters, passing
+   * results to the given handler.
+   *
+   * @param params set of parameters as set in a builder
+   * @param handler handler implementation to process results
+   * @param fetchSize override of the configured fetch size
+   * @return value returned by the handler
+   * @throws SQLRunnerException if error occurs during processing
+   */
+  public <T> T executeQuery(ParamBuilder params, ResultSetHandler<T> handler, int fetchSize) {
+    return executeQuery(params.getParamValues(), params.getParamTypes(), handler, fetchSize);
   }
 
   private <T> T executeSql(PreparedStatementExecutor<T> exec) {
