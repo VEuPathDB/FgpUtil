@@ -226,7 +226,7 @@ public class PostgreSQL extends DBPlatform {
     String sql =
         "SELECT tablename" +
         " FROM pg_tables" +
-        " WHERE lower(schemaname) = lower('" + schema + "')" +
+        " WHERE lower(schemaname) = lower('" + denormalizeSchema(schema) + "')" +
         " AND lower(tablename) LIKE lower('" + pattern + "')";
     return new SQLRunner(dataSource, sql, "wdk-postgres-select-table-names").executeQuery(resultSet -> {
       List<String> tables = new ArrayList<String>();
