@@ -269,9 +269,7 @@ public class Oracle extends DBPlatform {
    */
   @Override
   public void disableStatistics(DataSource dataSource, String schema, String tableName) throws SQLException {
-    schema = schema.trim().toUpperCase();
-    if (schema.endsWith("."))
-      schema = schema.substring(0, schema.length() - 1);
+    schema = denormalizeSchema(schema.trim().toUpperCase());
     tableName = tableName.toUpperCase();
     Connection connection = null;
     CallableStatement stUnlock = null, stDelete = null, stLock = null;
@@ -358,7 +356,7 @@ public class Oracle extends DBPlatform {
 
   @Override
   public String[] queryTableNames(DataSource dataSource, String schema, String pattern) throws SQLException {
-    String sql = "SELECT table_name FROM all_tables WHERE owner = '" + schema.toUpperCase() +
+    String sql = "SELECT table_name FROM all_tables WHERE owner = '" + denormalizeSchema(schema.toUpperCase()) +
         "' AND table_name LIKE '" + pattern.toUpperCase() + "'";
     return new SQLRunner(dataSource, sql, "wdk-oracle-select-table-names").executeQuery(resultSet -> {
       List<String> tables = new ArrayList<String>();

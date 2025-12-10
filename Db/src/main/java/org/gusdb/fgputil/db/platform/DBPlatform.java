@@ -50,6 +50,13 @@ public abstract class DBPlatform {
         return schema;
     }
 
+    public static String denormalizeSchema(String schema) {
+        return
+            schema.isEmpty() ? null :
+            schema.endsWith(".") ? schema.substring(0, schema.length() - 1) :
+            schema;
+    }
+
     public static String normalizeString(String string) {
         return string.replaceAll("'", "''");
     }
