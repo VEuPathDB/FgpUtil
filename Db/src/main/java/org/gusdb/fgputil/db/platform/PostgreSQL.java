@@ -146,6 +146,12 @@ public class PostgreSQL extends DBPlatform {
     return "NUMERIC(" + size + ")";
   }
 
+  /**
+   * NOTE: For performance reasons, the LIMIT and OFFSET have been moved directly next to the
+   * passed SQL (not outside parens).  Doing so has shown a significant performance improvement.
+   * This means if a limit/offset is already at the end of the passed SQL, this method will
+   * return malformed SQL.  To avoid this, you can wrap the passed SQL in parens before passing.
+   */
   @Override
   public String getPagedSql(String sql, int startIndex, int endIndex, boolean includeRowIndex) {
     String rowIndex = includeRowIndex ? ", " + getRowNumberColumn() + " as row_index " : "";
