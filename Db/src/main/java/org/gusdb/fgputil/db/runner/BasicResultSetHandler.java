@@ -8,8 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
-
 /**
  * Collects the results of an SQL query into an in-memory data structure.
  * 

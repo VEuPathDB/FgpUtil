@@ -54,7 +54,12 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
     try {
       long startTime = System.currentTimeMillis();
       conn = ds.getConnection();
-      stmt = conn.prepareStatement(sql);
+      stmt = conn.prepareStatement(
+          sql,
+          ResultSet.TYPE_FORWARD_ONLY,
+          ResultSet.CONCUR_READ_ONLY,
+          ResultSet.CLOSE_CURSORS_AT_COMMIT
+      );
       if (fetchSize > 0) {
         stmt.setFetchSize(fetchSize);
       }

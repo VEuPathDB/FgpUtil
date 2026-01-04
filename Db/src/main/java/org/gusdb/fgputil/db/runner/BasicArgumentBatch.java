@@ -5,7 +5,6 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import java.util.ArrayList;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
 
 /**
  * Basic implementation of ArgumentBatch.  Allows user to set the batch size and

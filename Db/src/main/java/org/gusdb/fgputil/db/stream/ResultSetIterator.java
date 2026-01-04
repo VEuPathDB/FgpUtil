@@ -1,5 +1,6 @@
 package org.gusdb.fgputil.db.stream;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlRuntimeException;
 import org.gusdb.fgputil.db.SqlUtils;
 
@@ -13,12 +14,14 @@ import java.util.Optional;
 
 public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
 
+  private static final Logger LOG = Logger.getLogger(ResultSetIterator.class);
+
   public interface RowConverter<T> {
     Optional<T> convert(ResultSet rs) throws SQLException;
   }
 
-  private final ResultSet rs;
-  private final RowConverter<T> converter;
+  private final ResultSet _rs;
+  private final RowConverter<T> _converter;
 
   private boolean _connectionClosed = false;
 
@@ -30,27 +33,31 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   // results in a silent connection leak.
   private boolean _isResponsibleForConnection = true;
 
-  private boolean firstRowLoaded = false;
-  private boolean hasNext = true;
+  private boolean _firstRowLoaded = false;
+  private boolean _hasNext = true;
 
-  private T next;
-
+  private T _next;
+  private int _rowsReturned = 0;
 
   public ResultSetIterator(ResultSet rs, RowConverter<T> converter) {
-    this.rs = rs;
-    this.converter = converter;
+    _rs = rs;
+    _converter = converter;
+    LOG.info("Created ResultSetIterator");
   }
 
   @Override
   public boolean hasNext() {
+    LOG.info("hasNext() called (firstRowLoaded="+ _firstRowLoaded + ", hasNext=" + _hasNext);
     preloadFirstRow();
-    return hasNext;
+    LOG.info("hasNext() returning " + _hasNext);
+    return _hasNext;
   }
 
   @Override
   public T next() {
+    LOG.info("next() called (firstRowLoaded="+ _firstRowLoaded + ", hasNext=" + _hasNext);
     preloadFirstRow();
-    if (!hasNext) {
+    if (!_hasNext) {
       throw new NoSuchElementException("No more elements.");
     }
     return loadNext();
@@ -59,24 +66,31 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   // called by hasNext() and next() to avoid exceptions in constructor that could
   //   lead to a connection leak if this is instantiated in a try-with-resources
   private void preloadFirstRow() {
-    if (!firstRowLoaded) {
+    if (!_firstRowLoaded) {
       loadNext(); // will always return null here
-      firstRowLoaded = true;
+      _firstRowLoaded = true;
     }
   }
 
   private T loadNext() {
-    var out = next;
+    LOG.info("loadNext() called.  next = null? " + (_next == null));
+    var out = _next;
     try {
-      while (rs.next()) {
-        var tmp = converter.convert(rs);
+      LOG.info("ResultSet closed? " + _rs.isClosed());
+      LOG.info("Statement closed? " + _rs.getStatement().isClosed());
+      LOG.info("Connection closed? " + _rs.getStatement().getConnection().isClosed());
+      LOG.info("Cursor name? " + _rs.getCursorName());
+      LOG.info("Checking for existence of row " + (++_rowsReturned));
+      LOG.info("Autocommit? " + _rs.getStatement().getConnection().getAutoCommit());
+      while (_rs.next()) {
+        var tmp = _converter.convert(_rs);
         if (tmp.isPresent()) {
-          next = tmp.get();
+          _next = tmp.get();
           return out;
         }
       }
 
-      hasNext = false;
+      _hasNext = false;
       return out;
     }
     catch (SQLException e) {
@@ -94,6 +108,7 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   }
 
   public ResultSetIterator<T> setResponsibleForConnection(boolean isResponsibleForConnection) {
+    LOG.info("isResponsibleForConnection set to " + isResponsibleForConnection);
     _isResponsibleForConnection = isResponsibleForConnection;
     return this;
   }
@@ -101,9 +116,9 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   @Override
   public void close() {
     try {
-      Statement statement = rs.getStatement();
+      Statement statement = _rs.getStatement();
       Connection conn = statement.getConnection();
-      SqlUtils.closeQuietly(rs, statement);
+      SqlUtils.closeQuietly(_rs, statement);
       if (_isResponsibleForConnection) {
         SqlUtils.closeQuietly(conn);
         _connectionClosed = true;

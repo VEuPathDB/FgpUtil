@@ -15,11 +15,11 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.SqlUtils;
-import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.BatchUpdateExecutor;
-import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.PreparedStatementExecutor;
-import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.QueryExecutor;
-import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.StatementExecutor;
-import org.gusdb.fgputil.db.runner.SQLRunnerExecutors.UpdateExecutor;
+import org.gusdb.fgputil.db.runner.exec.BatchUpdateExecutor;
+import org.gusdb.fgputil.db.runner.exec.QueryExecutor;
+import org.gusdb.fgputil.db.runner.exec.StatementExecutor;
+import org.gusdb.fgputil.db.runner.exec.UpdateExecutor;
+import org.gusdb.fgputil.db.runner.exec.PreparedStatementExecutor;
 import org.gusdb.fgputil.db.slowquery.QueryLogger;
 import org.gusdb.fgputil.db.slowquery.SqlTimer;
 
@@ -35,146 +35,48 @@ public class SQLRunner {
   // Set a long default static timeout to avoid connection leaks if the database hangs.
   private static Integer DEFAULT_QUERY_TIMEOUT_SECONDS = 1800;
 
-  /**
-   * Represents a class that will handle the ResultSet when caller uses it with
-   * a <code>SQLRunner</code>.
-   *
-   * @author rdoherty
-   */
-  @FunctionalInterface
-  public interface ResultSetHandler<T> {
-    /**
-     * Handles a result set.  The implementer should not attempt to close the
-     * result set, as this is handled by SQLRunner.
-     *
-     * @param rs result set to be handled
-     * @throws SQLException if a DB error occurs while reading results
-     */
-    public T handleResult(ResultSet rs) throws SQLException;
-  }
-
-  /**
-   * Enables access to multiple sets of arguments, in the event that the caller
-   * wishes to execute a batch operation.
-   *
-   * @author rdoherty
-   */
-  public interface ArgumentBatch extends Iterable<Object[]> {
-    /**
-     * Tells SQLRunner how many instructions to add before executing a batch
-     *
-     * @return how many instructions should be added before executing a batch
-     */
-    public int getBatchSize();
-
-    /**
-     * Tells SQLRunner what type of data is being submitted for each parameter.
-     * Please use values from java.sql.Types.  A value of null for a given
-     * param tells SQLRunner to intelligently 'guess' the type for that param.
-     * A value of null returned by this method tells SQLRunner to guess for all
-     * params.  Note guessing is less efficient.
-     *
-     * @return SQL types that will suggest the type of data to be passed, or
-     * null if SQLRunner is to guess the types.
-     */
-    public Integer[] getParameterTypes();
-  }
-
-  /**
-   * The SQLRunner class has a number of options with regard to transactions.
-   * If the DataSource-based constructor is used, caller can specify auto-commit
-   * or to run all operations within a call inside a transaction.  If the
-   * Connection-based constructor is used, no change will be made to the passed
-   * Connection's commit mode.
-   */
-  private static enum TxStrategy {
-    // Commits happen with each DB call (auto-commit).
-    AUTO_COMMIT,
-    // Commit happens only at end of SQLRunner call (operations occur in
-    // transaction).  Note this is the default behavior when a DataSource-based
-    // constructor is used.
-    TRANSACTION,
-    // Auto-commit setting from passed Connection is used (setting inherited).
-    // Note this is the default behavior when a Connection-based constructor is
-    // used.
-    INHERIT;
-  }
-
   private DataSource _ds;
   private Connection _conn;
   private String _sql;
   private String _sqlName;
-  private TxStrategy _txStrategy;
-  private boolean _isInternallyCreatedConnection;
-  private boolean _returnedObjectResponsibleForClosing = false;
+  private boolean _isInternallyManagedConnection;
   private long _lastExecutionTime = 0L;
   private Duration _timeout = null;
 
   /**
    * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
-   * new connection from the DataSource and will run each call in a transaction,
-   * committing at the end of the call.  SQL name will be auto-generated from SQL.
+   * new connection from the DataSource. SQL name will be auto-generated from SQL.
+   * Unless set otherwise, a commit will be made on the connection and it will be
+   * closed at the end of the call.
    *
    * @param ds data source on which to operate
    * @param sql SQL to execute via a PreparedStatement
    */
   public SQLRunner(DataSource ds, String sql) {
-    this(ds, sql, true, generateName(sql));
+    this(ds, sql, generateName(sql));
   }
 
   /**
    * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
-   * new connection from the DataSource and will run each call in a transaction,
-   * committing at the end of the call.
+   * new connection from the DataSource.  Unless set otherwise, a commit will be
+   * made on the connection and it will be closed at the end of the call.
    *
    * @param ds data source on which to operate
    * @param sql SQL to execute via a PreparedStatement
    * @param sqlName name of SQL query/statement for logging
    */
   public SQLRunner(DataSource ds, String sql, String sqlName) {
-    this(ds, sql, true, sqlName);
-  }
-
-  /**
-   * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
-   * new connection from the DataSource, running in a transaction if specified.
-   * SQL name will be auto-generated from SQL.
-   *
-   * @param ds data source on which to operate
-   * @param sql SQL to execute via a PreparedStatement
-   * @param runInTransaction if true, will wrap all batch calls in a transaction;
-   * else will use auto-commit
-   * @throws IllegalArgumentException if called with NO_COMMITS or INHERIT TX strategy
-   */
-  public SQLRunner(DataSource ds, String sql, boolean runInTransaction) {
-    this(ds, sql, runInTransaction, generateName(sql));
-  }
-
-  /**
-   * Constructor with DataSource.  Each call to this SQLRunner will retrieve a
-   * new connection from the DataSource, running in a transaction if specified.
-   *
-   * @param ds data source on which to operate
-   * @param sql SQL to execute via a PreparedStatement
-   * @param runInTransaction if true, will wrap all batch calls in a transaction;
-   * else will use auto-commit
-   * @param sqlName name of SQL query/statement for logging
-   * @throws IllegalArgumentException if called with NO_COMMITS or INHERIT TX strategy
-   */
-  public SQLRunner(DataSource ds, String sql, boolean runInTransaction, String sqlName) {
     _ds = requireNonNull(ds);
     _sql = requireNonNull(sql);
-    _txStrategy = (runInTransaction ? TxStrategy.TRANSACTION : TxStrategy.AUTO_COMMIT);
-    _isInternallyCreatedConnection = true;
     _sqlName = sqlName;
+    _isInternallyManagedConnection = true;
   }
 
   /**
-   * Constructor with Connection.  Note that callers of this constructor are
-   * responsible for closing the connection they pass in.  To delegate that
-   * responsibility to this class, use the constructor that takes a DataSource
-   * parameter.  Will use the auto-commit setting of the passed Connection.
-   * SQL name will be auto-generated from SQL.
+   * Constructor with Connection.  Callers of this constructor are responsible for
+   * closing the passed connection.  To delegate that responsibility to this class,
+   * use the constructor that takes a DataSource parameter.  Will use the auto-commit
+   * setting of the passed Connection.  SQL name will be auto-generated from SQL.
    *
    * @param conn connection on which to operate
    * @param sql SQL to execute via a PreparedStatement
@@ -184,10 +86,10 @@ public class SQLRunner {
   }
 
   /**
-   * Constructor with Connection.  Note that callers of this constructor are
-   * responsible for closing the connection they pass in.  To delegate that
-   * responsibility to this class, use the constructor that takes a DataSource
-   * parameter.  Will use the auto-commit setting of the passed Connection.
+   * Constructor with Connection.  Callers of this constructor are responsible for
+   * closing the passed connection.  To delegate that responsibility to this class,
+   * use the constructor that takes a DataSource parameter.  Will use the auto-commit
+   * setting of the passed Connection.
    *
    * @param conn connection on which to operate
    * @param sql SQL to execute via a PreparedStatement
@@ -196,9 +98,8 @@ public class SQLRunner {
   public SQLRunner(Connection conn, String sql, String sqlName) {
     _conn = requireNonNull(conn);
     _sql = requireNonNull(sql);
-    _txStrategy = TxStrategy.INHERIT;
-    _isInternallyCreatedConnection = false;
     _sqlName = sqlName;
+    _isInternallyManagedConnection = false;
   }
 
   /**
@@ -270,6 +171,18 @@ public class SQLRunner {
    * Executes a batch statement operation using sets of SQL parameters retrieved
    * from the passed argument batch.  Uses the batch's getBatchSize() method
    * to determine how many operations to group into each batch.
+   *
+   * No special transaction management logic is used, meaning that if:
+   *
+   * 1. This SQLRunner was created with a DataSource, OR
+   * 2. This SQLRunner was created with a Connection with autocommit turned on
+   * 
+   * Then: commits will be made after each batch is executed, including the final batch.
+   *
+   * If the SQLRunner was created with a Connection with autocommit turned off,
+   * no commits will be made, either after individual batches or after all
+   * batches have been executed.  This enables external transaction management
+   * for the entire dataset or in combination with other statements.
    *
    * @param batch set of SQL parameter sets containing
    * @throws SQLRunnerException if error occurs during processing
@@ -344,6 +257,18 @@ public class SQLRunner {
    * <code>PreparedStatement.executeBatch()</code>.  This method simply sums
    * up the values returned from executeBatch().
    *
+   * No special transaction management logic is used, meaning that if:
+   *
+   * 1. This SQLRunner was created with a DataSource, OR
+   * 2. This SQLRunner was created with a Connection with autocommit turned on
+   * 
+   * Then: commits will be made after each batch is executed, including the final batch.
+   *
+   * If the SQLRunner was created with a Connection with autocommit turned off,
+   * no commits will be made, either after individual batches or after all
+   * batches have been executed.  This enables external transaction management
+   * for the entire dataset or in combination with other updates.
+   *
    * @param batch set of SQL parameter sets containing
    * @return number of rows updated, if supported by the underlying driver
    * @throws SQLRunnerException if error occurs during processing
@@ -353,7 +278,7 @@ public class SQLRunner {
   }
 
   /**
-   * Executes an SQL query, passing results to the given handler.  This version
+   * Executes an SQL query, passing results to the given handler.  This method
    * assumes no SQL parameters in this runner's SQL.
    *
    * @param handler handler implementation to process results
@@ -361,34 +286,20 @@ public class SQLRunner {
    * @throws SQLRunnerException if error occurs during processing
    */
   public <T> T executeQuery(ResultSetHandler<T> handler) {
-    return executeQuery(handler, QueryExecutor.NO_FETCH_SIZE_OVERRIDE);
+    return executeQuery(new QueryFlags(), handler);
   }
 
   /**
-   * Executes an SQL query, passing results to the given handler.  This version
+   * Executes an SQL query, passing results to the given handler.  This method
    * assumes no SQL parameters in this runner's SQL.
    *
+   * @param queryFlags custom query flags to use during this query
    * @param handler handler implementation to process results
-   * @param fetchSize override of the configured fetch size
    * @return value returned by the handler
    * @throws SQLRunnerException if error occurs during processing
    */
-  public <T> T executeQuery(ResultSetHandler<T> handler, int fetchSize) {
-    return executeQuery(new Object[]{ }, null, handler, fetchSize);
-  }
-
-  /**
-   * Executes an SQL query using the passed parameter array, passing results to
-   * the given handler.  
-   *
-   * @param handler handler implementation to process results
-   * @param args SQL parameters
-   * @return value returned by the handler
-   * @throws SQLRunnerException if error occurs during processing
-   */
-  @Deprecated
-  public <T> T executeQuery(Object[] args, ResultSetHandler<T> handler) {
-    return executeQuery(args, null, handler, QueryExecutor.NO_FETCH_SIZE_OVERRIDE);
+  public <T> T executeQuery(QueryFlags queryFlags, ResultSetHandler<T> handler) {
+    return executeQuery(queryFlags, new Object[]{ }, null, handler);
   }
 
   /**
@@ -402,22 +313,22 @@ public class SQLRunner {
    * @throws SQLRunnerException if error occurs during processing
    */
   public <T> T executeQuery(Object[] args, Integer[] types, ResultSetHandler<T> handler) {
-    return executeQuery(args, types, handler, QueryExecutor.NO_FETCH_SIZE_OVERRIDE);
+    return executeQuery(new QueryFlags(), args, types, handler);
   }
 
   /**
    * Executes an SQL query using the passed parameter array and using a
    * custom fetch size, passing results to the given handler.
    *
+   * @param queryFlags custom query flags to use during this query
    * @param args SQL parameters
    * @param types SQL types of parameters
    * @param handler handler implementation to process results
-   * @param fetchSize override of the configured fetch size
    * @return value returned by the handler
    * @throws SQLRunnerException if error occurs during processing
    */
-  public <T> T executeQuery(Object[] args, Integer[] types, ResultSetHandler<T> handler, int fetchSize) {
-    return executeSql(new QueryExecutor<T>(handler, args, types, fetchSize));
+  public <T> T executeQuery(QueryFlags queryFlags, Object[] args, Integer[] types, ResultSetHandler<T> handler) {
+    return executeSql(new QueryExecutor<T>(queryFlags, args, types, handler));
   }
 
   /**
@@ -430,21 +341,21 @@ public class SQLRunner {
    * @throws SQLRunnerException if error occurs during processing
    */
   public <T> T executeQuery(ParamBuilder params, ResultSetHandler<T> handler) {
-    return executeQuery(params.getParamValues(), params.getParamTypes(), handler, QueryExecutor.NO_FETCH_SIZE_OVERRIDE);
+    return executeQuery(new QueryFlags(), params.getParamValues(), params.getParamTypes(), handler);
   }
 
   /**
    * Executes an SQL query using the passed parameters, passing
    * results to the given handler.
    *
+   * @param queryFlags custom query flags to use during this query
    * @param params set of parameters as set in a builder
    * @param handler handler implementation to process results
-   * @param fetchSize override of the configured fetch size
    * @return value returned by the handler
    * @throws SQLRunnerException if error occurs during processing
    */
-  public <T> T executeQuery(ParamBuilder params, ResultSetHandler<T> handler, int fetchSize) {
-    return executeQuery(params.getParamValues(), params.getParamTypes(), handler, fetchSize);
+  public <T> T executeQuery(QueryFlags queryFlags, ParamBuilder params, ResultSetHandler<T> handler) {
+    return executeQuery(queryFlags, params.getParamValues(), params.getParamTypes(), handler);
   }
 
   private <T> T executeSql(PreparedStatementExecutor<T> exec) {
@@ -460,7 +371,14 @@ public class SQLRunner {
       timer.restart();
 
       // prepare statement
-      stmt = conn.prepareStatement(_sql);
+      LOG.info("Preparing statement for SQL (autocommit=" + conn.getAutoCommit() + "): " + _sql);
+      stmt = conn.prepareStatement(
+          _sql,
+          ResultSet.TYPE_FORWARD_ONLY,
+          ResultSet.CONCUR_READ_ONLY,
+//          ResultSet.HOLD_CURSORS_OVER_COMMIT
+          ResultSet.CLOSE_CURSORS_AT_COMMIT
+      );
 
       // Prioritize override query timeout and fallback to global query timeout.
       if (DEFAULT_QUERY_TIMEOUT_SECONDS != null) {
@@ -487,7 +405,6 @@ public class SQLRunner {
       timer.resultsHandled();
 
       // complete execution
-      commit(conn);
       _lastExecutionTime = exec.getLastExecutionTime();
       timer.complete();
       QueryLogger.submitTimer(timer);
@@ -511,7 +428,7 @@ public class SQLRunner {
     finally {
       // close resources if not configured to allow the returned object to
       //   handle resource closing.
-      if (!_returnedObjectResponsibleForClosing) {
+      if (exec.resourcesShouldBeClosed()) {
         closeResources(exec, stmt, conn);
       }
     }
@@ -526,15 +443,8 @@ public class SQLRunner {
   private void closeResources(PreparedStatementExecutor<?> exec, PreparedStatement stmt, Connection conn) {
     exec.closeQuietly();
     SqlUtils.closeQuietly(stmt);
-    if (_isInternallyCreatedConnection) {
+    if (_isInternallyManagedConnection) {
       SqlUtils.closeQuietly(conn);
-    }
-  }
-
-  private void commit(Connection conn) throws SQLException {
-    // only need to commit here if using internal transaction
-    if (_txStrategy.equals(TxStrategy.TRANSACTION)) {
-      conn.commit();
     }
   }
 
@@ -546,30 +456,26 @@ public class SQLRunner {
       return;
     }
     // only need to attempt rollback if using internal transaction
-    if (_txStrategy.equals(TxStrategy.TRANSACTION)) {
-      try { conn.rollback(); } catch (SQLException e2) {
-        // don't rethrow as it will mask the original exception
-        LOG.error("Exception thrown while attempting rollback.", e2);
+    try {
+      if (!conn.getAutoCommit()) {
+        conn.rollback();
       }
+    }
+    catch (SQLException e2) {
+      // don't rethrow as it will mask the original exception
+      LOG.error("Exception thrown while attempting rollback.", e2);
     }
   }
 
   private Connection getConnection() throws SQLException {
     if (_conn == null) {
       _conn = _ds.getConnection();
-      // set auto-commit to true if caller specified auto-commit
-      _conn.setAutoCommit(_txStrategy.equals(TxStrategy.AUTO_COMMIT));
     }
     return _conn;
   }
 
   public long getLastExecutionTime() {
     return _lastExecutionTime;
-  }
-
-  public SQLRunner setNotResponsibleForClosing() {
-    _returnedObjectResponsibleForClosing = true;
-    return this;
   }
 
   public static String generateName(String sql) {

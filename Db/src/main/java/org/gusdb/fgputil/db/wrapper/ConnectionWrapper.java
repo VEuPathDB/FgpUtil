@@ -42,6 +42,7 @@ public class ConnectionWrapper extends AbstractConnectionWrapper {
 
   @Override
   public void close() throws SQLException {
+    LOG.info("Closing DB Connection");
     boolean uncommittedChangesPresent = false;
     try {
       _unclosedObjectMonitor.unregisterClosedObject(_underlyingConnection);

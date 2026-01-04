@@ -4,8 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
-
 /**
  * Handler that extracts the first value of the first row of a ResultSet and treats as Long value.  This
  * is particularly handy for count queries, but can be used for any query that returns a single numeric
