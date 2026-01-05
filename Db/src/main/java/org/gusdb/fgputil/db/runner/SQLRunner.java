@@ -470,6 +470,7 @@ public class SQLRunner {
   private Connection getConnection() throws SQLException {
     if (_conn == null) {
       _conn = _ds.getConnection();
+      _conn.setAutoCommit(true); // driver/pool should do this but make sure
     }
     return _conn;
   }
