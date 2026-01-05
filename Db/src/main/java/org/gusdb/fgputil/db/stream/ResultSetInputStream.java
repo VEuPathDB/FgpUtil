@@ -48,6 +48,16 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
    */
   public static ResultSetInputStream getResultSetStream(String sql, String queryName,
       DataSource ds, int fetchSize, ResultSetRowConverter converter) throws SQLException {
+
+    /* TODO: Convert to the following code.  Cannot yet do because then we lose QueryLogger completion
+     *       Need a new API on executeQuery that takes a BiFunction (querytimer, resultset)
+    return new SQLRunner(ds, sql, queryName).executeQuery(
+        new QueryFlags()
+          .setFetchSize(fetchSize)
+          .setCommitAndCloseFlag(CommitAndClose.CALLER_IS_RESPONSIBLE),
+        rs -> new ResultSetInputStream(rs, rs.getStatement(), rs.getStatement().getConnection(), converter)
+    );*/
+
     boolean closeDbObjects = false;
     Connection conn = null;
     PreparedStatement stmt = null;

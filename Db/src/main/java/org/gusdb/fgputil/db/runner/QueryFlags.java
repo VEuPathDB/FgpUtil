@@ -26,7 +26,9 @@ public class QueryFlags {
   public QueryFlags() { }
 
   public QueryFlags setFetchSize(int fetchSize) {
-    _fetchSize = fetchSize;
+    if (fetchSize >= 0) {
+      _fetchSize = fetchSize;
+    }
     return this;
   }
 

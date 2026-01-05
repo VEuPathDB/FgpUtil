@@ -377,7 +377,6 @@ public class SQLRunner {
           _sql,
           ResultSet.TYPE_FORWARD_ONLY,
           ResultSet.CONCUR_READ_ONLY,
-//          ResultSet.HOLD_CURSORS_OVER_COMMIT
           ResultSet.CLOSE_CURSORS_AT_COMMIT
       );
 
