@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.QueryFlags;
 import org.gusdb.fgputil.db.runner.QueryFlags.CommitAndClose;
-import org.gusdb.fgputil.db.runner.ResultSetHandler;
+import org.gusdb.fgputil.db.runner.handler.ResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 
 /**

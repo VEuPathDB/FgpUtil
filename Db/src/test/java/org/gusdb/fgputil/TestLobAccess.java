@@ -13,7 +13,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.pool.SimpleDbConfig;
-import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
+import org.gusdb.fgputil.db.runner.ListArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
 
@@ -78,7 +78,7 @@ public class TestLobAccess {
 
   private TestLobAccess saveRecords() throws IOException {
     // create records to insert into the DB
-    BasicArgumentBatch inputRows = new BasicArgumentBatch();
+    ListArgumentBatch inputRows = new ListArgumentBatch();
     inputRows.setParameterTypes(Row.TYPES);
     Row testObj = new Row(500, "Blah", false, null, null);
     byte[] testObjBytes = IoUtil.serialize(testObj);
