@@ -173,15 +173,15 @@ public class SQLRunner {
    * from the passed argument batch.  Uses the batch's getBatchSize() method
    * to determine how many operations to group into each batch.
    *
-   * No special transaction management logic is used, meaning that if:
+   * No special transaction management logic is used, meaning that If:
    *
-   * 1. This SQLRunner was created with a DataSource, OR
+   * 1. This SQLRunner was created with a DataSource (i.e. autocommit on when connection fetched), OR
    * 2. This SQLRunner was created with a Connection with autocommit turned on
    * 
    * Then: commits will be made after each batch is executed, including the final batch.
    *
    * If the SQLRunner was created with a Connection with autocommit turned off,
-   * no commits will be made, either after individual batches or after all
+   * no commits will be made, neither after individual batches nor after all
    * batches have been executed.  This enables external transaction management
    * for the entire dataset or in combination with other statements.
    *

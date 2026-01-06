@@ -19,9 +19,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-import org.apache.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
-
 public  class AbstractConnectionWrapper implements Connection {
 
   protected final Connection _underlyingConnection;
@@ -122,7 +119,6 @@ public  class AbstractConnectionWrapper implements Connection {
 
   @Override
   public void commit() throws SQLException {
-    Logger.getLogger(AbstractConnectionWrapper.class).info("Committing connection!!" + FormatUtil.getCurrentStackTrace());
     _underlyingConnection.commit();
   }
 
