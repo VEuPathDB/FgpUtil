@@ -1,9 +1,5 @@
 package org.gusdb.fgputil.db.stream;
 
-import org.apache.log4j.Logger;
-import org.gusdb.fgputil.db.SqlRuntimeException;
-import org.gusdb.fgputil.db.SqlUtils;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,9 +8,10 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
+import org.gusdb.fgputil.db.SqlRuntimeException;
+import org.gusdb.fgputil.db.SqlUtils;
 
-  private static final Logger LOG = Logger.getLogger(ResultSetIterator.class);
+public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
 
   public interface RowConverter<T> {
     Optional<T> convert(ResultSet rs) throws SQLException;
@@ -37,25 +34,20 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   private boolean _hasNext = true;
 
   private T _next;
-  private int _rowsReturned = 0;
 
   public ResultSetIterator(ResultSet rs, RowConverter<T> converter) {
     _rs = rs;
     _converter = converter;
-    LOG.info("Created ResultSetIterator");
   }
 
   @Override
   public boolean hasNext() {
-    LOG.info("hasNext() called (firstRowLoaded="+ _firstRowLoaded + ", hasNext=" + _hasNext);
     preloadFirstRow();
-    LOG.info("hasNext() returning " + _hasNext);
     return _hasNext;
   }
 
   @Override
   public T next() {
-    LOG.info("next() called (firstRowLoaded="+ _firstRowLoaded + ", hasNext=" + _hasNext);
     preloadFirstRow();
     if (!_hasNext) {
       throw new NoSuchElementException("No more elements.");
@@ -73,15 +65,8 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   }
 
   private T loadNext() {
-    LOG.info("loadNext() called.  next = null? " + (_next == null));
     var out = _next;
     try {
-      LOG.info("ResultSet closed? " + _rs.isClosed());
-      LOG.info("Statement closed? " + _rs.getStatement().isClosed());
-      LOG.info("Connection closed? " + _rs.getStatement().getConnection().isClosed());
-      LOG.info("Cursor name? " + _rs.getCursorName());
-      LOG.info("Checking for existence of row " + (++_rowsReturned));
-      LOG.info("Autocommit? " + _rs.getStatement().getConnection().getAutoCommit());
       while (_rs.next()) {
         var tmp = _converter.convert(_rs);
         if (tmp.isPresent()) {
@@ -108,7 +93,6 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   }
 
   public ResultSetIterator<T> setResponsibleForConnection(boolean isResponsibleForConnection) {
-    LOG.info("isResponsibleForConnection set to " + isResponsibleForConnection);
     _isResponsibleForConnection = isResponsibleForConnection;
     return this;
   }
