@@ -14,7 +14,7 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.DBStateException;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
+import org.gusdb.fgputil.db.runner.handler.SingleLongResultSetHandler;
 import org.gusdb.fgputil.functional.Either;
 import org.veupathdb.lib.ldap.NetDesc;
 import org.veupathdb.lib.ldap.PostgresNetDesc;

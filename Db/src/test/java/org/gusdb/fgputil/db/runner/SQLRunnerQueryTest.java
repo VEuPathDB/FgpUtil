@@ -8,6 +8,7 @@ import java.util.Collection;
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.db.SqlScriptRunner;
+import org.gusdb.fgputil.db.runner.handler.BasicResultSetHandler;
 import org.gusdb.fgputil.test.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -103,7 +104,7 @@ public class SQLRunnerQueryTest {
   @Test
   public void testBatchUpdate() {
     SQLRunner db = new SQLRunner(_ds, INSERT_USER);
-    BasicArgumentBatch argBatch = new BasicArgumentBatch();
+    ListArgumentBatch argBatch = new ListArgumentBatch();
     argBatch.setBatchSize(2);
     argBatch.add(new Object[]{ 4, "brian", "nairb" });
     argBatch.add(new Object[]{ 5, "omar", "ramo" });
@@ -116,7 +117,7 @@ public class SQLRunnerQueryTest {
   @Test
   public void testBatchUpdateWithTypes() {
     SQLRunner db = new SQLRunner(_ds, INSERT_USER);
-    BasicArgumentBatch argBatch = new BasicArgumentBatch();
+    ListArgumentBatch argBatch = new ListArgumentBatch();
     argBatch.setParameterTypes(new Integer[]{ Types.INTEGER, Types.VARCHAR, Types.VARCHAR });
     argBatch.setBatchSize(2);
     argBatch.add(new Object[]{ 4, "brian", "nairb" });

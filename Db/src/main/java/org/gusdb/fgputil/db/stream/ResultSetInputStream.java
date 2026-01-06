@@ -48,13 +48,32 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
    */
   public static ResultSetInputStream getResultSetStream(String sql, String queryName,
       DataSource ds, int fetchSize, ResultSetRowConverter converter) throws SQLException {
+
+    /* TODO: Convert to the following code.  Cannot yet do because then we lose QueryLogger completion
+     *       Need a new API on executeQuery that takes a BiFunction (querytimer, resultset)
+    return new SQLRunner(ds, sql, queryName).executeQuery(
+        new QueryFlags()
+          .setFetchSize(fetchSize)
+          .setCommitAndCloseFlag(CommitAndClose.CALLER_IS_RESPONSIBLE),
+        rs -> new ResultSetInputStream(rs, rs.getStatement(), rs.getStatement().getConnection(), converter)
+    );*/
+
     boolean closeDbObjects = false;
     Connection conn = null;
     PreparedStatement stmt = null;
     try {
       long startTime = System.currentTimeMillis();
       conn = ds.getConnection();
-      stmt = conn.prepareStatement(sql);
+      stmt = conn.prepareStatement(
+          sql,
+          // enables efficiency in DB since result row can be discarded once delivered
+          ResultSet.TYPE_FORWARD_ONLY,
+          // enables efficiency in DB since extra state must be maintained to enable read/write results
+          ResultSet.CONCUR_READ_ONLY,
+          // better resource management on DB since cursors are freed at commit rather than waiting for close;
+          //   actual connection close MAY happen much later depending on connection pool implementation
+          ResultSet.CLOSE_CURSORS_AT_COMMIT
+      );
       if (fetchSize > 0) {
         stmt.setFetchSize(fetchSize);
       }
