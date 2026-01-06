@@ -31,7 +31,7 @@ import org.gusdb.fgputil.db.slowquery.SqlTimer;
  */
 public class SQLRunner {
 
-  private static Logger LOG = Logger.getLogger(SQLRunner.class.getName());
+  private static Logger LOG = Logger.getLogger(SQLRunner.class);
 
   // Set a long default static timeout to avoid connection leaks if the database hangs.
   private static Integer DEFAULT_QUERY_TIMEOUT_SECONDS = 1800;
@@ -372,7 +372,6 @@ public class SQLRunner {
       timer.restart();
 
       // prepare statement
-      LOG.info("Preparing statement for SQL (autocommit=" + conn.getAutoCommit() + "): " + _sql);
       stmt = conn.prepareStatement(
           _sql,
           // enables efficiency in DB since result row can be discarded once delivered
