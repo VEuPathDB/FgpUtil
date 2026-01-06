@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.QueryFlags;
 import org.gusdb.fgputil.db.runner.QueryFlags.CommitAndClose;
@@ -18,6 +19,8 @@ import org.gusdb.fgputil.db.runner.SQLRunnerException;
  * @author rdoherty
  */
 public class QueryExecutor<T> extends PreparedStatementExecutor<T> {
+
+  private static final Logger LOG = Logger.getLogger(QueryExecutor.class);
 
   private QueryFlags _queryFlags;
   private ResultSetHandler<T> _handler;
@@ -58,6 +61,13 @@ public class QueryExecutor<T> extends PreparedStatementExecutor<T> {
 
   @Override
   public void closeQuietly() {
+    try {
+      // clean up any lingering resources on this connection
+      _results.getStatement().getConnection().commit();
+    }
+    catch (Exception e) {
+      LOG.warn("Unable to commit on connection after running query", e);
+    }
     SqlUtils.closeQuietly(_results);
   }
 }
