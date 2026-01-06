@@ -1,11 +1,9 @@
-package org.gusdb.fgputil.db.runner;
+package org.gusdb.fgputil.db.runner.handler;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.util.NoSuchElementException;
-
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 
 /**
  * Handles a result containing a single column with an integer value.  Similar

@@ -1,8 +1,5 @@
 package org.gusdb.fgputil.db.stream;
 
-import org.gusdb.fgputil.db.SqlRuntimeException;
-import org.gusdb.fgputil.db.SqlUtils;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,14 +8,17 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.gusdb.fgputil.db.SqlRuntimeException;
+import org.gusdb.fgputil.db.SqlUtils;
+
 public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
 
   public interface RowConverter<T> {
     Optional<T> convert(ResultSet rs) throws SQLException;
   }
 
-  private final ResultSet rs;
-  private final RowConverter<T> converter;
+  private final ResultSet _rs;
+  private final RowConverter<T> _converter;
 
   private boolean _connectionClosed = false;
 
@@ -30,27 +30,26 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   // results in a silent connection leak.
   private boolean _isResponsibleForConnection = true;
 
-  private boolean firstRowLoaded = false;
-  private boolean hasNext = true;
+  private boolean _firstRowLoaded = false;
+  private boolean _hasNext = true;
 
-  private T next;
-
+  private T _next;
 
   public ResultSetIterator(ResultSet rs, RowConverter<T> converter) {
-    this.rs = rs;
-    this.converter = converter;
+    _rs = rs;
+    _converter = converter;
   }
 
   @Override
   public boolean hasNext() {
     preloadFirstRow();
-    return hasNext;
+    return _hasNext;
   }
 
   @Override
   public T next() {
     preloadFirstRow();
-    if (!hasNext) {
+    if (!_hasNext) {
       throw new NoSuchElementException("No more elements.");
     }
     return loadNext();
@@ -59,24 +58,24 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   // called by hasNext() and next() to avoid exceptions in constructor that could
   //   lead to a connection leak if this is instantiated in a try-with-resources
   private void preloadFirstRow() {
-    if (!firstRowLoaded) {
+    if (!_firstRowLoaded) {
       loadNext(); // will always return null here
-      firstRowLoaded = true;
+      _firstRowLoaded = true;
     }
   }
 
   private T loadNext() {
-    var out = next;
+    var out = _next;
     try {
-      while (rs.next()) {
-        var tmp = converter.convert(rs);
+      while (_rs.next()) {
+        var tmp = _converter.convert(_rs);
         if (tmp.isPresent()) {
-          next = tmp.get();
+          _next = tmp.get();
           return out;
         }
       }
 
-      hasNext = false;
+      _hasNext = false;
       return out;
     }
     catch (SQLException e) {
@@ -101,9 +100,9 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
   @Override
   public void close() {
     try {
-      Statement statement = rs.getStatement();
+      Statement statement = _rs.getStatement();
       Connection conn = statement.getConnection();
-      SqlUtils.closeQuietly(rs, statement);
+      SqlUtils.closeQuietly(_rs, statement);
       if (_isResponsibleForConnection) {
         SqlUtils.closeQuietly(conn);
         _connectionClosed = true;

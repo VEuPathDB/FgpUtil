@@ -1,4 +1,4 @@
-package org.gusdb.fgputil.db.runner;
+package org.gusdb.fgputil.db.runner.handler;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.gusdb.fgputil.db.runner.SQLRunner.ResultSetHandler;
 
 /**
  * Collects the results of an SQL query into an in-memory data structure.

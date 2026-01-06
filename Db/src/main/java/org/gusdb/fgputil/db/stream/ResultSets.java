@@ -2,6 +2,8 @@ package org.gusdb.fgputil.db.stream;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.runner.QueryFlags;
+import org.gusdb.fgputil.db.runner.QueryFlags.CommitAndClose;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.stream.ResultSetIterator.RowConverter;
 
@@ -30,10 +32,10 @@ public class ResultSets {
 
   public static <T> ResultSetStream<T> openStream(
       DataSource ds, String sql, String sqlName, Object[] argValues, Integer[] argTypes, RowConverter<T> converter) {
-    return new SQLRunner(ds, sql, sqlName)
-        .setNotResponsibleForClosing()
-        .executeQuery(argValues, argTypes,
-            rs -> new ResultSetStream<T>(rs, converter));
+    return new SQLRunner(ds, sql, sqlName).executeQuery(
+        new QueryFlags().setCommitAndCloseFlag(CommitAndClose.CALLER_IS_RESPONSIBLE),
+        argValues, argTypes,
+        rs -> new ResultSetStream<T>(rs, converter));
   }
 
   public static <T> ResultSetIterator<T> openIterator(
@@ -53,10 +55,10 @@ public class ResultSets {
 
   public static <T> ResultSetIterator<T> openIterator(
       DataSource ds, String sql, String sqlName, Object[] argValues, Integer[] argTypes, RowConverter<T> converter) {
-    return new SQLRunner(ds, sql, sqlName)
-        .setNotResponsibleForClosing()
-        .executeQuery(argValues, argTypes,
-            rs -> new ResultSetIterator<T>(rs, converter));
+    return new SQLRunner(ds, sql, sqlName).executeQuery(
+        new QueryFlags().setCommitAndCloseFlag(CommitAndClose.CALLER_IS_RESPONSIBLE),
+        argValues, argTypes,
+        rs -> new ResultSetIterator<T>(rs, converter));
   }
 
 }
