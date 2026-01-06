@@ -4,7 +4,7 @@ import static org.gusdb.fgputil.functional.Functions.fSwallow;
 
 import javax.sql.DataSource;
 
-import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
+import org.gusdb.fgputil.db.runner.handler.SingleLongResultSetHandler;
 
 public class SqlCountCache extends SqlResultCache<Long> {
 

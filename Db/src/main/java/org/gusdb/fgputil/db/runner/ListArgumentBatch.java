@@ -5,7 +5,6 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import java.util.ArrayList;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
 
 /**
  * Basic implementation of ArgumentBatch.  Allows user to set the batch size and
@@ -13,7 +12,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner.ArgumentBatch;
  * 
  * @author rdoherty
  */
-public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentBatch {
+public class ListArgumentBatch extends ArrayList<Object[]> implements ArgumentBatch {
 
   private static final long serialVersionUID = 1L;
 
@@ -27,7 +26,7 @@ public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentB
     return _batchSize;
   }
 
-  public BasicArgumentBatch setBatchSize(int batchSize) {
+  public ListArgumentBatch setBatchSize(int batchSize) {
     _batchSize = batchSize;
     return this;
   }
@@ -37,7 +36,7 @@ public class BasicArgumentBatch extends ArrayList<Object[]> implements ArgumentB
     return _types;
   }
 
-  public BasicArgumentBatch setParameterTypes(Integer[] types) {
+  public ListArgumentBatch setParameterTypes(Integer[] types) {
     _types = types;
     return this;
   }
