@@ -375,8 +375,12 @@ public class SQLRunner {
       LOG.info("Preparing statement for SQL (autocommit=" + conn.getAutoCommit() + "): " + _sql);
       stmt = conn.prepareStatement(
           _sql,
+          // enables efficiency in DB since result row can be discarded once delivered
           ResultSet.TYPE_FORWARD_ONLY,
+          // enables efficiency in DB since extra state must be maintained to enable read/write results
           ResultSet.CONCUR_READ_ONLY,
+          // better resource management on DB since cursors are freed at commit rather than waiting for close;
+          //   actual connection close MAY happen much later depending on connection pool implementation
           ResultSet.CLOSE_CURSORS_AT_COMMIT
       );
 
