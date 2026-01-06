@@ -20,7 +20,7 @@ import org.gusdb.fgputil.db.runner.SQLRunnerException;
  * 
  * The methods in each implementation should be executed in the following order:
  * <ol>
- *   <li>{@link #setAutocommit(PreparedStatement)}</li>
+ *   <li>{@link #setAutocommit(Connection)}</li>
  *   <li>{@link #setParams(PreparedStatement)}</li>
  *   <li>{@link #run(PreparedStatement)}</li>
  *   <li>{@link #handleResult()}</li>
