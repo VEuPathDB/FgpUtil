@@ -72,7 +72,8 @@ public class ResultSetInputStream extends IteratingInputStream implements Wrappe
           ResultSet.CONCUR_READ_ONLY,
           // better resource management on DB since cursors are freed at commit rather than waiting for close;
           //   actual connection close MAY happen much later depending on connection pool implementation
-          ResultSet.CLOSE_CURSORS_AT_COMMIT
+          //ResultSet.CLOSE_CURSORS_AT_COMMIT, <-- Unsupported by Oracle :(
+          ResultSet.HOLD_CURSORS_OVER_COMMIT
       );
       if (fetchSize > 0) {
         stmt.setFetchSize(fetchSize);
