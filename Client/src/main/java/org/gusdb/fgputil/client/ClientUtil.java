@@ -41,7 +41,9 @@ public class ClientUtil {
   public static boolean LOG_RESPONSE_HEADERS = false;
 
   public static <T> T getResponseObject(String url, Class<T> responseObjectClass) throws IOException {
-    return new ObjectMapper().readerFor(responseObjectClass).readValue(new URL(url));
+    try (InputStream in = new URL(url).openStream()) {
+      return new ObjectMapper().readerFor(responseObjectClass).readValue(in);
+    }
   }
 
   public static <T> T getResponseObject(String url, Class<T> responseObjectClass, Map<String,String> headers) throws Exception {
