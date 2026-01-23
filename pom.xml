@@ -5,18 +5,18 @@
   <url>http://gusdb.org</url>
 
   <artifactId>fgputil</artifactId>
-  <version>3.0.2-jakarta-SNAPSHOT</version>
+  <version>3.1.0-jakarta-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <parent>
     <groupId>org.gusdb</groupId>
     <artifactId>base-pom</artifactId>
-    <version>2.27-jakarta</version>
+    <version>3.0-jakarta</version>
   </parent>
 
   <scm>
     <developerConnection>scm:git:ssh://github.com/VEuPathDB/FgpUtil</developerConnection>
-    <tag>v2.16.4-jakarta</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <repositories>

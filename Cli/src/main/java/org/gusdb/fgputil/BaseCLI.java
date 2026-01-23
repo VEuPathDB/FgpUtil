@@ -8,7 +8,6 @@ import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
@@ -113,9 +112,7 @@ public abstract class BaseCLI {
 
     String footer = " ";
 
-    // PrintWriter stderr = new PrintWriter(System.err);
-    HelpFormatter formatter = new HelpFormatter();
-    formatter.printHelp(syntax.toString(), header, _options, footer);
+    CliUtil.printHelp(syntax.toString(), header, _options, footer);
   }
 
   protected void addNonValueOption(String name, Boolean defaultValue, String description) {
@@ -207,4 +204,5 @@ public abstract class BaseCLI {
       syntax.append(">");
     }
   }
+
 }
