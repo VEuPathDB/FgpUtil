@@ -16,7 +16,7 @@
 
   <scm>
     <developerConnection>scm:git:ssh://github.com/VEuPathDB/FgpUtil</developerConnection>
-    <tag>v2.16.4-j21tc9</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <repositories>
