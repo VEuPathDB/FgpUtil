@@ -40,7 +40,7 @@ public class RuntimeUtil {
   }
 
   public static void executeAndLogOutput(List<String> command, Map<String,String> environment,
-      Logger logger, Level logLevel, Optional<Duration> processTimeout) {
+      Logger logger, Level logLevel, Optional<Duration> processTimeout, boolean killOnTimeout) {
     Thread logMonitorThread = null;
     try {
       LOG.info("Starting subprocess with command: " + String.join(" ", command));
@@ -52,33 +52,46 @@ public class RuntimeUtil {
       Process process = processBuilder.start();
 
       // start a thread to stream output to the passed Logger (if level allows)
-      if (logger.isEnabledFor(logLevel)) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        logMonitorThread = new Thread(() -> {
-          try {
-            String line;
-            while ((line = reader.readLine()) != null) {
-              logger.log(logLevel, ">> " + line);
-            }
+      BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      logMonitorThread = new Thread(() -> {
+        try {
+          String line;
+          while ((line = reader.readLine()) != null) {
+            logger.log(logLevel, ">> " + line);
           }
-          catch (IOException e) {
-            logger.log(logLevel, "Parent process warning: could not read subprocess output", e);
-          }
-        });
-        logMonitorThread.start();
-      }
+        }
+        catch (IOException e) {
+          logger.log(logLevel, "Parent process warning: could not read subprocess output", e);
+        }
+      });
+      logMonitorThread.start();
 
       // wait for process to finish in this thread
       boolean exitWithoutTimeout = processTimeout
           .map(duration -> swallowAndGet(() -> process.waitFor(duration.toMillis(), TimeUnit.MILLISECONDS)))
           .orElse(process.waitFor() - process.exitValue() == 0); // always true
 
+      // wait for the thread to finish processing the subprocess's output
+      logMonitorThread.join();
+
       if (exitWithoutTimeout) {
+        LOG.info("Subprocess exited with exit code: " + process.exitValue());
         if (process.exitValue() != 0) {
           throw new RuntimeException("Subprocess exited with error code " + process.exitValue());
         }
       }
       else {
+        // subprocess timed out before completion; kill if requested
+        if (killOnTimeout) {
+          int gracefulShutdownWindow = 500;
+          LOG.info("Subprocess timed out before completion.  Attempting to shut down gracefully...");
+          process.destroy();
+          ThreadUtil.sleep(gracefulShutdownWindow);
+          if (process.isAlive()) {
+            LOG.info("Subprocess did not shut down gracefully after " + gracefulShutdownWindow + "ms.  Forcibly terminating.");
+            process.destroyForcibly();
+          }
+        }
         throw new RuntimeException("Subprocess timed out before completion");
       }
     }
