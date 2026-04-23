@@ -43,13 +43,17 @@ public class ResultSetToJsonConverter implements ResultSetRowConverter {
         value = FormatUtil.formatDateTime((Date)value);
       }
       else if (colType.equals(DbColumnType.CLOB)) {
+        Clob clob = (Clob)value;
         try {
           StringWriter writer = new StringWriter();
-          IoUtil.transferStream(writer, ((Clob)value).getCharacterStream());
+          IoUtil.transferStream(writer, clob.getCharacterStream());
           value = writer.toString();
         }
         catch (IOException e) {
           throw new SQLException("Unable to read CLOB value", e);
+        }
+        finally {
+          clob.free();
         }
       }
       rowJson.put(meta.getColumnLabel(i), value);

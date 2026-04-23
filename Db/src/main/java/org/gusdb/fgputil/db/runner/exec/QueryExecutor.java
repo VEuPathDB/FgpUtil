@@ -63,7 +63,9 @@ public class QueryExecutor<T> extends PreparedStatementExecutor<T> {
   public void closeQuietly() {
     try {
       // clean up any lingering resources on this connection
-      _results.getStatement().getConnection().commit();
+      if (_results != null) {
+        _results.getStatement().getConnection().commit();
+      }
     }
     catch (Exception e) {
       LOG.warn("Unable to commit on connection after running query", e);

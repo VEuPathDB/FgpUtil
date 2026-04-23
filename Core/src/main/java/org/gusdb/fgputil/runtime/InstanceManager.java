@@ -2,10 +2,25 @@ package org.gusdb.fgputil.runtime;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public final class InstanceManager {
 
   private static final Map<String, Map<String, Map<String, Manageable<?>>>> INSTANCES = new HashMap<>();
+
+  private static ReadWriteLock CLEARING_LOCK = new ReentrantReadWriteLock();
+
+  public static void clearInstances() {
+    Lock writeLock = CLEARING_LOCK.writeLock();
+    try {
+      INSTANCES.clear();
+    }
+    finally {
+      writeLock.unlock();
+    }
+  }
 
   public static <T extends Manageable<T>> T getInstance(Class<T> instanceClass, String projectId)
       throws UnfetchableInstanceException {
@@ -15,48 +30,55 @@ public final class InstanceManager {
   public static <T extends Manageable<T>> T getInstance(Class<T> instanceClass, String gusHome, String projectId)
       throws UnfetchableInstanceException {
 
-    // get a map<gusHome->map<projectId->instance>>
-    Map<String, Map<String, Manageable<?>>> gusMap;
-    synchronized (instanceClass) {
-      gusMap = INSTANCES.get(instanceClass.getName());
-      if (gusMap == null) {
-        gusMap = new HashMap<>();
-        INSTANCES.put(instanceClass.getName(), gusMap);
+    Lock readLock = CLEARING_LOCK.readLock();
+    try {
+
+      // get a map<gusHome->map<projectId->instance>>
+      Map<String, Map<String, Manageable<?>>> gusMap;
+      synchronized (instanceClass) {
+        gusMap = INSTANCES.get(instanceClass.getName());
+        if (gusMap == null) {
+          gusMap = new HashMap<>();
+          INSTANCES.put(instanceClass.getName(), gusMap);
+        }
+      }
+  
+      // get a map<projectId->instance>
+      Map<String, Manageable<?>> projectMap;
+      gusHome = gusHome.intern();
+      synchronized(gusHome) {
+        projectMap = gusMap.get(gusHome);
+        if (projectMap == null) {
+          projectMap = new HashMap<>();
+          gusMap.put(gusHome, projectMap);
+        }
+      }
+  
+      // check if the instance exists for the given gusHome and projectId
+      projectId = projectId.intern();
+      synchronized (projectId) {
+        @SuppressWarnings("unchecked")
+        T instance = (T) projectMap.get(projectId);
+        if (instance == null) {
+          try {
+            instance = instanceClass.getDeclaredConstructor().newInstance().getInstance(projectId, gusHome);
+          }
+          catch (InstantiationException | IllegalAccessException ex) {
+            throw new UnfetchableInstanceException(
+                "Unable to create stub instance of class " + instanceClass.getName(), ex);
+          }
+          catch (Exception e) {
+            throw new UnfetchableInstanceException(
+                "Unable to create instance of class " + instanceClass.getName() +
+                " using gusHome [" + gusHome + "] and projectId [" + projectId + "]", e);
+          }
+          projectMap.put(projectId, instance);
+        }
+        return instance;
       }
     }
-
-    // get a map<projectId->instance>
-    Map<String, Manageable<?>> projectMap;
-    gusHome = gusHome.intern();
-    synchronized(gusHome) {
-      projectMap = gusMap.get(gusHome);
-      if (projectMap == null) {
-        projectMap = new HashMap<>();
-        gusMap.put(gusHome, projectMap);
-      }
-    }
-
-    // check if the instance exists for the given gusHome and projectId
-    projectId = projectId.intern();
-    synchronized (projectId) {
-      @SuppressWarnings("unchecked")
-      T instance = (T) projectMap.get(projectId);
-      if (instance == null) {
-        try {
-          instance = instanceClass.getDeclaredConstructor().newInstance().getInstance(projectId, gusHome);
-        }
-        catch (InstantiationException | IllegalAccessException ex) {
-          throw new UnfetchableInstanceException(
-              "Unable to create stub instance of class " + instanceClass.getName(), ex);
-        }
-        catch (Exception e) {
-          throw new UnfetchableInstanceException(
-              "Unable to create instance of class " + instanceClass.getName() +
-              " using gusHome [" + gusHome + "] and projectId [" + projectId + "]", e);
-        }
-        projectMap.put(projectId, instance);
-      }
-      return instance;
+    finally {
+      readLock.unlock();
     }
   }
 }
