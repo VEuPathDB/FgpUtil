@@ -21,6 +21,14 @@ public class RuntimeUtil {
 
   private static final Logger LOG = Logger.getLogger(RuntimeUtil.class);
 
+  /**
+   * Returns the PID of the passed process.
+   *
+   * @deprecated Use Process.getPid(), available in Java 9+.
+   * @param p process
+   * @return pid of process
+   */
+  @Deprecated
   public static synchronized long getPid(Process p) {
     int pid = -1;
     try {
@@ -41,6 +49,24 @@ public class RuntimeUtil {
     return pid;
   }
 
+  /**
+   * Synchronously executes a subprocess with the passed command, handling a variety of
+   * I/O redirection options and process timout options.  If the subprocess fails to
+   * complete before timeout, an empty optional is returned; otherwise the exit value of
+   * the process is returned.
+   *
+   * @param command command used to execute the subprocess
+   * @param environment supplemental environment variables (will inherit env from this process)
+   * @param stdinFile optional file to send to subprocess's stdin stream
+   * @param logger Logger to use to log subprocess output
+   * @param logLevel log level used to log subprocess output
+   * @param stdoutFile optional file to write subprocess stdout to.  If not specified,
+   * stdout/stderr will both be written to the Logger
+   * @param processTimeout optional duration after which subprocess will be determined to have
+   * "timed out".  This method will cease I/O capture and forcibly kill the subprocess (to
+   * avoid a zombie process), and return an empty optional.
+   * @return exit value of the subprocess or empty if subprocess times out
+   */
   public static Optional<Integer> executeSubprocessAndLogOutput(
       List<String> command,
       Map<String,String> environment,
@@ -48,8 +74,7 @@ public class RuntimeUtil {
       Logger logger,
       Level logLevel,
       Optional<File> stdoutFile,
-      Optional<Duration> processTimeout,
-      boolean killOnTimeout) {
+      Optional<Duration> processTimeout) {
     Thread logMonitorThread = null;
     try {
       LOG.info("Starting subprocess with command: " + String.join(" ", command));
@@ -79,6 +104,7 @@ public class RuntimeUtil {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(streamToLog))) {
           String line;
           while ((line = reader.readLine()) != null) {
+            if (Thread.interrupted()) return;
             logger.log(logLevel, ">> " + line);
           }
         }
@@ -93,27 +119,23 @@ public class RuntimeUtil {
           .map(duration -> swallowAndGet(() -> process.waitFor(duration.toMillis(), TimeUnit.MILLISECONDS)))
           .orElse(process.waitFor() - process.exitValue() == 0); // always true
 
-      // wait for the thread to finish processing the subprocess's output
-      logMonitorThread.join();
-
-      int exitValue = process.exitValue();
       if (exitWithoutTimeout) {
+        waitForLoggingThread(logMonitorThread);
+        int exitValue = process.exitValue();
         LOG.info("Subprocess exited with exit code: " + exitValue);
         return Optional.of(exitValue);
       }
       else {
-        // subprocess timed out before completion; kill if requested
-        if (killOnTimeout) {
-          int gracefulShutdownWindow = 500;
-          LOG.info("Subprocess timed out before completion.  Attempting to shut down gracefully...");
-          process.destroy();
-          ThreadUtil.sleep(gracefulShutdownWindow);
-          if (process.isAlive()) {
-            LOG.info("Subprocess did not shut down gracefully after " + gracefulShutdownWindow + "ms.  Forcibly terminating.");
-            process.destroyForcibly();
-          }
+        // subprocess timed out before completion; kill to avoid zombie process
+        int gracefulShutdownWindow = 500;
+        LOG.info("Subprocess timed out before completion.  Attempting to shut down gracefully...");
+        process.destroy();
+        if (!process.waitFor(gracefulShutdownWindow, TimeUnit.MILLISECONDS)) {
+          LOG.info("Subprocess did not shut down gracefully after " + gracefulShutdownWindow + "ms.  Forcibly terminating.");
+          process.destroyForcibly(); // escalate
+          process.waitFor(); // ensure it's actually gone
         }
-        LOG.warn("Subprocess timed out before completion");
+        waitForLoggingThread(logMonitorThread);
         return Optional.empty();
       }
     }
@@ -135,5 +157,12 @@ public class RuntimeUtil {
         logMonitorThread.interrupt();
       }
     }
+  }
+
+  private static void waitForLoggingThread(Thread logMonitorThread) throws InterruptedException {
+    // Wait for the thread to finish processing the subprocess's output (max 500ms).
+    //   This should not take long because the system output buffer is not that big and
+    //   the thread has been streaming the data out throughout the subprocess lifespan.
+    logMonitorThread.join(500);
   }
 }
