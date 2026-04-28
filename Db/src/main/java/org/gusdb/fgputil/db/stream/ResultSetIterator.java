@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import org.gusdb.fgputil.db.SqlRuntimeException;
 import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.slowquery.QueryLogger;
 
 public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
 
@@ -102,6 +103,7 @@ public class ResultSetIterator<T> implements Iterator<T>, AutoCloseable {
     try {
       Statement statement = _rs.getStatement();
       Connection conn = statement.getConnection();
+      QueryLogger.logEndResultsProcessing(_rs);
       SqlUtils.closeQuietly(_rs, statement);
       if (_isResponsibleForConnection) {
         SqlUtils.closeQuietly(conn);

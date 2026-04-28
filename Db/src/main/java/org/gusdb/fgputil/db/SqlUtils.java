@@ -109,8 +109,8 @@ public final class SqlUtils {
     try {
       // close our resultSet,remove from hash and write to log
       if (resultSet != null) {
-        resultSet.close();
         QueryLogger.logEndResultsProcessing(resultSet);
+        resultSet.close();
       }
     }
     catch (SQLException ex) {
@@ -415,12 +415,14 @@ public final class SqlUtils {
       return resultSet;
     }
     catch (SQLException ex) {
-     if (stmt == null)
+      if (stmt == null) {
         // may or may not have a connection, but don't have stmt or rs
         SqlUtils.closeQuietly(connection);
-      else
+      }
+      else {
         // have at least a statement; close everything we can
         closeResultSetAndStatement(resultSet, stmt);
+      }
       throw new SQLException("Failed to run query:\n" + sql + getUrlAndUser(connection), ex);
     }
   }
@@ -469,7 +471,7 @@ public final class SqlUtils {
       return resultSet.getObject(1);
     }
     finally {
-      closeResultSetAndStatement(resultSet, null);
+      closeResultSetAndStatement(resultSet);
     }
   }
 
