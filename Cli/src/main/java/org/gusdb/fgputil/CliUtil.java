@@ -1,14 +1,12 @@
 package org.gusdb.fgputil;
 
-import java.io.IOException;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.help.HelpFormatter;
 
 public class CliUtil {
 
@@ -59,12 +57,7 @@ public class CliUtil {
   }
 
   public static void printHelp(String cmdlineSyntax, String header, Options options, String footer) {
-    try {
-      HelpFormatter formatter = HelpFormatter.builder().get();
-      formatter.printHelp(cmdlineSyntax, header, options, footer, false);
-    }
-    catch (IOException e) {
-      throw new RuntimeException("Unable to print help", e);
-    }
+    HelpFormatter formatter = HelpFormatter.builder().get();
+    formatter.printHelp(cmdlineSyntax, header, options, footer, false);
   }
 }

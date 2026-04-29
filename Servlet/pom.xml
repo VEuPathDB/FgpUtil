@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.gusdb</groupId>
     <artifactId>fgputil</artifactId>
-    <version>3.2.5-SNAPSHOT</version>
+    <version>3.2.4-legacy-SNAPSHOT</version>
   </parent>
 
   <name>Functional Genomics Platform - Servlet</name>
@@ -20,7 +20,7 @@
 
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <artifactId>servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
 
