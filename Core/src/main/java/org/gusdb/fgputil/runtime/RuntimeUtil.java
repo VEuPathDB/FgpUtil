@@ -86,7 +86,7 @@ public class RuntimeUtil {
 
       // if stdout file is passed, write stdout to the file; otherwise merge with stderr
       if (stdoutFile.isPresent())
-        processBuilder.redirectInput(stdoutFile.get());
+        processBuilder.redirectOutput(stdoutFile.get());
       else
         processBuilder.redirectErrorStream(true);
 
