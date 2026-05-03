@@ -156,17 +156,18 @@ public class FormatUtil {
   /**
    * Attempts to convert the given text into HTML, replacing special characters
    * with their HTML equivalents.
-   * TODO: this method should be improved!
    *
    * @param str string to convert
    * @return converted string
    */
   public static String escapeHtml(String str) {
     return str
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll("\n", "<br/>\n");
+      .replace("&", "&amp;")
+      .replace("<", "&lt;")
+      .replace(">", "&gt;")
+      .replace("\"", "&quot;")
+      .replace("'", "&#39;")
+      .replace("\n", "<br/>\n");
   }
 
   public static String splitCamelCase(String s) {
