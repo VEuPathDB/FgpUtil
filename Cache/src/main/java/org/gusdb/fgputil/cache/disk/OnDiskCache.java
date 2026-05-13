@@ -1,6 +1,5 @@
 package org.gusdb.fgputil.cache.disk;
 
-import static org.gusdb.fgputil.IoUtil.createOpenPermsDirectory;
 import static org.gusdb.fgputil.functional.Functions.mapException;
 
 import java.io.IOException;
@@ -14,10 +13,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.cache.disk.DirectoryLock.DirectoryLockTimeoutException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
-
-import org.gusdb.fgputil.cache.disk.DirectoryLock.DirectoryLockTimeoutException;
 
 /**
  * Manages a filesystem-based cache of entries, with data located specified directory
@@ -182,8 +180,7 @@ public class OnDiskCache {
 
     // determine path to entry directory and ensure existence (atomic)
     Path path = getEntryPath(cacheKey);
-    mapException(() -> createOpenPermsDirectory(path, true),
-        e -> new RuntimeException("Could not create disk cache entry directory " + path, e));
+    IoUtil.ensureCreation(Files::createDirectory, path);
 
     // get a lock on this entry
     try (DirectoryLock lock = new DirectoryLock(path, lockTimeoutMillisOverride, _lockPollFrequencyMillis)) {
