@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.gusdb</groupId>
     <artifactId>fgputil</artifactId>
-    <version>3.2.6-legacy-SNAPSHOT</version>
+    <version>3.2.6-legacy</version>
   </parent>
 
   <name>Functional Genomics Platform - Test</name>
