@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -31,14 +33,19 @@ public class XmlParser {
   private static final Logger logger = Logger.getLogger(XmlParser.class);
 
   public static URL makeURL(String pathOrUrl) throws MalformedURLException {
-    String lower = pathOrUrl.toLowerCase();
-    if (lower.startsWith("file:/") || lower.startsWith("http://") || lower.startsWith("https://") ||
-        lower.startsWith("ftp://") || lower.startsWith("ftps://")) {
-      return new URL(pathOrUrl);
+    try {
+      String lower = pathOrUrl.toLowerCase();
+      if (lower.startsWith("file:/") || lower.startsWith("http://") || lower.startsWith("https://") ||
+          lower.startsWith("ftp://") || lower.startsWith("ftps://")) {
+        return new URI(pathOrUrl).toURL();
+      }
+      else {
+        File file = new File(pathOrUrl);
+        return file.toURI().toURL();
+      }
     }
-    else {
-      File file = new File(pathOrUrl);
-      return file.toURI().toURL();
+    catch (URISyntaxException e) {
+      throw new MalformedURLException(e.getMessage());
     }
   }
 

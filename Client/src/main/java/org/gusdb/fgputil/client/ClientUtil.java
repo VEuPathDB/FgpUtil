@@ -3,7 +3,9 @@ package org.gusdb.fgputil.client;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,8 +43,11 @@ public class ClientUtil {
   public static boolean LOG_RESPONSE_HEADERS = false;
 
   public static <T> T getResponseObject(String url, Class<T> responseObjectClass) throws IOException {
-    try (InputStream in = new URL(url).openStream()) {
+    try (InputStream in = new URI(url).toURL().openStream()) {
       return new ObjectMapper().readerFor(responseObjectClass).readValue(in);
+    }
+    catch (URISyntaxException | MalformedURLException e) {
+      throw new RuntimeException ("Attempt to use malformed URL: " + url, e);
     }
   }
 
