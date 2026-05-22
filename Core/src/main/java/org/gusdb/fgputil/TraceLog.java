@@ -216,13 +216,13 @@ public class TraceLog {
   private static Stack<String> requireStack() {
     synchronized (CALL_STACKS) {
       return CALL_STACKS.computeIfAbsent(
-        Thread.currentThread().getId(), k -> new Stack<>());
+        Thread.currentThread().threadId(), k -> new Stack<>());
     }
   }
 
   private static void dropStack() {
     synchronized (CALL_STACKS) {
-      CALL_STACKS.remove(Thread.currentThread().getId());
+      CALL_STACKS.remove(Thread.currentThread().threadId());
     }
   }
 

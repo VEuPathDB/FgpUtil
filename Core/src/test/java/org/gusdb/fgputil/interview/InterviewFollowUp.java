@@ -193,7 +193,7 @@ public class InterviewFollowUp {
   //=======================================================
 
   private static <T> Node2<T> node(T i) {
-    return new Node2<T>(i, Collections.EMPTY_LIST);
+    return new Node2<T>(i, Collections.emptyList());
   }
 
   private static <T> Node2<T> node(T i, List<Node2<T>> children) {
