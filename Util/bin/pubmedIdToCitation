@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-
+import http.client
 import sys
 import re
 import xml.etree.ElementTree as XML
-import http.client
+from typing import Any
 from urllib.request import urlopen
 
 DOI_URL_PATTERN = 'https://doi.org/{doi}'
@@ -12,7 +12,7 @@ PUBMED_URL_PATTERN = 'https://pubmed.ncbi.nlm.nih.gov/{pmid}/'
 NCBI_API_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml"
 
 
-def require[T](**kwargs: T | None) -> T:
+def require(**kwargs: Any) -> Any:
     """
     Requires that the input value is not None, else raises an exception.
 
@@ -26,7 +26,7 @@ def require[T](**kwargs: T | None) -> T:
     return value
 
 
-def findAndTrimText(element: XML.Element[str], xpath: str) -> str | None:
+def findAndTrimText(element: XML.Element, xpath: str) -> 'str | None':
     """
     Convenience wrapper around the XPath findtext function that trims the returned text if it is found.
     """
@@ -34,7 +34,7 @@ def findAndTrimText(element: XML.Element[str], xpath: str) -> str | None:
     return out.strip() if out is not None else None
 
 
-def formatAuthorList(authors: list[XML.Element[str]]) -> str:
+def formatAuthorList(authors: list[XML.Element]) -> str:
     """
     Formats the author list into a string in either "{LastName} et al", or "{LastName}[, {FirstName}]" format depending
     on whether the author list contains more than one author.
@@ -51,7 +51,7 @@ def formatAuthorList(authors: list[XML.Element[str]]) -> str:
     return f'{lastName}, {firstName}' if len(firstName) > 0 else lastName
 
 
-def formatUrl(element: XML.Element[str] | None) -> str | None:
+def formatUrl(element: 'XML.Element | None') -> 'str | None':
     """
     Attempts to create a permalink URL for the article from the article ID list found at the XPath
     `/PubmedArticleSet/PubmedArticle/PubmedData/ArticleIdList`.
@@ -79,14 +79,14 @@ class PublicationInfo:
     """
     Stringifiable data object containing information about the publication an article appears in.
     """
-    volume: str | None
-    issue: str | None
-    year: str | None
+    volume: 'str | None'
+    issue: 'str | None'
+    year: 'str | None'
     title: str
-    startPage: str | None
-    endPage: str | None
+    startPage: 'str | None'
+    endPage: 'str | None'
 
-    def __init__(self, article: XML.Element[str], journal: XML.Element[str]):
+    def __init__(self, article: XML.Element, journal: XML.Element):
         issue = journal.find('./JournalIssue')
         if issue is not None:
             self.volume = findAndTrimText(issue, './Volume')
@@ -120,7 +120,7 @@ class PublicationInfo:
 def formatMLACitation(
         author: str,
         title: str,
-        publicationInfo: PublicationInfo | None = None,
+        publicationInfo: 'PublicationInfo | None' = None,
         database: str = '',
         url: str = '',
 ) -> str:
@@ -146,7 +146,7 @@ def formatMLACitation(
     return re.sub('\\s+', ' ', f'{author}. ‘{title}’ {journal} {pubInfo} {database} {url}')
 
 
-def citationFromPubMedArticle(pmArticle: XML.Element[str]) -> str:
+def citationFromPubMedArticle(pmArticle: XML.Element) -> str:
     medline = require(MedlineCitation=pmArticle.find('./MedlineCitation'))
     article = require(Article=medline.find('./Article'))
 
@@ -163,7 +163,7 @@ def citationFromPubMedArticle(pmArticle: XML.Element[str]) -> str:
     return str(formatMLACitation(authors, title, pubInfo, '', url))
 
 
-def fetchArticleDetails(pmid: int, apiKey: str | None) -> bytes:
+def fetchArticleDetails(pmid: int, apiKey: 'str | None') -> bytes:
     """
     Makes a GET request to the NCBI EUtils EFetch endpoint requesting details about a PubMed publication with the given
     PubMed ID (pmid) value.
