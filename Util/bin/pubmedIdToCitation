@@ -1,0 +1,215 @@
+#!/usr/bin/env python3
+import http.client
+import sys
+import re
+import xml.etree.ElementTree as XML
+from typing import Any
+from urllib.request import urlopen
+
+DOI_URL_PATTERN = 'https://doi.org/{doi}'
+PUBMED_URL_PATTERN = 'https://pubmed.ncbi.nlm.nih.gov/{pmid}/'
+
+NCBI_API_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml"
+
+
+def require(**kwargs: Any) -> Any:
+    """
+    Requires that the input value is not None, else raises an exception.
+
+    Expects a single kwarg, and uses only the last kwarg in the call arguments.
+    """
+    name, value = kwargs.popitem()
+
+    if value is None:
+        raise Exception(f'required value {name} was None')
+
+    return value
+
+
+def findAndTrimText(element: XML.Element, xpath: str) -> 'str | None':
+    """
+    Convenience wrapper around the XPath findtext function that trims the returned text if it is found.
+    """
+    out = element.findtext(xpath)
+    return out.strip() if out is not None else None
+
+
+def formatAuthorList(authors: list[XML.Element]) -> str:
+    """
+    Formats the author list into a string in either "{LastName} et al", or "{LastName}[, {FirstName}]" format depending
+    on whether the author list contains more than one author.
+    """
+    firstAuthor = authors[0]
+
+    lastName = str(findAndTrimText(firstAuthor, './LastName'))
+
+    if len(authors) > 0:
+        return lastName + ' et al'
+
+    firstName = findAndTrimText(firstAuthor, './ForeName') or findAndTrimText(firstAuthor, './Initials') or ''
+
+    return f'{lastName}, {firstName}' if len(firstName) > 0 else lastName
+
+
+def formatUrl(element: 'XML.Element | None') -> 'str | None':
+    """
+    Attempts to create a permalink URL for the article from the article ID list found at the XPath
+    `/PubmedArticleSet/PubmedArticle/PubmedData/ArticleIdList`.
+
+    DOIs are preferred as a more universal and reliable handle, PMID is used as a fallback.
+    """
+    if element is None:
+        return None
+
+
+    # prefer DOI
+    articleId = element.find("./ArticleId[@IdType='doi']")
+    if articleId is not None:
+        return DOI_URL_PATTERN.format(doi=require(ArticleId=articleId.text).strip())
+
+    # try pubmed (should always exist)
+    articleId = element.find("./ArticleId[@IdType='pubmed']")
+    if articleId is not None:
+        return PUBMED_URL_PATTERN.format(pmid=require(ArticleId=articleId.text).strip())
+
+    return None
+
+
+class PublicationInfo:
+    """
+    Stringifiable data object containing information about the publication an article appears in.
+    """
+    volume: 'str | None'
+    issue: 'str | None'
+    year: 'str | None'
+    title: str
+    startPage: 'str | None'
+    endPage: 'str | None'
+
+    def __init__(self, article: XML.Element, journal: XML.Element):
+        issue = journal.find('./JournalIssue')
+        if issue is not None:
+            self.volume = findAndTrimText(issue, './Volume')
+            self.issue = findAndTrimText(issue, './Issue')
+            self.year = findAndTrimText(issue, './PubDate/Year')
+
+        self.title = require(JournalTitle=findAndTrimText(journal, './Title'))
+
+        pagination = article.find('./Pagination')
+        if pagination is not None:
+            self.startPage = require(StartePage=findAndTrimText(pagination, './StartPage'))
+            self.endPage = findAndTrimText(pagination, './EndPage')
+
+    def __str__(self):
+        pageRange = ''
+        if self.startPage is not None:
+            pageRange = 'pp. ' + self.startPage
+            if self.endPage is not None:
+                pageRange += '-' + self.endPage
+
+        elements = [
+            ('vol. ' + str(self.volume)) if self.volume is not None else '',
+            ('no. ' + str(self.issue)) if self.issue is not None else '',
+            self.year if self.year is not None else '',
+            pageRange,
+        ]
+
+        return ', '.join([e for e in elements if len(e) > 0])
+
+
+def formatMLACitation(
+        author: str,
+        title: str,
+        publicationInfo: 'PublicationInfo | None' = None,
+        database: str = '',
+        url: str = '',
+) -> str:
+    """Creates an MLA formatted citation from the given arguments."""
+    pubInfo = ''
+
+    if not title.endswith('.'):
+        title += '.'
+
+    if publicationInfo is not None:
+        pubInfo = str(publicationInfo)
+        journal = publicationInfo.title + ','
+    else:
+        journal = ''
+
+    if len(database) > 0 or len(url) > 0:
+        pubInfo += '.'
+
+    if len(database) > 0 and len(url) > 0:
+        database += ','
+
+    # remove any extra spaces left by empty elements
+    return re.sub('\\s+', ' ', f'{author}. ‘{title}’ {journal} {pubInfo} {database} {url}')
+
+
+def citationFromPubMedArticle(pmArticle: XML.Element) -> str:
+    medline = require(MedlineCitation=pmArticle.find('./MedlineCitation'))
+    article = require(Article=medline.find('./Article'))
+
+    journal = article.find('./Journal')
+    if journal is not None:
+        pubInfo = PublicationInfo(article, journal)
+    else:
+        pubInfo = None
+
+    authors = formatAuthorList(require(Authors=article.findall('./AuthorList/Author')))
+    title = require(ArticleTitle=findAndTrimText(article, './ArticleTitle'))
+    url = formatUrl(pmArticle.find('./PubmedData/ArticleIdList')) or ''
+
+    return str(formatMLACitation(authors, title, pubInfo, '', url))
+
+
+def fetchArticleDetails(pmid: int, apiKey: 'str | None') -> bytes:
+    """
+    Makes a GET request to the NCBI EUtils EFetch endpoint requesting details about a PubMed publication with the given
+    PubMed ID (pmid) value.
+    """
+    url = NCBI_API_URL + f"&id={pmid}"
+
+    if apiKey is not None:
+        url += f'&api_key={apiKey}'
+
+    with urlopen(url) as result: # type: http.client.HTTPResponse
+        # NOTE: The NCBI API returns success (200) even if no records were found.  Any non-200 response code is an
+        # undefined behavior and to be considered an error.
+        if result.status != 200:
+            raise Exception(f'received unexpected status f{result.status} from {url}')
+        return result.read()
+
+
+def printHelp():
+    print("""Usage: pubmedIdToCitation <pmid> [api_key]
+
+pmid    : PubMed article ID
+api_key : Optional NCBI api key that grants a higher request rate limit than the default 3 per second.
+""")
+
+
+def main():
+    args = sys.argv
+
+    if len(args) < 2 or len(args) > 3:
+        printHelp()
+        exit(2)
+
+    articleSet = XML.fromstring(fetchArticleDetails(
+        pmid=int(args[1]),
+        apiKey=args[2] if len(args) > 2 else None
+    ))
+
+    if articleSet is None:
+        raise Exception("invalid response body, could not find PubmedArticleSet XML element")
+
+    if len(articleSet) == 0:
+        print("not found", file=sys.stderr)
+        exit(1)
+
+    print(citationFromPubMedArticle(articleSet[0]))
+
+
+if __name__ == '__main__':
+    main()
