@@ -43,7 +43,7 @@ def formatAuthorList(authors: list[XML.Element]) -> str:
 
     lastName = str(findAndTrimText(firstAuthor, './LastName'))
 
-    if len(authors) > 0:
+    if len(authors) > 1:
         return lastName + ' et al'
 
     firstName = findAndTrimText(firstAuthor, './ForeName') or findAndTrimText(firstAuthor, './Initials') or ''
@@ -85,8 +85,18 @@ class PublicationInfo:
     title: str
     startPage: 'str | None'
     endPage: 'str | None'
+    elocation: 'str | None'
 
     def __init__(self, article: XML.Element, journal: XML.Element):
+        # Assign defaults up front: the annotations above create no attributes, and every
+        # source element below is optional in the PubMed DTD.
+        self.volume = None
+        self.issue = None
+        self.year = None
+        self.startPage = None
+        self.endPage = None
+        self.elocation = None
+
         issue = journal.find('./JournalIssue')
         if issue is not None:
             self.volume = findAndTrimText(issue, './Volume')
@@ -97,8 +107,13 @@ class PublicationInfo:
 
         pagination = article.find('./Pagination')
         if pagination is not None:
-            self.startPage = require(StartePage=findAndTrimText(pagination, './StartPage'))
+            self.startPage = findAndTrimText(pagination, './StartPage')
             self.endPage = findAndTrimText(pagination, './EndPage')
+
+        # Article-number journals (eLife, PLoS, MBE, Nat Commun, ahead-of-print) carry no
+        # Pagination at all; the article number lives in an ELocationID instead.
+        if self.startPage is None:
+            self.elocation = findAndTrimText(article, "./ELocationID[@EIdType='pii']")
 
     def __str__(self):
         pageRange = ''
@@ -106,6 +121,8 @@ class PublicationInfo:
             pageRange = 'pp. ' + self.startPage
             if self.endPage is not None:
                 pageRange += '-' + self.endPage
+        elif self.elocation is not None:
+            pageRange = self.elocation
 
         elements = [
             ('vol. ' + str(self.volume)) if self.volume is not None else '',
@@ -156,7 +173,13 @@ def citationFromPubMedArticle(pmArticle: XML.Element) -> str:
     else:
         pubInfo = None
 
-    authors = formatAuthorList(require(Authors=article.findall('./AuthorList/Author')))
+    # findall returns [] rather than None, so require() cannot catch an empty author list.
+    # Collective-author records carry <CollectiveName> and no <LastName>.
+    authorList = article.findall('./AuthorList/Author')
+    if len(authorList) == 0:
+        raise Exception('no authors found for article')
+
+    authors = formatAuthorList(authorList)
     title = require(ArticleTitle=findAndTrimText(article, './ArticleTitle'))
     url = formatUrl(pmArticle.find('./PubmedData/ArticleIdList')) or ''
 
