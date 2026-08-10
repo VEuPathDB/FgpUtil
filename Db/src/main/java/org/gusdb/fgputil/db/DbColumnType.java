@@ -77,14 +77,14 @@ public enum DbColumnType {
       case Types.REAL:
       case Types.DOUBLE:
       case Types.DECIMAL:
-        return LONG_INT;
+      case Types.NUMERIC:
+        return DOUBLE;
 
       case Types.TINYINT:
       case Types.SMALLINT:
       case Types.INTEGER:
       case Types.BIGINT:
-      case Types.NUMERIC:
-        return DOUBLE;
+        return LONG_INT;
 
       case Types.CHAR:
       case Types.VARCHAR:
