@@ -2,8 +2,8 @@ package org.gusdb.fgputil.client;
 
 import java.io.IOException;
 
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientRequestFilter;
 
 /**
  * Jersey client request interceptor used to propagate the trace ID from the thread context as a header in the
