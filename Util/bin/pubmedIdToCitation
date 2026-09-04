@@ -26,12 +26,23 @@ def require(**kwargs: Any) -> Any:
     return value
 
 
+def joinInnerText(element: XML.Element) -> str:
+    out = element.text or ''
+
+    for child in element:
+        out += joinInnerText(child)
+
+    out += element.tail or ''
+
+    return out
+
+
 def findAndTrimText(element: XML.Element, xpath: str) -> 'str | None':
     """
     Convenience wrapper around the XPath findtext function that trims the returned text if it is found.
     """
-    out = element.findtext(xpath)
-    return out.strip() if out is not None else None
+    out = element.find(xpath)
+    return joinInnerText(out).strip() if out is not None else None
 
 
 def formatAuthorList(authors: list[XML.Element]) -> str:
@@ -41,7 +52,7 @@ def formatAuthorList(authors: list[XML.Element]) -> str:
     """
     firstAuthor = authors[0]
 
-    lastName = str(findAndTrimText(firstAuthor, './LastName'))
+    lastName = findAndTrimText(firstAuthor, './LastName') or ''
 
     if len(authors) > 1:
         return lastName + ' et al'
