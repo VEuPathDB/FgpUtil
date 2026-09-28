@@ -76,8 +76,11 @@ sub getSystemProps {
   my $sysProps = "-DcmdName=$cmdName -DGUS_HOME=$GUS_HOME";
   my $gusjvmprops = "/etc/.java/gusjvm.properties";
 
-  #set the log4j configuration
+  # set the log4j configuration
   $sysProps .= " -Dlog4j.configurationFile=\"$GUS_HOME/config/log4j2.json\"";
+
+  # set expanded XML entity size constraints (reduced in Java 24)
+  $sysProps .= " -Djdk.xml.maxGeneralEntitySizeLimit=5000000 -Djdk.xml.totalEntitySizeLimit=5000000";
 
   # process gusjvmprops if it exists
   if (-f $gusjvmprops) {
