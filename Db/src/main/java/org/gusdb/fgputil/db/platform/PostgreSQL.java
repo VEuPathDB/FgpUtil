@@ -224,7 +224,7 @@ public class PostgreSQL extends DBPlatform {
   @Override
   public void computeThenLockStatistics(DataSource dataSource, String schema, String tableName) {
     if (!schema.endsWith(".")) schema = schema + ".";
-    String sql = "ANALYZE " + schema + tableName;
+    String sql = "VACUUM (ANALYZE) " + schema + tableName;
     new SQLRunner(dataSource, sql, "postgres-compute-statistics").executeStatement();
   }
 
