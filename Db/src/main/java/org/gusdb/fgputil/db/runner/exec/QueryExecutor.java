@@ -1,5 +1,7 @@
 package org.gusdb.fgputil.db.runner.exec;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,8 +11,8 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.runner.QueryFlags;
 import org.gusdb.fgputil.db.runner.QueryFlags.CommitAndClose;
-import org.gusdb.fgputil.db.runner.handler.ResultSetHandler;
 import org.gusdb.fgputil.db.runner.SQLRunnerException;
+import org.gusdb.fgputil.db.runner.handler.ResultSetHandler;
 
 /**
  * Executor for SQL queries.  This executor requires the implementation of a
@@ -47,11 +49,24 @@ public class QueryExecutor<T> extends PreparedStatementExecutor<T> {
   @Override
   public void run(PreparedStatement stmt) throws SQLException {
     _results = stmt.executeQuery();
+    if (_queryFlags.getFetchConditionsCollector() != null) {
+      LOG.info("Fetch conditions before query execution:" + NL + _queryFlags
+          .getFetchConditionsCollector()
+          .getFetchConditions(stmt, _results)
+          .toString(2));
+    }
   }
 
   @Override
   public T handleResult() throws SQLException, SQLRunnerException {
-    return _handler.handleResult(_results);
+    T result = _handler.handleResult(_results);
+    if (_queryFlags.getFetchConditionsCollector() != null) {
+      LOG.info("ResultSet internals after handling:" + NL + _queryFlags
+          .getFetchConditionsCollector()
+          .getResultSetInternals(_results)
+          .toString(2));
+    }
+    return result;
   }
 
   @Override
