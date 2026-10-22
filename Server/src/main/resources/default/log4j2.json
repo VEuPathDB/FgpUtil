@@ -16,6 +16,9 @@
         "name": "org.eupathdb",
         "level": "info"
       },{
+        "name": "org.veupathdb",
+        "level": "info"
+      },{
         "name": "org.apidb",
         "level": "info"
       },{
