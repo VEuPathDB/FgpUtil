@@ -195,6 +195,11 @@ public abstract class DBPlatform {
 
     public abstract String getSysdateIdentifier();
 
+    // provide default implementation
+    public DbFetchConditionsCollector getFetchConditionsCollector() {
+      return new DbFetchConditionsCollector();
+    }
+
     //#########################################################################
     // Common methods are platform independent
     //#########################################################################

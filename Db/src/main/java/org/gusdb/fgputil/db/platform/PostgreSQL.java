@@ -52,6 +52,11 @@ public class PostgreSQL extends DBPlatform {
   }
 
   @Override
+  public PostgresFetchConditionsCollector getFetchConditionsCollector() {
+    return new PostgresFetchConditionsCollector();
+  }
+
+  @Override
   public String getConnectionUrl(String host, int port, String serviceName) {
     return CONNECTION_URL_SCHEME + host + ":" + port + "/" + serviceName;
   }

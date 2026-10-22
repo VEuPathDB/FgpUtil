@@ -374,14 +374,10 @@ public class SQLRunner {
       // prepare statement
       stmt = conn.prepareStatement(
           _sql,
-          // enables efficiency in DB since result row can be discarded once delivered
+          // enables efficiency since result row can be discarded once delivered
           ResultSet.TYPE_FORWARD_ONLY,
-          // enables efficiency in DB since extra state must be maintained to enable read/write results
-          ResultSet.CONCUR_READ_ONLY,
-          // better resource management on DB since cursors are freed at commit rather than waiting for close;
-          //   actual connection close MAY happen much later depending on connection pool implementation
-          //ResultSet.CLOSE_CURSORS_AT_COMMIT, <-- Unsupported by Oracle :(
-          ResultSet.HOLD_CURSORS_OVER_COMMIT
+          // enables efficiency since extra state must be maintained to enable read/write results
+          ResultSet.CONCUR_READ_ONLY
       );
 
       // Prioritize override query timeout and fallback to global query timeout.
