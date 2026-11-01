@@ -79,7 +79,8 @@ public class QueryExecutor<T> extends PreparedStatementExecutor<T> {
     try {
       // clean up any lingering resources on this connection
       if (_results != null) {
-        _results.getStatement().getConnection().commit();
+        Connection c = _results.getStatement().getConnection();
+        if (!c.isClosed()) c.commit();
       }
     }
     catch (Exception e) {
