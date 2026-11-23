@@ -5,6 +5,8 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.fgputil.collection.ReadOnlyMap;
+
 
 /**
  * Provides standard information that came in on the current request
@@ -58,12 +60,27 @@ public interface RequestData {
   /**
    * @return map of attributes attached to this request
    */
-  Map<String, Object> getAttributeMap();
+  ReadOnlyMap<String, Object> getAttributeMap();
+
+  /**
+   * @param name name of an attribute
+   * @return the object associated with that name, or null if none exists
+   */
+  Object getAttribute(String name);
 
   /**
    * Adds an attribute to the underlying request object
    */
   void setAttribute(String name, Object value);
+
+  /**
+   * Removes the attribute with this name from the request and returns
+   * the previous value.
+   *
+   * @param name name of an attribute
+   * @return previous value of this attribute, or null if non existed
+   */
+  Object removeAttribute(String name);
 
   /**
    * @return user-agent header value

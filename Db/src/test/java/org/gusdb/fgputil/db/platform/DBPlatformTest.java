@@ -30,6 +30,9 @@ public class DBPlatformTest {
     @Override public long getShowConnectionsDuration() { return 30; }
     @Override public boolean getDefaultAutoCommit() { return true; }
     @Override public boolean getDefaultReadOnly() { return false; }
+    @Override public long getTimeBetweenEvictionRunsMillis() { return -1; }
+    @Override public long getMinEvictableIdleTimeMillis() { return 1800000; }
+    @Override public long getSoftMinEvictableIdleTimeMillis() { return 300000; }
   }
 
   private class PostgresConfig extends OracleConfig {

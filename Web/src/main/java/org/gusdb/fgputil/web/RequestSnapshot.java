@@ -12,8 +12,8 @@ public class RequestSnapshot {
   private final String _referrer;
   private final String _userAgent;
   private final String _serverName;
-  private final ReadOnlyHashMap<String, Object> _attributeMap;
-  private final ReadOnlyHashMap<String, List<String>> _requestParamMap;
+  private final ReadOnlyMap<String, Object> _attributeMap;
+  private final ReadOnlyMap<String, List<String>> _requestParamMap;
 
   public RequestSnapshot(RequestData requestData) {
     _contextUri = requestData.getContextUri();
@@ -22,7 +22,7 @@ public class RequestSnapshot {
     _userAgent = requestData.getUserAgent();
     _serverName = requestData.getServerName();
     // NOTE: shallow copies!
-    _attributeMap = new ReadOnlyHashMap<>(requestData.getAttributeMap());
+    _attributeMap = requestData.getAttributeMap();
     _requestParamMap = new ReadOnlyHashMap<>(requestData.getRequestParamMap());
   }
 

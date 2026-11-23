@@ -9,6 +9,8 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.gusdb.fgputil.collection.ReadOnlyHashMap;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.web.HttpMethod;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.fgputil.web.SessionProxy;
@@ -64,14 +66,26 @@ public class HttpRequestData implements RequestData {
   }
 
   @Override
-  public Map<String, Object> getAttributeMap() {
+  public ReadOnlyMap<String, Object> getAttributeMap() {
     Iterator<String> attributeNames = _request.getAttributeNames().asIterator();
-    return getMapFromKeys(toIterable(attributeNames), _request::getAttribute);
+    return new ReadOnlyHashMap<>(getMapFromKeys(toIterable(attributeNames), _request::getAttribute));
+  }
+
+  @Override
+  public Object getAttribute(String name) {
+    return _request.getAttribute(name);
   }
 
   @Override
   public void setAttribute(String name, Object value) {
     _request.setAttribute(name, value);
+  }
+
+  @Override
+  public Object removeAttribute(String name) {
+    Object obj = _request.getAttribute(name);
+    _request.removeAttribute(name);
+    return obj;
   }
 
   @Override

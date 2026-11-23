@@ -25,6 +25,10 @@ public interface ConnectionPoolConfig {
   int getMinIdle();
   long getMaxWait();
 
+  long getTimeBetweenEvictionRunsMillis();
+  long getMinEvictableIdleTimeMillis();
+  long getSoftMinEvictableIdleTimeMillis();
+  
   boolean isShowConnections();
   long getShowConnectionsInterval();
   long getShowConnectionsDuration();
