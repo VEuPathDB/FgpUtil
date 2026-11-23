@@ -25,6 +25,12 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
     // default max wait if not overridden
     private static final int DEFAULT_MAX_WAIT = 1000;
 
+    private static final long DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS = -1; // no background thread
+
+    private static final long DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS = 1800000;
+
+    private static final long DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS = 300000;
+
     /**
      * Creates a simple database configuration with connection pool of size 1.  This is for
      * single-threaded applications that simply want access to a database.
@@ -105,6 +111,21 @@ public abstract class SimpleDbConfig implements ConnectionPoolConfig {
     @Override
     public long getMaxWait() {
         return DEFAULT_MAX_WAIT;
+    }
+
+    @Override
+    public long getTimeBetweenEvictionRunsMillis() {
+      return DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS;
+    }
+
+    @Override
+    public long getMinEvictableIdleTimeMillis() {
+      return DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS;
+    }
+
+    @Override
+    public long getSoftMinEvictableIdleTimeMillis() {
+      return DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS;
     }
 
     @Override

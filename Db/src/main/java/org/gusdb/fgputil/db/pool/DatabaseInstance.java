@@ -246,6 +246,9 @@ public class DatabaseInstance implements Wrapper, AutoCloseable {
     connectionPool.setMaxIdle(dbConfig.getMaxIdle());
     connectionPool.setMinIdle(dbConfig.getMinIdle());
     connectionPool.setMaxTotal(dbConfig.getMaxActive());
+    connectionPool.setDurationBetweenEvictionRuns(Duration.ofMillis(dbConfig.getTimeBetweenEvictionRunsMillis()));
+    connectionPool.setMinEvictableIdle(Duration.ofMillis(dbConfig.getMinEvictableIdleTimeMillis()));
+    connectionPool.setSoftMinEvictableIdle(Duration.ofMillis(dbConfig.getSoftMinEvictableIdleTimeMillis()));
 
     // configure validationQuery tests
     connectionPool.setValidationQuery(platform.getValidationQuery());

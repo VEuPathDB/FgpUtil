@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.util.Header;
+import org.gusdb.fgputil.collection.ReadOnlyHashMap;
+import org.gusdb.fgputil.collection.ReadOnlyMap;
 import org.gusdb.fgputil.web.HttpMethod;
 import org.gusdb.fgputil.web.RequestData;
 import org.gusdb.fgputil.web.SessionProxy;
@@ -62,13 +64,25 @@ public class GrizzlyRequestData implements RequestData {
   }
 
   @Override
-  public Map<String, Object> getAttributeMap() {
-    return getMapFromKeys(_request.getAttributeNames(), _request::getAttribute);
+  public ReadOnlyMap<String, Object> getAttributeMap() {
+    return new ReadOnlyHashMap<>(getMapFromKeys(_request.getAttributeNames(), _request::getAttribute));
+  }
+
+  @Override
+  public Object getAttribute(String name) {
+    return _request.getAttribute(name);
   }
 
   @Override
   public void setAttribute(String name, Object value) {
     _request.setAttribute(name, value);
+  }
+
+  @Override
+  public Object removeAttribute(String name) {
+    Object obj = _request.getAttribute(name);
+    _request.removeAttribute(name);
+    return obj;
   }
 
   @Override
